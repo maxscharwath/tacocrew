@@ -181,7 +181,7 @@
         return 'light-subtle';
     }
   }
-  window.const repeatOrder = function(orderId) {
+  window.repeatOrder = function(orderId) {
     const foundOrder = JSON.parse(localStorage.getItem("order_stories")).find(orderItem => orderItem.orderId == orderId);
     if (!foundOrder) return void alert("Order not found.");
     const csrfToken = getCsrfToken(),
