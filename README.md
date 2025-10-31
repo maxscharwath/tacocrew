@@ -124,15 +124,19 @@ The Web API server provides RESTful endpoints at `/api/v1`:
 
 ## Slack Bot Commands
 
-If Slack bot is configured, the following commands are available:
+The Slack bot uses a simple UI-based interface:
 
-- `/tacos` - Show tacos ordering system info
-- `/tacos-menu` - View menu
-- `/tacos-cart` - View current cart
-- `/tacos-order` - Place order
-- `/tacos-group-start [minutes]` - Start a group order (default: 30 minutes)
-- `/tacos-group-view <order-id>` - View a group order
-- `/tacos-group-list` - List all active group orders
+### Entry Point
+- `/tacos` - Opens the main menu with buttons
+
+### Features
+- **?? Start Group Order** - Button opens a modal to create a new group order
+- **?? View Active Orders** - Button shows all active group orders
+- **? Add Item** - Button on order messages opens a modal to add items
+- **??? View Details** - Button opens a modal with full order details
+- **?? Close Order** - Button (creator only) closes the order
+
+All interactions use Slack's native UI components (modals, buttons) for a seamless experience.
 
 ## Example Usage
 
