@@ -254,3 +254,92 @@ export interface ApiResponse<T> {
   data?: T;
   error?: ApiError;
 }
+
+/**
+ * Group order status
+ */
+export type GroupOrderStatus = 'active' | 'closed' | 'submitted' | 'expired';
+
+/**
+ * User information for group order items
+ */
+export interface GroupOrderUser {
+  id: string; // User ID (Slack user ID, email, etc.)
+  name: string;
+  avatar?: string;
+}
+
+/**
+ * Group order item (taco with user info)
+ */
+export interface GroupOrderItem {
+  id: string; // Unique item ID
+  userId: string;
+  userName: string;
+  taco: TacoConfig;
+  quantity: number;
+  price: number;
+  addedAt: Date;
+}
+
+/**
+ * Group order summary
+ */
+export interface GroupOrderSummary {
+  totalItems: number;
+  totalPrice: number;
+  participantCount: number;
+  itemsByUser: Record<string, GroupOrderItem[]>;
+}
+
+/**
+ * Group order structure
+ */
+export interface GroupOrder {
+  id: string;
+  name?: string;
+  createdBy: GroupOrderUser;
+  createdAt: Date;
+  expiresAt: Date;
+  status: GroupOrderStatus;
+  items: GroupOrderItem[];
+  summary: GroupOrderSummary;
+}
+
+/**
+ * Create group order request
+ */
+export interface CreateGroupOrderRequest {
+  name?: string;
+  createdBy: GroupOrderUser;
+  expiresInMinutes: number; // Time limit in minutes
+}
+
+/**
+ * Add item to group order request
+ */
+export interface AddItemToGroupOrderRequest {
+  orderId: string;
+  userId: string;
+  userName: string;
+  taco: TacoConfig;
+  quantity?: number;
+}
+
+/**
+ * Remove item from group order request
+ */
+export interface RemoveItemFromGroupOrderRequest {
+  orderId: string;
+  itemId: string;
+  userId: string;
+}
+
+/**
+ * Submit group order request
+ */
+export interface SubmitGroupOrderRequest {
+  orderId: string;
+  customer: Customer;
+  delivery: DeliveryInfo;
+}

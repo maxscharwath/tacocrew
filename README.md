@@ -110,6 +110,15 @@ The Web API server provides RESTful endpoints at `/api/v1`:
 ### Delivery
 - `GET /api/v1/delivery/demand/:time` - Check delivery demand
 
+### Group Orders
+- `POST /api/v1/group-orders` - Create a new group order
+- `GET /api/v1/group-orders` - Get all active group orders
+- `GET /api/v1/group-orders/:id` - Get a specific group order
+- `POST /api/v1/group-orders/:id/items` - Add an item to a group order
+- `DELETE /api/v1/group-orders/:id/items/:itemId` - Remove an item from a group order
+- `POST /api/v1/group-orders/:id/close` - Close a group order (stop accepting new items)
+- `POST /api/v1/group-orders/:id/submit` - Submit a group order
+
 ### Health
 - `GET /api/v1/health` - Health check
 
@@ -121,6 +130,9 @@ If Slack bot is configured, the following commands are available:
 - `/tacos-menu` - View menu
 - `/tacos-cart` - View current cart
 - `/tacos-order` - Place order
+- `/tacos-group-start [minutes]` - Start a group order (default: 30 minutes)
+- `/tacos-group-view <order-id>` - View a group order
+- `/tacos-group-list` - List all active group orders
 
 ## Example Usage
 
@@ -181,6 +193,47 @@ curl -X POST http://localhost:3000/api/v1/cart/tacos \
 
 # Submit order
 curl -X POST http://localhost:3000/api/v1/orders \
+  -H "Content-Type: application/json" \
+  -d '{
+    "customer": {
+      "name": "John Doe",
+      "phone": "+41791234567"
+    },
+    "delivery": {
+      "type": "livraison",
+      "address": "123 Rue Example",
+      "requestedFor": "15:00"
+    }
+  }'
+
+# Create a group order
+curl -X POST http://localhost:3000/api/v1/group-orders \
+  -H "Content-Type: application/json" \
+  -d '{
+    "createdBy": {
+      "id": "user123",
+      "name": "John Doe"
+    },
+    "expiresInMinutes": 30
+  }'
+
+# Add item to group order
+curl -X POST http://localhost:3000/api/v1/group-orders/{order-id}/items \
+  -H "Content-Type: application/json" \
+  -d '{
+    "userId": "user456",
+    "userName": "Jane Smith",
+    "taco": {
+      "size": "tacos_XL",
+      "meats": [{"slug": "viande_hachee", "name": "Viande Hach?e", "quantity": 2}],
+      "sauces": [{"slug": "harissa", "name": "Harissa"}],
+      "garnitures": [{"slug": "salade", "name": "Salade"}]
+    },
+    "quantity": 1
+  }'
+
+# Submit group order
+curl -X POST http://localhost:3000/api/v1/group-orders/{order-id}/submit \
   -H "Content-Type: application/json" \
   -d '{
     "customer": {

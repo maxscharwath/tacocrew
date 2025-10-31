@@ -14,8 +14,13 @@ import {
   Customer,
   DeliveryInfo,
   OrderStatusResponse,
+  CreateGroupOrderRequest,
+  AddItemToGroupOrderRequest,
+  RemoveItemFromGroupOrderRequest,
+  SubmitGroupOrderRequest,
 } from '@/types';
 import { ApiClientError } from '@/types/errors';
+import { getGroupOrderService } from '@/services/group-order.service';
 
 /**
  * Web API Server
@@ -56,6 +61,7 @@ export class WebApiServer {
   private setupRoutes(): void {
     const router = express.Router();
     const service = getTacosApiService();
+    const groupOrderService = getGroupOrderService();
 
     /**
      * Health check
@@ -258,6 +264,150 @@ export class WebApiServer {
       }
     });
 
+    /**
+     * POST /api/v1/group-orders
+     * Create a new group order
+     */
+    router.post('/group-orders', async (req: Request, res: Response, next: NextFunction) => {
+      try {
+        const request = req.body as CreateGroupOrderRequest;
+        if (!request.createdBy || !request.expiresInMinutes) {
+          return res.status(400).json({
+            success: false,
+            error: { code: 'VALIDATION_ERROR', message: 'Missing required fields' },
+          });
+        }
+        const order = groupOrderService.createGroupOrder(request);
+        // Serialize dates for JSON response
+        const serialized = this.serializeGroupOrder(order);
+        res.status(201).json({ success: true, data: serialized });
+      } catch (error) {
+        next(error);
+      }
+    });
+
+    /**
+     * GET /api/v1/group-orders
+     * Get all active group orders
+     */
+    router.get('/group-orders', async (_req: Request, res: Response, next: NextFunction) => {
+      try {
+        const orders = groupOrderService.getAllActiveGroupOrders();
+        const serialized = orders.map((order) => this.serializeGroupOrder(order));
+        res.json({ success: true, data: serialized });
+      } catch (error) {
+        next(error);
+      }
+    });
+
+    /**
+     * GET /api/v1/group-orders/:id
+     * Get a specific group order
+     */
+    router.get('/group-orders/:id', async (req: Request, res: Response, next: NextFunction) => {
+      try {
+        const { id } = req.params;
+        const order = groupOrderService.getGroupOrder(id);
+        const serialized = this.serializeGroupOrder(order);
+        res.json({ success: true, data: serialized });
+      } catch (error) {
+        next(error);
+      }
+    });
+
+    /**
+     * POST /api/v1/group-orders/:id/items
+     * Add an item to a group order
+     */
+    router.post('/group-orders/:id/items', async (req: Request, res: Response, next: NextFunction) => {
+      try {
+        const { id } = req.params;
+        const request = req.body as Omit<AddItemToGroupOrderRequest, 'orderId'>;
+        const item = groupOrderService.addItem({
+          ...request,
+          orderId: id,
+        });
+        res.status(201).json({ success: true, data: this.serializeGroupOrderItem(item) });
+      } catch (error) {
+        next(error);
+      }
+    });
+
+    /**
+     * DELETE /api/v1/group-orders/:id/items/:itemId
+     * Remove an item from a group order
+     */
+    router.delete('/group-orders/:id/items/:itemId', async (req: Request, res: Response, next: NextFunction) => {
+      try {
+        const { id, itemId } = req.params;
+        const { userId } = req.body as { userId: string };
+        if (!userId) {
+          return res.status(400).json({
+            success: false,
+            error: { code: 'VALIDATION_ERROR', message: 'userId is required' },
+          });
+        }
+        groupOrderService.removeItem({
+          orderId: id,
+          itemId,
+          userId,
+        });
+        res.json({ success: true });
+      } catch (error) {
+        next(error);
+      }
+    });
+
+    /**
+     * POST /api/v1/group-orders/:id/close
+     * Close a group order (stop accepting new items)
+     */
+    router.post('/group-orders/:id/close', async (req: Request, res: Response, next: NextFunction) => {
+      try {
+        const { id } = req.params;
+        const { userId } = req.body as { userId: string };
+        if (!userId) {
+          return res.status(400).json({
+            success: false,
+            error: { code: 'VALIDATION_ERROR', message: 'userId is required' },
+          });
+        }
+        const order = groupOrderService.closeGroupOrder(id, userId);
+        const serialized = this.serializeGroupOrder(order);
+        res.json({ success: true, data: serialized });
+      } catch (error) {
+        next(error);
+      }
+    });
+
+    /**
+     * POST /api/v1/group-orders/:id/submit
+     * Submit a group order
+     */
+    router.post('/group-orders/:id/submit', async (req: Request, res: Response, next: NextFunction) => {
+      try {
+        const { id } = req.params;
+        const { customer, delivery } = req.body as {
+          customer: Customer;
+          delivery: DeliveryInfo;
+        };
+        if (!customer || !delivery) {
+          return res.status(400).json({
+            success: false,
+            error: { code: 'VALIDATION_ERROR', message: 'Missing customer or delivery info' },
+          });
+        }
+        const order = await groupOrderService.submitGroupOrder({
+          orderId: id,
+          customer,
+          delivery,
+        });
+        res.status(201).json({ success: true, data: order });
+      } catch (error) {
+        next(error);
+      }
+    });
+
     // Mount API routes
     this.app.use('/api/v1', router);
   }
@@ -308,10 +458,32 @@ export class WebApiServer {
   async start(): Promise<void> {
     return new Promise((resolve) => {
       this.app.listen(this.config.port, () => {
-        logger.info(`🚀 Web API server running on port ${this.config.port}`);
+        logger.info(`?? Web API server running on port ${this.config.port}`);
         resolve();
       });
     });
+  }
+
+  /**
+   * Serialize group order for JSON response (convert Date objects to ISO strings)
+   */
+  private serializeGroupOrder(order: any): any {
+    return {
+      ...order,
+      createdAt: order.createdAt.toISOString(),
+      expiresAt: order.expiresAt.toISOString(),
+      items: order.items.map((item: any) => this.serializeGroupOrderItem(item)),
+    };
+  }
+
+  /**
+   * Serialize group order item for JSON response
+   */
+  private serializeGroupOrderItem(item: any): any {
+    return {
+      ...item,
+      addedAt: item.addedAt.toISOString(),
+    };
   }
 
   /**
