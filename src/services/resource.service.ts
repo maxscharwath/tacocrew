@@ -9,11 +9,21 @@ import { StockAvailability } from '../types';
 
 /**
  * Resource Service
+ * Stock information is global, not session-specific
  */
 export class ResourceService {
   private stockCache: StockAvailability | null = null;
   private stockCacheTimestamp = 0;
   private readonly CACHE_TTL = 30000; // 30 seconds
+
+  /**
+   * Initialize the resource service
+   */
+  async initialize(): Promise<void> {
+    if (!apiClient['csrfToken']) {
+      await apiClient.initialize();
+    }
+  }
 
   /**
    * Get stock availability for all products
@@ -28,6 +38,9 @@ export class ResourceService {
     }
 
     logger.debug('Fetching stock from backend');
+
+    // Ensure we have a CSRF token
+    await this.initialize();
 
     const response = await apiClient.get<StockAvailability>(
       '/office/stock_management.php?type=all'

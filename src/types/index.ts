@@ -3,6 +3,9 @@
  * @module types
  */
 
+// Re-export session types
+export * from './session';
+
 /**
  * Taco size options with their meat capacity
  */
@@ -63,7 +66,8 @@ export interface Garniture {
  * Complete taco configuration
  */
 export interface Taco {
-  id?: number;
+  /** Unique taco ID within the cart (0-based index) */
+  id: number;
   size: TacoSize;
   meats: Meat[];
   sauces: Sauce[];
@@ -158,6 +162,8 @@ export interface CartSummary {
  * Complete cart contents
  */
 export interface Cart {
+  /** Session ID for this cart */
+  sessionId: string;
   tacos: Taco[];
   extras: Extra[];
   drinks: Drink[];
@@ -329,5 +335,7 @@ export enum ErrorCode {
   OUT_OF_STOCK = 'OUT_OF_STOCK',
   NOT_FOUND = 'NOT_FOUND',
   NETWORK_ERROR = 'NETWORK_ERROR',
+  SESSION_NOT_FOUND = 'SESSION_NOT_FOUND',
+  SESSION_EXPIRED = 'SESSION_EXPIRED',
   UNKNOWN_ERROR = 'UNKNOWN_ERROR',
 }

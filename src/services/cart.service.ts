@@ -1,9 +1,9 @@
 /**
- * Cart service for managing shopping cart operations
+ * Session-aware cart service for managing shopping cart operations
  * @module services/cart
  */
 
-import { apiClient } from '../api/client';
+import { sessionApiClient } from '../api/session-client';
 import { logger } from '../utils/logger';
 import {
   Cart,
@@ -14,28 +14,29 @@ import {
   Drink,
   Dessert,
   CategorySummary,
-  CartSummary,
 } from '../types';
 
 /**
- * Cart Service
+ * Cart Service - Session-aware
+ * All operations require a sessionId
  */
 export class CartService {
   /**
-   * Get complete cart contents
+   * Get complete cart contents for a session
    */
-  async getCart(): Promise<Cart> {
-    logger.debug('Fetching cart contents');
+  async getCart(sessionId: string): Promise<Cart> {
+    logger.debug('Fetching cart contents', { sessionId });
 
     const [tacos, extras, drinks, desserts, summary] = await Promise.all([
-      this.getTacos(),
-      this.getExtras(),
-      this.getDrinks(),
-      this.getDesserts(),
-      this.getCategorySummary(),
+      this.getTacos(sessionId),
+      this.getExtras(sessionId),
+      this.getDrinks(sessionId),
+      this.getDesserts(sessionId),
+      this.getCategorySummary(sessionId),
     ]);
 
     const cart: Cart = {
+      sessionId,
       tacos,
       extras,
       drinks,
@@ -58,6 +59,7 @@ export class CartService {
     };
 
     logger.info('Cart fetched successfully', {
+      sessionId,
       totalItems: cart.summary.total.quantity,
       totalPrice: cart.summary.total.price,
     });
@@ -66,21 +68,25 @@ export class CartService {
   }
 
   /**
-   * Get all tacos in cart
+   * Get all tacos in cart for a session
    */
-  async getTacos(): Promise<Taco[]> {
-    logger.debug('Fetching tacos from cart');
-    const response = await apiClient.post<string>('/ajax/owt.php', { loadProducts: true });
+  async getTacos(sessionId: string): Promise<Taco[]> {
+    logger.debug('Fetching tacos from cart', { sessionId });
+    const response = await sessionApiClient.post<string>(
+      sessionId,
+      '/ajax/owt.php',
+      { loadProducts: true }
+    );
     // Note: Backend returns HTML, would need parsing in real implementation
     // For now, return empty array - implement HTML parser if needed
     return [];
   }
 
   /**
-   * Add taco to cart
+   * Add taco to cart for a session
    */
-  async addTaco(request: AddTacoRequest): Promise<Taco> {
-    logger.debug('Adding taco to cart', { size: request.size });
+  async addTaco(sessionId: string, request: AddTacoRequest): Promise<Taco> {
+    logger.debug('Adding taco to cart', { sessionId, size: request.size });
 
     const formData: Record<string, unknown> = {
       selectProduct: request.size,
@@ -112,12 +118,13 @@ export class CartService {
       (formData['garniture[]'] as string[]).push(garniture);
     });
 
-    await apiClient.postForm('/ajax/owt.php', formData);
+    await sessionApiClient.postForm(sessionId, '/ajax/owt.php', formData);
 
-    logger.info('Taco added to cart successfully');
+    logger.info('Taco added to cart successfully', { sessionId });
 
     // Return placeholder - would parse HTML response in real implementation
     return {
+      id: 0, // Would be determined from backend response
       size: request.size,
       meats: request.meats.map((m) => ({ ...m, name: m.id })),
       sauces: request.sauces.map((s) => ({ id: s, name: s })),
@@ -131,18 +138,20 @@ export class CartService {
   /**
    * Get taco details by index
    */
-  async getTacoDetails(index: number): Promise<Taco> {
-    logger.debug('Fetching taco details', { index });
+  async getTacoDetails(sessionId: string, index: number): Promise<Taco> {
+    logger.debug('Fetching taco details', { sessionId, index });
 
-    const response = await apiClient.postForm<{ status: string; data: unknown }>('/ajax/gtd.php', {
-      index,
-    });
+    const response = await sessionApiClient.postForm<{ status: string; data: unknown }>(
+      sessionId,
+      '/ajax/gtd.php',
+      { index }
+    );
 
     if (response.status !== 'success') {
       throw new Error('Failed to get taco details');
     }
 
-    logger.info('Taco details fetched', { index });
+    logger.info('Taco details fetched', { sessionId, index });
     // Would parse and return proper Taco object
     return {} as Taco;
   }
@@ -150,8 +159,8 @@ export class CartService {
   /**
    * Update taco in cart
    */
-  async updateTaco(request: UpdateTacoRequest): Promise<Taco> {
-    logger.debug('Updating taco', { id: request.id });
+  async updateTaco(sessionId: string, request: UpdateTacoRequest): Promise<Taco> {
+    logger.debug('Updating taco', { sessionId, id: request.id });
 
     const formData: Record<string, unknown> = {
       editSelectProduct: request.size,
@@ -183,9 +192,9 @@ export class CartService {
       (formData['garniture[]'] as string[]).push(garniture);
     });
 
-    await apiClient.postFormData('/ajax/et.php', formData);
+    await sessionApiClient.postFormData(sessionId, '/ajax/et.php', formData);
 
-    logger.info('Taco updated successfully', { id: request.id });
+    logger.info('Taco updated successfully', { sessionId, id: request.id });
 
     return {} as Taco;
   }
@@ -194,101 +203,114 @@ export class CartService {
    * Update taco quantity
    */
   async updateTacoQuantity(
+    sessionId: string,
     index: number,
     action: 'increase' | 'decrease'
   ): Promise<{ quantity: number }> {
-    logger.debug('Updating taco quantity', { index, action });
+    logger.debug('Updating taco quantity', { sessionId, index, action });
 
     const formAction = action === 'increase' ? 'increaseQuantity' : 'decreaseQuantity';
-    const response = await apiClient.postForm<{ status: string; quantity: number }>(
+    const response = await sessionApiClient.postForm<{ status: string; quantity: number }>(
+      sessionId,
       '/ajax/owt.php',
-      {
-        action: formAction,
-        index,
-      }
+      { action: formAction, index }
     );
 
-    logger.info('Taco quantity updated', { index, newQuantity: response.quantity });
+    logger.info('Taco quantity updated', { sessionId, index, newQuantity: response.quantity });
     return { quantity: response.quantity };
   }
 
   /**
    * Delete taco from cart
    */
-  async deleteTaco(index: number): Promise<void> {
-    logger.debug('Deleting taco', { index });
-    await apiClient.post('/ajax/dt.php', { index });
-    logger.info('Taco deleted from cart', { index });
+  async deleteTaco(sessionId: string, index: number): Promise<void> {
+    logger.debug('Deleting taco', { sessionId, index });
+    await sessionApiClient.post(sessionId, '/ajax/dt.php', { index });
+    logger.info('Taco deleted from cart', { sessionId, index });
   }
 
   /**
    * Get all extras in cart
    */
-  async getExtras(): Promise<Extra[]> {
-    logger.debug('Fetching extras from cart');
-    const response = await apiClient.post<Record<string, Extra>>('/ajax/gse.php');
+  async getExtras(sessionId: string): Promise<Extra[]> {
+    logger.debug('Fetching extras from cart', { sessionId });
+    const response = await sessionApiClient.post<Record<string, Extra>>(
+      sessionId,
+      '/ajax/gse.php'
+    );
     return Object.values(response);
   }
 
   /**
    * Add or update extra in cart
    */
-  async addExtra(extra: Extra): Promise<Extra> {
-    logger.debug('Adding extra to cart', { id: extra.id });
-    await apiClient.post('/ajax/ues.php', extra);
-    logger.info('Extra added to cart', { id: extra.id });
+  async addExtra(sessionId: string, extra: Extra): Promise<Extra> {
+    logger.debug('Adding extra to cart', { sessionId, id: extra.id });
+    await sessionApiClient.post(sessionId, '/ajax/ues.php', extra);
+    logger.info('Extra added to cart', { sessionId, id: extra.id });
     return extra;
   }
 
   /**
    * Get all drinks in cart
    */
-  async getDrinks(): Promise<Drink[]> {
-    logger.debug('Fetching drinks from cart');
-    const response = await apiClient.post<Record<string, Drink>>('/ajax/gsb.php');
+  async getDrinks(sessionId: string): Promise<Drink[]> {
+    logger.debug('Fetching drinks from cart', { sessionId });
+    const response = await sessionApiClient.post<Record<string, Drink>>(
+      sessionId,
+      '/ajax/gsb.php'
+    );
     return Object.values(response);
   }
 
   /**
    * Add or update drink in cart
    */
-  async addDrink(drink: Drink): Promise<Drink> {
-    logger.debug('Adding drink to cart', { id: drink.id });
-    await apiClient.post('/ajax/ubs.php', drink);
-    logger.info('Drink added to cart', { id: drink.id });
+  async addDrink(sessionId: string, drink: Drink): Promise<Drink> {
+    logger.debug('Adding drink to cart', { sessionId, id: drink.id });
+    await sessionApiClient.post(sessionId, '/ajax/ubs.php', drink);
+    logger.info('Drink added to cart', { sessionId, id: drink.id });
     return drink;
   }
 
   /**
    * Get all desserts in cart
    */
-  async getDesserts(): Promise<Dessert[]> {
-    logger.debug('Fetching desserts from cart');
-    const response = await apiClient.post<Record<string, Dessert>>('/ajax/gsd.php');
+  async getDesserts(sessionId: string): Promise<Dessert[]> {
+    logger.debug('Fetching desserts from cart', { sessionId });
+    const response = await sessionApiClient.post<Record<string, Dessert>>(
+      sessionId,
+      '/ajax/gsd.php'
+    );
     return Object.values(response);
   }
 
   /**
    * Add or update dessert in cart
    */
-  async addDessert(dessert: Dessert): Promise<Dessert> {
-    logger.debug('Adding dessert to cart', { id: dessert.id });
-    await apiClient.post('/ajax/uds.php', dessert);
-    logger.info('Dessert added to cart', { id: dessert.id });
+  async addDessert(sessionId: string, dessert: Dessert): Promise<Dessert> {
+    logger.debug('Adding dessert to cart', { sessionId, id: dessert.id });
+    await sessionApiClient.post(sessionId, '/ajax/uds.php', dessert);
+    logger.info('Dessert added to cart', { sessionId, id: dessert.id });
     return dessert;
   }
 
   /**
    * Get category summary (quantities and prices)
    */
-  async getCategorySummary(): Promise<{
+  async getCategorySummary(sessionId: string): Promise<{
     tacos: CategorySummary;
     extras: CategorySummary;
     boissons: CategorySummary;
     desserts: CategorySummary;
   }> {
-    logger.debug('Fetching category summary');
-    const response = await apiClient.post<CartSummary>('/ajax/sd.php');
+    logger.debug('Fetching category summary', { sessionId });
+    const response = await sessionApiClient.post<{
+      tacos: CategorySummary;
+      extras: CategorySummary;
+      boissons: CategorySummary;
+      desserts: CategorySummary;
+    }>(sessionId, '/ajax/sd.php');
     return {
       tacos: response.tacos,
       extras: response.extras,
