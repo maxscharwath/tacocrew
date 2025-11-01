@@ -65,3 +65,42 @@ model Order {
   @@index([createdAt])
   @@map("orders")
 }
+
+model GroupOrder {
+  id          String   @id @default(uuid())
+  groupOrderId String @unique
+  name        String?
+  leader      String   // Username of the group leader
+  startDate   DateTime
+  endDate     DateTime
+  status      String   @default("open") // open, closed, submitted, completed
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now()) @updatedAt
+
+  // Relations
+  userOrders  UserOrder[]
+
+  @@index([leader])
+  @@index([startDate, endDate])
+  @@index([status])
+  @@map("group_orders")
+}
+
+model UserOrder {
+  id            String   @id @default(uuid())
+  groupOrderId  String
+  username      String
+  status        String   @default("draft") // draft, submitted
+  items         String   // JSON string containing tacos, extras, drinks, desserts
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @default(now()) @updatedAt
+
+  // Relations
+  groupOrder    GroupOrder @relation(fields: [groupOrderId], references: [groupOrderId], onDelete: Cascade)
+
+  @@unique([groupOrderId, username])
+  @@index([groupOrderId])
+  @@index([username])
+  @@index([status])
+  @@map("user_orders")
+}

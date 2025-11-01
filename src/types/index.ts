@@ -346,6 +346,93 @@ export const TACO_SIZE_CONFIG: Record<TacoSize, TacoSizeConfig> = {
 };
 
 /**
+ * Group order status
+ */
+export enum GroupOrderStatus {
+  OPEN = 'open',
+  CLOSED = 'closed',
+  SUBMITTED = 'submitted',
+  COMPLETED = 'completed',
+}
+
+/**
+ * User order status within a group order
+ */
+export enum UserOrderStatus {
+  DRAFT = 'draft',
+  SUBMITTED = 'submitted',
+}
+
+/**
+ * User order items (all items in a user's order)
+ */
+export interface UserOrderItems {
+  tacos: Taco[];
+  extras: Extra[];
+  drinks: Drink[];
+  desserts: Dessert[];
+}
+
+/**
+ * User order within a group order
+ */
+export interface UserOrder {
+  id: string;
+  groupOrderId: string;
+  username: string;
+  status: UserOrderStatus;
+  items: UserOrderItems;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+/**
+ * Group order
+ */
+export interface GroupOrder {
+  id: string;
+  groupOrderId: string;
+  name?: string;
+  leader: string;
+  startDate: Date;
+  endDate: Date;
+  status: GroupOrderStatus;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+/**
+ * Group order with user orders
+ */
+export interface GroupOrderWithUserOrders extends GroupOrder {
+  userOrders: UserOrder[];
+}
+
+/**
+ * Create group order request
+ */
+export interface CreateGroupOrderRequest {
+  name?: string;
+  startDate: string; // ISO date string
+  endDate: string; // ISO date string
+}
+
+/**
+ * Update user order request
+ */
+export interface UpdateUserOrderRequest {
+  items: UserOrderItems;
+}
+
+/**
+ * Submit group order request
+ */
+export interface SubmitGroupOrderRequest {
+  customer: Customer;
+  delivery: DeliveryInfo;
+}
+
+/**
  * Error codes
  */
 export enum ErrorCode {
@@ -359,4 +446,5 @@ export enum ErrorCode {
   SESSION_NOT_FOUND = 'SESSION_NOT_FOUND',
   SESSION_EXPIRED = 'SESSION_EXPIRED',
   UNKNOWN_ERROR = 'UNKNOWN_ERROR',
+  FORBIDDEN = 'FORBIDDEN',
 }

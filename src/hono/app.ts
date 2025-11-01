@@ -9,6 +9,7 @@ import { logger } from 'hono/logger';
 import { debugRoutes } from '../utils/route-debugger';
 import { errorHandler } from './middleware/error-handler';
 import { cartRoutes } from './routes/cart.routes';
+import { groupOrderRoutes } from './routes/group-order.routes';
 import { healthRoutes } from './routes/health.routes';
 import { resourceRoutes } from './routes/resource.routes';
 
@@ -49,7 +50,7 @@ export function createApp(): Hono {
     cors({
       origin: '*', // Configure from config in production
       allowMethods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-      allowHeaders: ['Content-Type', 'Authorization'],
+      allowHeaders: ['Content-Type', 'Authorization', 'x-username'],
     })
   );
 
@@ -59,6 +60,7 @@ export function createApp(): Hono {
   // API routes
   app.route('/api/v1', cartRoutes);
   app.route('/api/v1', resourceRoutes);
+  app.route('/api/v1/group-orders', groupOrderRoutes);
 
   // 404 handler
   app.notFound((c) => {

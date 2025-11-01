@@ -82,6 +82,16 @@ export class NotFoundError extends ApiError {
 }
 
 /**
+ * Forbidden error
+ */
+export class ForbiddenError extends ApiError {
+  constructor(message = 'Access forbidden') {
+    super(ErrorCode.FORBIDDEN, message, 403);
+    this.name = 'ForbiddenError';
+  }
+}
+
+/**
  * Network error
  */
 export class NetworkError extends ApiError {
