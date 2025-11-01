@@ -1,5 +1,6 @@
 /**
  * Authentication routes for Hono
+ * Simplified for future Slack integration
  * @module hono/routes/auth
  */
 
@@ -17,39 +18,22 @@ const app = new Hono();
 
 // Validation schemas
 const authSchemas = {
-  register: z.object({
-    username: z.string().min(3).max(50),
-    email: z.string().email(),
-    password: z.string().min(6),
-  }),
-  login: z.object({
-    usernameOrEmail: z.string(),
-    password: z.string().min(1),
+  createUser: z.object({
+    username: z.string().min(2).max(50),
   }),
 };
 
 /**
- * Register a new user
+ * Create or get user by username (temporary until Slack OAuth is implemented)
+ * This endpoint will be replaced with Slack OAuth callback later
  */
-app.post('/register', zodValidator(authSchemas.register), async (c) => {
-  const body: RequestFor<typeof authSchemas.register> = c.get('validatedBody');
+app.post('/create-user', zodValidator(authSchemas.createUser), async (c) => {
+  const body: RequestFor<typeof authSchemas.createUser> = c.get('validatedBody');
   const authService = inject(AuthService);
 
-  const result = await authService.register(body.username, body.email, body.password);
+  const result = await authService.createOrGetUser(body.username);
 
   return c.json(result, 201);
-});
-
-/**
- * Login a user
- */
-app.post('/login', zodValidator(authSchemas.login), async (c) => {
-  const body: RequestFor<typeof authSchemas.login> = c.get('validatedBody');
-  const authService = inject(AuthService);
-
-  const result = await authService.login(body.usernameOrEmail, body.password);
-
-  return c.json(result);
 });
 
 export const authRoutes = app;

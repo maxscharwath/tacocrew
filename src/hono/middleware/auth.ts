@@ -28,7 +28,9 @@ export async function authMiddleware(c: Context, next: Next) {
     // Store user info in context
     c.set('userId', payload.userId);
     c.set('username', payload.username);
-    c.set('email', payload.email);
+    if (payload.slackId) {
+      c.set('slackId', payload.slackId);
+    }
 
     await next();
   } catch (error) {

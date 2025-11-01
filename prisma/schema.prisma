@@ -45,8 +45,7 @@ model TacoMapping {
 model User {
   id            String   @id @default(uuid())
   username      String   @unique
-  email         String   @unique
-  passwordHash  String
+  slackId       String?  // Slack user ID for future Slack integration
   createdAt     DateTime @default(now())
   updatedAt     DateTime @default(now()) @updatedAt
 
@@ -56,7 +55,7 @@ model User {
   userOrders    UserOrder[]   @relation("UserUserOrders")
 
   @@index([username])
-  @@index([email])
+  @@index([slackId])
   @@map("users")
 }
 

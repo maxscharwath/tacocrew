@@ -10,21 +10,14 @@ import { inject } from '../utils/inject';
 import { logger } from '../utils/logger';
 
 /**
- * User data (without password hash)
+ * User data
  */
 export interface UserData {
   id: string;
   username: string;
-  email: string;
+  slackId?: string;
   createdAt: Date;
   updatedAt: Date;
-}
-
-/**
- * User with password hash (for internal use)
- */
-export interface UserWithPassword extends UserData {
-  passwordHash: string;
 }
 
 /**
@@ -39,15 +32,13 @@ export class UserRepository {
    */
   async create(data: {
     username: string;
-    email: string;
-    passwordHash: string;
+    slackId?: string;
   }): Promise<UserData> {
     try {
       const user = await this.prisma.client.user.create({
         data: {
           username: data.username,
-          email: data.email,
-          passwordHash: data.passwordHash,
+          slackId: data.slackId,
         },
       });
 
@@ -77,13 +68,13 @@ export class UserRepository {
   /**
    * Find user by username
    */
-  async findByUsername(username: string): Promise<UserWithPassword | null> {
+  async findByUsername(username: string): Promise<UserData | null> {
     try {
       const user = await this.prisma.client.user.findUnique({
         where: { username },
       });
 
-      return user ? this.mapToUserWithPassword(user) : null;
+      return user ? this.mapToUserData(user) : null;
     } catch (error) {
       logger.error('Failed to find user by username', { username, error });
       return null;
@@ -91,36 +82,35 @@ export class UserRepository {
   }
 
   /**
-   * Find user by email
+   * Find user by Slack ID
    */
-  async findByEmail(email: string): Promise<UserWithPassword | null> {
+  async findBySlackId(slackId: string): Promise<UserData | null> {
     try {
-      const user = await this.prisma.client.user.findUnique({
-        where: { email },
+      const user = await this.prisma.client.user.findFirst({
+        where: { slackId },
       });
 
-      return user ? this.mapToUserWithPassword(user) : null;
+      return user ? this.mapToUserData(user) : null;
     } catch (error) {
-      logger.error('Failed to find user by email', { email, error });
+      logger.error('Failed to find user by Slack ID', { slackId, error });
       return null;
     }
   }
 
   /**
-   * Find user by username or email
+   * Update user's Slack ID
    */
-  async findByUsernameOrEmail(username: string, email: string): Promise<UserWithPassword | null> {
+  async updateSlackId(userId: string, slackId: string): Promise<UserData> {
     try {
-      const user = await this.prisma.client.user.findFirst({
-        where: {
-          OR: [{ username }, { email }],
-        },
+      const user = await this.prisma.client.user.update({
+        where: { id: userId },
+        data: { slackId },
       });
 
-      return user ? this.mapToUserWithPassword(user) : null;
+      return this.mapToUserData(user);
     } catch (error) {
-      logger.error('Failed to find user by username or email', { username, email, error });
-      return null;
+      logger.error('Failed to update Slack ID', { userId, slackId, error });
+      throw error;
     }
   }
 
@@ -145,35 +135,14 @@ export class UserRepository {
   private mapToUserData(user: {
     id: string;
     username: string;
-    email: string;
+    slackId: string | null;
     createdAt: Date;
     updatedAt: Date;
   }): UserData {
     return {
       id: user.id,
       username: user.username,
-      email: user.email,
-      createdAt: user.createdAt,
-      updatedAt: user.updatedAt,
-    };
-  }
-
-  /**
-   * Map database model to UserWithPassword
-   */
-  private mapToUserWithPassword(user: {
-    id: string;
-    username: string;
-    email: string;
-    passwordHash: string;
-    createdAt: Date;
-    updatedAt: Date;
-  }): UserWithPassword {
-    return {
-      id: user.id,
-      username: user.username,
-      email: user.email,
-      passwordHash: user.passwordHash,
+      slackId: user.slackId || undefined,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
     };
