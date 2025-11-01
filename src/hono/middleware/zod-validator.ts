@@ -1,0 +1,41 @@
+/**
+ * Zod validation middleware for Hono
+ * @module hono/middleware/zod-validator
+ */
+
+import { MiddlewareHandler } from 'hono';
+import { z } from 'zod';
+import { ValidationError } from '../../utils/errors';
+
+/**
+ * Validates request body using Zod schema
+ * Throws ValidationError if validation fails
+ */
+export function zodValidator<T extends z.ZodTypeAny>(
+  schema: T
+): MiddlewareHandler<{
+  Variables: {
+    validatedBody: z.infer<T>;
+  };
+}> {
+  return async (c, next) => {
+    const body = await c.req.json().catch(() => ({}));
+
+    const result = schema.safeParse(body);
+
+    if (!result.success) {
+      const details: Record<string, string> = {};
+      for (const issue of result.error.issues) {
+        const path = issue.path.join('.');
+        details[path] = issue.message;
+      }
+
+      throw new ValidationError('Validation failed', details);
+    }
+
+    // Store validated body in context variables
+    c.set('validatedBody', result.data);
+
+    await next();
+  };
+}

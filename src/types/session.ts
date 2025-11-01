@@ -9,19 +9,19 @@
 export interface SessionData {
   /** Unique session identifier */
   sessionId: string;
-  
+
   /** CSRF token for this session */
   csrfToken: string;
-  
+
   /** HTTP cookies for this session */
   cookies: Record<string, string>;
-  
+
   /** Session creation timestamp */
   createdAt: Date;
-  
+
   /** Last activity timestamp */
   lastActivityAt: Date;
-  
+
   /** Session metadata */
   metadata?: {
     customerName?: string;
@@ -36,7 +36,7 @@ export interface SessionData {
 export interface CreateSessionOptions {
   /** Optional custom session ID */
   sessionId?: string;
-  
+
   /** Optional metadata */
   metadata?: SessionData['metadata'];
 }
@@ -47,19 +47,19 @@ export interface CreateSessionOptions {
 export interface SessionStore {
   /** Get session by ID */
   get(sessionId: string): Promise<SessionData | null>;
-  
+
   /** Store/update session */
   set(sessionId: string, data: SessionData): Promise<void>;
-  
+
   /** Delete session */
   delete(sessionId: string): Promise<void>;
-  
+
   /** Check if session exists */
   has(sessionId: string): Promise<boolean>;
-  
+
   /** Get all active sessions */
   getAll(): Promise<SessionData[]>;
-  
+
   /** Clean up expired sessions */
   cleanup(maxAgeMs: number): Promise<number>;
 }

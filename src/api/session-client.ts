@@ -3,67 +3,55 @@
  * @module api/session-client
  */
 
-import axios, { AxiosInstance, AxiosRequestConfig, AxiosError } from 'axios';
+import 'reflect-metadata';
+import { AxiosError, AxiosInstance, AxiosRequestConfig } from 'axios';
+import { container, injectable } from 'tsyringe';
 import config from '../config';
-import { logger } from '../utils/logger';
-import { sessionService } from '../services/session.service';
+import { HttpService } from '../services/http.service';
+import { CartService } from '../services/cart.service';
+import { TacosApiClient } from './client';
+import { ErrorCode } from '../types';
 import {
+  ApiError,
   CsrfError,
+  DuplicateOrderError,
   NetworkError,
   RateLimitError,
-  DuplicateOrderError,
-  ApiError,
 } from '../utils/errors';
-import { CsrfTokenResponse, ErrorCode } from '../types';
+import { inject } from '../utils/inject';
+import { logger } from '../utils/logger';
 
 /**
  * Session-aware API Client
  * Each session has its own CSRF token and cookies
  */
+@injectable()
 export class SessionApiClient {
+  // Lazy injection to break circular dependency with CartService
+  private get cartService(): CartService {
+    return container.resolve(CartService);
+  }
+
+  private readonly httpService = inject(HttpService);
+
   private axiosInstance: AxiosInstance;
 
-  constructor(private baseUrl: string = config.backend.baseUrl) {
-    this.axiosInstance = axios.create({
-      baseURL: this.baseUrl,
-      timeout: config.backend.timeout,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
 
-    this.setupInterceptors();
+  constructor(private baseUrl: string = config.backend.baseUrl) {
+    // Create axios instance with default logging interceptors
+    this.axiosInstance = this.httpService.createInstance(this.baseUrl);
+
+    // Add error handling interceptor
+    this.setupErrorInterceptor();
   }
 
   /**
-   * Setup axios interceptors
+   * Setup error handling interceptor
    */
-  private setupInterceptors(): void {
-    // Request interceptor
-    this.axiosInstance.interceptors.request.use(
-      (config) => {
-        logger.debug('API Request', {
-          method: config.method,
-          url: config.url,
-        });
-        return config;
-      },
-      (error: Error) => {
-        logger.error('Request interceptor error', { error: error.message });
-        return Promise.reject(error);
-      }
-    );
-
-    // Response interceptor
+  private setupErrorInterceptor(): void {
     this.axiosInstance.interceptors.response.use(
-      (response) => {
-        logger.debug('API Response', {
-          status: response.status,
-          url: response.config.url,
-        });
-        return response;
-      },
-      async (error: AxiosError) => {
+      (response) => response,
+      (error: AxiosError) => {
         return this.handleError(error);
       }
     );
@@ -72,7 +60,7 @@ export class SessionApiClient {
   /**
    * Handle API errors
    */
-  private async handleError(error: AxiosError): Promise<never> {
+  private handleError(error: AxiosError): never {
     if (error.response) {
       const { status, data } = error.response;
 
@@ -97,12 +85,9 @@ export class SessionApiClient {
         throw new DuplicateOrderError('Order already exists');
       }
 
-      throw new ApiError(
-        ErrorCode.UNKNOWN_ERROR,
-        (data as { message?: string })?.message || 'API request failed',
-        status,
-        data as Record<string, unknown>
-      );
+      const errorMessage = this.getErrorMessage(data);
+      const errorDetails = this.getErrorDetails(data);
+      throw new ApiError(ErrorCode.UNKNOWN_ERROR, errorMessage, status, errorDetails);
     }
 
     if (error.request) {
@@ -115,19 +100,65 @@ export class SessionApiClient {
   }
 
   /**
+   * Get error message from unknown data
+   */
+  private getErrorMessage(data: unknown): string {
+    if (typeof data === 'object' && data !== null && 'message' in data) {
+      const message = data.message;
+      if (typeof message === 'string') {
+        return message;
+      }
+    }
+    return 'API request failed';
+  }
+
+  /**
+   * Get error details from unknown data
+   */
+  private getErrorDetails(data: unknown): Record<string, unknown> {
+    if (typeof data === 'object' && data !== null && !Array.isArray(data)) {
+      const details: Record<string, unknown> = {};
+      for (const [key, value] of Object.entries(data)) {
+        details[key] = value;
+      }
+      return details;
+    }
+    return {};
+  }
+
+  /**
    * Check if error is rate limit error
    */
   private isRateLimitError(data: unknown): boolean {
-    if (typeof data === 'object' && data !== null) {
-      const message = (data as { message?: string }).message || '';
-      return message.includes('1 Order per minute') || message.includes('Maximum');
+    if (typeof data === 'object' && data !== null && 'message' in data) {
+      const message = data.message;
+      if (typeof message === 'string') {
+        return message.includes('1 Order per minute') || message.includes('Maximum');
+      }
     }
     return false;
   }
 
   /**
    * Make request with session context
+   * CSRF tokens are fetched fresh for each request using stored cookies
+   * Cookies are stored when a cart is created (POST /carts) and updated on responses
    */
+  /**
+   * Get or fetch CSRF token for a session
+   */
+  private async getCsrfToken(sessionId: string, cookies: Record<string, string>): Promise<string> {
+    const apiClient = container.resolve(TacosApiClient);
+    const { csrfToken } = await apiClient.refreshCsrfTokenWithCookies(cookies);
+
+    logger.debug('Fetched fresh CSRF token', { 
+      sessionId, 
+      tokenLength: csrfToken.length,
+    });
+
+    return csrfToken;
+  }
+
   private async makeSessionRequest<T>(
     sessionId: string,
     method: 'get' | 'post',
@@ -135,20 +166,33 @@ export class SessionApiClient {
     data?: unknown,
     additionalConfig?: AxiosRequestConfig
   ): Promise<T> {
-    // Get session
-    const session = await sessionService.getSessionOrThrow(sessionId);
+    // Get cart session data (cookies only - tokens are fetched fresh)
+    const session = await this.cartService.getCartSession(sessionId);
 
-    // Prepare config with session token and cookies
+    // Get CSRF token (cached briefly to handle parallel requests)
+    const csrfToken = await this.getCsrfToken(sessionId, session.cookies);
+
+    logger.info('Making session request', {
+      sessionId,
+      url,
+      method,
+      tokenLength: csrfToken.length,
+      cookieCount: Object.keys(session.cookies).length,
+      cookieNames: Object.keys(session.cookies),
+    });
+
+    // Prepare config with fresh CSRF token and stored cookies
     const requestConfig: AxiosRequestConfig = {
       ...additionalConfig,
       headers: {
         ...additionalConfig?.headers,
-        'X-CSRF-Token': session.csrfToken,
+        'X-CSRF-Token': csrfToken,
       },
     };
 
     // Add cookies if present
     if (Object.keys(session.cookies).length > 0) {
+      // Send cookies exactly as stored (they're already in the correct format from server)
       const cookieString = Object.entries(session.cookies)
         .map(([key, value]) => `${key}=${value}`)
         .join('; ');
@@ -156,6 +200,13 @@ export class SessionApiClient {
         ...requestConfig.headers,
         Cookie: cookieString,
       };
+      logger.info('Cookies added to request', {
+        sessionId,
+        cookieString: cookieString.substring(0, 200), // First 200 chars for debugging
+        cookieCount: Object.keys(session.cookies).length,
+      });
+    } else {
+      logger.warn('No cookies found in session', { sessionId });
     }
 
     try {
@@ -164,7 +215,19 @@ export class SessionApiClient {
           ? await this.axiosInstance.get<T>(url, requestConfig)
           : await this.axiosInstance.post<T>(url, data, requestConfig);
 
-      // Extract and store cookies from response
+      // Log response type for debugging
+      logger.debug('Response received', {
+        sessionId,
+        url,
+        status: response.status,
+        contentType: response.headers['content-type'],
+        dataType: typeof response.data,
+        dataPreview: typeof response.data === 'string' 
+          ? response.data.substring(0, 200) 
+          : JSON.stringify(response.data).substring(0, 200),
+      });
+
+      // Extract and store cookies from response, merging with existing
       const setCookieHeaders = response.headers['set-cookie'];
       if (setCookieHeaders) {
         const cookies: Record<string, string> = {};
@@ -177,17 +240,90 @@ export class SessionApiClient {
         });
 
         if (Object.keys(cookies).length > 0) {
-          await sessionService.updateSessionCookies(sessionId, cookies);
+          // Get current session to merge cookies instead of replacing
+          const currentSession = await this.cartService.getCartSession(sessionId);
+          const mergedCookies = { ...currentSession.cookies, ...cookies };
+          await this.cartService.updateCartSession(sessionId, { cookies: mergedCookies });
         }
       }
 
       return response.data;
     } catch (error) {
-      // If CSRF error, try refreshing token once
+      // If CSRF error, try refreshing cookies and retry once
+      // (This shouldn't happen since we fetch fresh tokens, but handle it just in case)
       if (error instanceof CsrfError) {
-        logger.warn('CSRF error, refreshing session token', { sessionId });
-        await sessionService.refreshSessionToken(sessionId);
-        // Don't retry automatically to avoid loops - let caller handle it
+        logger.warn('CSRF error despite fresh token, refreshing cookies and retrying...', { sessionId, url });
+        
+        try {
+                // Get current session cookies
+                const currentSession = await this.cartService.getCartSession(sessionId);
+                
+                // Get fresh token using existing cookies (maintains session)
+                const apiClient = container.resolve(TacosApiClient);
+                const { csrfToken: retryToken, cookies: updatedCookies } = await apiClient.refreshCsrfTokenWithCookies(currentSession.cookies);
+          
+          // Update cart session with any new cookies from token refresh
+          if (Object.keys(updatedCookies).length > 0) {
+            await this.cartService.updateCartSession(sessionId, {
+              cookies: updatedCookies,
+            });
+          }
+          
+          logger.info('Cookies refreshed, retrying request', { sessionId, url });
+          
+          const retryConfig: AxiosRequestConfig = {
+            ...additionalConfig,
+            headers: {
+              ...additionalConfig?.headers,
+              'X-CSRF-Token': retryToken,
+            },
+          };
+
+          // Add cookies to retry request (use updated cookies from token refresh)
+          if (Object.keys(updatedCookies).length > 0) {
+            const cookieString = Object.entries(updatedCookies)
+              .map(([key, value]) => `${key}=${value}`)
+              .join('; ');
+            retryConfig.headers = {
+              ...retryConfig.headers,
+              Cookie: cookieString,
+            };
+          }
+          
+          const retryResponse =
+            method === 'get'
+              ? await this.axiosInstance.get<T>(url, retryConfig)
+              : await this.axiosInstance.post<T>(url, data, retryConfig);
+          
+          // Update cookies from retry response
+          const setCookieHeaders = retryResponse.headers['set-cookie'];
+          if (setCookieHeaders) {
+            const cookies: Record<string, string> = {};
+            setCookieHeaders.forEach((cookie) => {
+              const [nameValue] = cookie.split(';');
+              const [name, value] = (nameValue || '').split('=');
+              if (name && value) {
+                cookies[name.trim()] = value.trim();
+              }
+            });
+
+            if (Object.keys(cookies).length > 0) {
+              // Merge with cookies we already have from token refresh (don't fetch session again)
+              const mergedCookies = { ...updatedCookies, ...cookies };
+              await this.cartService.updateCartSession(sessionId, { cookies: mergedCookies });
+            }
+          }
+          
+          logger.info('Request succeeded after cookie refresh', { sessionId, url });
+          return retryResponse.data;
+        } catch (refreshError) {
+          logger.error('Failed to refresh cookies', { 
+            sessionId, 
+            url,
+            error: refreshError instanceof Error ? refreshError.message : String(refreshError),
+          });
+          throw new CsrfError(`CSRF error and cookie refresh failed. Please create a new cart with POST /carts`);
+        }
       }
       throw error;
     }
@@ -196,26 +332,21 @@ export class SessionApiClient {
   /**
    * GET request with session
    */
-  async get<T>(sessionId: string, url: string, config?: AxiosRequestConfig): Promise<T> {
+  get<T>(sessionId: string, url: string, config?: AxiosRequestConfig): Promise<T> {
     return this.makeSessionRequest<T>(sessionId, 'get', url, undefined, config);
   }
 
   /**
    * POST request with JSON body
    */
-  async post<T>(
-    sessionId: string,
-    url: string,
-    data?: unknown,
-    config?: AxiosRequestConfig
-  ): Promise<T> {
+  post<T>(sessionId: string, url: string, data?: unknown, config?: AxiosRequestConfig): Promise<T> {
     return this.makeSessionRequest<T>(sessionId, 'post', url, data, config);
   }
 
   /**
    * POST request with URL-encoded form data
    */
-  async postForm<T>(sessionId: string, url: string, data: Record<string, unknown>): Promise<T> {
+  postForm<T>(sessionId: string, url: string, data: Record<string, unknown>): Promise<T> {
     const params = new URLSearchParams();
     for (const [key, value] of Object.entries(data)) {
       if (Array.isArray(value)) {
@@ -235,11 +366,7 @@ export class SessionApiClient {
   /**
    * POST request with multipart form data
    */
-  async postFormData<T>(
-    sessionId: string,
-    url: string,
-    data: Record<string, unknown>
-  ): Promise<T> {
+  postFormData<T>(sessionId: string, url: string, data: Record<string, unknown>): Promise<T> {
     const formData = new FormData();
     for (const [key, value] of Object.entries(data)) {
       if (Array.isArray(value)) {
@@ -256,24 +383,4 @@ export class SessionApiClient {
     });
   }
 
-  /**
-   * Refresh CSRF token (global, not session-specific)
-   */
-  async refreshCsrfToken(): Promise<string> {
-    try {
-      logger.debug('Refreshing CSRF token');
-      const response = await axios.get<CsrfTokenResponse>(
-        `${this.baseUrl}/ajax/refresh_token.php`
-      );
-      logger.info('CSRF token refreshed successfully');
-      return response.data.csrf_token;
-    } catch (error) {
-      logger.error('Failed to refresh CSRF token', { error });
-      throw new CsrfError('Failed to refresh CSRF token');
-    }
-  }
 }
-
-// Export singleton instance
-export const sessionApiClient = new SessionApiClient();
-export default sessionApiClient;

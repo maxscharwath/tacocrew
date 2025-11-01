@@ -16,65 +16,67 @@ export class InMemorySessionStore implements SessionStore {
   /**
    * Get session by ID
    */
-  async get(sessionId: string): Promise<SessionData | null> {
+  get(sessionId: string): Promise<SessionData | null> {
     const session = this.sessions.get(sessionId);
-    
+
     if (session) {
       // Update last activity
       session.lastActivityAt = new Date();
       this.sessions.set(sessionId, session);
     }
-    
-    return session || null;
+
+    return Promise.resolve(session || null);
   }
 
   /**
    * Store/update session
    */
-  async set(sessionId: string, data: SessionData): Promise<void> {
+  set(sessionId: string, data: SessionData): Promise<void> {
     this.sessions.set(sessionId, {
       ...data,
       lastActivityAt: new Date(),
     });
-    
+
     logger.debug('Session stored', { sessionId, hasToken: !!data.csrfToken });
+    return Promise.resolve();
   }
 
   /**
    * Delete session
    */
-  async delete(sessionId: string): Promise<void> {
+  delete(sessionId: string): Promise<void> {
     const deleted = this.sessions.delete(sessionId);
-    
+
     if (deleted) {
       logger.info('Session deleted', { sessionId });
     }
+    return Promise.resolve();
   }
 
   /**
    * Check if session exists
    */
-  async has(sessionId: string): Promise<boolean> {
-    return this.sessions.has(sessionId);
+  has(sessionId: string): Promise<boolean> {
+    return Promise.resolve(this.sessions.has(sessionId));
   }
 
   /**
    * Get all active sessions
    */
-  async getAll(): Promise<SessionData[]> {
-    return Array.from(this.sessions.values());
+  getAll(): Promise<SessionData[]> {
+    return Promise.resolve(Array.from(this.sessions.values()));
   }
 
   /**
    * Clean up expired sessions
    */
-  async cleanup(maxAgeMs: number): Promise<number> {
+  cleanup(maxAgeMs: number): Promise<number> {
     const now = Date.now();
     let cleaned = 0;
 
     for (const [sessionId, session] of this.sessions.entries()) {
       const age = now - session.lastActivityAt.getTime();
-      
+
       if (age > maxAgeMs) {
         this.sessions.delete(sessionId);
         cleaned++;
@@ -86,7 +88,7 @@ export class InMemorySessionStore implements SessionStore {
       logger.info('Session cleanup completed', { cleaned, remaining: this.sessions.size });
     }
 
-    return cleaned;
+    return Promise.resolve(cleaned);
   }
 
   /**
@@ -98,7 +100,7 @@ export class InMemorySessionStore implements SessionStore {
     newestSession: Date | null;
   } {
     const sessions = Array.from(this.sessions.values());
-    
+
     if (sessions.length === 0) {
       return {
         totalSessions: 0,
@@ -107,9 +109,7 @@ export class InMemorySessionStore implements SessionStore {
       };
     }
 
-    const sorted = sessions.sort(
-      (a, b) => a.createdAt.getTime() - b.createdAt.getTime()
-    );
+    const sorted = sessions.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
 
     return {
       totalSessions: sessions.length,

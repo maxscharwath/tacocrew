@@ -3,19 +3,41 @@
  * @module services/order
  */
 
-import { sessionApiClient } from '../api/session-client';
+import 'reflect-metadata';
+import { injectable } from 'tsyringe';
+import { SessionApiClient } from '../api/session-client';
+import { CreateOrderRequest, DeliveryDemand, Order, OrderStatus, TimeSlot } from '../types';
+import { NotFoundError } from '../utils/errors';
+import { inject } from '../utils/inject';
 import { logger } from '../utils/logger';
-import { CreateOrderRequest, Order, OrderStatus, DeliveryDemand, TimeSlot } from '../types';
+import { CartService } from './cart.service';
 
 /**
  * Order Service - Session-aware
  * All operations require a sessionId
  */
+@injectable()
 export class OrderService {
+  private readonly sessionApiClient = inject(SessionApiClient);
+  private readonly cartService = inject(CartService);
+
+  /**
+   * Validate that cart exists for sessionId (cartId)
+   */
+  private async validateCart(cartId: string): Promise<void> {
+    if (!cartId) {
+      throw new NotFoundError('Cart ID is required');
+    }
+
+    // This will throw if cart doesn't exist
+    await this.cartService.getCartSession(cartId);
+  }
+
   /**
    * Create and submit a new order for a session
    */
   async createOrder(sessionId: string, request: CreateOrderRequest): Promise<Order> {
+    await this.validateCart(sessionId);
     logger.debug('Creating order', {
       sessionId,
       customerName: request.customer.name,
@@ -33,11 +55,12 @@ export class OrderService {
       transaction_id: transactionId,
     };
 
-    if (request.delivery.address) {
-      formData.address = request.delivery.address;
+    const deliveryAddress = request.delivery['address'];
+    if (deliveryAddress) {
+      formData['address'] = deliveryAddress;
     }
 
-    const response = await sessionApiClient.postFormData<Order>(
+    const response = await this.sessionApiClient.postFormData<Order>(
       sessionId,
       '/ajax/RocknRoll.php',
       formData
@@ -56,29 +79,28 @@ export class OrderService {
    * Get order status
    * Note: This doesn't require sessionId as it's checking existing order
    */
-  async getOrderStatus(orderId: string): Promise<{ orderId: string; status: OrderStatus }> {
+  getOrderStatus(orderId: string): Promise<{ orderId: string; status: OrderStatus }> {
     logger.debug('Getting order status', { orderId });
 
     // This could use a temporary session or default client
     // For now, we'll need to pass a sessionId or use the original apiClient
-    // Let's create a temporary session for status checks
-    const response = await sessionApiClient.refreshCsrfToken();
-    
     // Would need a helper method to make requests without full session context
     // For now, throwing error to indicate this needs implementation
-    throw new Error('getOrderStatus needs implementation for sessionless requests');
+    return Promise.reject(
+      new Error('getOrderStatus needs implementation for sessionless requests')
+    );
   }
 
   /**
    * Get statuses for multiple orders
    */
-  async getOrderStatuses(
-    orderIds: string[]
-  ): Promise<Array<{ orderId: string; status: OrderStatus }>> {
+  getOrderStatuses(orderIds: string[]): Promise<Array<{ orderId: string; status: OrderStatus }>> {
     logger.debug('Getting order statuses', { count: orderIds.length });
 
     // Similar to getOrderStatus, needs sessionless implementation
-    throw new Error('getOrderStatuses needs implementation for sessionless requests');
+    return Promise.reject(
+      new Error('getOrderStatuses needs implementation for sessionless requests')
+    );
   }
 
   /**
@@ -88,9 +110,10 @@ export class OrderService {
     sessionId: string,
     order: Order
   ): Promise<{ success: boolean; outOfStock: string[] }> {
+    await this.validateCart(sessionId);
     logger.debug('Restoring order', { sessionId, orderId: order.orderId });
 
-    const response = await sessionApiClient.post<{
+    const response = await this.sessionApiClient.post<{
       status: 'success' | 'warning';
       out_of_stock_items: string[];
     }>(sessionId, '/ajax/restore_order.php', { order });
@@ -114,22 +137,24 @@ export class OrderService {
    * Check delivery demand for specific time slot
    * Note: This is global, not session-specific
    */
-  async checkDeliveryDemand(time: string): Promise<DeliveryDemand> {
+  checkDeliveryDemand(time: string): Promise<DeliveryDemand> {
     logger.debug('Checking delivery demand', { time });
 
     // Would need sessionless request capability
-    throw new Error('checkDeliveryDemand needs implementation for sessionless requests');
+    return Promise.reject(
+      new Error('checkDeliveryDemand needs implementation for sessionless requests')
+    );
   }
 
   /**
    * Get all time slots with demand information
    * Note: This is global, not session-specific
    */
-  async getTimeSlots(): Promise<TimeSlot[]> {
+  getTimeSlots(): Promise<TimeSlot[]> {
     logger.debug('Fetching time slots with demand info');
 
     // Would need sessionless request capability
-    throw new Error('getTimeSlots needs implementation for sessionless requests');
+    return Promise.reject(new Error('getTimeSlots needs implementation for sessionless requests'));
   }
 
   /**
@@ -141,6 +166,3 @@ export class OrderService {
     return `${timestamp}_${random}`;
   }
 }
-
-export const orderService = new OrderService();
-export default orderService;

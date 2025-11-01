@@ -159,11 +159,32 @@ export interface CartSummary {
 }
 
 /**
- * Complete cart contents
+ * Cart metadata with session data
+ * CSRF tokens are fetched fresh for each request using stored cookies
+ */
+export interface CartMetadata {
+  /** HTTP cookies for this cart session (session identifier) */
+  cookies: Record<string, string>;
+  /** Cart creation timestamp */
+  createdAt: Date;
+  /** Last activity timestamp */
+  lastActivityAt: Date;
+  /** Optional metadata */
+  metadata?: {
+    ip?: string;
+    userAgent?: string;
+    [key: string]: unknown;
+  };
+}
+
+/**
+ * Complete cart contents with session data
  */
 export interface Cart {
-  /** Session ID for this cart */
-  sessionId: string;
+  /** Cart ID (session ID) */
+  cartId: string;
+  /** Session data (CSRF token, cookies, etc.) */
+  session: CartMetadata;
   tacos: Taco[];
   extras: Extra[];
   drinks: Drink[];

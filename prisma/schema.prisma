@@ -1,0 +1,67 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Cart {
+  id            String   @id @default(uuid())
+  cartId        String   @unique
+  csrfToken     String
+  cookies       String   // JSON string
+  createdAt     DateTime @default(now())
+  lastActivityAt DateTime @default(now()) @updatedAt
+  metadata      String?  // JSON string for optional metadata
+
+  // Relations
+  tacoMappings  TacoMapping[]
+  orders        Order[]
+
+  @@index([lastActivityAt])
+  @@map("carts")
+}
+
+model TacoMapping {
+  id          String @id @default(uuid())
+  cartId      String
+  tacoId      String
+  backendIndex Int
+  
+  // Relations
+  cart        Cart   @relation(fields: [cartId], references: [cartId], onDelete: Cascade)
+
+  @@unique([cartId, tacoId])
+  @@unique([cartId, backendIndex])
+  @@index([cartId])
+  @@map("taco_mappings")
+}
+
+model Order {
+  id            String   @id @default(uuid())
+  orderId       String   @unique
+  cartId        String
+  customerName  String
+  customerPhone String
+  orderType     String   // 'livraison' or 'emporter'
+  address       String?
+  requestedFor  String   // Time slot
+  status        String   @default("pending")
+  price         Float?
+  orderData     String   // JSON string
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @default(now()) @updatedAt
+  
+  // Relations
+  cart          Cart     @relation(fields: [cartId], references: [cartId])
+
+  @@index([cartId])
+  @@index([orderId])
+  @@index([createdAt])
+  @@map("orders")
+}

@@ -12,7 +12,9 @@ const { combine, timestamp, json, printf, colorize, errors } = winston.format;
  * Custom log format for development
  */
 const devFormat = printf(({ level, message, timestamp, ...metadata }) => {
-  let msg = `${timestamp as string} [${level}]: ${message as string}`;
+  const timestampStr = typeof timestamp === 'string' ? timestamp : String(timestamp);
+  const messageStr = typeof message === 'string' ? message : String(message);
+  let msg = `${timestampStr} [${level}]: ${messageStr}`;
   if (Object.keys(metadata).length > 0) {
     msg += ` ${JSON.stringify(metadata)}`;
   }

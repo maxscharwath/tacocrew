@@ -1,12 +1,11 @@
 /**
- * Main entry point - starts both Slack bot and Web API
+ * Main entry point - starts Hono API
  * @module index
  */
 
 import config from './config';
 import { logger } from './utils/logger';
-import { startSlackBot } from './slack-bot';
-import { startWebApi } from './web-api';
+import { startHonoApi } from './hono-api';
 
 /**
  * Start all services
@@ -14,29 +13,16 @@ import { startWebApi } from './web-api';
 async function main(): Promise<void> {
   logger.info('Starting Tacos Ordering API', {
     env: config.env,
-    slackEnabled: config.slack.enabled,
     webApiEnabled: config.webApi.enabled,
   });
 
   try {
-    const promises: Promise<void>[] = [];
-
-    if (config.slack.enabled) {
-      promises.push(startSlackBot());
-    }
-
     if (config.webApi.enabled) {
-      promises.push(startWebApi());
+      await startHonoApi();
+      logger.info('✅ Hono API started successfully');
+    } else {
+      logger.warn('Web API is disabled in configuration.');
     }
-
-    if (promises.length === 0) {
-      logger.warn('No services enabled. Enable Slack or Web API in configuration.');
-      return;
-    }
-
-    await Promise.all(promises);
-
-    logger.info('✅ All services started successfully');
   } catch (error) {
     logger.error('Failed to start services', { error });
     process.exit(1);

@@ -3,17 +3,23 @@
  * @module services/session
  */
 
+import 'reflect-metadata';
+import { injectable } from 'tsyringe';
 import { v4 as uuidv4 } from 'uuid';
+import { TacosApiClient } from '../api/client';
+import { CreateSessionOptions, SessionData, SessionStats } from '../types/session';
+import { inject } from '../utils/inject';
 import { logger } from '../utils/logger';
 import { sessionStore } from '../utils/session-store';
-import { SessionData, CreateSessionOptions, SessionStats } from '../types/session';
-import { apiClient } from '../api/client';
 
 /**
  * Session Service
  * Manages multiple independent order sessions
  */
+@injectable()
 export class SessionService {
+  private readonly apiClient = inject(TacosApiClient);
+
   private readonly SESSION_MAX_AGE_MS = 24 * 60 * 60 * 1000; // 24 hours
   private cleanupInterval: NodeJS.Timeout | null = null;
 
@@ -26,16 +32,16 @@ export class SessionService {
    */
   async createSession(options: CreateSessionOptions = {}): Promise<SessionData> {
     const sessionId = options.sessionId || uuidv4();
-    
+
     logger.info('Creating new session', { sessionId });
 
-    // Get CSRF token for this session
-    const csrfToken = await apiClient.refreshCsrfToken();
+    // Get CSRF token and cookies for this session
+    const { csrfToken, cookies } = await this.apiClient.refreshCsrfToken();
 
     const session: SessionData = {
       sessionId,
       csrfToken,
-      cookies: {},
+      cookies,
       createdAt: new Date(),
       lastActivityAt: new Date(),
       metadata: options.metadata,
@@ -60,7 +66,7 @@ export class SessionService {
    */
   async getSessionOrThrow(sessionId: string): Promise<SessionData> {
     const session = await this.getSession(sessionId);
-    
+
     if (!session) {
       logger.warn('Session not found', { sessionId });
       throw new Error(`Session not found: ${sessionId}`);
@@ -74,7 +80,7 @@ export class SessionService {
    */
   async updateSession(sessionId: string, updates: Partial<SessionData>): Promise<void> {
     const session = await this.getSessionOrThrow(sessionId);
-    
+
     const updatedSession: SessionData = {
       ...session,
       ...updates,
@@ -92,10 +98,13 @@ export class SessionService {
    */
   async refreshSessionToken(sessionId: string): Promise<string> {
     logger.debug('Refreshing session token', { sessionId });
-    
-    const newToken = await apiClient.refreshCsrfToken();
-    await this.updateSession(sessionId, { csrfToken: newToken });
-    
+
+    const { csrfToken: newToken, cookies: newCookies } = await this.apiClient.refreshCsrfToken();
+    await this.updateSession(sessionId, { 
+      csrfToken: newToken,
+      cookies: newCookies,
+    });
+
     logger.info('Session token refreshed', { sessionId });
     return newToken;
   }
@@ -103,32 +112,26 @@ export class SessionService {
   /**
    * Update session cookies
    */
-  async updateSessionCookies(
-    sessionId: string,
-    cookies: Record<string, string>
-  ): Promise<void> {
+  async updateSessionCookies(sessionId: string, cookies: Record<string, string>): Promise<void> {
     const session = await this.getSessionOrThrow(sessionId);
-    
+
     await this.updateSession(sessionId, {
       cookies: { ...session.cookies, ...cookies },
     });
-    
+
     logger.debug('Session cookies updated', { sessionId });
   }
 
   /**
    * Update session metadata
    */
-  async updateSessionMetadata(
-    sessionId: string,
-    metadata: SessionData['metadata']
-  ): Promise<void> {
+  async updateSessionMetadata(sessionId: string, metadata: SessionData['metadata']): Promise<void> {
     const session = await this.getSessionOrThrow(sessionId);
-    
+
     await this.updateSession(sessionId, {
       metadata: { ...session.metadata, ...metadata },
     });
-    
+
     logger.debug('Session metadata updated', { sessionId });
   }
 
@@ -159,7 +162,7 @@ export class SessionService {
    */
   async getStats(): Promise<SessionStats> {
     const sessions = await sessionStore.getAll();
-    
+
     if (sessions.length === 0) {
       return {
         totalSessions: 0,
@@ -174,9 +177,7 @@ export class SessionService {
       (s) => now - s.lastActivityAt.getTime() < 60 * 60 * 1000 // Active in last hour
     );
 
-    const sorted = sessions.sort(
-      (a, b) => a.createdAt.getTime() - b.createdAt.getTime()
-    );
+    const sorted = sessions.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
 
     return {
       totalSessions: sessions.length,
@@ -192,11 +193,11 @@ export class SessionService {
   async cleanupExpiredSessions(): Promise<number> {
     logger.debug('Running session cleanup');
     const cleaned = await sessionStore.cleanup(this.SESSION_MAX_AGE_MS);
-    
+
     if (cleaned > 0) {
       logger.info('Cleaned up expired sessions', { count: cleaned });
     }
-    
+
     return cleaned;
   }
 
@@ -205,9 +206,12 @@ export class SessionService {
    */
   private startCleanupTimer(): void {
     // Run cleanup every hour
-    this.cleanupInterval = setInterval(() => {
-      void this.cleanupExpiredSessions();
-    }, 60 * 60 * 1000);
+    this.cleanupInterval = setInterval(
+      () => {
+        void this.cleanupExpiredSessions();
+      },
+      60 * 60 * 1000
+    );
 
     logger.info('Session cleanup timer started (runs every hour)');
   }
@@ -230,6 +234,3 @@ export class SessionService {
     this.stopCleanupTimer();
   }
 }
-
-export const sessionService = new SessionService();
-export default sessionService;

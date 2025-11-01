@@ -3,9 +3,9 @@
     /* Language and Environment */
     "target": "ES2022",
     "lib": ["ES2022"],
-    "module": "commonjs",
-    "moduleResolution": "node",
-    
+    "module": "Node16",
+    "moduleResolution": "node16",
+
     /* Emit */
     "outDir": "./dist",
     "rootDir": "./src",
@@ -15,14 +15,14 @@
     "removeComments": true,
     "importHelpers": true,
     "downlevelIteration": true,
-    
+
     /* Interop Constraints */
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true,
     "isolatedModules": true,
     "resolveJsonModule": true,
-    
+
     /* Type Checking */
     "strict": true,
     "noUnusedLocals": true,
@@ -34,10 +34,14 @@
     "noPropertyAccessFromIndexSignature": true,
     "allowUnusedLabels": false,
     "allowUnreachableCode": false,
-    
+
+    /* Decorators for DI */
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+
     /* Completeness */
     "skipLibCheck": true,
-    
+
     /* Path Mapping */
     "baseUrl": "./src",
     "paths": {
@@ -49,13 +53,6 @@
       "@config/*": ["./config/*"]
     }
   },
-  "include": [
-    "src/**/*"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "**/*.spec.ts",
-    "**/*.test.ts"
-  ]
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "**/*.spec.ts", "**/*.test.ts"]
 }

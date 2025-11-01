@@ -3,35 +3,37 @@
  * @module api/client
  */
 
-import axios, { AxiosInstance, AxiosRequestConfig, AxiosError } from 'axios';
+import 'reflect-metadata';
+import axios, { AxiosError, AxiosInstance, AxiosRequestConfig } from 'axios';
+import { injectable } from 'tsyringe';
 import config from '../config';
-import { logger } from '../utils/logger';
+import { HttpService } from '../services/http.service';
+import { ErrorCode } from '../types';
 import {
+  ApiError,
   CsrfError,
+  DuplicateOrderError,
   NetworkError,
   RateLimitError,
-  DuplicateOrderError,
-  ApiError,
 } from '../utils/errors';
-import { CsrfTokenResponse, ErrorCode } from '../types';
+import { inject } from '../utils/inject';
+import { logger } from '../utils/logger';
+import { extractCsrfTokenFromHtml } from '../utils/html-parser';
 
 /**
  * API Client for backend communication
  */
+@injectable()
 export class TacosApiClient {
+  private readonly httpService = inject(HttpService);
+
   private axiosInstance: AxiosInstance;
-  private csrfToken: string | null = null;
-  private csrfRefreshTimer: NodeJS.Timeout | null = null;
 
   constructor(private baseUrl: string = config.backend.baseUrl) {
-    this.axiosInstance = axios.create({
-      baseURL: this.baseUrl,
-      timeout: config.backend.timeout,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
+    // Create axios instance with default logging interceptors
+    this.axiosInstance = this.httpService.createInstance(this.baseUrl);
 
+    // Add error handling interceptors
     this.setupInterceptors();
   }
 
@@ -39,35 +41,10 @@ export class TacosApiClient {
    * Setup axios interceptors for request/response handling
    */
   private setupInterceptors(): void {
-    // Request interceptor - add CSRF token
-    this.axiosInstance.interceptors.request.use(
-      (config) => {
-        if (this.csrfToken && config.headers) {
-          config.headers['X-CSRF-Token'] = this.csrfToken;
-        }
-        logger.debug('API Request', {
-          method: config.method,
-          url: config.url,
-          hasToken: !!this.csrfToken,
-        });
-        return config;
-      },
-      (error: Error) => {
-        logger.error('Request interceptor error', { error: error.message });
-        return Promise.reject(error);
-      }
-    );
-
     // Response interceptor - handle errors
     this.axiosInstance.interceptors.response.use(
-      (response) => {
-        logger.debug('API Response', {
-          status: response.status,
-          url: response.config.url,
-        });
-        return response;
-      },
-      async (error: AxiosError) => {
+      (response) => response,
+      (error: AxiosError) => {
         return this.handleError(error);
       }
     );
@@ -88,9 +65,7 @@ export class TacosApiClient {
 
       // CSRF token error
       if (status === 403) {
-        this.csrfToken = null;
-        await this.refreshCsrfToken();
-        throw new CsrfError('CSRF token invalid, refreshed automatically');
+        throw new CsrfError('CSRF token invalid');
       }
 
       // Rate limit error
@@ -103,12 +78,9 @@ export class TacosApiClient {
         throw new DuplicateOrderError('Order already exists');
       }
 
-      throw new ApiError(
-        ErrorCode.UNKNOWN_ERROR,
-        (data as { message?: string })?.message || 'API request failed',
-        status,
-        data as Record<string, unknown>
-      );
+      const errorMessage = this.getErrorMessage(data);
+      const errorDetails = this.getErrorDetails(data);
+      throw new ApiError(ErrorCode.UNKNOWN_ERROR, errorMessage, status, errorDetails);
     }
 
     if (error.request) {
@@ -121,74 +93,221 @@ export class TacosApiClient {
   }
 
   /**
+   * Get error message from unknown data
+   */
+  private getErrorMessage(data: unknown): string {
+    if (typeof data === 'object' && data !== null && 'message' in data) {
+      const message = data.message;
+      if (typeof message === 'string') {
+        return message;
+      }
+    }
+    return 'API request failed';
+  }
+
+  /**
+   * Get error details from unknown data
+   */
+  private getErrorDetails(data: unknown): Record<string, unknown> {
+    if (typeof data === 'object' && data !== null && !Array.isArray(data)) {
+      const details: Record<string, unknown> = {};
+      for (const [key, value] of Object.entries(data)) {
+        details[key] = value;
+      }
+      return details;
+    }
+    return {};
+  }
+
+  /**
    * Check if error is rate limit error
    */
   private isRateLimitError(data: unknown): boolean {
-    if (typeof data === 'object' && data !== null) {
-      const message = (data as { message?: string }).message || '';
-      return message.includes('1 Order per minute') || message.includes('Maximum');
+    if (typeof data === 'object' && data !== null && 'message' in data) {
+      const message = data.message;
+      if (typeof message === 'string') {
+        return message.includes('1 Order per minute') || message.includes('Maximum');
+      }
     }
     return false;
   }
 
   /**
-   * Initialize the client (fetch CSRF token)
+   * Refresh CSRF token using existing cookies (for existing sessions)
+   * This maintains the session by using stored cookies
+   * Fetches the token from index.php?content=livraison and extracts it from HTML
    */
-  async initialize(): Promise<void> {
-    logger.info('Initializing API client');
-    await this.refreshCsrfToken();
-    this.startCsrfRefreshTimer();
-    logger.info('API client initialized successfully');
-  }
-
-  /**
-   * Refresh CSRF token
-   */
-  async refreshCsrfToken(): Promise<string> {
+  async refreshCsrfTokenWithCookies(cookies: Record<string, string>): Promise<{ csrfToken: string; cookies: Record<string, string> }> {
     try {
-      logger.debug('Refreshing CSRF token');
-      const response = await axios.get<CsrfTokenResponse>(
-        `${this.baseUrl}/ajax/refresh_token.php`
+      // Build cookie header from existing cookies
+      const cookieHeader = Object.keys(cookies).length > 0
+        ? Object.entries(cookies)
+            .map(([key, value]) => `${key}=${value}`)
+            .join('; ')
+        : undefined;
+
+      logger.debug('Fetching CSRF token from HTML page with existing cookies', { 
+        baseUrl: this.baseUrl,
+        cookieCount: Object.keys(cookies).length,
+      });
+      
+      // Fetch the HTML page containing the CSRF token
+      const htmlResponse = await axios.get<string>(
+        `${this.baseUrl}/index.php?content=livraison`,
+        {
+          headers: {
+            'Accept': 'text/html',
+            ...(cookieHeader ? { Cookie: cookieHeader } : {}),
+          },
+        }
       );
-      this.csrfToken = response.data.csrf_token;
-      logger.info('CSRF token refreshed successfully');
-      return this.csrfToken;
+
+      // Extract CSRF token from HTML
+      const csrfToken = extractCsrfTokenFromHtml(htmlResponse.data);
+      if (!csrfToken) {
+        throw new CsrfError('CSRF token not found in HTML response');
+      }
+
+      // Extract cookies from response and merge with existing
+      const updatedCookies: Record<string, string> = { ...cookies };
+      const setCookieHeaders = htmlResponse.headers['set-cookie'];
+      if (setCookieHeaders) {
+        setCookieHeaders.forEach((cookie) => {
+          const [nameValue] = cookie.split(';');
+          const [name, value] = (nameValue || '').split('=');
+          if (name && value) {
+            updatedCookies[name.trim()] = value.trim();
+          }
+        });
+      }
+
+      logger.info('CSRF token fetched from HTML with existing cookies', {
+        tokenLength: csrfToken.length,
+        cookieCount: Object.keys(updatedCookies).length,
+      });
+
+      return {
+        csrfToken,
+        cookies: updatedCookies,
+      };
     } catch (error) {
-      logger.error('Failed to refresh CSRF token', { error });
-      throw new CsrfError('Failed to refresh CSRF token');
+      logger.error('Failed to fetch CSRF token with cookies', { 
+        error,
+        baseUrl: this.baseUrl,
+      });
+      if (error instanceof CsrfError) {
+        throw error;
+      }
+      throw new CsrfError(`Failed to fetch CSRF token from ${this.baseUrl}`);
     }
   }
 
   /**
-   * Start automatic CSRF token refresh timer
+   * Fetch a fresh CSRF token (creates new session - visits homepage first)
+   * Use this when you need a token for creating a new cart
+   * Fetches the token from index.php?content=livraison and extracts it from HTML
+   * @returns Object with csrfToken and cookies from the response
    */
-  private startCsrfRefreshTimer(): void {
-    if (this.csrfRefreshTimer) {
-      clearInterval(this.csrfRefreshTimer);
-    }
+  async refreshCsrfToken(): Promise<{ csrfToken: string; cookies: Record<string, string> }> {
+    try {
+      // First, visit homepage to initialize PHP session properly
+      // This ensures the session is fully established before getting the CSRF token
+      logger.debug('Initializing session by visiting homepage', { baseUrl: this.baseUrl });
+      const homeResponse = await axios.get<string>(`${this.baseUrl}/`, {
+        headers: {
+          'Accept': 'text/html',
+        },
+        validateStatus: () => true, // Don't throw on any status
+      });
+      
+      // Extract cookies from homepage response
+      const homeCookies: Record<string, string> = {};
+      const homeSetCookieHeaders = homeResponse.headers['set-cookie'];
+      if (homeSetCookieHeaders) {
+        homeSetCookieHeaders.forEach((cookie) => {
+          const [nameValue] = cookie.split(';');
+          const [name, value] = (nameValue || '').split('=');
+          if (name && value) {
+            homeCookies[name.trim()] = value.trim();
+          }
+        });
+      }
+      
+      logger.debug('Homepage visited', {
+        status: homeResponse.status,
+        cookieCount: Object.keys(homeCookies).length,
+        cookieNames: Object.keys(homeCookies),
+      });
+      
+      // Now fetch the HTML page containing the CSRF token, including cookies from homepage
+      logger.debug('Fetching CSRF token from HTML page', { baseUrl: this.baseUrl });
+      const cookieHeader = Object.keys(homeCookies).length > 0
+        ? Object.entries(homeCookies)
+            .map(([key, value]) => `${key}=${value}`)
+            .join('; ')
+        : undefined;
+      
+      const htmlResponse = await axios.get<string>(
+        `${this.baseUrl}/index.php?content=livraison`,
+        {
+          headers: {
+            'Accept': 'text/html',
+            ...(cookieHeader ? { Cookie: cookieHeader } : {}),
+          },
+        }
+      );
 
-    this.csrfRefreshTimer = setInterval(() => {
-      void this.refreshCsrfToken();
-    }, config.backend.csrfRefreshInterval);
-
-    logger.info('CSRF refresh timer started', {
-      intervalMs: config.backend.csrfRefreshInterval,
-    });
-  }
-
-  /**
-   * Stop CSRF refresh timer
-   */
-  stopCsrfRefreshTimer(): void {
-    if (this.csrfRefreshTimer) {
-      clearInterval(this.csrfRefreshTimer);
-      this.csrfRefreshTimer = null;
-      logger.info('CSRF refresh timer stopped');
+      // Extract CSRF token from HTML
+      const csrfToken = extractCsrfTokenFromHtml(htmlResponse.data);
+      if (!csrfToken) {
+        throw new CsrfError('CSRF token not found in HTML response');
+      }
+      
+      logger.info('CSRF token fetched successfully from HTML');
+      
+      // Extract cookies from HTML response and merge with homepage cookies
+      // Store cookie values exactly as received (don't decode - send them back as-is)
+      const cookies: Record<string, string> = { ...homeCookies }; // Start with homepage cookies
+      const setCookieHeaders = htmlResponse.headers['set-cookie'];
+      if (setCookieHeaders) {
+        setCookieHeaders.forEach((cookie) => {
+          const [nameValue] = cookie.split(';');
+          const [name, value] = (nameValue || '').split('=');
+          if (name && value) {
+            // Merge/overwrite with HTML response cookies
+            cookies[name.trim()] = value.trim();
+          }
+        });
+      }
+      
+      logger.info('CSRF token refresh response', {
+        tokenLength: csrfToken.length,
+        cookieCount: Object.keys(cookies).length,
+        cookieNames: Object.keys(cookies),
+        setCookieHeaders: setCookieHeaders?.length || 0,
+        cookies: cookies, // Show actual cookie values for debugging
+      });
+      
+      return {
+        csrfToken,
+        cookies,
+      };
+    } catch (error) {
+      logger.error('Failed to fetch CSRF token', { 
+        error,
+        baseUrl: this.baseUrl,
+        message: 'Please ensure BACKEND_BASE_URL is set correctly in your .env file'
+      });
+      if (error instanceof CsrfError) {
+        throw error;
+      }
+      throw new CsrfError(`Failed to fetch CSRF token from ${this.baseUrl}. Please check your BACKEND_BASE_URL configuration.`);
     }
   }
 
   /**
    * Make GET request
+   * Note: For requests that need CSRF token, pass it in config.headers['X-CSRF-Token']
    */
   async get<T>(url: string, config?: AxiosRequestConfig): Promise<T> {
     const response = await this.axiosInstance.get<T>(url, config);
@@ -249,13 +368,6 @@ export class TacosApiClient {
    * Cleanup resources
    */
   destroy(): void {
-    this.stopCsrfRefreshTimer();
-    this.csrfToken = null;
     logger.info('API client destroyed');
   }
 }
-
-// Export singleton instance
-export const apiClient = new TacosApiClient();
-
-export default apiClient;

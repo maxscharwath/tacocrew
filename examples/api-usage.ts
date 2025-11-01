@@ -1,82 +1,75 @@
 /**
  * Example: Using the services programmatically
- * 
+ *
  * This file demonstrates how to use the services in your own code
  */
 
 import { apiClient } from '../src/api/client';
 import { cartService, orderService, resourceService } from '../src/services';
-import { TacoSize, OrderType } from '../src/types';
+import { OrderType, TacoSize } from '../src/types';
 
 /**
  * Example 1: Initialize and add items to cart
  */
-async function exampleAddToCart(): Promise<void> {
+async function _exampleAddToCart(): Promise<void> {
   // Initialize API client (must be called first)
   await apiClient.initialize();
 
   // Add a taco
-  const taco = await cartService.addTaco({
+  const _taco = await cartService.addTaco({
     size: TacoSize.XL,
     meats: [
       { id: 'viande_hachee', quantity: 2 },
-      { id: 'escalope_de_poulet', quantity: 1 }
+      { id: 'escalope_de_poulet', quantity: 1 },
     ],
     sauces: ['harissa', 'algérienne'],
     garnitures: ['salade', 'tomates', 'oignons'],
-    note: 'Extra sauce please'
+    note: 'Extra sauce please',
   });
-
-  console.log('Taco added:', taco);
 
   // Add extras
   await cartService.addExtra({
     id: 'extra_frites',
     name: 'Frites',
-    price: 3.50,
+    price: 3.5,
     quantity: 2,
-    free_sauces: [
-      { id: 'ketchup', name: 'Ketchup', price: 0 }
-    ]
+    free_sauces: [{ id: 'ketchup', name: 'Ketchup', price: 0 }],
   });
 
   // Add a drink
   await cartService.addDrink({
     id: 'boisson_coca',
     name: 'Coca Cola',
-    price: 2.50,
-    quantity: 2
+    price: 2.5,
+    quantity: 2,
   });
 
   // Get full cart
-  const cart = await cartService.getCart();
-  console.log('Cart total:', cart.summary.total.price, 'CHF');
+  const _cart = await cartService.getCart();
 }
 
 /**
  * Example 2: Check stock before ordering
  */
-async function exampleCheckStock(): Promise<void> {
+async function _exampleCheckStock(): Promise<void> {
   await apiClient.initialize();
 
   // Get all stock info
-  const stock = await resourceService.getStock();
-  
+  const _stock = await resourceService.getStock();
+
   // Check if specific item is in stock
-  const isAvailable = await resourceService.isInStock('viandes', 'viande_hachee');
-  console.log('Viande hachée available:', isAvailable);
+  const _isAvailable = await resourceService.isInStock('viandes', 'viande_hachee');
 
   // Get out of stock items for a category
   const outOfStockMeats = await resourceService.getOutOfStockProducts('viandes');
   if (outOfStockMeats.length > 0) {
-    console.log('Out of stock meats:', outOfStockMeats);
   }
 }
 
 /**
  * Example 3: Place an order
  */
-async function examplePlaceOrder(): Promise<void> {
+async function _examplePlaceOrder(): Promise<void> {
   await apiClient.initialize();
 
   // First, add items to cart (see example 1)
@@ -84,55 +77,48 @@ async function examplePlaceOrder(): Promise<void> {
     size: TacoSize.L,
     meats: [{ id: 'viande_hachee', quantity: 1 }],
     sauces: ['harissa'],
-    garnitures: ['salade']
+    garnitures: ['salade'],
   });
 
   // Create the order
   const order = await orderService.createOrder({
     customer: {
       name: 'John Doe',
-      phone: '+41791234567'
+      phone: '+41791234567',
     },
     delivery: {
       type: OrderType.DELIVERY,
       address: '123 Rue Example, 1000 Lausanne',
-      requestedFor: '15:00'
-    }
+      requestedFor: '15:00',
+    },
   });
 
-  console.log('Order created:', order.orderId);
-  console.log('Order status:', order.OrderData.status);
-  console.log('Total price:', order.OrderData.price, 'CHF');
-
   // Track order status
-  const status = await orderService.getOrderStatus(order.orderId);
-  console.log('Current status:', status.status);
+  const _status = await orderService.getOrderStatus(order.orderId);
 }
 
 /**
  * Example 4: Check delivery time slots
  */
-async function exampleTimeSlots(): Promise<void> {
+async function _exampleTimeSlots(): Promise<void> {
   await apiClient.initialize();
 
   // Get all available time slots
   const slots = await orderService.getTimeSlots();
-  
+
   // Filter for low-demand slots
-  const availableSlots = slots.filter(slot => !slot.highDemand);
-  console.log('Available slots:', availableSlots.map(s => s.time));
+  const _availableSlots = slots.filter((slot) => !slot.highDemand);
 
   // Check specific time
   const demand = await orderService.checkDeliveryDemand('15:00');
   if (demand.isHighDemand) {
-    console.log('Warning: High demand at 15:00');
   }
 }
 
 /**
  * Example 5: Update cart items
  */
-async function exampleUpdateCart(): Promise<void> {
+async function _exampleUpdateCart(): Promise<void> {
   await apiClient.initialize();
 
   // Add a taco first
@@ -140,25 +126,22 @@ async function exampleUpdateCart(): Promise<void> {
     size: TacoSize.L,
     meats: [{ id: 'viande_hachee', quantity: 1 }],
     sauces: ['harissa'],
-    garnitures: ['salade']
+    garnitures: ['salade'],
   });
 
   // Increase quantity
   await cartService.updateTacoQuantity(0, 'increase');
 
   // Get taco details for editing
-  const details = await cartService.getTacoDetails(0);
-  console.log('Taco details:', details);
+  const _details = await cartService.getTacoDetails(0);
 
   // Update the taco
   await cartService.updateTaco({
     id: 0,
     size: TacoSize.XL, // Upgraded size
-    meats: [
-      { id: 'viande_hachee', quantity: 2 }
-    ],
+    meats: [{ id: 'viande_hachee', quantity: 2 }],
     sauces: ['harissa', 'algérienne'],
-    garnitures: ['salade', 'tomates']
+    garnitures: ['salade', 'tomates'],
   });
 
   // Delete if needed
@@ -170,84 +153,45 @@ async function exampleUpdateCart(): Promise<void> {
  */
 async function exampleCompleteFlow(): Promise<void> {
   try {
-    console.log('🌮 Starting complete order flow...\n');
-
-    // 1. Initialize
-    console.log('1. Initializing API client...');
     await apiClient.initialize();
+    const _stock = await resourceService.getStock();
 
-    // 2. Check stock
-    console.log('2. Checking stock availability...');
-    const stock = await resourceService.getStock();
-    console.log(`   ✓ Stock data loaded\n`);
-
-    // 3. Add items to cart
-    console.log('3. Adding items to cart...');
-    
     await cartService.addTaco({
       size: TacoSize.XL,
       meats: [{ id: 'viande_hachee', quantity: 2 }],
       sauces: ['harissa'],
-      garnitures: ['salade']
+      garnitures: ['salade'],
     });
-    console.log('   ✓ Taco XL added');
 
     await cartService.addExtra({
       id: 'extra_frites',
       name: 'Frites',
-      price: 3.50,
+      price: 3.5,
       quantity: 1,
-      free_sauces: []
+      free_sauces: [],
     });
-    console.log('   ✓ Frites added');
 
     await cartService.addDrink({
       id: 'boisson_coca',
       name: 'Coca Cola',
-      price: 2.50,
-      quantity: 1
+      price: 2.5,
+      quantity: 1,
     });
-    console.log('   ✓ Drink added\n');
-
-    // 4. Review cart
-    console.log('4. Reviewing cart...');
-    const cart = await cartService.getCart();
-    console.log(`   Items: ${cart.summary.total.quantity}`);
-    console.log(`   Total: CHF ${cart.summary.total.price.toFixed(2)}\n`);
-
-    // 5. Check delivery times
-    console.log('5. Checking delivery times...');
+    const _cart = await cartService.getCart();
     const slots = await orderService.getTimeSlots();
-    const bestSlot = slots.find(s => !s.highDemand);
-    console.log(`   Best time slot: ${bestSlot?.time || '15:00'}\n`);
-
-    // 6. Place order
-    console.log('6. Placing order...');
+    const bestSlot = slots.find((s) => !s.highDemand);
     const order = await orderService.createOrder({
       customer: {
         name: 'John Doe',
-        phone: '+41791234567'
+        phone: '+41791234567',
       },
       delivery: {
         type: OrderType.DELIVERY,
         address: '123 Rue Example, 1000 Lausanne',
-        requestedFor: bestSlot?.time || '15:00'
-      }
+        requestedFor: bestSlot?.time || '15:00',
+      },
     });
-
-    console.log(`   ✓ Order placed successfully!`);
-    console.log(`   Order ID: ${order.orderId}`);
-    console.log(`   Status: ${order.OrderData.status}`);
-    console.log(`   Total: CHF ${order.OrderData.price.toFixed(2)}`);
-    console.log(`   Delivery time: ${order.OrderData.requestedFor}\n`);
-
-    // 7. Track order
-    console.log('7. Tracking order...');
-    const status = await orderService.getOrderStatus(order.orderId);
-    console.log(`   Current status: ${status.status}`);
-
-    console.log('\n✅ Order flow completed successfully!');
-
+    const _status = await orderService.getOrderStatus(order.orderId);
   } catch (error) {
     console.error('❌ Error in order flow:', error);
   } finally {

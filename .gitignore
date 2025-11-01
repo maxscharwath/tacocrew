@@ -41,3 +41,5 @@ coverage/
 
 # Debug
 .pnp.*
+
+/src/generated/prisma
