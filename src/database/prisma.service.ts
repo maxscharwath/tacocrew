@@ -3,10 +3,9 @@
  * @module database/prisma
  */
 
-import 'reflect-metadata';
-import { PrismaClient } from '@prisma/client';
+import { Prisma, PrismaClient } from '@prisma/client';
 import { injectable } from 'tsyringe';
-import { logger } from '../utils/logger';
+import { logger } from '@/utils/logger';
 
 /**
  * Prisma service wrapper for dependency injection
@@ -16,30 +15,43 @@ export class PrismaService {
   public readonly client: PrismaClient;
 
   constructor() {
-    this.client = new PrismaClient({
-      log: [
-        { level: 'query', emit: 'event' },
-        { level: 'error', emit: 'event' },
-        { level: 'warn', emit: 'event' },
-      ],
-    });
+    const logConfig = [
+      { level: 'query', emit: 'event' },
+      { level: 'error', emit: 'event' },
+      { level: 'warn', emit: 'event' },
+    ] satisfies Prisma.LogDefinition[];
+
+    this.client = new PrismaClient({ log: logConfig }) as PrismaClient<
+      Prisma.PrismaClientOptions,
+      'query' | 'error' | 'warn'
+    >;
 
     // Log queries in development
+    const onEvent = this.client.$on.bind(this.client) as unknown as <
+      T extends 'query' | 'error' | 'warn',
+    >(
+      eventType: T,
+      callback: (event: Prisma.QueryEvent | Prisma.LogEvent) => void
+    ) => void;
+
     if (process.env['NODE_ENV'] === 'development') {
-      this.client.$on('query', (e: { query: string; duration: number }) => {
+      onEvent('query', (e) => {
+        const event = e as Prisma.QueryEvent;
         logger.debug('Prisma Query', {
-          query: e.query,
-          duration: `${e.duration}ms`,
+          query: event.query,
+          duration: `${event.duration}ms`,
         });
       });
     }
 
-    this.client.$on('error', (e: { message: string }) => {
-      logger.error('Prisma Error', { message: e.message });
+    onEvent('error', (e) => {
+      const event = e as Prisma.LogEvent;
+      logger.error('Prisma Error', { message: event.message });
     });
 
-    this.client.$on('warn', (e: { message: string }) => {
-      logger.warn('Prisma Warning', { message: e.message });
+    onEvent('warn', (e) => {
+      const event = e as Prisma.LogEvent;
+      logger.warn('Prisma Warning', { message: event.message });
     });
   }
 

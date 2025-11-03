@@ -3,11 +3,10 @@
  * @module database/taco-mapping
  */
 
-import 'reflect-metadata';
 import { injectable } from 'tsyringe';
-import { inject } from '../utils/inject';
-import { logger } from '../utils/logger';
-import { PrismaService } from './prisma.service';
+import { PrismaService } from '@/database/prisma.service';
+import { inject } from '@/utils/inject';
+import { logger } from '@/utils/logger';
 
 /**
  * Repository for managing taco UUID to backend index mappings
@@ -19,17 +18,17 @@ export class TacoMappingRepository {
   /**
    * Store UUID to backend index mapping
    */
-  async store(cartId: string, backendIndex: number, tacoId: string): Promise<void> {
+  async store(id: string, backendIndex: number, tacoId: string): Promise<void> {
     try {
       await this.prisma.client.tacoMapping.upsert({
         where: {
           cartId_tacoId: {
-            cartId,
+            cartId: id,
             tacoId,
           },
         },
         create: {
-          cartId,
+          cartId: id,
           tacoId,
           backendIndex,
         },
@@ -39,7 +38,7 @@ export class TacoMappingRepository {
       });
     } catch (error) {
       logger.error('Failed to store taco mapping', {
-        cartId,
+        id,
         tacoId,
         backendIndex,
         error,
@@ -51,12 +50,12 @@ export class TacoMappingRepository {
   /**
    * Get backend index from UUID
    */
-  async getBackendIndex(cartId: string, tacoId: string): Promise<number | null> {
+  async getBackendIndex(id: string, tacoId: string): Promise<number | null> {
     try {
       const mapping = await this.prisma.client.tacoMapping.findUnique({
         where: {
           cartId_tacoId: {
-            cartId,
+            cartId: id,
             tacoId,
           },
         },
@@ -64,7 +63,7 @@ export class TacoMappingRepository {
 
       return mapping?.backendIndex ?? null;
     } catch (error) {
-      logger.error('Failed to get taco mapping', { cartId, tacoId, error });
+      logger.error('Failed to get taco mapping', { id, tacoId, error });
       return null;
     }
   }
@@ -72,18 +71,18 @@ export class TacoMappingRepository {
   /**
    * Remove taco mapping
    */
-  async remove(cartId: string, tacoId: string): Promise<void> {
+  async remove(id: string, tacoId: string): Promise<void> {
     try {
       await this.prisma.client.tacoMapping.delete({
         where: {
           cartId_tacoId: {
-            cartId,
+            cartId: id,
             tacoId,
           },
         },
       });
     } catch (error) {
-      logger.error('Failed to remove taco mapping', { cartId, tacoId, error });
+      logger.error('Failed to remove taco mapping', { id, tacoId, error });
       // Don't throw if mapping doesn't exist
     }
   }
@@ -91,13 +90,13 @@ export class TacoMappingRepository {
   /**
    * Remove all mappings for a cart
    */
-  async removeAll(cartId: string): Promise<void> {
+  async removeAll(id: string): Promise<void> {
     try {
       await this.prisma.client.tacoMapping.deleteMany({
-        where: { cartId },
+        where: { cartId: id },
       });
     } catch (error) {
-      logger.error('Failed to remove all taco mappings', { cartId, error });
+      logger.error('Failed to remove all taco mappings', { id, error });
       throw error;
     }
   }
@@ -105,10 +104,10 @@ export class TacoMappingRepository {
   /**
    * Get all mappings for a cart (index -> tacoId)
    */
-  async getAllMappings(cartId: string): Promise<Map<number, string>> {
+  async getAllMappings(id: string): Promise<Map<number, string>> {
     try {
       const mappings = await this.prisma.client.tacoMapping.findMany({
-        where: { cartId },
+        where: { cartId: id },
         orderBy: { backendIndex: 'asc' },
       });
 
@@ -119,7 +118,7 @@ export class TacoMappingRepository {
 
       return mappingMap;
     } catch (error) {
-      logger.error('Failed to get all taco mappings', { cartId, error });
+      logger.error('Failed to get all taco mappings', { id, error });
       return new Map();
     }
   }

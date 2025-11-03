@@ -2,11 +2,12 @@
  * Unit tests for ResourceService
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { container } from 'tsyringe';
-import { ResourceService } from '../../services/resource.service';
-import { TacosApiClient } from '../../api/client';
-import { createMockTacosApiClient, createMockStockAvailability } from '../mocks';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { createMockTacosApiClient } from '@/__tests__/mocks';
+import { TacosApiClient } from '@/api/client';
+import { ResourceService } from '@/services/resource.service';
+import { StockAvailabilityBackend, StockCategory } from '@/types';
 
 describe('ResourceService', () => {
   let resourceService: ResourceService;
@@ -16,22 +17,37 @@ describe('ResourceService', () => {
     container.clearInstances();
 
     mockApiClient = createMockTacosApiClient();
-    container.registerInstance(TacosApiClient, mockApiClient as any);
+    container.registerInstance(TacosApiClient, mockApiClient as unknown as TacosApiClient);
 
     resourceService = container.resolve(ResourceService);
   });
 
   describe('getStock', () => {
-    it('should fetch stock from backend', async () => {
-      const mockStock = createMockStockAvailability();
+    it('should fetch stock from backend and transform to arrays', async () => {
+      const mockBackendStock: StockAvailabilityBackend = {
+        viandes: {
+          viande_hachee: { name: 'Viande Hachée', in_stock: true },
+          poulet: { name: 'Poulet', in_stock: true },
+        },
+        sauces: {
+          harissa: { name: 'Harissa', in_stock: true },
+        },
+        garnitures: {},
+        desserts: {},
+        boissons: {},
+        extras: {},
+      };
       const mockCsrfToken = 'test-csrf-token';
 
       mockApiClient.refreshCsrfToken.mockResolvedValue({ csrfToken: mockCsrfToken, cookies: {} });
-      mockApiClient.get.mockResolvedValue(mockStock);
+      mockApiClient.get.mockResolvedValue(mockBackendStock);
 
       const result = await resourceService.getStock();
 
-      expect(result).toEqual(mockStock);
+      expect(result.meats).toHaveLength(2);
+      expect(result.meats[0]).toHaveProperty('id');
+      expect(result.meats[0]).toHaveProperty('code', 'viande_hachee');
+      expect(result.meats[0]).toHaveProperty('in_stock', true);
       expect(mockApiClient.refreshCsrfToken).toHaveBeenCalled();
       expect(mockApiClient.get).toHaveBeenCalledWith(
         '/office/stock_management.php?type=all',
@@ -42,11 +58,18 @@ describe('ResourceService', () => {
     });
 
     it('should fetch stock on every call', async () => {
-      const mockStock = createMockStockAvailability();
+      const mockBackendStock: StockAvailabilityBackend = {
+        viandes: {},
+        sauces: {},
+        garnitures: {},
+        desserts: {},
+        boissons: {},
+        extras: {},
+      };
       const mockCsrfToken = 'test-csrf-token';
 
       mockApiClient.refreshCsrfToken.mockResolvedValue({ csrfToken: mockCsrfToken, cookies: {} });
-      mockApiClient.get.mockResolvedValue(mockStock);
+      mockApiClient.get.mockResolvedValue(mockBackendStock);
 
       // First call
       await resourceService.getStock();
@@ -60,29 +83,43 @@ describe('ResourceService', () => {
 
   describe('isInStock', () => {
     it('should return true if product is in stock', async () => {
-      const mockStock = createMockStockAvailability();
+      const mockBackendStock: StockAvailabilityBackend = {
+        viandes: {
+          viande_hachee: { name: 'Viande Hachée', in_stock: true },
+        },
+        sauces: {},
+        garnitures: {},
+        desserts: {},
+        boissons: {},
+        extras: {},
+      };
       const mockCsrfToken = 'test-csrf-token';
 
       mockApiClient.refreshCsrfToken.mockResolvedValue({ csrfToken: mockCsrfToken, cookies: {} });
-      mockApiClient.get.mockResolvedValue(mockStock);
+      mockApiClient.get.mockResolvedValue(mockBackendStock);
 
-      const result = await resourceService.isInStock('viandes', 'viande_hachee');
+      const result = await resourceService.isInStock(StockCategory.Meats, 'viande_hachee');
 
       expect(result).toBe(true);
     });
 
     it('should return false if product is not in stock', async () => {
-      const mockStock = createMockStockAvailability();
-      mockStock.viandes = {};
+      const mockBackendStock: StockAvailabilityBackend = {
+        viandes: {},
+        sauces: {},
+        garnitures: {},
+        desserts: {},
+        boissons: {},
+        extras: {},
+      };
       const mockCsrfToken = 'test-csrf-token';
 
       mockApiClient.refreshCsrfToken.mockResolvedValue({ csrfToken: mockCsrfToken, cookies: {} });
-      mockApiClient.get.mockResolvedValue(mockStock);
+      mockApiClient.get.mockResolvedValue(mockBackendStock);
 
-      const result = await resourceService.isInStock('viandes', 'non-existent');
+      const result = await resourceService.isInStock(StockCategory.Meats, 'non-existent');
 
       expect(result).toBe(false);
     });
   });
 });
-

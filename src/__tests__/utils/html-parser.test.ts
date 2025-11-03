@@ -2,30 +2,23 @@
  * Unit tests for HTML parser
  */
 
-import { describe, it, expect } from 'vitest';
-import { parseTacoCard, parseTacoCards, parseCartSummary } from '../../utils/html-parser';
-import { TacoSize } from '../../types';
+import { describe, expect, it } from 'vitest';
+import { TacoSize } from '@/types';
+import { parseCartSummary, parseTacoCard, parseTacoCards } from '@/utils/html-parser';
 
 describe('HTML Parser', () => {
   describe('parseTacoCard', () => {
     it('should parse a valid taco card HTML', () => {
       const html = `
-        <div class="card">
-          <select name="selectProduct">
-            <option value="tacos_XL" selected>XL</option>
-            <option value="tacos_L">L</option>
-          </select>
-          <input name="viande[]" value="viande_hachee" checked />
-          <input name="meat_quantity[viande_hachee]" value="2" />
-          <select name="sauce[]">
-            <option value="harissa" selected>Harissa</option>
-          </select>
-          <select name="garniture[]">
-            <option value="salade" selected>Salade</option>
-          </select>
-          <textarea name="tacosNote">Pas trop épicé</textarea>
-          <input name="quantity" value="1" />
-          <div class="price">12.50</div>
+        <div class="card" id="tacos-0">
+          <div class="card-body">
+            <h5 class="card-title">Tacos XL - 12.50 CHF.</h5>
+            <p><strong>Viande</strong>: Viande Hachée x 2</p>
+            <p><strong>Sauce</strong>: Harissa</p>
+            <p><strong>Garniture</strong>: Salade</p>
+            <p><strong>Remarque</strong>: Pas trop épicé</p>
+            <input name="quantity" value="1" readonly />
+          </div>
         </div>
       `;
 
@@ -35,7 +28,8 @@ describe('HTML Parser', () => {
       expect(result?.id).toBe('test-taco-id');
       expect(result?.size).toBe(TacoSize.XL);
       expect(result?.meats).toHaveLength(1);
-      expect(result?.meats[0]?.id).toBe('viande_hachee');
+      expect(result?.meats[0]?.code).toBe('viande_hachee');
+      expect(result?.meats[0]?.id).toBeDefined();
       expect(result?.meats[0]?.quantity).toBe(2);
       expect(result?.note).toBe('Pas trop épicé');
       // Price extraction depends on HTML structure, so we check if it's a number
@@ -56,14 +50,13 @@ describe('HTML Parser', () => {
 
     it('should handle multiple meats', () => {
       const html = `
-        <div class="card">
-          <select name="selectProduct">
-            <option value="tacos_XXL" selected>XXL</option>
-          </select>
-          <input name="viande[]" value="viande_hachee" checked />
-          <input name="meat_quantity[viande_hachee]" value="2" />
-          <input name="viande[]" value="poulet" checked />
-          <input name="meat_quantity[poulet]" value="1" />
+        <div class="card" id="tacos-0">
+          <div class="card-body">
+            <h5 class="card-title">Tacos XXL - 15.00 CHF.</h5>
+            <p><strong>Viande</strong>: Viande Hachée x 2, Poulet x 1</p>
+            <p><strong>Sauce</strong>: Harissa</p>
+            <p><strong>Garniture</strong>: Salade</p>
+          </div>
         </div>
       `;
 
@@ -73,11 +66,16 @@ describe('HTML Parser', () => {
 
     it('should extract quantity correctly', () => {
       const html = `
-        <div class="card">
-          <select name="selectProduct">
-            <option value="tacos_XL" selected>XL</option>
-          </select>
-          <input name="quantity" value="3" />
+        <div class="card" id="tacos-0">
+          <div class="card-body">
+            <h5 class="card-title">Tacos XL - 12.50 CHF.</h5>
+            <p><strong>Viande</strong>: Viande Hachée x 1</p>
+            <p><strong>Sauce</strong>: Harissa</p>
+            <p><strong>Garniture</strong>: Salade</p>
+            <div class="quantity-controls">
+              <input name="quantity" class="quantity-input" value="3" readonly />
+            </div>
+          </div>
         </div>
       `;
 
@@ -90,15 +88,21 @@ describe('HTML Parser', () => {
     it('should parse multiple taco cards', () => {
       const html = `
         <div>
-          <div class="card">
-            <select name="selectProduct">
-              <option value="tacos_XL" selected>XL</option>
-            </select>
+          <div class="card" id="tacos-0">
+            <div class="card-body">
+              <h5 class="card-title">Tacos XL - 12.00 CHF.</h5>
+              <p><strong>Viande</strong>: Viande Hachée x 1</p>
+              <p><strong>Sauce</strong>: Harissa</p>
+              <p><strong>Garniture</strong>: Salade</p>
+            </div>
           </div>
-          <div class="card">
-            <select name="selectProduct">
-              <option value="tacos_L" selected>L</option>
-            </select>
+          <div class="card" id="tacos-1">
+            <div class="card-body">
+              <h5 class="card-title">Tacos L - 10.00 CHF.</h5>
+              <p><strong>Viande</strong>: Poulet x 1</p>
+              <p><strong>Sauce</strong>: Algerienne</p>
+              <p><strong>Garniture</strong>: Tomates</p>
+            </div>
           </div>
         </div>
       `;
@@ -140,4 +144,3 @@ describe('HTML Parser', () => {
     });
   });
 });
-

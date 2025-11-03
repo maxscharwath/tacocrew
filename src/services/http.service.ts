@@ -3,11 +3,10 @@
  * @module services/http
  */
 
-import 'reflect-metadata';
 import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
 import { injectable } from 'tsyringe';
-import config from '../config';
-import { logger } from '../utils/logger';
+import { config } from '@/config';
+import { logger } from '@/utils/logger';
 
 /**
  * HTTP Service

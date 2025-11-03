@@ -3,7 +3,7 @@
  * @module utils/route-debugger
  */
 
-import { logger } from './logger';
+import { logger } from '@/utils/logger';
 
 /**
  * Debug routes from manual route definitions
@@ -22,51 +22,31 @@ export function debugRoutes(routes: RouteDefinition[], framework: 'Hono'): void 
     return;
   }
 
-  // Group by path
-  const grouped: Record<string, string[]> = {};
-  routes.forEach((route) => {
-    const path = route.path;
-    if (!grouped[path]) {
-      grouped[path] = [];
+  const groupedByPath = new Map<string, Set<string>>();
+  const groupedByMethod = new Map<string, number>();
+
+  routes.forEach(({ method, path }) => {
+    if (!groupedByPath.has(path)) {
+      groupedByPath.set(path, new Set());
     }
-    const methods = grouped[path];
-    if (methods && !methods.includes(route.method)) {
-      methods.push(route.method);
-    }
+    groupedByPath.get(path)!.add(method);
+
+    groupedByMethod.set(method, (groupedByMethod.get(method) ?? 0) + 1);
   });
 
-  // Sort paths
-  const sortedPaths = Object.keys(grouped).sort();
-
-  // Log routes
-  logger.info(`📋 Registered ${framework} Routes (${routes.length} total):`, {
-    routes: sortedPaths.map((path) => ({
-      path,
-      methods: grouped[path].sort().join(', '),
-    })),
-  });
-
-  // Also log in a more readable format
-  logger.info('📋 Routes by method:');
-  const byMethod: Record<string, string[]> = {};
-  routes.forEach((route) => {
-    const method = route.method;
-    if (!byMethod[method]) {
-      byMethod[method] = [];
-    }
-    const paths = byMethod[method];
-    if (paths && !paths.includes(route.path)) {
-      paths.push(route.path);
-    }
-  });
-
-  Object.entries(byMethod)
+  const methodsSummary = Array.from(groupedByMethod.entries())
     .sort(([a], [b]) => a.localeCompare(b))
-    .forEach(([method, paths]) => {
-      paths.sort().forEach((path) => {
-        logger.info(`   ${method.padEnd(6)} ${path}`);
-      });
-    });
+    .map(([method, count]) => `${method}(${count})`)
+    .join(', ');
+
+  logger.info(
+    `📋 ${framework} routes: ${groupedByPath.size} paths across ${groupedByMethod.size} methods [${methodsSummary}]`
+  );
+
+  const sortedRoutes = Array.from(groupedByPath.entries()).sort(([a], [b]) => a.localeCompare(b));
+
+  for (const [path, methods] of sortedRoutes) {
+    const methodList = Array.from(methods).sort().join(', ');
+    logger.info(`${methodList} ${path}`);
+  }
 }
-
-

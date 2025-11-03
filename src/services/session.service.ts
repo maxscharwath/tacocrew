@@ -3,14 +3,13 @@
  * @module services/session
  */
 
-import 'reflect-metadata';
 import { injectable } from 'tsyringe';
 import { v4 as uuidv4 } from 'uuid';
-import { TacosApiClient } from '../api/client';
-import { CreateSessionOptions, SessionData, SessionStats } from '../types/session';
-import { inject } from '../utils/inject';
-import { logger } from '../utils/logger';
-import { sessionStore } from '../utils/session-store';
+import { TacosApiClient } from '@/api/client';
+import { CreateSessionOptions, SessionData, SessionStats } from '@/types/session';
+import { inject } from '@/utils/inject';
+import { logger } from '@/utils/logger';
+import { sessionStore } from '@/utils/session-store';
 
 /**
  * Session Service
@@ -24,6 +23,7 @@ export class SessionService {
   private cleanupInterval: NodeJS.Timeout | null = null;
 
   constructor() {
+    // Start cleanup timer - this is initialization logic, not dependency injection
     this.startCleanupTimer();
   }
 
@@ -100,7 +100,7 @@ export class SessionService {
     logger.debug('Refreshing session token', { sessionId });
 
     const { csrfToken: newToken, cookies: newCookies } = await this.apiClient.refreshCsrfToken();
-    await this.updateSession(sessionId, { 
+    await this.updateSession(sessionId, {
       csrfToken: newToken,
       cookies: newCookies,
     });

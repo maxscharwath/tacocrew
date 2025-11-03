@@ -3,16 +3,15 @@
  * @module hono-api
  */
 
-import 'reflect-metadata';
 import { serve } from '@hono/node-server';
-import config from './config';
-import { createApp } from './hono/app';
-import { logger } from './utils/logger';
+import { config } from '@/config';
+import { createApp } from '@/hono/app';
+import { logger } from '@/utils/logger';
 
 /**
  * Start the Hono web API server
  */
-async function startHonoApi(): Promise<void> {
+export function startHonoApi(): void {
   if (!config.webApi.enabled) {
     logger.warn('Web API is disabled in configuration');
     return;
@@ -37,14 +36,3 @@ async function startHonoApi(): Promise<void> {
     }
   );
 }
-
-// Start the server
-if (require.main === module) {
-  startHonoApi().catch((error: Error) => {
-    logger.error('Failed to start Hono Web API', { error: error.message, stack: error.stack });
-    process.exit(1);
-  });
-}
-
-export { startHonoApi };
-export default startHonoApi;

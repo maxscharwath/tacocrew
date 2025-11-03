@@ -3,14 +3,22 @@
  * @module services/order
  */
 
-import 'reflect-metadata';
 import { injectable } from 'tsyringe';
-import { SessionApiClient } from '../api/session-client';
-import { CreateOrderRequest, DeliveryDemand, Order, OrderStatus, TimeSlot } from '../types';
-import { NotFoundError } from '../utils/errors';
-import { inject } from '../utils/inject';
-import { logger } from '../utils/logger';
-import { CartService } from './cart.service';
+import { SessionApiClient } from '@/api/session-client';
+import { PrismaService } from '@/database/prisma.service';
+import type { OrderId } from '@/domain/schemas/order.schema';
+import type { SessionId } from '@/domain/schemas/session.schema';
+import type { UserId } from '@/domain/schemas/user.schema';
+import { CartService } from '@/services/cart.service';
+import { CreateOrderRequest, DeliveryDemand, OrderData, OrderStatus, TimeSlot } from '@/types';
+import { NotFoundError } from '@/utils/errors';
+import { inject } from '@/utils/inject';
+import { logger } from '@/utils/logger';
+
+type Order = {
+  id: OrderId;
+  OrderData: OrderData;
+};
 
 /**
  * Order Service - Session-aware
@@ -20,26 +28,33 @@ import { CartService } from './cart.service';
 export class OrderService {
   private readonly sessionApiClient = inject(SessionApiClient);
   private readonly cartService = inject(CartService);
+  private readonly prismaService = inject(PrismaService);
 
   /**
-   * Validate that cart exists for sessionId (cartId)
+   * Validate that cart exists for sessionId
+   * Note: SessionId is the same as CartId - each cart ID serves as a session identifier
    */
-  private async validateCart(cartId: string): Promise<void> {
-    if (!cartId) {
-      throw new NotFoundError('Cart ID is required');
+  private async validateCart(sessionId: SessionId): Promise<void> {
+    if (!sessionId) {
+      throw new NotFoundError('Session ID is required');
     }
 
-    // This will throw if cart doesn't exist
-    await this.cartService.getCartSession(cartId);
+    // SessionId is CartId, so we can use it directly
+    await this.cartService.getCartSession(sessionId);
   }
 
   /**
    * Create and submit a new order for a session
    */
-  async createOrder(sessionId: string, request: CreateOrderRequest): Promise<Order> {
+  async createOrder(
+    sessionId: SessionId,
+    request: CreateOrderRequest,
+    userId?: UserId
+  ): Promise<Order> {
     await this.validateCart(sessionId);
     logger.debug('Creating order', {
       sessionId,
+      userId,
       customerName: request.customer.name,
       orderType: request.delivery.type,
     });
@@ -66,9 +81,32 @@ export class OrderService {
       formData
     );
 
+    // Save order to database with userId if provided
+    if (userId) {
+      try {
+        await this.prismaService.client.order.create({
+          data: {
+            cartId: sessionId, // SessionId is CartId
+            userId,
+            customerName: request.customer.name,
+            customerPhone: request.customer.phone,
+            orderType: request.delivery.type,
+            address: deliveryAddress || null,
+            requestedFor: request.delivery.requestedFor,
+            status: response.OrderData.status,
+            price: response.OrderData.price,
+            orderData: JSON.stringify(response.OrderData),
+          },
+        });
+      } catch (error) {
+        logger.error('Failed to save order to database', { sessionId, error });
+        // Don't fail the order creation if DB save fails
+      }
+    }
+
     logger.info('Order created successfully', {
       sessionId,
-      orderId: response.orderId,
+      userId,
       price: response.OrderData.price,
     });
 
@@ -79,7 +117,7 @@ export class OrderService {
    * Get order status
    * Note: This doesn't require sessionId as it's checking existing order
    */
-  getOrderStatus(orderId: string): Promise<{ orderId: string; status: OrderStatus }> {
+  getOrderStatus(orderId: OrderId): Promise<{ orderId: OrderId; status: OrderStatus }> {
     logger.debug('Getting order status', { orderId });
 
     // This could use a temporary session or default client
@@ -94,7 +132,7 @@ export class OrderService {
   /**
    * Get statuses for multiple orders
    */
-  getOrderStatuses(orderIds: string[]): Promise<Array<{ orderId: string; status: OrderStatus }>> {
+  getOrderStatuses(orderIds: OrderId[]): Promise<Array<{ orderId: OrderId; status: OrderStatus }>> {
     logger.debug('Getting order statuses', { count: orderIds.length });
 
     // Similar to getOrderStatus, needs sessionless implementation
@@ -107,11 +145,11 @@ export class OrderService {
    * Restore previous order to cart (for a specific session)
    */
   async restoreOrder(
-    sessionId: string,
+    sessionId: SessionId,
     order: Order
   ): Promise<{ success: boolean; outOfStock: string[] }> {
     await this.validateCart(sessionId);
-    logger.debug('Restoring order', { sessionId, orderId: order.orderId });
+    logger.debug('Restoring order', { sessionId, orderId: order.id });
 
     const response = await this.sessionApiClient.post<{
       status: 'success' | 'warning';
@@ -122,7 +160,7 @@ export class OrderService {
 
     logger.info('Order restored', {
       sessionId,
-      orderId: order.orderId,
+      orderId: order.id,
       hasWarnings: response.status === 'warning',
       outOfStockCount: outOfStock.length,
     });

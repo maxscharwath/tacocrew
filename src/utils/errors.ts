@@ -3,7 +3,7 @@
  * @module utils/errors
  */
 
-import { ErrorCode } from '../types';
+import { ErrorCode } from '@/types';
 
 /**
  * Base API error class
@@ -13,7 +13,7 @@ export class ApiError extends Error {
     public code: ErrorCode,
     message: string,
     public statusCode: number = 500,
-    public details?: Record<string, unknown>
+    public details: Record<string, unknown> = {}
   ) {
     super(message);
     this.name = 'ApiError';
@@ -78,6 +78,26 @@ export class NotFoundError extends ApiError {
   constructor(message = 'Resource not found') {
     super(ErrorCode.NOT_FOUND, message, 404);
     this.name = 'NotFoundError';
+  }
+}
+
+/**
+ * Forbidden error
+ */
+export class ForbiddenError extends ApiError {
+  constructor(message = 'Access forbidden') {
+    super(ErrorCode.FORBIDDEN, message, 403);
+    this.name = 'ForbiddenError';
+  }
+}
+
+/**
+ * Unauthorized error
+ */
+export class UnauthorizedError extends ApiError {
+  constructor(message = 'Unauthorized') {
+    super(ErrorCode.UNAUTHORIZED, message, 401);
+    this.name = 'UnauthorizedError';
   }
 }
 

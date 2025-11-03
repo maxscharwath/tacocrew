@@ -2,22 +2,19 @@
  * Unit tests for OrderService
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { container } from 'tsyringe';
-import { OrderService } from '../../services/order.service';
-import { CartService } from '../../services/cart.service';
-import { SessionApiClient } from '../../api/session-client';
-import { OrderType } from '../../types';
-import { NotFoundError } from '../../utils/errors';
-import {
-  createMockSessionApiClient,
-  createMockCartMetadata,
-} from '../mocks';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { createMockCartMetadata, createMockSessionApiClient } from '@/__tests__/mocks';
+import { SessionApiClient } from '@/api/session-client';
+import { CartService } from '@/services/cart.service';
+import { OrderService } from '@/services/order.service';
+import { OrderType } from '@/types';
+import { NotFoundError } from '@/utils/errors';
 
 describe('OrderService', () => {
   let orderService: OrderService;
   let mockSessionApiClient: ReturnType<typeof createMockSessionApiClient>;
-  let mockCartService: any;
+  let mockCartService: Partial<CartService>;
 
   beforeEach(() => {
     container.clearInstances();
@@ -28,8 +25,11 @@ describe('OrderService', () => {
       getCart: vi.fn(),
     };
 
-    container.registerInstance(SessionApiClient, mockSessionApiClient as any);
-    container.registerInstance(CartService, mockCartService);
+    container.registerInstance(
+      SessionApiClient,
+      mockSessionApiClient as unknown as SessionApiClient
+    );
+    container.registerInstance(CartService, mockCartService as unknown as CartService);
 
     orderService = container.resolve(OrderService);
   });
@@ -59,19 +59,22 @@ describe('OrderService', () => {
         desserts: [],
         summary: { totalPrice: 0, totalQuantity: 0 },
       });
-      mockSessionApiClient.postForm.mockResolvedValue({
-        status: 'success',
-        order: {
-          orderId: 'test-order-id',
+      mockSessionApiClient.postFormData.mockResolvedValue({
+        id: 'test-order-id',
+        OrderData: {
           status: 'pending',
+          type: OrderType.DELIVERY,
+          date: new Date().toISOString(),
+          price: 25.5,
+          requestedFor: '15:00',
         },
       });
 
       const result = await orderService.createOrder(cartId, orderRequest);
 
-      expect(result).toHaveProperty('orderId');
+      expect(result).toHaveProperty('id', 'test-order-id');
       expect(mockCartService.getCartSession).toHaveBeenCalledWith(cartId);
-      expect(mockSessionApiClient.postForm).toHaveBeenCalled();
+      expect(mockSessionApiClient.postFormData).toHaveBeenCalled();
     });
 
     it('should throw NotFoundError if cart does not exist', async () => {
@@ -112,14 +115,26 @@ describe('OrderService', () => {
       };
 
       // This should be validated by the schema, but we test the service logic
-      mockSessionApiClient.postForm.mockResolvedValue({
-        status: 'success',
-        order: { orderId: 'test-id', status: 'pending' },
+      mockCartService.getCartSession.mockResolvedValue(createMockCartMetadata());
+      mockSessionApiClient.postFormData.mockResolvedValue({
+        id: 'test-id',
+        OrderData: {
+          status: 'pending',
+          type: OrderType.DELIVERY,
+          date: new Date().toISOString(),
+          price: 25.5,
+          requestedFor: '15:00',
+        },
       });
 
       // The validation should happen at the schema level, not here
       // But we ensure the service can handle it
-      await expect(orderService.createOrder(cartId, orderRequest as any)).resolves.toBeDefined();
+      await expect(
+        orderService.createOrder(
+          cartId,
+          orderRequest as unknown as Parameters<OrderService['createOrder']>[1]
+        )
+      ).resolves.toBeDefined();
     });
   });
 
@@ -129,6 +144,16 @@ describe('OrderService', () => {
       const mockMetadata = createMockCartMetadata();
 
       mockCartService.getCartSession.mockResolvedValue(mockMetadata);
+      mockSessionApiClient.postFormData.mockResolvedValue({
+        id: 'test-order-id',
+        OrderData: {
+          status: 'pending',
+          type: OrderType.TAKEAWAY,
+          date: new Date().toISOString(),
+          price: 10.0,
+          requestedFor: '15:00',
+        },
+      });
 
       // This is a private method, but we test it indirectly through createOrder
       await expect(
@@ -140,4 +165,3 @@ describe('OrderService', () => {
     });
   });
 });
-

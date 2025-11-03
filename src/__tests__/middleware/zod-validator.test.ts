@@ -2,11 +2,11 @@
  * Unit tests for Zod validator middleware
  */
 
-import { describe, it, expect, vi } from 'vitest';
+import type { Context, HonoRequest } from 'hono';
+import { describe, expect, it, vi } from 'vitest';
 import { z } from 'zod';
-import { zodValidator } from '../../hono/middleware/zod-validator';
-import { ValidationError } from '../../utils/errors';
-import type { Context } from 'hono';
+import { zodValidator } from '@/hono/middleware/zod-validator';
+import { ValidationError } from '@/utils/errors';
 
 describe('zodValidator', () => {
   it('should validate request body successfully', async () => {
@@ -20,16 +20,16 @@ describe('zodValidator', () => {
     const mockContext = {
       req: {
         json: vi.fn().mockResolvedValue({ name: 'John', age: 30 }),
-      },
+      } as Partial<HonoRequest>,
       set: vi.fn(),
-    } as any;
+    } as unknown as Context;
 
     const next = vi.fn().mockResolvedValue(undefined);
 
     await validator(mockContext as Context, next);
 
     expect(mockContext.req.json).toHaveBeenCalled();
-    expect(mockContext.set).toHaveBeenCalledWith('validatedBody', { name: 'John', age: 30 });
+    expect(mockContext.set).toHaveBeenCalledWith('body', { name: 'John', age: 30 });
     expect(next).toHaveBeenCalled();
   });
 
@@ -44,9 +44,9 @@ describe('zodValidator', () => {
     const mockContext = {
       req: {
         json: vi.fn().mockResolvedValue({ name: 'John', age: 'not-a-number' }),
-      },
+      } as Partial<HonoRequest>,
       set: vi.fn(),
-    } as any;
+    } as unknown as Context;
 
     const next = vi.fn();
 
@@ -65,9 +65,9 @@ describe('zodValidator', () => {
     const mockContext = {
       req: {
         json: vi.fn().mockRejectedValue(new Error('Empty body')),
-      },
+      } as Partial<HonoRequest>,
       set: vi.fn(),
-    } as any;
+    } as unknown as Context;
 
     const next = vi.fn().mockResolvedValue(undefined);
 
@@ -91,9 +91,9 @@ describe('zodValidator', () => {
           email: 'invalid-email',
           password: 'short',
         }),
-      },
+      } as Partial<HonoRequest>,
       set: vi.fn(),
-    } as any;
+    } as unknown as Context;
 
     const next = vi.fn();
 
@@ -107,4 +107,3 @@ describe('zodValidator', () => {
     }
   });
 });
-

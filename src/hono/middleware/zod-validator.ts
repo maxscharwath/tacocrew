@@ -5,7 +5,7 @@
 
 import { MiddlewareHandler } from 'hono';
 import { z } from 'zod';
-import { ValidationError } from '../../utils/errors';
+import { ValidationError } from '@/utils/errors';
 
 /**
  * Validates request body using Zod schema
@@ -15,7 +15,7 @@ export function zodValidator<T extends z.ZodTypeAny>(
   schema: T
 ): MiddlewareHandler<{
   Variables: {
-    validatedBody: z.infer<T>;
+    body: z.infer<T>;
   };
 }> {
   return async (c, next) => {
@@ -24,17 +24,17 @@ export function zodValidator<T extends z.ZodTypeAny>(
     const result = schema.safeParse(body);
 
     if (!result.success) {
-      const details: Record<string, string> = {};
-      for (const issue of result.error.issues) {
-        const path = issue.path.join('.');
-        details[path] = issue.message;
-      }
+      const { formErrors, fieldErrors } = z.flattenError(result.error);
+      const details: Record<string, unknown> = {
+        formErrors,
+        fieldErrors,
+      };
 
       throw new ValidationError('Validation failed', details);
     }
 
     // Store validated body in context variables
-    c.set('validatedBody', result.data);
+    c.set('body', result.data);
 
     await next();
   };

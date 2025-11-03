@@ -3,9 +3,11 @@
  * @module index
  */
 
-import config from './config';
-import { logger } from './utils/logger';
-import { startHonoApi } from './hono-api';
+import 'reflect-metadata';
+import { config } from '@/config';
+import { startHonoApi } from '@/hono-api';
+import { killPort } from '@/utils/kill-port';
+import { logger } from '@/utils/logger';
 
 /**
  * Start all services
@@ -18,6 +20,7 @@ async function main(): Promise<void> {
 
   try {
     if (config.webApi.enabled) {
+      killPort(config.webApi.port);
       await startHonoApi();
       logger.info('✅ Hono API started successfully');
     } else {

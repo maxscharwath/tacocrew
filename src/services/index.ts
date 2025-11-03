@@ -3,7 +3,7 @@
  * @module services
  */
 
-export * from './cart.service';
-export * from './order.service';
-export * from './resource.service';
-export * from './session.service';
+export * from '@/services/cart.service';
+export * from '@/services/order.service';
+export * from '@/services/resource.service';
+export * from '@/services/session.service';

@@ -3,45 +3,27 @@
  * @module hono/app
  */
 
-import { Hono } from 'hono';
+import { swaggerUI } from '@hono/swagger-ui';
+import { OpenAPIHono } from '@hono/zod-openapi';
 import { cors } from 'hono/cors';
-import { logger } from 'hono/logger';
-import { debugRoutes } from '../utils/route-debugger';
-import { errorHandler } from './middleware/error-handler';
-import { cartRoutes } from './routes/cart.routes';
-import { healthRoutes } from './routes/health.routes';
-import { resourceRoutes } from './routes/resource.routes';
-
-/**
- * Hono route definitions for debugging
- */
-const honoRoutes = [
-  // Health routes
-  { method: 'GET', path: '/health' },
-  // Cart routes
-  { method: 'POST', path: '/api/v1/carts' },
-  { method: 'GET', path: '/api/v1/carts/:cartId' },
-  { method: 'POST', path: '/api/v1/carts/:cartId/tacos' },
-  { method: 'GET', path: '/api/v1/carts/:cartId/tacos/:id' },
-  { method: 'PUT', path: '/api/v1/carts/:cartId/tacos/:id' },
-  { method: 'PATCH', path: '/api/v1/carts/:cartId/tacos/:id/quantity' },
-  { method: 'DELETE', path: '/api/v1/carts/:cartId/tacos/:id' },
-  { method: 'POST', path: '/api/v1/carts/:cartId/extras' },
-  { method: 'POST', path: '/api/v1/carts/:cartId/drinks' },
-  { method: 'POST', path: '/api/v1/carts/:cartId/desserts' },
-  { method: 'POST', path: '/api/v1/carts/:cartId/orders' },
-  // Resource routes
-  { method: 'GET', path: '/api/v1/resources/stock' },
-];
+import { logger as honoLogger } from 'hono/logger';
+import { errorHandler } from '@/hono/middleware/error-handler';
+import { authRoutes } from '@/hono/routes/auth.routes';
+import { cartRoutes } from '@/hono/routes/cart.routes';
+import { groupOrderRoutes } from '@/hono/routes/group-order.routes';
+import { healthRoutes } from '@/hono/routes/health.routes';
+import { resourceRoutes } from '@/hono/routes/resource.routes';
+import { userRoutes } from '@/hono/routes/user.routes';
+import { debugRoutes } from '@/utils/route-debugger';
 
 /**
  * Create and configure Hono application
  */
-export function createApp(): Hono {
-  const app = new Hono();
+export function createApp(): OpenAPIHono {
+  const app = new OpenAPIHono();
 
   // Request logging
-  app.use('*', logger());
+  app.use('*', honoLogger());
 
   // CORS
   app.use(
@@ -49,7 +31,7 @@ export function createApp(): Hono {
     cors({
       origin: '*', // Configure from config in production
       allowMethods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-      allowHeaders: ['Content-Type', 'Authorization'],
+      allowHeaders: ['Content-Type', 'Authorization', 'x-username'],
     })
   );
 
@@ -57,8 +39,50 @@ export function createApp(): Hono {
   app.route('/', healthRoutes);
 
   // API routes
+  app.route('/api/v1/auth', authRoutes);
   app.route('/api/v1', cartRoutes);
   app.route('/api/v1', resourceRoutes);
+  app.route('/api/v1/group-orders', groupOrderRoutes);
+  app.route('/api/v1/users', userRoutes);
+
+  // The OpenAPI documentation is available at /doc (summary) and /openapi.json (full spec)
+  // Note: Defined after all routes to ensure all schemas are registered
+  app.get('/openapi.json', async (c) => {
+    const openAPIDocument = await app.getOpenAPI31Document({
+      openapi: '3.1.0',
+      info: {
+        title: 'Tacobot API',
+        version: '1.0.0',
+        description: 'API documentation for Tacobot group ordering system',
+      },
+    });
+
+    // Ensure securitySchemes are included
+    openAPIDocument.components = {
+      ...openAPIDocument.components,
+      securitySchemes: {
+        BearerAuth: {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+          description:
+            'JWT token authentication. Enter your token (with or without "Bearer " prefix)',
+        },
+      },
+    };
+
+    return c.json(openAPIDocument);
+  });
+
+  app.get(
+    '/docs',
+    swaggerUI({
+      url: '/openapi.json',
+      config: {
+        persistAuthorization: true, // Keep authorization token in browser storage
+      },
+    })
+  );
 
   // 404 handler
   app.notFound((c) => {
@@ -76,8 +100,12 @@ export function createApp(): Hono {
   // Error handler (must be last)
   app.onError(errorHandler);
 
-  // Debug routes
-  debugRoutes(honoRoutes, 'Hono');
+  // Debug routes (automatically collected from the Hono app)
+  const discoveredRoutes = app.routes.map((route) => ({
+    method: (route.method || 'UNKNOWN').toUpperCase(),
+    path: route.path,
+  }));
+  debugRoutes(discoveredRoutes, 'Hono');
 
   return app;
 }

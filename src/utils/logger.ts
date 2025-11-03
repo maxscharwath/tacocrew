@@ -4,7 +4,7 @@
  */
 
 import winston from 'winston';
-import config from '../config';
+import { config } from '@/config';
 
 const { combine, timestamp, json, printf, colorize, errors } = winston.format;
 
@@ -47,5 +47,3 @@ export const httpLoggerStream = {
     logger.info(message.trim());
   },
 };
-
-export default logger;

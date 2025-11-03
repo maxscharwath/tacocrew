@@ -6,7 +6,7 @@
 
 import { apiClient } from '../src/api/client';
 import { cartService, orderService, resourceService } from '../src/services';
-import { OrderType, TacoSize } from '../src/types';
+import { OrderType, StockCategory, TacoSize } from '../src/types';
 
 /**
  * Example 1: Initialize and add items to cart
@@ -58,10 +58,10 @@ async function _exampleCheckStock(): Promise<void> {
   const _stock = await resourceService.getStock();
 
   // Check if specific item is in stock
-  const _isAvailable = await resourceService.isInStock('viandes', 'viande_hachee');
+  const _isAvailable = await resourceService.isInStock(StockCategory.Meats, 'viande_hachee');
 
   // Get out of stock items for a category
-  const outOfStockMeats = await resourceService.getOutOfStockProducts('viandes');
+  const outOfStockMeats = await resourceService.getOutOfStockProducts(StockCategory.Meats);
   if (outOfStockMeats.length > 0) {
   }
 }

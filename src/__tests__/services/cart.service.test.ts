@@ -2,23 +2,25 @@
  * Unit tests for CartService
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { container } from 'tsyringe';
-import { CartService } from '../../services/cart.service';
-import { CartRepository } from '../../database/cart.repository';
-import { TacoMappingRepository } from '../../database/taco-mapping.repository';
-import { SessionApiClient } from '../../api/session-client';
-import { TacosApiClient } from '../../api/client';
-import { NotFoundError } from '../../utils/errors';
-import { TacoSize } from '../../types';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
-  createMockCartRepository,
-  createMockTacoMappingRepository,
-  createMockSessionApiClient,
-  createMockTacosApiClient,
   createMockCartMetadata,
+  createMockCartRepository,
+  createMockSessionApiClient,
+  createMockStockAvailability,
   createMockTaco,
-} from '../mocks';
+  createMockTacoMappingRepository,
+  createMockTacosApiClient,
+} from '@/__tests__/mocks';
+import { TacosApiClient } from '@/api/client';
+import { SessionApiClient } from '@/api/session-client';
+import { CartRepository } from '@/database/cart.repository';
+import { TacoMappingRepository } from '@/database/taco-mapping.repository';
+import { CartService } from '@/services/cart.service';
+import { ResourceService } from '@/services/resource.service';
+import { TacoSize } from '@/types';
+import { NotFoundError } from '@/utils/errors';
 
 describe('CartService', () => {
   let cartService: CartService;
@@ -26,6 +28,7 @@ describe('CartService', () => {
   let mockTacoMappingRepository: ReturnType<typeof createMockTacoMappingRepository>;
   let mockSessionApiClient: ReturnType<typeof createMockSessionApiClient>;
   let mockTacosApiClient: ReturnType<typeof createMockTacosApiClient>;
+  let mockResourceService: Partial<ResourceService>;
 
   beforeEach(() => {
     // Clear container
@@ -38,10 +41,21 @@ describe('CartService', () => {
     mockTacosApiClient = createMockTacosApiClient();
 
     // Register mocks
-    container.registerInstance(CartRepository, mockCartRepository as any);
-    container.registerInstance(TacoMappingRepository, mockTacoMappingRepository as any);
-    container.registerInstance(SessionApiClient, mockSessionApiClient as any);
-    container.registerInstance(TacosApiClient, mockTacosApiClient as any);
+    container.registerInstance(CartRepository, mockCartRepository as unknown as CartRepository);
+    container.registerInstance(
+      TacoMappingRepository,
+      mockTacoMappingRepository as unknown as TacoMappingRepository
+    );
+    container.registerInstance(
+      SessionApiClient,
+      mockSessionApiClient as unknown as SessionApiClient
+    );
+    container.registerInstance(TacosApiClient, mockTacosApiClient as unknown as TacosApiClient);
+
+    mockResourceService = {
+      getStock: vi.fn().mockResolvedValue(createMockStockAvailability()),
+    };
+    container.registerInstance(ResourceService, mockResourceService as unknown as ResourceService);
 
     // Create service instance
     cartService = container.resolve(CartService);
@@ -49,21 +63,22 @@ describe('CartService', () => {
 
   describe('createCart', () => {
     it('should create a new cart with session data', async () => {
-      const mockCartId = 'test-cart-id';
       const mockCsrfToken = 'test-csrf-token';
       const mockMetadata = { ip: '127.0.0.1', userAgent: 'test-agent' };
 
-      mockTacosApiClient.refreshCsrfToken.mockResolvedValue({ csrfToken: mockCsrfToken, cookies: {} });
-      mockCartRepository.createCart.mockResolvedValue(undefined);
+      mockTacosApiClient.refreshCsrfToken.mockResolvedValue({
+        csrfToken: mockCsrfToken,
+        cookies: {},
+      });
+      mockCartRepository.createCart.mockResolvedValue({ id: 'cart-123' });
 
       const result = await cartService.createCart(mockMetadata);
 
-      expect(result).toHaveProperty('cartId');
+      expect(result).toHaveProperty('id');
+      expect(result.id).toBe('cart-123');
       expect(mockTacosApiClient.refreshCsrfToken).toHaveBeenCalled();
       expect(mockCartRepository.createCart).toHaveBeenCalledWith(
-        expect.any(String),
         expect.objectContaining({
-          csrfToken: mockCsrfToken,
           cookies: {},
           metadata: mockMetadata,
         })
@@ -72,30 +87,30 @@ describe('CartService', () => {
 
     it('should create cart without metadata', async () => {
       mockTacosApiClient.refreshCsrfToken.mockResolvedValue({ csrfToken: 'token', cookies: {} });
-      mockCartRepository.createCart.mockResolvedValue(undefined);
+      mockCartRepository.createCart.mockResolvedValue({ id: 'cart-456' });
 
       const result = await cartService.createCart();
 
-      expect(result).toHaveProperty('cartId');
+      expect(result).toHaveProperty('id');
+      expect(result.id).toBe('cart-456');
       expect(mockCartRepository.createCart).toHaveBeenCalled();
     });
   });
 
   describe('getCart', () => {
-    it('should return cart with session data', async () => {
+    it('should return array of tacos', async () => {
       const cartId = 'test-cart-id';
       const mockMetadata = createMockCartMetadata();
-      const mockTacos: any[] = [];
 
       mockCartRepository.getCart.mockResolvedValue(mockMetadata);
-      mockSessionApiClient.post.mockResolvedValue('<html></html>');
+      mockSessionApiClient.post.mockResolvedValue(
+        '<div class="card" id="tacos-0"><div class="card-body"><h5 class="card-title">Tacos XL - 12.50 CHF.</h5><p><strong>Viande</strong>: Viande Hachée x 1</p><p><strong>Sauce</strong>: Harissa</p><p><strong>Garniture</strong>: Salade</p></div></div>'
+      );
       mockTacoMappingRepository.getAllMappings.mockResolvedValue(new Map());
 
       const result = await cartService.getCart(cartId);
 
-      expect(result).toHaveProperty('cartId', cartId);
-      expect(result).toHaveProperty('session');
-      expect(result).toHaveProperty('tacos');
+      expect(Array.isArray(result)).toBe(true);
       expect(mockCartRepository.getCart).toHaveBeenCalledWith(cartId);
     });
 
@@ -141,9 +156,13 @@ describe('CartService', () => {
       };
 
       mockCartRepository.getCart.mockResolvedValue(mockMetadata);
-      mockSessionApiClient.postForm.mockResolvedValue('<html><select name="selectProduct" value="tacos_XL"></select></html>');
+      mockSessionApiClient.postForm.mockResolvedValue(
+        '<div class="card" id="tacos-0"><div class="card-body"><h5 class="card-title">Tacos XL - 12.50 CHF.</h5><p><strong>Viande</strong>: Viande Hachée x 2</p><p><strong>Sauce</strong>: Harissa</p><p><strong>Garniture</strong>: Salade</p><p><strong>Remarque</strong>: Test note</p></div></div>'
+      );
       mockCartRepository.getCart.mockResolvedValueOnce(mockMetadata);
-      mockSessionApiClient.post.mockResolvedValue('<html></html>');
+      mockSessionApiClient.post.mockResolvedValue(
+        '<div class="card" id="tacos-0"><div class="card-body"><h5 class="card-title">Tacos XL - 12.50 CHF.</h5><p><strong>Viande</strong>: Viande Hachée x 2</p><p><strong>Sauce</strong>: Harissa</p><p><strong>Garniture</strong>: Salade</p></div></div>'
+      );
       mockTacoMappingRepository.getAllMappings.mockResolvedValue(new Map());
       mockTacoMappingRepository.store.mockResolvedValue(undefined);
 
@@ -173,20 +192,19 @@ describe('CartService', () => {
     it('should return tacos from cart', async () => {
       const cartId = 'test-cart-id';
       const mockMetadata = createMockCartMetadata();
-      const htmlResponse = '<div class="card"><select name="selectProduct" value="tacos_XL"></select></div>';
+      const htmlResponse =
+        '<div class="card"><select name="selectProduct" value="tacos_XL"></select></div>';
 
       mockCartRepository.getCart.mockResolvedValue(mockMetadata);
       mockSessionApiClient.post.mockResolvedValue(htmlResponse);
       mockTacoMappingRepository.getAllMappings.mockResolvedValue(new Map());
 
-      const result = await cartService.getTacos(cartId);
+      const result = await cartService.getCart(cartId);
 
       expect(Array.isArray(result)).toBe(true);
-      expect(mockSessionApiClient.post).toHaveBeenCalledWith(
-        cartId,
-        '/ajax/owt.php',
-        { loadProducts: true }
-      );
+      expect(mockSessionApiClient.post).toHaveBeenCalledWith(cartId, '/ajax/owt.php', {
+        loadProducts: true,
+      });
     });
   });
 
@@ -205,4 +223,3 @@ describe('CartService', () => {
     });
   });
 });
-

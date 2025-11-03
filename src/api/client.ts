@@ -3,22 +3,21 @@
  * @module api/client
  */
 
-import 'reflect-metadata';
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig } from 'axios';
 import { injectable } from 'tsyringe';
-import config from '../config';
-import { HttpService } from '../services/http.service';
-import { ErrorCode } from '../types';
+import { config } from '@/config';
+import { HttpService } from '@/services/http.service';
+import { ErrorCode } from '@/types';
 import {
   ApiError,
   CsrfError,
   DuplicateOrderError,
   NetworkError,
   RateLimitError,
-} from '../utils/errors';
-import { inject } from '../utils/inject';
-import { logger } from '../utils/logger';
-import { extractCsrfTokenFromHtml } from '../utils/html-parser';
+} from '@/utils/errors';
+import { extractCsrfTokenFromHtml } from '@/utils/html-parser';
+import { inject } from '@/utils/inject';
+import { logger } from '@/utils/logger';
 
 /**
  * API Client for backend communication
@@ -53,7 +52,7 @@ export class TacosApiClient {
   /**
    * Handle API errors
    */
-  private async handleError(error: AxiosError): Promise<never> {
+  private handleError(error: AxiosError): never {
     if (error.response) {
       const { status, data } = error.response;
 
@@ -137,30 +136,30 @@ export class TacosApiClient {
    * This maintains the session by using stored cookies
    * Fetches the token from index.php?content=livraison and extracts it from HTML
    */
-  async refreshCsrfTokenWithCookies(cookies: Record<string, string>): Promise<{ csrfToken: string; cookies: Record<string, string> }> {
+  async refreshCsrfTokenWithCookies(
+    cookies: Record<string, string>
+  ): Promise<{ csrfToken: string; cookies: Record<string, string> }> {
     try {
       // Build cookie header from existing cookies
-      const cookieHeader = Object.keys(cookies).length > 0
-        ? Object.entries(cookies)
-            .map(([key, value]) => `${key}=${value}`)
-            .join('; ')
-        : undefined;
+      const cookieHeader =
+        Object.keys(cookies).length > 0
+          ? Object.entries(cookies)
+              .map(([key, value]) => `${key}=${value}`)
+              .join('; ')
+          : undefined;
 
-      logger.debug('Fetching CSRF token from HTML page with existing cookies', { 
+      logger.debug('Fetching CSRF token from HTML page with existing cookies', {
         baseUrl: this.baseUrl,
         cookieCount: Object.keys(cookies).length,
       });
-      
+
       // Fetch the HTML page containing the CSRF token
-      const htmlResponse = await axios.get<string>(
-        `${this.baseUrl}/index.php?content=livraison`,
-        {
-          headers: {
-            'Accept': 'text/html',
-            ...(cookieHeader ? { Cookie: cookieHeader } : {}),
-          },
-        }
-      );
+      const htmlResponse = await axios.get<string>(`${this.baseUrl}/index.php?content=livraison`, {
+        headers: {
+          Accept: 'text/html',
+          ...(cookieHeader ? { Cookie: cookieHeader } : {}),
+        },
+      });
 
       // Extract CSRF token from HTML
       const csrfToken = extractCsrfTokenFromHtml(htmlResponse.data);
@@ -191,7 +190,7 @@ export class TacosApiClient {
         cookies: updatedCookies,
       };
     } catch (error) {
-      logger.error('Failed to fetch CSRF token with cookies', { 
+      logger.error('Failed to fetch CSRF token with cookies', {
         error,
         baseUrl: this.baseUrl,
       });
@@ -215,11 +214,11 @@ export class TacosApiClient {
       logger.debug('Initializing session by visiting homepage', { baseUrl: this.baseUrl });
       const homeResponse = await axios.get<string>(`${this.baseUrl}/`, {
         headers: {
-          'Accept': 'text/html',
+          Accept: 'text/html',
         },
         validateStatus: () => true, // Don't throw on any status
       });
-      
+
       // Extract cookies from homepage response
       const homeCookies: Record<string, string> = {};
       const homeSetCookieHeaders = homeResponse.headers['set-cookie'];
@@ -232,39 +231,37 @@ export class TacosApiClient {
           }
         });
       }
-      
+
       logger.debug('Homepage visited', {
         status: homeResponse.status,
         cookieCount: Object.keys(homeCookies).length,
         cookieNames: Object.keys(homeCookies),
       });
-      
+
       // Now fetch the HTML page containing the CSRF token, including cookies from homepage
       logger.debug('Fetching CSRF token from HTML page', { baseUrl: this.baseUrl });
-      const cookieHeader = Object.keys(homeCookies).length > 0
-        ? Object.entries(homeCookies)
-            .map(([key, value]) => `${key}=${value}`)
-            .join('; ')
-        : undefined;
-      
-      const htmlResponse = await axios.get<string>(
-        `${this.baseUrl}/index.php?content=livraison`,
-        {
-          headers: {
-            'Accept': 'text/html',
-            ...(cookieHeader ? { Cookie: cookieHeader } : {}),
-          },
-        }
-      );
+      const cookieHeader =
+        Object.keys(homeCookies).length > 0
+          ? Object.entries(homeCookies)
+              .map(([key, value]) => `${key}=${value}`)
+              .join('; ')
+          : undefined;
+
+      const htmlResponse = await axios.get<string>(`${this.baseUrl}/index.php?content=livraison`, {
+        headers: {
+          Accept: 'text/html',
+          ...(cookieHeader ? { Cookie: cookieHeader } : {}),
+        },
+      });
 
       // Extract CSRF token from HTML
       const csrfToken = extractCsrfTokenFromHtml(htmlResponse.data);
       if (!csrfToken) {
         throw new CsrfError('CSRF token not found in HTML response');
       }
-      
+
       logger.info('CSRF token fetched successfully from HTML');
-      
+
       // Extract cookies from HTML response and merge with homepage cookies
       // Store cookie values exactly as received (don't decode - send them back as-is)
       const cookies: Record<string, string> = { ...homeCookies }; // Start with homepage cookies
@@ -279,7 +276,7 @@ export class TacosApiClient {
           }
         });
       }
-      
+
       logger.info('CSRF token refresh response', {
         tokenLength: csrfToken.length,
         cookieCount: Object.keys(cookies).length,
@@ -287,21 +284,23 @@ export class TacosApiClient {
         setCookieHeaders: setCookieHeaders?.length || 0,
         cookies: cookies, // Show actual cookie values for debugging
       });
-      
+
       return {
         csrfToken,
         cookies,
       };
     } catch (error) {
-      logger.error('Failed to fetch CSRF token', { 
+      logger.error('Failed to fetch CSRF token', {
         error,
         baseUrl: this.baseUrl,
-        message: 'Please ensure BACKEND_BASE_URL is set correctly in your .env file'
+        message: 'Please ensure BACKEND_BASE_URL is set correctly in your .env file',
       });
       if (error instanceof CsrfError) {
         throw error;
       }
-      throw new CsrfError(`Failed to fetch CSRF token from ${this.baseUrl}. Please check your BACKEND_BASE_URL configuration.`);
+      throw new CsrfError(
+        `Failed to fetch CSRF token from ${this.baseUrl}. Please check your BACKEND_BASE_URL configuration.`
+      );
     }
   }
 

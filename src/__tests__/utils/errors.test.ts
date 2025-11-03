@@ -2,7 +2,8 @@
  * Unit tests for error classes
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
+import { ErrorCode } from '@/types';
 import {
   ApiError,
   CsrfError,
@@ -11,8 +12,7 @@ import {
   NotFoundError,
   RateLimitError,
   ValidationError,
-} from '../../utils/errors';
-import { ErrorCode } from '../../types';
+} from '@/utils/errors';
 
 describe('Error Classes', () => {
   describe('ApiError', () => {
@@ -95,4 +95,3 @@ describe('Error Classes', () => {
     });
   });
 });
-

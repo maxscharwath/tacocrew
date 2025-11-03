@@ -3,7 +3,9 @@
  */
 
 import { vi } from 'vitest';
-import type { CartMetadata, Taco, StockAvailability } from '../types';
+import type { CartMetadata, StockAvailability, Taco } from '@/types';
+import { StockCategory, TacoSize } from '@/types';
+import { deterministicUUID } from '@/utils/uuid-utils';
 
 /**
  * Mock CartRepository
@@ -91,28 +93,81 @@ export const createMockCartMetadata = (overrides?: Partial<CartMetadata>): CartM
 
 export const createMockTaco = (overrides?: Partial<Taco>): Taco => ({
   id: 'test-taco-id',
-  size: 'tacos_XL' as const,
-  meats: [{ id: 'viande_hachee', name: 'Viande Hachée', quantity: 2 }],
-  sauces: [{ id: 'harissa', name: 'Harissa' }],
-  garnitures: [{ id: 'salade', name: 'Salade' }],
+  size: TacoSize.XL,
+  meats: [
+    {
+      id: deterministicUUID('viande_hachee', StockCategory.Meats),
+      code: 'viande_hachee',
+      name: 'Viande Hachée',
+      quantity: 2,
+    },
+  ],
+  sauces: [
+    { id: deterministicUUID('harissa', StockCategory.Sauces), code: 'harissa', name: 'Harissa' },
+  ],
+  garnitures: [
+    { id: deterministicUUID('salade', StockCategory.Garnishes), code: 'salade', name: 'Salade' },
+  ],
   note: undefined,
   quantity: 1,
   price: 12.5,
   ...overrides,
 });
 
-export const createMockStockAvailability = (): StockAvailability => ({
-  viandes: {
-    viande_hachee: { available: true, stock: 100 },
-    poulet: { available: true, stock: 50 },
-  },
-  sauces: {
-    harissa: { available: true, stock: 200 },
-    algérienne: { available: true, stock: 150 },
-  },
-  garnitures: {
-    salade: { available: true, stock: 300 },
-    tomates: { available: true, stock: 250 },
-  },
-});
+const formatName = (code: string): string => {
+  return code
+    .split('_')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
+};
 
+export const createMockStockAvailability = (
+  overrides?: Partial<StockAvailability>
+): StockAvailability => ({
+  [StockCategory.Meats]: [
+    {
+      id: deterministicUUID('viande_hachee', StockCategory.Meats),
+      code: 'viande_hachee',
+      name: formatName('viande_hachee'),
+      in_stock: true,
+    },
+    {
+      id: deterministicUUID('poulet', StockCategory.Meats),
+      code: 'poulet',
+      name: formatName('poulet'),
+      in_stock: true,
+    },
+  ],
+  [StockCategory.Sauces]: [
+    {
+      id: deterministicUUID('harissa', StockCategory.Sauces),
+      code: 'harissa',
+      name: formatName('harissa'),
+      in_stock: true,
+    },
+    {
+      id: deterministicUUID('algerienne', StockCategory.Sauces),
+      code: 'algerienne',
+      name: formatName('algerienne'),
+      in_stock: true,
+    },
+  ],
+  [StockCategory.Garnishes]: [
+    {
+      id: deterministicUUID('salade', StockCategory.Garnishes),
+      code: 'salade',
+      name: formatName('salade'),
+      in_stock: true,
+    },
+    {
+      id: deterministicUUID('tomates', StockCategory.Garnishes),
+      code: 'tomates',
+      name: formatName('tomates'),
+      in_stock: true,
+    },
+  ],
+  [StockCategory.Desserts]: [],
+  [StockCategory.Drinks]: [],
+  [StockCategory.Extras]: [],
+  ...overrides,
+});

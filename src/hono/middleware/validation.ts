@@ -3,8 +3,8 @@
  * @module hono/middleware/validation
  */
 
-import { z } from 'zod';
-import { OrderType, TacoSize } from '../../types';
+import { z } from '@hono/zod-openapi';
+import { OrderType, TacoSize } from '@/types';
 
 /**
  * Free sauce schema (reusable)
@@ -20,14 +20,7 @@ const freeSauceSchema = z.object({
  */
 export const schemas = {
   addTaco: z.object({
-    size: z.enum([
-      TacoSize.L,
-      TacoSize.BOWL,
-      TacoSize.L_MIXTE,
-      TacoSize.XL,
-      TacoSize.XXL,
-      TacoSize.GIGA,
-    ]),
+    size: z.enum(TacoSize),
     meats: z
       .array(
         z.object({
@@ -81,7 +74,6 @@ export const schemas = {
       })
       .refine(
         (data) => {
-          // Address is required when type is DELIVERY
           if (data.type === OrderType.DELIVERY) {
             return data.address !== undefined && data.address !== '';
           }
@@ -94,4 +86,3 @@ export const schemas = {
       ),
   }),
 };
-

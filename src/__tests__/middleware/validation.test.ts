@@ -2,9 +2,9 @@
  * Unit tests for validation schemas
  */
 
-import { describe, it, expect } from 'vitest';
-import { schemas } from '../../hono/middleware/validation';
-import { TacoSize, OrderType } from '../../types';
+import { describe, expect, it } from 'vitest';
+import { schemas } from '@/hono/middleware/validation';
+import { OrderType, TacoSize } from '@/types';
 
 describe('Validation Schemas', () => {
   describe('addTaco', () => {
@@ -190,4 +190,3 @@ describe('Validation Schemas', () => {
     });
   });
 });
-

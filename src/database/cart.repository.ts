@@ -3,12 +3,12 @@
  * @module database/cart
  */
 
-import 'reflect-metadata';
 import { injectable } from 'tsyringe';
-import { CartMetadata } from '../types';
-import { inject } from '../utils/inject';
-import { logger } from '../utils/logger';
-import { PrismaService } from './prisma.service';
+import { PrismaService } from '@/database/prisma.service';
+import { type CartId, CartIdSchema } from '@/domain/schemas/cart.schema';
+import { CartMetadata } from '@/types';
+import { inject } from '@/utils/inject';
+import { logger } from '@/utils/logger';
 
 /**
  * Repository for managing carts with session data
@@ -18,12 +18,12 @@ export class CartRepository {
   private readonly prisma = inject(PrismaService);
 
   /**
-   * Get cart with session data by cartId
+   * Get cart with session data by id
    */
-  async getCart(cartId: string): Promise<CartMetadata | null> {
+  async getCart(id: CartId): Promise<CartMetadata | null> {
     try {
       const cart = await this.prisma.client.cart.findUnique({
-        where: { cartId },
+        where: { id },
       });
 
       if (!cart) {
@@ -32,13 +32,13 @@ export class CartRepository {
 
       // Update last activity
       await this.prisma.client.cart.update({
-        where: { cartId },
+        where: { id },
         data: { lastActivityAt: new Date() },
       });
 
       return this.mapToCartMetadata(cart);
     } catch (error) {
-      logger.error('Failed to get cart', { cartId, error });
+      logger.error('Failed to get cart', { id, error });
       return null;
     }
   }
@@ -46,11 +46,10 @@ export class CartRepository {
   /**
    * Create a new cart with session data
    */
-  async createCart(cartId: string, metadata: CartMetadata): Promise<void> {
+  async createCart(metadata: CartMetadata): Promise<{ id: CartId }> {
     try {
-      await this.prisma.client.cart.create({
+      const cart = await this.prisma.client.cart.create({
         data: {
-          cartId,
           csrfToken: '', // CSRF tokens are fetched per-request, not stored
           cookies: JSON.stringify(metadata.cookies),
           metadata: metadata.metadata ? JSON.stringify(metadata.metadata) : null,
@@ -58,9 +57,10 @@ export class CartRepository {
           lastActivityAt: metadata.lastActivityAt,
         },
       });
-      logger.debug('Cart created', { cartId });
+      logger.debug('Cart created', { id: cart.id });
+      return { id: CartIdSchema.parse(cart.id) };
     } catch (error) {
-      logger.error('Failed to create cart', { cartId, error });
+      logger.error('Failed to create cart', { error });
       throw error;
     }
   }
@@ -68,14 +68,14 @@ export class CartRepository {
   /**
    * Update cart session data
    */
-  async updateCart(cartId: string, metadata: Partial<CartMetadata>): Promise<void> {
+  async updateCart(id: CartId, metadata: Partial<CartMetadata>): Promise<void> {
     try {
       // If updating cookies, merge with existing cookies to prevent race conditions
       let cookiesToUpdate: string | undefined;
       if (metadata.cookies) {
         // Read current cart to merge cookies
         const currentCart = await this.prisma.client.cart.findUnique({
-          where: { cartId },
+          where: { id },
           select: { cookies: true },
         });
 
@@ -108,13 +108,13 @@ export class CartRepository {
       }
 
       await this.prisma.client.cart.update({
-        where: { cartId },
+        where: { id },
         data: updateData,
       });
 
-      logger.debug('Cart updated', { cartId });
+      logger.debug('Cart updated', { id });
     } catch (error) {
-      logger.error('Failed to update cart', { cartId, error });
+      logger.error('Failed to update cart', { id, error });
       throw error;
     }
   }
@@ -122,14 +122,14 @@ export class CartRepository {
   /**
    * Check if cart exists
    */
-  async hasCart(cartId: string): Promise<boolean> {
+  async hasCart(id: CartId): Promise<boolean> {
     try {
       const count = await this.prisma.client.cart.count({
-        where: { cartId },
+        where: { id },
       });
       return count > 0;
     } catch (error) {
-      logger.error('Failed to check cart existence', { cartId, error });
+      logger.error('Failed to check cart existence', { id, error });
       return false;
     }
   }
@@ -137,14 +137,14 @@ export class CartRepository {
   /**
    * Delete cart
    */
-  async deleteCart(cartId: string): Promise<void> {
+  async deleteCart(id: CartId): Promise<void> {
     try {
       await this.prisma.client.cart.delete({
-        where: { cartId },
+        where: { id },
       });
-      logger.info('Cart deleted', { cartId });
+      logger.info('Cart deleted', { id });
     } catch (error) {
-      logger.error('Failed to delete cart', { cartId, error });
+      logger.error('Failed to delete cart', { id, error });
       // Don't throw if cart doesn't exist
     }
   }
@@ -181,7 +181,7 @@ export class CartRepository {
    * Map database model to CartMetadata
    */
   private mapToCartMetadata(cart: {
-    cartId: string;
+    id: string;
     csrfToken: string;
     cookies: string;
     metadata: string | null;
@@ -202,4 +202,3 @@ export class CartRepository {
     };
   }
 }
-

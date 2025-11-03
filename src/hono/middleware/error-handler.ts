@@ -4,9 +4,9 @@
  */
 
 import { Context, ErrorHandler } from 'hono';
-import { ErrorCode } from '../../types';
-import { ApiError } from '../../utils/errors';
-import { logger } from '../../utils/logger';
+import { ErrorCode } from '@/types';
+import { ApiError } from '@/utils/errors';
+import { logger } from '@/utils/logger';
 
 /**
  * Global error handler for Hono

@@ -3,8 +3,8 @@
  * @module utils/session-store
  */
 
-import { SessionData, SessionStore } from '../types/session';
-import { logger } from './logger';
+import { SessionData, SessionStore } from '@/types/session';
+import { logger } from '@/utils/logger';
 
 /**
  * In-memory session store
@@ -129,4 +129,3 @@ export class InMemorySessionStore implements SessionStore {
 
 // Export singleton instance
 export const sessionStore = new InMemorySessionStore();
-export default sessionStore;

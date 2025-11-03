@@ -3,23 +3,23 @@
  * @module api/session-client
  */
 
-import 'reflect-metadata';
 import { AxiosError, AxiosInstance, AxiosRequestConfig } from 'axios';
 import { container, injectable } from 'tsyringe';
-import config from '../config';
-import { HttpService } from '../services/http.service';
-import { CartService } from '../services/cart.service';
-import { TacosApiClient } from './client';
-import { ErrorCode } from '../types';
+import { TacosApiClient } from '@/api/client';
+import { config } from '@/config';
+import type { SessionId } from '@/domain/schemas/session.schema';
+import { CartService } from '@/services/cart.service';
+import { HttpService } from '@/services/http.service';
+import { ErrorCode } from '@/types';
 import {
   ApiError,
   CsrfError,
   DuplicateOrderError,
   NetworkError,
   RateLimitError,
-} from '../utils/errors';
-import { inject } from '../utils/inject';
-import { logger } from '../utils/logger';
+} from '@/utils/errors';
+import { inject } from '@/utils/inject';
+import { logger } from '@/utils/logger';
 
 /**
  * Session-aware API Client
@@ -35,7 +35,6 @@ export class SessionApiClient {
   private readonly httpService = inject(HttpService);
 
   private axiosInstance: AxiosInstance;
-
 
   constructor(private baseUrl: string = config.backend.baseUrl) {
     // Create axios instance with default logging interceptors
@@ -147,12 +146,15 @@ export class SessionApiClient {
   /**
    * Get or fetch CSRF token for a session
    */
-  private async getCsrfToken(sessionId: string, cookies: Record<string, string>): Promise<string> {
+  private async getCsrfToken(
+    sessionId: SessionId,
+    cookies: Record<string, string>
+  ): Promise<string> {
     const apiClient = container.resolve(TacosApiClient);
     const { csrfToken } = await apiClient.refreshCsrfTokenWithCookies(cookies);
 
-    logger.debug('Fetched fresh CSRF token', { 
-      sessionId, 
+    logger.debug('Fetched fresh CSRF token', {
+      sessionId,
       tokenLength: csrfToken.length,
     });
 
@@ -160,13 +162,14 @@ export class SessionApiClient {
   }
 
   private async makeSessionRequest<T>(
-    sessionId: string,
+    sessionId: SessionId,
     method: 'get' | 'post',
     url: string,
     data?: unknown,
     additionalConfig?: AxiosRequestConfig
   ): Promise<T> {
     // Get cart session data (cookies only - tokens are fetched fresh)
+    // SessionId is CartId - each cart ID serves as a session identifier
     const session = await this.cartService.getCartSession(sessionId);
 
     // Get CSRF token (cached briefly to handle parallel requests)
@@ -222,9 +225,10 @@ export class SessionApiClient {
         status: response.status,
         contentType: response.headers['content-type'],
         dataType: typeof response.data,
-        dataPreview: typeof response.data === 'string' 
-          ? response.data.substring(0, 200) 
-          : JSON.stringify(response.data).substring(0, 200),
+        dataPreview:
+          typeof response.data === 'string'
+            ? response.data.substring(0, 200)
+            : JSON.stringify(response.data).substring(0, 200),
       });
 
       // Extract and store cookies from response, merging with existing
@@ -241,6 +245,7 @@ export class SessionApiClient {
 
         if (Object.keys(cookies).length > 0) {
           // Get current session to merge cookies instead of replacing
+          // SessionId is CartId - each cart ID serves as a session identifier
           const currentSession = await this.cartService.getCartSession(sessionId);
           const mergedCookies = { ...currentSession.cookies, ...cookies };
           await this.cartService.updateCartSession(sessionId, { cookies: mergedCookies });
@@ -252,25 +257,30 @@ export class SessionApiClient {
       // If CSRF error, try refreshing cookies and retry once
       // (This shouldn't happen since we fetch fresh tokens, but handle it just in case)
       if (error instanceof CsrfError) {
-        logger.warn('CSRF error despite fresh token, refreshing cookies and retrying...', { sessionId, url });
-        
+        logger.warn('CSRF error despite fresh token, refreshing cookies and retrying...', {
+          sessionId,
+          url,
+        });
+
         try {
-                // Get current session cookies
-                const currentSession = await this.cartService.getCartSession(sessionId);
-                
-                // Get fresh token using existing cookies (maintains session)
-                const apiClient = container.resolve(TacosApiClient);
-                const { csrfToken: retryToken, cookies: updatedCookies } = await apiClient.refreshCsrfTokenWithCookies(currentSession.cookies);
-          
+          // Get current session cookies
+          // SessionId is CartId - each cart ID serves as a session identifier
+          const currentSession = await this.cartService.getCartSession(sessionId);
+
+          // Get fresh token using existing cookies (maintains session)
+          const apiClient = container.resolve(TacosApiClient);
+          const { csrfToken: retryToken, cookies: updatedCookies } =
+            await apiClient.refreshCsrfTokenWithCookies(currentSession.cookies);
+
           // Update cart session with any new cookies from token refresh
           if (Object.keys(updatedCookies).length > 0) {
             await this.cartService.updateCartSession(sessionId, {
               cookies: updatedCookies,
             });
           }
-          
+
           logger.info('Cookies refreshed, retrying request', { sessionId, url });
-          
+
           const retryConfig: AxiosRequestConfig = {
             ...additionalConfig,
             headers: {
@@ -289,12 +299,12 @@ export class SessionApiClient {
               Cookie: cookieString,
             };
           }
-          
+
           const retryResponse =
             method === 'get'
               ? await this.axiosInstance.get<T>(url, retryConfig)
               : await this.axiosInstance.post<T>(url, data, retryConfig);
-          
+
           // Update cookies from retry response
           const setCookieHeaders = retryResponse.headers['set-cookie'];
           if (setCookieHeaders) {
@@ -313,16 +323,18 @@ export class SessionApiClient {
               await this.cartService.updateCartSession(sessionId, { cookies: mergedCookies });
             }
           }
-          
+
           logger.info('Request succeeded after cookie refresh', { sessionId, url });
           return retryResponse.data;
         } catch (refreshError) {
-          logger.error('Failed to refresh cookies', { 
-            sessionId, 
+          logger.error('Failed to refresh cookies', {
+            sessionId,
             url,
             error: refreshError instanceof Error ? refreshError.message : String(refreshError),
           });
-          throw new CsrfError(`CSRF error and cookie refresh failed. Please create a new cart with POST /carts`);
+          throw new CsrfError(
+            `CSRF error and cookie refresh failed. Please create a new cart with POST /carts`
+          );
         }
       }
       throw error;
@@ -332,21 +344,26 @@ export class SessionApiClient {
   /**
    * GET request with session
    */
-  get<T>(sessionId: string, url: string, config?: AxiosRequestConfig): Promise<T> {
+  get<T>(sessionId: SessionId, url: string, config?: AxiosRequestConfig): Promise<T> {
     return this.makeSessionRequest<T>(sessionId, 'get', url, undefined, config);
   }
 
   /**
    * POST request with JSON body
    */
-  post<T>(sessionId: string, url: string, data?: unknown, config?: AxiosRequestConfig): Promise<T> {
+  post<T>(
+    sessionId: SessionId,
+    url: string,
+    data?: unknown,
+    config?: AxiosRequestConfig
+  ): Promise<T> {
     return this.makeSessionRequest<T>(sessionId, 'post', url, data, config);
   }
 
   /**
    * POST request with URL-encoded form data
    */
-  postForm<T>(sessionId: string, url: string, data: Record<string, unknown>): Promise<T> {
+  postForm<T>(sessionId: SessionId, url: string, data: Record<string, unknown>): Promise<T> {
     const params = new URLSearchParams();
     for (const [key, value] of Object.entries(data)) {
       if (Array.isArray(value)) {
@@ -366,7 +383,7 @@ export class SessionApiClient {
   /**
    * POST request with multipart form data
    */
-  postFormData<T>(sessionId: string, url: string, data: Record<string, unknown>): Promise<T> {
+  postFormData<T>(sessionId: SessionId, url: string, data: Record<string, unknown>): Promise<T> {
     const formData = new FormData();
     for (const [key, value] of Object.entries(data)) {
       if (Array.isArray(value)) {
@@ -382,5 +399,4 @@ export class SessionApiClient {
       },
     });
   }
-
 }
