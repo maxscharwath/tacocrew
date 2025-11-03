@@ -23,7 +23,7 @@ export const UserIdSchema = zId<UserId>();
 export const UserSchema = z.object({
   id: zId<UserId>(),
   username: z.string(),
-  slackId: z.string().optional(),
+  slackId: z.string().nullish(),
   createdAt: z.date().optional(),
   updatedAt: z.date().optional(),
 });
@@ -45,10 +45,7 @@ export const UserFromDbSchema = z.object({
  * Create User from database model
  */
 export function createUserFromDb(data: z.infer<typeof UserFromDbSchema>): User {
-  return UserSchema.parse({
-    ...data,
-    slackId: data.slackId ?? undefined,
-  });
+  return UserSchema.parse(data);
 }
 
 /**

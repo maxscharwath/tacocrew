@@ -95,5 +95,5 @@ export const CartSchemas = {
   CreateOrderSchema: validationSchemas.createOrder,
 };
 
-export const CartSecurity = [] as const;
+export const CartSecurity: [] = [];
 export { jsonContent };

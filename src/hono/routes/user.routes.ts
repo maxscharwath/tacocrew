@@ -5,6 +5,7 @@
 
 import { createRoute, OpenAPIHono } from '@hono/zod-openapi';
 import type { Context } from 'hono';
+import { UserMapper } from '@/application/mappers/user.mapper';
 import type { UserId } from '@/domain/schemas/user.schema';
 import { authMiddleware } from '@/hono/middleware/auth';
 import { jsonContent, UserSchemas } from '@/hono/routes/user.schemas';
@@ -23,7 +24,7 @@ const requireUserId = (c: Context): UserId => {
 };
 
 const userService = () => inject(UserService);
-const security = [{ BearerAuth: [] as string[] }] as const;
+const security = [{ BearerAuth: [] as string[] }];
 
 // All user routes require authentication
 app.use('*', authMiddleware);
@@ -46,10 +47,10 @@ const routes = [
         },
       },
     }),
-    handler: async (c) => {
+    handler: async (c: Context) => {
       const userId = requireUserId(c);
       const user = await userService().getUserById(userId);
-      return c.json(user);
+      return c.json(UserMapper.toResponseDto(user), 200);
     },
   },
   {
@@ -69,10 +70,10 @@ const routes = [
         },
       },
     }),
-    handler: async (c) => {
+    handler: async (c: Context) => {
       const userId = requireUserId(c);
       const orders = await userService().getUserOrderHistory(userId);
-      return c.json(orders);
+      return c.json(orders, 200);
     },
   },
   {
@@ -92,10 +93,10 @@ const routes = [
         },
       },
     }),
-    handler: async (c) => {
+    handler: async (c: Context) => {
       const userId = requireUserId(c);
       const groupOrders = await userService().getUserGroupOrders(userId);
-      return c.json(groupOrders);
+      return c.json(groupOrders, 200);
     },
   },
 ];

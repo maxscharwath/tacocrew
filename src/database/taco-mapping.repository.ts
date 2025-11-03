@@ -5,6 +5,7 @@
 
 import { injectable } from 'tsyringe';
 import { PrismaService } from '@/database/prisma.service';
+import { CartId } from '@/types';
 import { inject } from '@/utils/inject';
 import { logger } from '@/utils/logger';
 
@@ -18,7 +19,7 @@ export class TacoMappingRepository {
   /**
    * Store UUID to backend index mapping
    */
-  async store(id: string, backendIndex: number, tacoId: string): Promise<void> {
+  async store(id: CartId, backendIndex: number, tacoId: string): Promise<void> {
     try {
       await this.prisma.client.tacoMapping.upsert({
         where: {
@@ -50,7 +51,7 @@ export class TacoMappingRepository {
   /**
    * Get backend index from UUID
    */
-  async getBackendIndex(id: string, tacoId: string): Promise<number | null> {
+  async getBackendIndex(id: CartId, tacoId: string): Promise<number | null> {
     try {
       const mapping = await this.prisma.client.tacoMapping.findUnique({
         where: {
@@ -71,7 +72,7 @@ export class TacoMappingRepository {
   /**
    * Remove taco mapping
    */
-  async remove(id: string, tacoId: string): Promise<void> {
+  async remove(id: CartId, tacoId: string): Promise<void> {
     try {
       await this.prisma.client.tacoMapping.delete({
         where: {
@@ -90,7 +91,7 @@ export class TacoMappingRepository {
   /**
    * Remove all mappings for a cart
    */
-  async removeAll(id: string): Promise<void> {
+  async removeAll(id: CartId): Promise<void> {
     try {
       await this.prisma.client.tacoMapping.deleteMany({
         where: { cartId: id },
@@ -104,7 +105,7 @@ export class TacoMappingRepository {
   /**
    * Get all mappings for a cart (index -> tacoId)
    */
-  async getAllMappings(id: string): Promise<Map<number, string>> {
+  async getAllMappings(id: CartId): Promise<Map<number, string>> {
     try {
       const mappings = await this.prisma.client.tacoMapping.findMany({
         where: { cartId: id },

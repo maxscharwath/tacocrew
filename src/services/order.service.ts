@@ -86,8 +86,8 @@ export class OrderService {
       try {
         await this.prismaService.client.order.create({
           data: {
-            cartId: sessionId, // SessionId is CartId
-            userId,
+            cartId: sessionId as string, // SessionId is CartId
+            userId: userId as string,
             customerName: request.customer.name,
             customerPhone: request.customer.phone,
             orderType: request.delivery.type,

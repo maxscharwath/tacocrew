@@ -5,6 +5,8 @@
 
 import { injectable } from 'tsyringe';
 import { PrismaService } from '@/database/prisma.service';
+import { OrderIdSchema } from '@/domain/schemas/order.schema';
+import { OrderId, UserId } from '@/types';
 import { inject } from '@/utils/inject';
 
 /**
@@ -14,10 +16,10 @@ import { inject } from '@/utils/inject';
 export class GetUserOrdersHistoryUseCase {
   private readonly prisma = inject(PrismaService);
 
-  async execute(userId: string): Promise<
+  async execute(userId: UserId): Promise<
     Array<{
-      id: string;
-      orderId: string;
+      id: OrderId;
+      orderId: OrderId;
       status: string;
       price: number | null;
       orderType: string;
@@ -29,7 +31,6 @@ export class GetUserOrdersHistoryUseCase {
       where: { userId },
       select: {
         id: true,
-        orderId: true,
         status: true,
         price: true,
         orderType: true,
@@ -39,6 +40,17 @@ export class GetUserOrdersHistoryUseCase {
       orderBy: { createdAt: 'desc' },
     });
 
-    return orders;
+    return orders.map((order) => {
+      const parsedId = OrderIdSchema.parse(order.id);
+      return {
+        id: parsedId,
+        orderId: parsedId,
+        status: order.status,
+        price: order.price,
+        orderType: order.orderType,
+        requestedFor: order.requestedFor,
+        createdAt: order.createdAt,
+      };
+    });
   }
 }

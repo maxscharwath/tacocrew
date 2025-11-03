@@ -1,5 +1,8 @@
-import type { OpenAPIZodSchema } from '@hono/zod-openapi';
 import { z } from '@hono/zod-openapi';
+import { DessertIdSchema } from '@/domain/schemas/dessert.schema';
+import { DrinkIdSchema } from '@/domain/schemas/drink.schema';
+import { ExtraIdSchema } from '@/domain/schemas/extra.schema';
+import { TacoSize } from '@/types';
 
 export const IsoDateStringSchema = z.string().datetime();
 
@@ -32,17 +35,18 @@ export const GarnitureSchema = z.object({
 
 export const TacoSchema = z.object({
   id: z.string(),
-  size: z.string(),
+  size: z.nativeEnum(TacoSize),
   meats: z.array(MeatSchema),
   sauces: z.array(SauceSchema),
   garnitures: z.array(GarnitureSchema),
   note: z.string().optional(),
   quantity: z.number().int().min(1),
-  price: z.number().optional(),
+  price: z.number().min(0),
 });
 
 export const ExtraSchema = z.object({
-  id: z.string(),
+  id: ExtraIdSchema,
+  code: z.string(),
   name: z.string(),
   price: z.number(),
   quantity: z.number().int().min(1),
@@ -51,14 +55,16 @@ export const ExtraSchema = z.object({
 });
 
 export const DrinkSchema = z.object({
-  id: z.string(),
+  id: DrinkIdSchema,
+  code: z.string(),
   name: z.string(),
   price: z.number(),
   quantity: z.number().int().min(1),
 });
 
 export const DessertSchema = z.object({
-  id: z.string(),
+  id: DessertIdSchema,
+  code: z.string(),
   name: z.string(),
   price: z.number(),
   quantity: z.number().int().min(1),
@@ -78,6 +84,6 @@ export const ErrorResponseSchema = z.object({
   }),
 });
 
-export const jsonContent = <T extends OpenAPIZodSchema>(schema: T) => ({
+export const jsonContent = <T extends z.ZodTypeAny>(schema: T) => ({
   'application/json': { schema },
 });

@@ -8,9 +8,11 @@ import { GroupOrderRepository } from '@/database/group-order.repository';
 import { UserOrderRepository } from '@/database/user-order.repository';
 import { ResourceService } from '@/services/resource.service';
 import {
+  GroupOrderId,
   GroupOrderStatus,
   StockItem,
   UpdateUserOrderRequest,
+  UserId,
   UserOrder,
   UserOrderItems,
   UserOrderStatus,
@@ -91,8 +93,8 @@ export class UserOrderService {
    * Note: Items should already have IDs computed (e.g., from use case)
    */
   async upsertUserOrder(
-    groupOrderId: string,
-    userId: string,
+    groupOrderId: GroupOrderId,
+    userId: UserId,
     request: UpdateUserOrderRequest
   ): Promise<UserOrder> {
     // Verify group order exists and is open
@@ -141,7 +143,7 @@ export class UserOrderService {
   /**
    * Get user order
    */
-  async getUserOrder(groupOrderId: string, userId: string): Promise<UserOrder> {
+  async getUserOrder(groupOrderId: GroupOrderId, userId: UserId): Promise<UserOrder> {
     const userOrder = await this.userOrderRepository.getUserOrder(groupOrderId, userId);
     if (!userOrder) {
       throw new NotFoundError(
@@ -154,7 +156,7 @@ export class UserOrderService {
   /**
    * Submit user order (mark as submitted)
    */
-  async submitUserOrder(groupOrderId: string, userId: string): Promise<UserOrder> {
+  async submitUserOrder(groupOrderId: GroupOrderId, userId: UserId): Promise<UserOrder> {
     // Get existing order
     const userOrder = await this.getUserOrder(groupOrderId, userId);
 
@@ -196,9 +198,9 @@ export class UserOrderService {
    * Delete user order (user can delete their own, leader can delete any)
    */
   async deleteUserOrder(
-    groupOrderId: string,
-    userId: string,
-    deleterUserId: string
+    groupOrderId: GroupOrderId,
+    userId: UserId,
+    deleterUserId: UserId
   ): Promise<void> {
     // Check if user is deleting their own order or if deleter is the leader
     const groupOrder = await this.groupOrderRepository.getGroupOrder(groupOrderId);
@@ -240,7 +242,7 @@ export class UserOrderService {
   /**
    * Get all user orders for a group order
    */
-  async getUserOrdersByGroup(groupOrderId: string): Promise<UserOrder[]> {
+  async getUserOrdersByGroup(groupOrderId: GroupOrderId): Promise<UserOrder[]> {
     // Verify group order exists
     await this.groupOrderRepository.getGroupOrder(groupOrderId);
     return await this.userOrderRepository.getUserOrdersByGroup(groupOrderId);

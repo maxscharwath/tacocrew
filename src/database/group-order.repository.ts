@@ -5,7 +5,9 @@
 
 import { injectable } from 'tsyringe';
 import { PrismaService } from '@/database/prisma.service';
-import { GroupOrder, GroupOrderStatus } from '@/types';
+import { GroupOrderIdSchema } from '@/domain/schemas/group-order.schema';
+import { UserIdSchema } from '@/domain/schemas/user.schema';
+import { GroupOrder, GroupOrderId, GroupOrderStatus, UserId } from '@/types';
 import { inject } from '@/utils/inject';
 import { logger } from '@/utils/logger';
 
@@ -17,12 +19,12 @@ export class GroupOrderRepository {
   private readonly prisma = inject(PrismaService);
 
   /**
-   * Get group order by groupOrderId
+   * Get group order by id
    */
-  async getGroupOrder(groupOrderId: string): Promise<GroupOrder | null> {
+  async getGroupOrder(id: GroupOrderId): Promise<GroupOrder | null> {
     try {
       const groupOrder = await this.prisma.client.groupOrder.findUnique({
-        where: { groupOrderId },
+        where: { id },
       });
 
       if (!groupOrder) {
@@ -31,7 +33,7 @@ export class GroupOrderRepository {
 
       return this.mapToGroupOrder(groupOrder);
     } catch (error) {
-      logger.error('Failed to get group order', { groupOrderId, error });
+      logger.error('Failed to get group order', { id, error });
       return null;
     }
   }
@@ -40,10 +42,10 @@ export class GroupOrderRepository {
    * Create a new group order
    */
   async createGroupOrder(
-    groupOrderId: string,
+    id: GroupOrderId,
     data: {
       name?: string;
-      leaderId: string;
+      leaderId: UserId;
       startDate: Date;
       endDate: Date;
     }
@@ -51,19 +53,19 @@ export class GroupOrderRepository {
     try {
       const groupOrder = await this.prisma.client.groupOrder.create({
         data: {
-          groupOrderId,
+          id: id as string,
           name: data.name,
-          leaderId: data.leaderId,
+          leaderId: data.leaderId as string,
           startDate: data.startDate,
           endDate: data.endDate,
           status: GroupOrderStatus.OPEN,
         },
       });
 
-      logger.debug('Group order created', { groupOrderId });
+      logger.debug('Group order created', { id });
       return this.mapToGroupOrder(groupOrder);
     } catch (error) {
-      logger.error('Failed to create group order', { groupOrderId, error });
+      logger.error('Failed to create group order', { id, error });
       throw error;
     }
   }
@@ -72,12 +74,12 @@ export class GroupOrderRepository {
    * Update group order
    */
   async updateGroupOrder(
-    groupOrderId: string,
+    id: GroupOrderId,
     updates: Partial<Pick<GroupOrder, 'name' | 'status' | 'startDate' | 'endDate'>>
   ): Promise<GroupOrder> {
     try {
       const groupOrder = await this.prisma.client.groupOrder.update({
-        where: { groupOrderId },
+        where: { id },
         data: {
           ...(updates.name !== undefined && { name: updates.name }),
           ...(updates.status !== undefined && { status: updates.status }),
@@ -87,10 +89,10 @@ export class GroupOrderRepository {
         },
       });
 
-      logger.debug('Group order updated', { groupOrderId });
+      logger.debug('Group order updated', { id });
       return this.mapToGroupOrder(groupOrder);
     } catch (error) {
-      logger.error('Failed to update group order', { groupOrderId, error });
+      logger.error('Failed to update group order', { id, error });
       throw error;
     }
   }
@@ -98,14 +100,14 @@ export class GroupOrderRepository {
   /**
    * Check if group order exists
    */
-  async hasGroupOrder(groupOrderId: string): Promise<boolean> {
+  async hasGroupOrder(id: GroupOrderId): Promise<boolean> {
     try {
       const count = await this.prisma.client.groupOrder.count({
-        where: { groupOrderId },
+        where: { id },
       });
       return count > 0;
     } catch (error) {
-      logger.error('Failed to check group order existence', { groupOrderId, error });
+      logger.error('Failed to check group order existence', { id, error });
       return false;
     }
   }
@@ -113,14 +115,14 @@ export class GroupOrderRepository {
   /**
    * Delete group order (cascades to user orders)
    */
-  async deleteGroupOrder(groupOrderId: string): Promise<void> {
+  async deleteGroupOrder(id: GroupOrderId): Promise<void> {
     try {
       await this.prisma.client.groupOrder.delete({
-        where: { groupOrderId },
+        where: { id },
       });
-      logger.info('Group order deleted', { groupOrderId });
+      logger.info('Group order deleted', { id });
     } catch (error) {
-      logger.error('Failed to delete group order', { groupOrderId, error });
+      logger.error('Failed to delete group order', { id, error });
       throw error;
     }
   }
@@ -130,7 +132,6 @@ export class GroupOrderRepository {
    */
   private mapToGroupOrder(groupOrder: {
     id: string;
-    groupOrderId: string;
     name: string | null;
     leaderId: string;
     startDate: Date;
@@ -139,11 +140,12 @@ export class GroupOrderRepository {
     createdAt: Date;
     updatedAt: Date;
   }): GroupOrder {
+    const parsedId = GroupOrderIdSchema.parse(groupOrder.id);
     return {
-      id: groupOrder.id,
-      groupOrderId: groupOrder.groupOrderId,
+      id: parsedId,
+      groupOrderId: parsedId,
       name: groupOrder.name || undefined,
-      leader: groupOrder.leaderId, // For now, keep leader as string (will be userId)
+      leader: UserIdSchema.parse(groupOrder.leaderId),
       startDate: groupOrder.startDate,
       endDate: groupOrder.endDate,
       status: groupOrder.status as GroupOrderStatus,

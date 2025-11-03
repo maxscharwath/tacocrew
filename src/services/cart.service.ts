@@ -4,7 +4,6 @@
  */
 
 import { injectable } from 'tsyringe';
-import { v4 as uuidv4 } from 'uuid';
 import { TacosApiClient } from '@/api/client';
 import { SessionApiClient } from '@/api/session-client';
 import { CartRepository } from '@/database/cart.repository';
@@ -29,7 +28,7 @@ import {
 import { NotFoundError } from '@/utils/errors';
 import { parseCategorySummaryFromTacos, parseTacoCard } from '@/utils/html-parser';
 import { inject } from '@/utils/inject';
-import { deterministicUUID } from '@/utils/uuid-utils';
+import { deterministicUUID, randomUUID } from '@/utils/uuid-utils';
 
 /**
  * Cart Service - Manages carts with session data (csrfToken, cookies)
@@ -88,10 +87,7 @@ export class CartService {
       const mappedId = mapping.get(index);
       return {
         ...taco,
-        id:
-          mappedId?.startsWith('temp-') || taco.id.startsWith('temp-')
-            ? uuidv4()
-            : mappedId || taco.id,
+        id: mappedId ?? taco.id,
       };
     });
   }
@@ -169,7 +165,7 @@ export class CartService {
       this.buildTacoFormData(request)
     );
 
-    const tacoId = uuidv4();
+    const tacoId = randomUUID();
     const currentTacos = await this.getCart(id);
     await this.tacoMappingRepository.store(id, currentTacos.length, tacoId);
 

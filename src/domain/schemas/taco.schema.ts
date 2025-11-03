@@ -45,7 +45,7 @@ export type Garniture = z.infer<typeof GarnitureSchema>;
  */
 export const TacoSchema = z.object({
   id: z.string(),
-  size: z.nativeEnum(TacoSize),
+  size: z.enum(TacoSize),
   meats: z.array(MeatSchema),
   sauces: z.array(SauceSchema),
   garnitures: z.array(GarnitureSchema),

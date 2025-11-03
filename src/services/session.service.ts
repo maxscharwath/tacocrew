@@ -4,12 +4,12 @@
  */
 
 import { injectable } from 'tsyringe';
-import { v4 as uuidv4 } from 'uuid';
 import { TacosApiClient } from '@/api/client';
 import { CreateSessionOptions, SessionData, SessionStats } from '@/types/session';
 import { inject } from '@/utils/inject';
 import { logger } from '@/utils/logger';
 import { sessionStore } from '@/utils/session-store';
+import { randomUUID } from '@/utils/uuid-utils';
 
 /**
  * Session Service
@@ -31,7 +31,7 @@ export class SessionService {
    * Create a new session
    */
   async createSession(options: CreateSessionOptions = {}): Promise<SessionData> {
-    const sessionId = options.sessionId || uuidv4();
+    const sessionId = options.sessionId || randomUUID();
 
     logger.info('Creating new session', { sessionId });
 

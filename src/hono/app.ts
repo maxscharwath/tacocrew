@@ -78,9 +78,6 @@ export function createApp(): OpenAPIHono {
     '/docs',
     swaggerUI({
       url: '/openapi.json',
-      config: {
-        persistAuthorization: true, // Keep authorization token in browser storage
-      },
     })
   );
 

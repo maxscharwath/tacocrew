@@ -43,7 +43,7 @@ export class CreateUserUseCase {
     const token = this.authService.generateToken({
       id: user.id,
       username: user.username,
-      slackId: user.slackId,
+      slackId: user.slackId ?? undefined,
     });
 
     return { user, token };

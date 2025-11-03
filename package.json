@@ -1,12 +1,13 @@
 {
   "name": "tacos-ordering-api",
   "version": "1.0.0",
+  "type": "module",
   "description": "Modern TypeScript API wrapper for tacos ordering system with Web API integration",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
     "dev": "tsx watch src/index.ts",
-    "type-check": "tsc --noEmit",
+    "check": "tsc --noEmit --pretty",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio",

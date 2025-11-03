@@ -44,11 +44,10 @@ process.on('SIGINT', () => {
 });
 
 // Start the application
-if (require.main === module) {
-  main().catch((error: Error) => {
-    logger.error('Fatal error', { error: error.message, stack: error.stack });
-    process.exit(1);
-  });
-}
+// In ESM, always run main() when this module is imported directly
+main().catch((error: Error) => {
+  logger.error('Fatal error', { error: error.message, stack: error.stack });
+  process.exit(1);
+});
 
 export default main;

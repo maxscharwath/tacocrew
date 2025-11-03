@@ -3,7 +3,7 @@
  * @module utils/uuid-utils
  */
 
-import { validate as isUUID, NIL, v4 as v4, v5 as v5 } from 'uuid';
+import { NIL, v4, v5, validate } from 'uuid';
 
 /**
  * Default namespace for deterministic UUID generation (tacobot domain)
@@ -26,11 +26,11 @@ export const randomUUID = () => v4();
  * @returns A deterministic UUID string
  */
 export const deterministicUUID = (seed: string, namespace?: string) =>
-  v5(seed, namespace ? (isUUID(namespace) ? namespace : v5(namespace, NIL)) : DEFAULT_NAMESPACE);
+  v5(seed, namespace ? (validate(namespace) ? namespace : v5(namespace, NIL)) : DEFAULT_NAMESPACE);
 
 /**
  * Validate if a string is a valid UUID
- * @param uuid - The string to validate
+ * @param uuidString - The string to validate
  * @returns true if the string is a valid UUID, false otherwise
  */
-export { isUUID };
+export const isUUID = (uuidString: string): boolean => validate(uuidString);

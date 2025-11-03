@@ -5,7 +5,8 @@
 
 import { injectable } from 'tsyringe';
 import { PrismaService } from '@/database/prisma.service';
-import { UserOrder, UserOrderItems, UserOrderStatus } from '@/types';
+import { createUserOrderFromDb } from '@/domain/schemas/user-order.schema';
+import { GroupOrderId, UserId, UserOrder, UserOrderItems, UserOrderStatus } from '@/types';
 import { inject } from '@/utils/inject';
 import { logger } from '@/utils/logger';
 
@@ -19,7 +20,7 @@ export class UserOrderRepository {
   /**
    * Get user order by groupOrderId and userId
    */
-  async getUserOrder(groupOrderId: string, userId: string): Promise<UserOrder | null> {
+  async getUserOrder(groupOrderId: GroupOrderId, userId: UserId): Promise<UserOrder | null> {
     try {
       const userOrder = await this.prisma.client.userOrder.findUnique({
         where: {
@@ -51,7 +52,7 @@ export class UserOrderRepository {
   /**
    * Get all user orders for a group order
    */
-  async getUserOrdersByGroup(groupOrderId: string): Promise<UserOrder[]> {
+  async getUserOrdersByGroup(groupOrderId: GroupOrderId): Promise<UserOrder[]> {
     try {
       const userOrders = await this.prisma.client.userOrder.findMany({
         where: { groupOrderId },
@@ -76,8 +77,8 @@ export class UserOrderRepository {
    * Create or update user order
    */
   async upsertUserOrder(
-    groupOrderId: string,
-    userId: string,
+    groupOrderId: GroupOrderId,
+    userId: UserId,
     items: UserOrderItems,
     status: UserOrderStatus = UserOrderStatus.DRAFT
   ): Promise<UserOrder> {
@@ -121,8 +122,8 @@ export class UserOrderRepository {
    * Update user order status
    */
   async updateUserOrderStatus(
-    groupOrderId: string,
-    userId: string,
+    groupOrderId: GroupOrderId,
+    userId: UserId,
     status: UserOrderStatus
   ): Promise<UserOrder> {
     try {
@@ -150,7 +151,7 @@ export class UserOrderRepository {
   /**
    * Delete user order
    */
-  async deleteUserOrder(groupOrderId: string, userId: string): Promise<void> {
+  async deleteUserOrder(groupOrderId: GroupOrderId, userId: UserId): Promise<void> {
     try {
       await this.prisma.client.userOrder.delete({
         where: {
@@ -170,7 +171,7 @@ export class UserOrderRepository {
   /**
    * Check if user order exists
    */
-  async hasUserOrder(groupOrderId: string, userId: string): Promise<boolean> {
+  async hasUserOrder(groupOrderId: GroupOrderId, userId: UserId): Promise<boolean> {
     try {
       const count = await this.prisma.client.userOrder.count({
         where: {
@@ -188,7 +189,7 @@ export class UserOrderRepository {
   /**
    * Get count of submitted user orders for a group order
    */
-  async getSubmittedCount(groupOrderId: string): Promise<number> {
+  async getSubmittedCount(groupOrderId: GroupOrderId): Promise<number> {
     try {
       return await this.prisma.client.userOrder.count({
         where: {
@@ -217,15 +218,15 @@ export class UserOrderRepository {
       username: string;
     };
   }): UserOrder {
-    return {
+    return createUserOrderFromDb({
       id: userOrder.id,
       groupOrderId: userOrder.groupOrderId,
       userId: userOrder.userId,
-      username: userOrder.user?.username,
-      status: userOrder.status as UserOrderStatus,
-      items: JSON.parse(userOrder.items) as UserOrderItems,
+      status: userOrder.status,
+      items: userOrder.items,
       createdAt: userOrder.createdAt,
       updatedAt: userOrder.updatedAt,
-    };
+      user: userOrder.user,
+    });
   }
 }

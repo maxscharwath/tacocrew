@@ -10,7 +10,15 @@ import { deterministicUUID } from '@/utils/uuid-utils';
 /**
  * Mock CartRepository
  */
-export const createMockCartRepository = () => ({
+export const createMockCartRepository = (): {
+  getCart: ReturnType<typeof vi.fn>;
+  createCart: ReturnType<typeof vi.fn>;
+  updateCart: ReturnType<typeof vi.fn>;
+  deleteCart: ReturnType<typeof vi.fn>;
+  hasCart: ReturnType<typeof vi.fn>;
+  getAllCarts: ReturnType<typeof vi.fn>;
+  cleanupExpiredCarts: ReturnType<typeof vi.fn>;
+} => ({
   getCart: vi.fn(),
   createCart: vi.fn(),
   updateCart: vi.fn(),
@@ -23,7 +31,13 @@ export const createMockCartRepository = () => ({
 /**
  * Mock TacoMappingRepository
  */
-export const createMockTacoMappingRepository = () => ({
+export const createMockTacoMappingRepository = (): {
+  store: ReturnType<typeof vi.fn>;
+  getBackendIndex: ReturnType<typeof vi.fn>;
+  remove: ReturnType<typeof vi.fn>;
+  removeAll: ReturnType<typeof vi.fn>;
+  getAllMappings: ReturnType<typeof vi.fn>;
+} => ({
   store: vi.fn(),
   getBackendIndex: vi.fn(),
   remove: vi.fn(),
@@ -34,7 +48,11 @@ export const createMockTacoMappingRepository = () => ({
 /**
  * Mock TacosApiClient
  */
-export const createMockTacosApiClient = () => ({
+export const createMockTacosApiClient = (): {
+  refreshCsrfToken: ReturnType<typeof vi.fn>;
+  get: ReturnType<typeof vi.fn>;
+  post: ReturnType<typeof vi.fn>;
+} => ({
   refreshCsrfToken: vi.fn().mockResolvedValue({ csrfToken: 'test-csrf-token', cookies: {} }),
   get: vi.fn(),
   post: vi.fn(),
@@ -43,7 +61,12 @@ export const createMockTacosApiClient = () => ({
 /**
  * Mock SessionApiClient
  */
-export const createMockSessionApiClient = () => ({
+export const createMockSessionApiClient = (): {
+  get: ReturnType<typeof vi.fn>;
+  post: ReturnType<typeof vi.fn>;
+  postForm: ReturnType<typeof vi.fn>;
+  postFormData: ReturnType<typeof vi.fn>;
+} => ({
   get: vi.fn(),
   post: vi.fn(),
   postForm: vi.fn(),
@@ -53,14 +76,34 @@ export const createMockSessionApiClient = () => ({
 /**
  * Mock HttpService
  */
-export const createMockHttpService = () => ({
+export const createMockHttpService = (): {
+  createInstance: ReturnType<typeof vi.fn>;
+} => ({
   createInstance: vi.fn(),
 });
 
 /**
  * Mock PrismaService
  */
-export const createMockPrismaService = () => ({
+export const createMockPrismaService = (): {
+  client: {
+    cart: {
+      findUnique: ReturnType<typeof vi.fn>;
+      create: ReturnType<typeof vi.fn>;
+      update: ReturnType<typeof vi.fn>;
+      delete: ReturnType<typeof vi.fn>;
+      findMany: ReturnType<typeof vi.fn>;
+      deleteMany: ReturnType<typeof vi.fn>;
+    };
+    tacoMapping: {
+      findUnique: ReturnType<typeof vi.fn>;
+      findMany: ReturnType<typeof vi.fn>;
+      upsert: ReturnType<typeof vi.fn>;
+      delete: ReturnType<typeof vi.fn>;
+      deleteMany: ReturnType<typeof vi.fn>;
+    };
+  };
+} => ({
   client: {
     cart: {
       findUnique: vi.fn(),

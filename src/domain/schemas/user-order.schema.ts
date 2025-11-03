@@ -24,9 +24,9 @@ export const UserOrderSchema = z.object({
   userId: zId<UserId>(),
   username: z.string().optional(),
   items: z.custom<UserOrderItems>(),
-  status: z.nativeEnum(UserOrderStatus),
-  createdAt: z.date().optional(),
-  updatedAt: z.date().optional(),
+  status: z.enum(UserOrderStatus),
+  createdAt: z.date(),
+  updatedAt: z.date(),
 });
 
 export type UserOrder = z.infer<typeof UserOrderSchema>;
@@ -44,7 +44,7 @@ export const UserOrderFromDbSchema = z.object({
   updatedAt: z.date(),
   user: z
     .object({
-      username: z.string().nullish(),
+      username: z.string().optional(),
     })
     .optional(),
 });
@@ -57,7 +57,7 @@ export function createUserOrderFromDb(data: z.infer<typeof UserOrderFromDbSchema
     id: data.id, // Will be validated as UUID and transformed
     groupOrderId: data.groupOrderId, // Will be validated as UUID and transformed
     userId: data.userId, // Will be validated as UUID and transformed
-    username: data.user?.username ?? undefined,
+    username: data.user?.username,
     items: JSON.parse(data.items) as UserOrderItems,
     status: data.status as UserOrderStatus,
     createdAt: data.createdAt,

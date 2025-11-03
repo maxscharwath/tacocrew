@@ -97,4 +97,4 @@ export const GroupOrderSchemas = {
   SubmitGroupOrderRequestSchema,
 };
 
-export const GroupOrderSecurity = [{ BearerAuth: [] as string[] }] as const;
+export const GroupOrderSecurity = [{ BearerAuth: [] as string[] }];

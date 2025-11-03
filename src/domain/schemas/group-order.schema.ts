@@ -26,7 +26,7 @@ export const GroupOrderSchema = z.object({
   leaderId: zId<UserId>(),
   startDate: z.date(),
   endDate: z.date(),
-  status: z.nativeEnum(GroupOrderStatus),
+  status: z.enum(GroupOrderStatus),
   name: z.string().optional(),
   createdAt: z.date().optional(),
   updatedAt: z.date().optional(),
@@ -68,13 +68,7 @@ export function createGroupOrder(props: {
  * Build a domain entity from database data with minimal transformation.
  */
 export function createGroupOrderFromDb(data: z.infer<typeof GroupOrderFromDbSchema>): GroupOrder {
-  const { name, status, ...rest } = data;
-
-  return GroupOrderSchema.parse({
-    ...rest,
-    status: status as GroupOrderStatus,
-    name: name ?? undefined,
-  });
+  return GroupOrderSchema.parse(data);
 }
 
 /**
