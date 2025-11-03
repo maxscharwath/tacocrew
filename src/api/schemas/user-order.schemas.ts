@@ -129,3 +129,10 @@ export const UserOrderItemsRequestSchema = z.object({
   drinks: z.array(DrinkRequestSchema),
   desserts: z.array(DessertRequestSchema),
 });
+
+/**
+ * Create user order request DTO (only IDs)
+ */
+export type CreateUserOrderRequestDto = {
+  items: z.infer<typeof UserOrderItemsRequestSchema>;
+};

@@ -5,7 +5,7 @@
 import { describe, expect, it } from 'vitest';
 import { TacoIdSchema } from '@/schemas/taco.schema';
 import { TacoSize } from '@/shared/types/types';
-import { parseCartSummary, parseTacoCard, parseTacoCards } from '@/shared/utils/html-parser.utils';
+import { parseTacoCard, parseTacoCards } from '@/shared/utils/html-parser.utils';
 import { randomUUID } from '@/shared/utils/uuid.utils';
 
 describe('HTML Parser', () => {
@@ -127,29 +127,6 @@ describe('HTML Parser', () => {
     it('should handle empty HTML', () => {
       const result = parseTacoCards('', new Map());
       expect(result).toEqual([]);
-    });
-  });
-
-  describe('parseCartSummary', () => {
-    it('should parse cart summary HTML', () => {
-      const html = `
-        <div>
-          <div data-category="tacos">
-            <span class="quantity">2</span>
-            <span class="price">25.00</span>
-          </div>
-        </div>
-      `;
-
-      const result = parseCartSummary(html);
-      expect(result).toBeDefined();
-      expect(result.tacos).toBeDefined();
-    });
-
-    it('should return default values for empty HTML', () => {
-      const result = parseCartSummary('');
-      expect(result.tacos.totalQuantity).toBe(0);
-      expect(result.tacos.totalPrice).toBe(0);
     });
   });
 });

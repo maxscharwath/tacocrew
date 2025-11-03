@@ -5,7 +5,7 @@
 import { addHours, subMinutes } from 'date-fns';
 import { container } from 'tsyringe';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { CreateUserOrderRequestDto } from '@/api/dto/user-order.dto';
+import type { CreateUserOrderRequestDto } from '@/api/schemas/user-order.schemas';
 import { GroupOrderRepository } from '@/infrastructure/repositories/group-order.repository';
 import { UserOrderRepository } from '@/infrastructure/repositories/user-order.repository';
 import { ExtraIdSchema } from '@/schemas/extra.schema';

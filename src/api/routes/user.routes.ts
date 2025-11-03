@@ -4,7 +4,6 @@
  */
 
 import { createRoute } from '@hono/zod-openapi';
-import { UserMapper } from '@/api/mappers/user.mapper';
 import { jsonContent, UserSchemas } from '@/api/schemas/user.schemas';
 import { authSecurity, createAuthenticatedRouteApp, requireUserId } from '@/api/utils/route.utils';
 import { UserService } from '@/services/user/user.service';
@@ -32,7 +31,16 @@ app.openapi(
   async (c) => {
     const userId = requireUserId(c);
     const user = await inject(UserService).getUserById(userId);
-    return c.json(UserMapper.toResponseDto(user), 200);
+    return c.json(
+      {
+        id: user.id,
+        username: user.username,
+        slackId: user.slackId ?? undefined,
+        createdAt: user.createdAt?.toISOString(),
+        updatedAt: user.updatedAt?.toISOString(),
+      },
+      200
+    );
   }
 );
 

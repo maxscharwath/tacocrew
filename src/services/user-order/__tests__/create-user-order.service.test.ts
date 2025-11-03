@@ -5,18 +5,18 @@
 import { addHours, subMinutes } from 'date-fns';
 import { container } from 'tsyringe';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { createMockStockAvailability } from '@/shared/utils/__tests__/mocks';
+import type { CreateUserOrderRequestDto } from '@/api/schemas/user-order.schemas';
 import { GroupOrderRepository } from '@/infrastructure/repositories/group-order.repository';
+import { UserOrderRepository } from '@/infrastructure/repositories/user-order.repository';
+import { ExtraIdSchema } from '@/schemas/extra.schema';
 import { createGroupOrder } from '@/schemas/group-order.schema';
+import { GarnitureIdSchema, MeatIdSchema, SauceIdSchema } from '@/schemas/taco.schema';
 import { createUserOrderFromDb } from '@/schemas/user-order.schema';
 import { ResourceService } from '@/services/resource/resource.service';
 import { CreateUserOrderUseCase } from '@/services/user-order/create-user-order.service';
-import { MeatIdSchema, SauceIdSchema, GarnitureIdSchema } from '@/schemas/taco.schema';
-import { ExtraIdSchema } from '@/schemas/extra.schema';
 import { GroupOrderStatus, StockCategory, TacoSize, UserOrderStatus } from '@/shared/types/types';
+import { createMockStockAvailability } from '@/shared/utils/__tests__/mocks';
 import { deterministicUUID, randomUUID } from '@/shared/utils/uuid.utils';
-import type { CreateUserOrderRequestDto } from '@/api/dto/user-order.dto';
-import { UserOrderRepository } from '@/infrastructure/repositories/user-order.repository';
 
 describe('CreateUserOrderUseCase', () => {
   const groupOrderId = randomUUID();
@@ -135,14 +135,14 @@ describe('CreateUserOrderUseCase', () => {
 
   it('preserves catalog ids and assigns deterministic uuids for user order items', async () => {
     const useCase = container.resolve(CreateUserOrderUseCase);
-    
+
     // Get IDs from stock (simulating what would come from API)
     const stock = await mockResourceService.getStock();
     const meatId = stock[StockCategory.Meats][0]!.id;
     const sauceId = stock[StockCategory.Sauces][0]!.id;
     const garnitureId = stock[StockCategory.Garnishes][0]!.id;
     const extraId = stock[StockCategory.Extras][0]!.id;
-    
+
     const request: CreateUserOrderRequestDto = {
       items: {
         tacos: [
@@ -181,7 +181,7 @@ describe('CreateUserOrderUseCase', () => {
     expect(result.items.tacos[0].meats[0].id).toBe(payload.items.tacos[0].meats[0].id);
     expect(result.items.tacos[0].sauces[0].id).toBe(payload.items.tacos[0].sauces[0].id);
     expect(result.items.tacos[0].garnitures[0].id).toBe(payload.items.tacos[0].garnitures[0].id);
-    
+
     // Verify codes are preserved
     expect(result.items.tacos[0].meats[0].code).toBe('viande_hachee');
     expect(result.items.tacos[0].sauces[0].code).toBe('harissa');

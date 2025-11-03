@@ -251,33 +251,6 @@ export function parseTacoCards(
   });
 }
 
-/**
- * Parse cart summary from HTML
- * This is a placeholder - actual implementation depends on HTML structure
- */
-export function parseCartSummary(html: string): {
-  tacos: { totalQuantity: number; totalPrice: number };
-  extras: { totalQuantity: number; totalPrice: number };
-  boissons: { totalQuantity: number; totalPrice: number };
-  desserts: { totalQuantity: number; totalPrice: number };
-} {
-  if (!html) {
-    return {
-      tacos: { totalQuantity: 0, totalPrice: 0 },
-      extras: { totalQuantity: 0, totalPrice: 0 },
-      boissons: { totalQuantity: 0, totalPrice: 0 },
-      desserts: { totalQuantity: 0, totalPrice: 0 },
-    };
-  }
-  // Placeholder implementation
-  return {
-    tacos: { totalQuantity: 0, totalPrice: 0 },
-    extras: { totalQuantity: 0, totalPrice: 0 },
-    boissons: { totalQuantity: 0, totalPrice: 0 },
-    desserts: { totalQuantity: 0, totalPrice: 0 },
-  };
-}
-
 export function parseCategorySummaryFromTacos(html: string, stockData?: StockAvailability): Taco[] {
   try {
     const $ = load(html);

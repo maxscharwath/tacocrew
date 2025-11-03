@@ -4,7 +4,7 @@
  */
 
 import { injectable } from 'tsyringe';
-import type { CreateUserOrderRequestDto } from '@/api/dto/user-order.dto';
+import type { CreateUserOrderRequestDto } from '@/api/schemas/user-order.schemas';
 import { GroupOrderRepository } from '@/infrastructure/repositories/group-order.repository';
 import { UserOrderRepository } from '@/infrastructure/repositories/user-order.repository';
 import { DessertIdSchema } from '@/schemas/dessert.schema';
