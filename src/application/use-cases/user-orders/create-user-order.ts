@@ -117,69 +117,49 @@ export class CreateUserOrderUseCase {
     const outOfStock: string[] = [];
     const notFound: string[] = [];
 
+    const validateItem = <T extends { id: string; code: string; name: string }>(
+      item: T,
+      stockItems: Array<{ id: string; in_stock: boolean }>,
+      category: string
+    ): void => {
+      const stockItem = stockItems.find((s) => s.id === item.id);
+      if (!stockItem) {
+        notFound.push(`${category}: ${item.code} (${item.name})`);
+      } else if (!stockItem.in_stock) {
+        outOfStock.push(`${category}: ${item.code} (${item.name})`);
+      }
+    };
+
     // Validate tacos
     for (const taco of items.tacos) {
       for (const meat of taco.meats) {
-        const stockItem = stock.meats.find((item) => item.id === meat.id);
-        if (!stockItem) {
-          notFound.push(`Meat: ${meat.code} (${meat.name || meat.code})`);
-        } else if (!stockItem.in_stock) {
-          outOfStock.push(`Meat: ${meat.code} (${meat.name || meat.code})`);
-        }
+        validateItem(meat, stock.meats, 'Meat');
       }
-
       for (const sauce of taco.sauces) {
-        const stockItem = stock.sauces.find((item) => item.id === sauce.id);
-        if (!stockItem) {
-          notFound.push(`Sauce: ${sauce.code || sauce.name} (${sauce.name || sauce.code})`);
-        } else if (!stockItem.in_stock) {
-          outOfStock.push(`Sauce: ${sauce.code || sauce.name} (${sauce.name || sauce.code})`);
-        }
+        validateItem(sauce, stock.sauces, 'Sauce');
       }
-
       for (const garniture of taco.garnitures) {
-        const stockItem = stock.garnishes.find((item) => item.id === garniture.id);
-        if (!stockItem) {
-          notFound.push(`Garniture: ${garniture.code || garniture.name} (${garniture.name || garniture.code})`);
-        } else if (!stockItem.in_stock) {
-          outOfStock.push(`Garniture: ${garniture.code || garniture.name} (${garniture.name || garniture.code})`);
-        }
+        validateItem(garniture, stock.garnishes, 'Garniture');
       }
     }
 
     // Validate other items
     for (const extra of items.extras) {
-      const stockItem = stock.extras.find((item) => item.id === extra.id);
-      if (!stockItem) {
-        notFound.push(`Extra: ${extra.code} (${extra.name || extra.code})`);
-      } else if (!stockItem.in_stock) {
-        outOfStock.push(`Extra: ${extra.code} (${extra.name || extra.code})`);
-      }
+      validateItem(extra, stock.extras, 'Extra');
     }
-
     for (const drink of items.drinks) {
-      const stockItem = stock.drinks.find((item) => item.id === drink.id);
-      if (!stockItem) {
-        notFound.push(`Drink: ${drink.code} (${drink.name || drink.code})`);
-      } else if (!stockItem.in_stock) {
-        outOfStock.push(`Drink: ${drink.code} (${drink.name || drink.code})`);
-      }
+      validateItem(drink, stock.drinks, 'Drink');
     }
-
     for (const dessert of items.desserts) {
-      const stockItem = stock.desserts.find((item) => item.id === dessert.id);
-      if (!stockItem) {
-        notFound.push(`Dessert: ${dessert.code} (${dessert.name || dessert.code})`);
-      } else if (!stockItem.in_stock) {
-        outOfStock.push(`Dessert: ${dessert.code} (${dessert.name || dessert.code})`);
-      }
+      validateItem(dessert, stock.desserts, 'Dessert');
     }
 
     if (notFound.length > 0 || outOfStock.length > 0) {
-      const message = notFound.length > 0
-        ? `Some items are no longer available: ${notFound.join(', ')}${outOfStock.length > 0 ? `; Some items are out of stock: ${outOfStock.join(', ')}` : ''}`
-        : `Some items are out of stock: ${outOfStock.join(', ')}`;
-      
+      const message =
+        notFound.length > 0
+          ? `Some items are no longer available: ${notFound.join(', ')}${outOfStock.length > 0 ? `; Some items are out of stock: ${outOfStock.join(', ')}` : ''}`
+          : `Some items are out of stock: ${outOfStock.join(', ')}`;
+
       throw new ValidationError(message, {
         notFoundItems: notFound,
         outOfStockItems: outOfStock,
