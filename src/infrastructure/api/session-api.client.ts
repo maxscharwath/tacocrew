@@ -172,11 +172,17 @@ export class SessionApiClient {
     // Get CSRF token (cached briefly to handle parallel requests)
     const csrfToken = await this.getCsrfToken(sessionId, session.cookies);
 
-    logger.info('Making session request', {
+    // Log full request details
+    logger.info('SessionApiClient Request', {
       sessionId,
-      url,
-      method,
-      tokenLength: csrfToken.length,
+      method: method.toUpperCase(),
+      url: `${this.baseUrl}${url}`,
+      headers: {
+        'X-CSRF-Token': csrfToken.substring(0, 20) + '...',
+        Cookie: Object.keys(session.cookies).length > 0 ? 'present' : 'none',
+        ...(additionalConfig?.headers || {}),
+      },
+      data: data ? (typeof data === 'string' ? data : JSON.stringify(data)) : undefined,
       cookieCount: Object.keys(session.cookies).length,
       cookieNames: Object.keys(session.cookies),
     });
@@ -200,13 +206,12 @@ export class SessionApiClient {
         ...requestConfig.headers,
         Cookie: cookieString,
       };
-      logger.info('Cookies added to request', {
+      logger.debug('Cookies added to request', {
         sessionId,
-        cookieString: cookieString.substring(0, 200), // First 200 chars for debugging
         cookieCount: Object.keys(session.cookies).length,
       });
     } else {
-      logger.warn('No cookies found in session', { sessionId });
+      logger.debug('No cookies found in session', { sessionId });
     }
 
     try {
@@ -215,17 +220,21 @@ export class SessionApiClient {
           ? await this.axiosInstance.get<T>(url, requestConfig)
           : await this.axiosInstance.post<T>(url, data, requestConfig);
 
-      // Log response type for debugging
-      logger.debug('Response received', {
+      // Log full response details
+      const responseData =
+        typeof response.data === 'string' ? response.data : JSON.stringify(response.data);
+
+      logger.info('SessionApiClient Response', {
         sessionId,
-        url,
+        method: method.toUpperCase(),
+        url: `${this.baseUrl}${url}`,
         status: response.status,
-        contentType: response.headers['content-type'],
-        dataType: typeof response.data,
-        dataPreview:
-          typeof response.data === 'string'
-            ? response.data.substring(0, 200)
-            : JSON.stringify(response.data).substring(0, 200),
+        statusText: response.statusText,
+        headers: {
+          'content-type': response.headers['content-type'],
+          'set-cookie': response.headers['set-cookie'] ? 'present' : 'none',
+        },
+        data: responseData,
       });
 
       // Extract and store cookies from response, merging with existing

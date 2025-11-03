@@ -165,6 +165,7 @@ export interface StockItem {
   /** Stock item code (original identifier) */
   code: string;
   name: string;
+  price: number;
   in_stock: boolean;
 }
 
@@ -190,6 +191,8 @@ export type StockAvailability = {
 
 // Resource types moved to api.ts (backend API types)
 
+import type { TimeSlot } from './time-slot';
+
 /**
  * Customer information
  */
@@ -203,8 +206,8 @@ export interface Customer {
  */
 export interface DeliveryInfo {
   type: OrderType;
-  address?: string;
-  requestedFor: string; // Time slot (e.g., "15:00")
+  address: string;
+  requestedFor: TimeSlot; // Time slot in HH:MM format (e.g., "15:00")
 }
 
 /**
@@ -221,7 +224,7 @@ export interface CreateOrderRequest {
 /**
  * Time slot with demand information
  */
-export interface TimeSlot {
+export interface TimeSlotWithDemand {
   time: string;
   available: boolean;
   highDemand: boolean;
@@ -324,7 +327,6 @@ export interface UserOrder {
  */
 export interface GroupOrder {
   id: GroupOrderId;
-  groupOrderId: GroupOrderId;
   name?: string;
   leader: UserId; // User ID of the group order leader
   startDate: Date;

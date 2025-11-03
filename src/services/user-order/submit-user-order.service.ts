@@ -13,6 +13,7 @@ import { ResourceService } from '@/services/resource/resource.service';
 import { GroupOrderStatus, UserOrderStatus } from '@/shared/types/types';
 import { NotFoundError, ValidationError } from '@/shared/utils/errors.utils';
 import { inject } from '@/shared/utils/inject.utils';
+import { validateItemAvailability } from '@/shared/utils/order-validation.utils';
 
 /**
  * Submit user order use case
@@ -50,7 +51,8 @@ export class SubmitUserOrderUseCase {
     }
 
     // Re-validate availability before submitting
-    await this.validateItemAvailability(userOrder.items);
+    const stock = await this.resourceService.getStock();
+    validateItemAvailability(userOrder.items, stock);
 
     // Update status
     return await this.userOrderRepository.updateStatus(
@@ -58,75 +60,5 @@ export class SubmitUserOrderUseCase {
       userId,
       UserOrderStatus.SUBMITTED
     );
-  }
-
-  /**
-   * Validate item availability
-   */
-  private async validateItemAvailability(items: UserOrder['items']): Promise<void> {
-    const stock = await this.resourceService.getStock();
-    const outOfStock: string[] = [];
-
-    // Validate tacos
-    for (const taco of items.tacos) {
-      for (const meat of taco.meats) {
-        const stockItem = stock.meats.find(
-          (item: { code: string; in_stock: boolean }) => item.code === meat.code
-        );
-        if (!stockItem?.in_stock) {
-          outOfStock.push(`Meat: ${meat.code}`);
-        }
-      }
-      for (const sauce of taco.sauces) {
-        const stockItem = stock.sauces.find(
-          (item: { code: string; in_stock: boolean }) => item.code === sauce.code
-        );
-        if (!stockItem?.in_stock) {
-          outOfStock.push(`Sauce: ${sauce.code}`);
-        }
-      }
-      for (const garniture of taco.garnitures) {
-        const stockItem = stock.garnishes.find(
-          (item: { code: string; in_stock: boolean }) => item.code === garniture.code
-        );
-        if (!stockItem?.in_stock) {
-          outOfStock.push(`Garniture: ${garniture.code}`);
-        }
-      }
-    }
-
-    // Validate other items
-    for (const extra of items.extras) {
-      const stockItem = stock.extras.find(
-        (item: { code: string; in_stock: boolean }) => item.code === extra.code
-      );
-      if (!stockItem?.in_stock) {
-        outOfStock.push(`Extra: ${extra.code}`);
-      }
-    }
-
-    for (const drink of items.drinks) {
-      const stockItem = stock.drinks.find(
-        (item: { code: string; in_stock: boolean }) => item.code === drink.code
-      );
-      if (!stockItem?.in_stock) {
-        outOfStock.push(`Drink: ${drink.code}`);
-      }
-    }
-
-    for (const dessert of items.desserts) {
-      const stockItem = stock.desserts.find(
-        (item: { code: string; in_stock: boolean }) => item.code === dessert.code
-      );
-      if (!stockItem?.in_stock) {
-        outOfStock.push(`Dessert: ${dessert.code}`);
-      }
-    }
-
-    if (outOfStock.length > 0) {
-      throw new ValidationError('Some items are out of stock', {
-        outOfStockItems: outOfStock,
-      });
-    }
   }
 }

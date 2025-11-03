@@ -46,7 +46,6 @@ export class UserService {
   async getUserGroupOrders(userId: UserId): Promise<
     Array<{
       id: GroupOrderId;
-      groupOrderId: GroupOrderId;
       name: string | null;
       status: string;
       startDate: Date;
@@ -70,7 +69,6 @@ export class UserService {
 
     return dbGroupOrders.map((go) => ({
       id: go.id as GroupOrderId,
-      groupOrderId: go.id as GroupOrderId,
       name: go.name,
       status: go.status,
       startDate: go.startDate,

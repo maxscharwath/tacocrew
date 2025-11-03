@@ -3,6 +3,8 @@
  * @module api/dto/user-order
  */
 
+import type { z } from 'zod';
+import type { UserOrderItemsRequestSchema } from '@/api/schemas/user-order.schemas';
 import type { UserOrderItems, UserOrderStatus } from '@/shared/types/types';
 
 /**
@@ -19,8 +21,8 @@ export interface UserOrderResponseDto {
 }
 
 /**
- * Create user order request DTO
+ * Create user order request DTO (only IDs)
  */
-export interface CreateUserOrderRequestDto {
-  items: UserOrderItems;
-}
+export type CreateUserOrderRequestDto = {
+  items: z.infer<typeof UserOrderItemsRequestSchema>;
+};

@@ -3,6 +3,12 @@
  */
 
 import { vi } from 'vitest';
+import {
+  GarnitureIdSchema,
+  MeatIdSchema,
+  SauceIdSchema,
+  TacoIdSchema,
+} from '@/schemas/taco.schema';
 import type { CartMetadata, StockAvailability, Taco } from '@/shared/types/types';
 import { StockCategory, TacoSize } from '@/shared/types/types';
 import { deterministicUUID } from '@/shared/utils/uuid.utils';
@@ -135,21 +141,29 @@ export const createMockCartMetadata = (overrides?: Partial<CartMetadata>): CartM
 });
 
 export const createMockTaco = (overrides?: Partial<Taco>): Taco => ({
-  id: 'test-taco-id',
+  id: TacoIdSchema.parse('test-taco-id'),
   size: TacoSize.XL,
   meats: [
     {
-      id: deterministicUUID('viande_hachee', StockCategory.Meats),
+      id: MeatIdSchema.parse(deterministicUUID('viande_hachee', StockCategory.Meats)),
       code: 'viande_hachee',
       name: 'Viande Hachée',
       quantity: 2,
     },
   ],
   sauces: [
-    { id: deterministicUUID('harissa', StockCategory.Sauces), code: 'harissa', name: 'Harissa' },
+    {
+      id: SauceIdSchema.parse(deterministicUUID('harissa', StockCategory.Sauces)),
+      code: 'harissa',
+      name: 'Harissa',
+    },
   ],
   garnitures: [
-    { id: deterministicUUID('salade', StockCategory.Garnishes), code: 'salade', name: 'Salade' },
+    {
+      id: GarnitureIdSchema.parse(deterministicUUID('salade', StockCategory.Garnishes)),
+      code: 'salade',
+      name: 'Salade',
+    },
   ],
   note: undefined,
   quantity: 1,
@@ -172,12 +186,14 @@ export const createMockStockAvailability = (
       id: deterministicUUID('viande_hachee', StockCategory.Meats),
       code: 'viande_hachee',
       name: formatName('viande_hachee'),
+      price: 5.5,
       in_stock: true,
     },
     {
       id: deterministicUUID('poulet', StockCategory.Meats),
       code: 'poulet',
       name: formatName('poulet'),
+      price: 6.0,
       in_stock: true,
     },
   ],
@@ -186,12 +202,14 @@ export const createMockStockAvailability = (
       id: deterministicUUID('harissa', StockCategory.Sauces),
       code: 'harissa',
       name: formatName('harissa'),
+      price: 0.5,
       in_stock: true,
     },
     {
       id: deterministicUUID('algerienne', StockCategory.Sauces),
       code: 'algerienne',
       name: formatName('algerienne'),
+      price: 0.5,
       in_stock: true,
     },
   ],
@@ -200,12 +218,14 @@ export const createMockStockAvailability = (
       id: deterministicUUID('salade', StockCategory.Garnishes),
       code: 'salade',
       name: formatName('salade'),
+      price: 0.3,
       in_stock: true,
     },
     {
       id: deterministicUUID('tomates', StockCategory.Garnishes),
       code: 'tomates',
       name: formatName('tomates'),
+      price: 0.3,
       in_stock: true,
     },
   ],
@@ -213,4 +233,28 @@ export const createMockStockAvailability = (
   [StockCategory.Drinks]: [],
   [StockCategory.Extras]: [],
   ...overrides,
+});
+
+/**
+ * Mock AuthService
+ */
+export const createMockAuthService = (): {
+  generateToken: ReturnType<typeof vi.fn>;
+  verifyToken: ReturnType<typeof vi.fn>;
+} => ({
+  generateToken: vi.fn(),
+  verifyToken: vi.fn(),
+});
+
+/**
+ * Mock UserRepository
+ */
+export const createMockUserRepository = (): {
+  findById: ReturnType<typeof vi.fn>;
+  findByUsername: ReturnType<typeof vi.fn>;
+  create: ReturnType<typeof vi.fn>;
+} => ({
+  findById: vi.fn(),
+  findByUsername: vi.fn(),
+  create: vi.fn(),
 });

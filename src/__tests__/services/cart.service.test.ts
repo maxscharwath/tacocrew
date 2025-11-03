@@ -13,12 +13,12 @@ import {
   createMockTacoMappingRepository,
   createMockTacosApiClient,
 } from '@/__tests__/mocks';
-import { CartRepository } from '@/api/routes/cart.routesrepository';
-import { CartService } from '@/api/routes/cart.routesservice';
-import { TacoMappingRepository } from '@/api/routes/cart.routestaco-mapping.repository';
-import { ResourceService } from '@/api/routes/resource.routesservice';
 import { SessionApiClient } from '@/infrastructure/api/session-api.client';
 import { TacosApiClient } from '@/infrastructure/api/tacos-api.client';
+import { CartRepository } from '@/infrastructure/repositories/cart.repository';
+import { TacoMappingRepository } from '@/infrastructure/repositories/taco-mapping.repository';
+import { CartService } from '@/services/cart/cart.service';
+import { ResourceService } from '@/services/resource/resource.service';
 import { TacoSize } from '@/shared/types/types';
 import { NotFoundError } from '@/shared/utils/errors.utils';
 

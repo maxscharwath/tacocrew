@@ -34,7 +34,6 @@ const UserOrderHistoryEntrySchema = z.object({
 
 const UserGroupOrderSchema = z.object({
   id: z.string(),
-  groupOrderId: z.string(),
   name: z.string().nullable(),
   status: z.string(),
   startDate: IsoDateStringSchema,

@@ -3,12 +3,15 @@
  * @module types/session
  */
 
+import type { SessionId } from '@/schemas/session.schema';
+import type { OrderType } from '@/shared/types/types';
+
 /**
  * Session data containing authentication and state
  */
 export interface SessionData {
   /** Unique session identifier */
-  sessionId: string;
+  sessionId: SessionId;
 
   /** CSRF token for this session */
   csrfToken: string;
@@ -25,7 +28,7 @@ export interface SessionData {
   /** Session metadata */
   metadata?: {
     customerName?: string;
-    orderType?: string;
+    orderType?: OrderType;
     [key: string]: unknown;
   };
 }
@@ -35,7 +38,7 @@ export interface SessionData {
  */
 export interface CreateSessionOptions {
   /** Optional custom session ID */
-  sessionId?: string;
+  sessionId?: SessionId;
 
   /** Optional metadata */
   metadata?: SessionData['metadata'];
@@ -46,16 +49,16 @@ export interface CreateSessionOptions {
  */
 export interface SessionStore {
   /** Get session by ID */
-  get(sessionId: string): Promise<SessionData | null>;
+  get(sessionId: SessionId): Promise<SessionData | null>;
 
   /** Store/update session */
-  set(sessionId: string, data: SessionData): Promise<void>;
+  set(sessionId: SessionId, data: SessionData): Promise<void>;
 
   /** Delete session */
-  delete(sessionId: string): Promise<void>;
+  delete(sessionId: SessionId): Promise<void>;
 
   /** Check if session exists */
-  has(sessionId: string): Promise<boolean>;
+  has(sessionId: SessionId): Promise<boolean>;
 
   /** Get all active sessions */
   getAll(): Promise<SessionData[]>;

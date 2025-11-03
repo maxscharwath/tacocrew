@@ -4,6 +4,7 @@
  */
 
 import winston from 'winston';
+import DailyRotateFile from 'winston-daily-rotate-file';
 import { config } from '@/shared/config/app.config';
 
 const { combine, timestamp, json, printf, colorize, errors } = winston.format;
@@ -22,6 +23,21 @@ const devFormat = printf(({ level, message, timestamp, ...metadata }) => {
 });
 
 /**
+ * Daily rotating file transport - one log file per day
+ */
+const dailyRotateFileTransport = new DailyRotateFile({
+  filename: 'logs/app-%DATE%.log',
+  datePattern: 'YYYY-MM-DD',
+  maxSize: '20m',
+  maxFiles: '14d', // Keep logs for 14 days
+  format: combine(
+    errors({ stack: true }),
+    timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
+    json()
+  ),
+});
+
+/**
  * Logger instance
  */
 export const logger = winston.createLogger({
@@ -33,8 +49,7 @@ export const logger = winston.createLogger({
   ),
   transports: [
     new winston.transports.Console(),
-    new winston.transports.File({ filename: 'logs/error.log', level: 'error' }),
-    new winston.transports.File({ filename: 'logs/combined.log' }),
+    dailyRotateFileTransport,
   ],
   exitOnError: false,
 });

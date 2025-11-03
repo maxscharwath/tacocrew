@@ -5,8 +5,8 @@
 import { container } from 'tsyringe';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createMockTacosApiClient } from '@/__tests__/mocks';
-import { ResourceService } from '@/api/routes/resource.routesservice';
 import { TacosApiClient } from '@/infrastructure/api/tacos-api.client';
+import { ResourceService } from '@/services/resource/resource.service';
 import { StockAvailabilityBackend, StockCategory } from '@/shared/types/types';
 
 describe('ResourceService', () => {

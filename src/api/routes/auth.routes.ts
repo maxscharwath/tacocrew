@@ -54,7 +54,7 @@ app.openapi(
         user: {
           id: result.user.id,
           username: result.user.username,
-          ...(result.user.slackId && { slackId: result.user.slackId }),
+          slackId: result.user.slackId ?? undefined,
           createdAt: result.user.createdAt?.toISOString() ?? new Date().toISOString(),
           updatedAt: result.user.updatedAt?.toISOString() ?? new Date().toISOString(),
         },

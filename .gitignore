@@ -43,3 +43,4 @@ coverage/
 .pnp.*
 
 /src/generated/prisma
+logs/

@@ -43,7 +43,7 @@ export class AuthService {
     const payload: JWTPayload = {
       userId: user.id,
       username: user.username,
-      ...(user.slackId && { slackId: user.slackId }),
+      slackId: user.slackId,
     };
 
     return jwt.sign(payload, this.jwtSecret, {

@@ -1,6 +1,12 @@
 // html.parser.ts
 import { type Cheerio, load } from 'cheerio';
 import type { AnyNode, Element } from 'domhandler';
+import {
+  GarnitureIdSchema,
+  MeatIdSchema,
+  SauceIdSchema,
+  TacoIdSchema,
+} from '@/schemas/taco.schema';
 import { StockAvailability, StockCategory, Taco, TacoSize } from '@/shared/types/types';
 import { logger } from '@/shared/utils/logger.utils';
 import { deterministicUUID } from '@/shared/utils/uuid.utils';
@@ -191,26 +197,28 @@ export function parseTacoCard(
 
     // Transform items to new structure: id (UUID) and code (stock code)
     const transformedMeats = meats.map((meat) => ({
-      id: deterministicUUID(meat.id, StockCategory.Meats),
+      id: MeatIdSchema.parse(deterministicUUID(meat.id, StockCategory.Meats)),
       code: meat.id,
       name: meat.name,
       quantity: meat.quantity,
     }));
 
     const transformedSauces = sauces.map((sauce) => ({
-      id: deterministicUUID(sauce.id || sauce.name, StockCategory.Sauces),
+      id: SauceIdSchema.parse(deterministicUUID(sauce.id || sauce.name, StockCategory.Sauces)),
       code: sauce.id,
       name: sauce.name,
     }));
 
     const transformedGarnitures = garnitures.map((garniture) => ({
-      id: deterministicUUID(garniture.id || garniture.name, StockCategory.Garnishes),
+      id: GarnitureIdSchema.parse(
+        deterministicUUID(garniture.id || garniture.name, StockCategory.Garnishes)
+      ),
       code: garniture.id,
       name: garniture.name,
     }));
 
     return {
-      id: tacoId,
+      id: TacoIdSchema.parse(tacoId),
       size: size as TacoSize,
       meats: transformedMeats,
       sauces: transformedSauces,
@@ -239,7 +247,7 @@ export function parseTacoCards(
   const tacos = parseCategorySummaryFromTacos(html, stockData);
   return tacos.map((taco, index) => {
     const mappedId = mapping.get(index);
-    return mappedId ? { ...taco, id: mappedId } : taco;
+    return mappedId ? { ...taco, id: TacoIdSchema.parse(mappedId) } : taco;
   });
 }
 

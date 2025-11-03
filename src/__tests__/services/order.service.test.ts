@@ -5,9 +5,9 @@
 import { container } from 'tsyringe';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createMockCartMetadata, createMockSessionApiClient } from '@/__tests__/mocks';
-import { CartService } from '@/api/routes/cart.routesservice';
 import { SessionApiClient } from '@/infrastructure/api/session-api.client';
 import { OrderService } from '@/order/service';
+import { CartService } from '@/services/cart/cart.service';
 import { OrderType } from '@/shared/types/types';
 import { NotFoundError } from '@/shared/utils/errors.utils';
 

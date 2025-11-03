@@ -5,6 +5,7 @@
 
 import { injectable } from 'tsyringe';
 import { TacosApiClient } from '@/infrastructure/api/tacos-api.client';
+import { SessionIdSchema } from '@/schemas/session.schema';
 import { CreateSessionOptions, SessionData, SessionStats } from '@/shared/types/session';
 import { inject } from '@/shared/utils/inject.utils';
 import { logger } from '@/shared/utils/logger.utils';
@@ -31,7 +32,8 @@ export class SessionService {
    * Create a new session
    */
   async createSession(options: CreateSessionOptions = {}): Promise<SessionData> {
-    const sessionId = options.sessionId || randomUUID();
+    const rawSessionId = options.sessionId || randomUUID();
+    const sessionId = SessionIdSchema.parse(rawSessionId);
 
     logger.info('Creating new session', { sessionId });
 
@@ -58,7 +60,8 @@ export class SessionService {
    */
   async getSession(sessionId: string): Promise<SessionData | null> {
     logger.debug('Getting session', { sessionId });
-    return await sessionStore.get(sessionId);
+    const parsedSessionId = SessionIdSchema.parse(sessionId);
+    return await sessionStore.get(parsedSessionId);
   }
 
   /**
@@ -80,6 +83,7 @@ export class SessionService {
    */
   async updateSession(sessionId: string, updates: Partial<SessionData>): Promise<void> {
     const session = await this.getSessionOrThrow(sessionId);
+    const parsedSessionId = SessionIdSchema.parse(sessionId);
 
     const updatedSession: SessionData = {
       ...session,
@@ -89,7 +93,7 @@ export class SessionService {
       lastActivityAt: new Date(),
     };
 
-    await sessionStore.set(sessionId, updatedSession);
+    await sessionStore.set(parsedSessionId, updatedSession);
     logger.debug('Session updated', { sessionId });
   }
 
@@ -140,14 +144,16 @@ export class SessionService {
    */
   async deleteSession(sessionId: string): Promise<void> {
     logger.info('Deleting session', { sessionId });
-    await sessionStore.delete(sessionId);
+    const parsedSessionId = SessionIdSchema.parse(sessionId);
+    await sessionStore.delete(parsedSessionId);
   }
 
   /**
    * Check if session exists
    */
   async hasSession(sessionId: string): Promise<boolean> {
-    return await sessionStore.has(sessionId);
+    const parsedSessionId = SessionIdSchema.parse(sessionId);
+    return await sessionStore.has(parsedSessionId);
   }
 
   /**

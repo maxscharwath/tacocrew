@@ -5,7 +5,8 @@
 
 import { createRoute } from '@hono/zod-openapi';
 import { z } from 'zod';
-import { jsonContent, UserOrderItemsSchema } from '@/api/schemas/shared.schemas';
+import { jsonContent } from '@/api/schemas/shared.schemas';
+import { UserOrderItemsSchema } from '@/api/schemas/user-order.schemas';
 import { authSecurity, createAuthenticatedRouteApp, requireUserId } from '@/api/utils/route.utils';
 import { GroupOrderIdSchema } from '@/schemas/group-order.schema';
 import { CreateGroupOrderUseCase } from '@/services/group-order/create-group-order.service';
@@ -84,8 +85,8 @@ app.openapi(
         startDate: groupOrder.startDate.toISOString(),
         endDate: groupOrder.endDate.toISOString(),
         status: groupOrder.status,
-        ...(groupOrder.createdAt && { createdAt: groupOrder.createdAt.toISOString() }),
-        ...(groupOrder.updatedAt && { updatedAt: groupOrder.updatedAt.toISOString() }),
+        createdAt: groupOrder.createdAt?.toISOString(),
+        updatedAt: groupOrder.updatedAt?.toISOString(),
       },
       201
     );
@@ -123,8 +124,8 @@ app.openapi(
         startDate: groupOrder.startDate.toISOString(),
         endDate: groupOrder.endDate.toISOString(),
         status: groupOrder.status,
-        ...(groupOrder.createdAt && { createdAt: groupOrder.createdAt.toISOString() }),
-        ...(groupOrder.updatedAt && { updatedAt: groupOrder.updatedAt.toISOString() }),
+        createdAt: groupOrder.createdAt?.toISOString(),
+        updatedAt: groupOrder.updatedAt?.toISOString(),
       },
       200
     );
@@ -163,18 +164,14 @@ app.openapi(
           startDate: result.groupOrder.startDate.toISOString(),
           endDate: result.groupOrder.endDate.toISOString(),
           status: result.groupOrder.status,
-          ...(result.groupOrder.createdAt && {
-            createdAt: result.groupOrder.createdAt.toISOString(),
-          }),
-          ...(result.groupOrder.updatedAt && {
-            updatedAt: result.groupOrder.updatedAt.toISOString(),
-          }),
+          createdAt: result.groupOrder.createdAt?.toISOString(),
+          updatedAt: result.groupOrder.updatedAt?.toISOString(),
         },
         userOrders: result.userOrders.map((uo) => ({
           id: uo.id,
           groupOrderId: uo.groupOrderId,
           userId: uo.userId,
-          ...(uo.username && { username: uo.username }),
+          username: uo.username,
           status: uo.status,
           items: uo.items,
           createdAt: uo.createdAt.toISOString(),

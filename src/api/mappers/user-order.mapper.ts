@@ -17,7 +17,7 @@ export class UserOrderMapper {
     return {
       id: userOrder.id,
       userId: userOrder.userId,
-      ...(userOrder.username && { username: userOrder.username }),
+      username: userOrder.username,
       status: userOrder.status,
       items: userOrder.items,
       createdAt: userOrder.createdAt,

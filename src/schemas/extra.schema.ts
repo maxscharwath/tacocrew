@@ -18,10 +18,21 @@ export type ExtraId = Id<'Extra'>;
 export const ExtraIdSchema = zId<ExtraId>();
 
 /**
+ * Free sauce ID type - branded string
+ */
+export type FreeSauceId = Id<'FreeSauce'>;
+
+/**
+ * Parse a string to FreeSauceId
+ */
+export const FreeSauceIdSchema = zId<FreeSauceId>();
+
+/**
  * Free sauce schema
  */
 export const FreeSauceSchema = z.object({
-  id: z.string(),
+  id: zId<FreeSauceId>(),
+  code: z.string(),
   name: z.string(),
   price: z.number().min(0),
 });

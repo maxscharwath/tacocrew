@@ -17,7 +17,7 @@ export class UserMapper {
     return {
       id: user.id,
       username: user.username,
-      ...(user.slackId && { slackId: user.slackId }),
+      slackId: user.slackId ?? undefined,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
     };

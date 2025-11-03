@@ -3,6 +3,7 @@
  * @module utils/session-store
  */
 
+import type { SessionId } from '@/schemas/session.schema';
 import { SessionData, SessionStore } from '@/shared/types/session';
 import { logger } from '@/shared/utils/logger.utils';
 
@@ -16,7 +17,7 @@ export class InMemorySessionStore implements SessionStore {
   /**
    * Get session by ID
    */
-  get(sessionId: string): Promise<SessionData | null> {
+  get(sessionId: SessionId): Promise<SessionData | null> {
     const session = this.sessions.get(sessionId);
 
     if (session) {
@@ -31,7 +32,7 @@ export class InMemorySessionStore implements SessionStore {
   /**
    * Store/update session
    */
-  set(sessionId: string, data: SessionData): Promise<void> {
+  set(sessionId: SessionId, data: SessionData): Promise<void> {
     this.sessions.set(sessionId, {
       ...data,
       lastActivityAt: new Date(),
@@ -44,7 +45,7 @@ export class InMemorySessionStore implements SessionStore {
   /**
    * Delete session
    */
-  delete(sessionId: string): Promise<void> {
+  delete(sessionId: SessionId): Promise<void> {
     const deleted = this.sessions.delete(sessionId);
 
     if (deleted) {
@@ -56,7 +57,7 @@ export class InMemorySessionStore implements SessionStore {
   /**
    * Check if session exists
    */
-  has(sessionId: string): Promise<boolean> {
+  has(sessionId: SessionId): Promise<boolean> {
     return Promise.resolve(this.sessions.has(sessionId));
   }
 
