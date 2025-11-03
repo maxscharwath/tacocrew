@@ -3,8 +3,10 @@
  */
 
 import { describe, expect, it } from 'vitest';
+import { TacoIdSchema } from '@/schemas/taco.schema';
 import { TacoSize } from '@/shared/types/types';
 import { parseCartSummary, parseTacoCard, parseTacoCards } from '@/shared/utils/html-parser.utils';
+import { randomUUID } from '@/shared/utils/uuid.utils';
 
 describe('HTML Parser', () => {
   describe('parseTacoCard', () => {
@@ -22,10 +24,11 @@ describe('HTML Parser', () => {
         </div>
       `;
 
-      const result = parseTacoCard(html, 'test-taco-id');
+      const tacoId = TacoIdSchema.parse(randomUUID());
+      const result = parseTacoCard(html, tacoId);
 
       expect(result).not.toBeNull();
-      expect(result?.id).toBe('test-taco-id');
+      expect(result?.id).toBe(tacoId);
       expect(result?.size).toBe(TacoSize.XL);
       expect(result?.meats).toHaveLength(1);
       expect(result?.meats[0]?.code).toBe('viande_hachee');
@@ -38,13 +41,15 @@ describe('HTML Parser', () => {
 
     it('should return null for invalid HTML', () => {
       const html = '<div>Invalid HTML</div>';
-      const result = parseTacoCard(html, 'test-id');
+      const tacoId = TacoIdSchema.parse(randomUUID());
+      const result = parseTacoCard(html, tacoId);
       expect(result).toBeNull();
     });
 
     it('should return null for missing size', () => {
       const html = '<div class="card"><div>No size</div></div>';
-      const result = parseTacoCard(html, 'test-id');
+      const tacoId = TacoIdSchema.parse(randomUUID());
+      const result = parseTacoCard(html, tacoId);
       expect(result).toBeNull();
     });
 
@@ -60,7 +65,9 @@ describe('HTML Parser', () => {
         </div>
       `;
 
-      const result = parseTacoCard(html, 'test-id');
+      const tacoId = TacoIdSchema.parse(randomUUID());
+      const result = parseTacoCard(html, tacoId);
+      expect(result).not.toBeNull();
       expect(result?.meats).toHaveLength(2);
     });
 
@@ -79,7 +86,9 @@ describe('HTML Parser', () => {
         </div>
       `;
 
-      const result = parseTacoCard(html, 'test-id');
+      const tacoId = TacoIdSchema.parse(randomUUID());
+      const result = parseTacoCard(html, tacoId);
+      expect(result).not.toBeNull();
       expect(result?.quantity).toBe(3);
     });
   });
@@ -108,8 +117,8 @@ describe('HTML Parser', () => {
       `;
 
       const mapping = new Map<number, string>();
-      mapping.set(0, 'taco-1');
-      mapping.set(1, 'taco-2');
+      mapping.set(0, TacoIdSchema.parse(randomUUID()));
+      mapping.set(1, TacoIdSchema.parse(randomUUID()));
 
       const result = parseTacoCards(html, mapping);
       expect(result.length).toBeGreaterThan(0);

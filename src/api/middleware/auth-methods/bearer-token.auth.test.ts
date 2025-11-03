@@ -8,8 +8,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { bearerTokenAuth } from '@/api/middleware/auth-methods/bearer-token.auth';
 import type { UserId } from '@/schemas/user.schema';
 import { AuthService } from '@/services/auth/auth.service';
+import { createMockAuthService } from '@/shared/utils/__tests__/mocks';
 import { UnauthorizedError, ValidationError } from '@/shared/utils/errors.utils';
-import { createMockAuthService } from '../../mocks';
 
 describe('bearerTokenAuth', () => {
   let mockContext: Context;

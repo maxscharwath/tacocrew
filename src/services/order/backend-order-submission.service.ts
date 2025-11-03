@@ -11,6 +11,7 @@ import type { SessionId } from '@/schemas/session.schema';
 import type { UserOrder } from '@/schemas/user-order.schema';
 import { SessionService } from '@/services/session/session.service';
 import type { Customer, DeliveryInfo } from '@/shared/types/types';
+import { formatAddressForBackend } from '@/shared/utils/address-formatter.utils';
 import { inject } from '@/shared/utils/inject.utils';
 import { logger } from '@/shared/utils/logger.utils';
 
@@ -51,6 +52,9 @@ export class BackendOrderSubmissionService {
       // Generate transaction ID (format: timestamp_random)
       const transactionId = `${Date.now()}_${randomBytes(8).toString('hex')}`;
 
+      // Format address as string for backend API
+      const addressString = formatAddressForBackend(delivery.address);
+
       // Submit order to backend
       const orderResult = await this.sessionApiClient.postFormData<{
         orderId: string;
@@ -59,12 +63,11 @@ export class BackendOrderSubmissionService {
         name: customer.name,
         phone: customer.phone,
         confirmPhone: customer.phone,
-        address: delivery.address,
+        address: addressString,
         type: delivery.type,
         requestedFor: delivery.requestedFor,
         transaction_id: transactionId,
       });
-
 
       return {
         orderId: orderResult.orderId,

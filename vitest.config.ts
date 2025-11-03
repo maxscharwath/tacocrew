@@ -5,8 +5,8 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'node',
-    include: ['src/**/*.{test,spec}.{ts,js}', 'src/__tests__/**/*.test.ts'],
-    setupFiles: ['src/__tests__/setup.ts'],
+    include: ['src/**/*.{test,spec}.{ts,js}'],
+    setupFiles: ['src/shared/utils/__tests__/setup.ts'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
@@ -15,7 +15,6 @@ export default defineConfig({
         'src/**/*.d.ts',
         'src/**/*.test.ts',
         'src/**/*.spec.ts',
-        'src/__tests__/**',
         'src/index.ts',
         'src/hono-api.ts',
       ],

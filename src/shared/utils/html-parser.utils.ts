@@ -302,7 +302,9 @@ export function parseCategorySummaryFromTacos(html: string, stockData?: StockAva
         return;
       }
       const htmlContent: string = rawHtml;
-      const parsed = parseTacoCard(htmlContent as unknown as string, `temp-${idx}`, stockData);
+      // Generate a temporary UUID for parsing - will be replaced by mapping if provided
+      const tempId = deterministicUUID(`temp-taco-${idx}`, StockCategory.Meats);
+      const parsed = parseTacoCard(htmlContent as unknown as string, tempId, stockData);
       if (parsed) tacos.push(parsed);
     });
 

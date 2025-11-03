@@ -136,11 +136,6 @@ export class SessionApiClient {
   }
 
   /**
-   * Make request with session context
-   * CSRF tokens are fetched fresh for each request using stored cookies
-   * Cookies are stored when a cart is created (POST /carts) and updated on responses
-   */
-  /**
    * Get or fetch CSRF token for a session
    */
   private async getCsrfToken(
@@ -157,6 +152,100 @@ export class SessionApiClient {
     return csrfToken;
   }
 
+  /**
+   * Extract cookies from Set-Cookie headers
+   */
+  private parseCookies(setCookieHeaders: string[] | undefined): Record<string, string> {
+    const cookies: Record<string, string> = {};
+    if (!setCookieHeaders) return cookies;
+
+    setCookieHeaders.forEach((cookie) => {
+      const [nameValue] = cookie.split(';');
+      const [name, value] = (nameValue || '').split('=');
+      if (name && value) {
+        cookies[name.trim()] = value.trim();
+      }
+    });
+
+    return cookies;
+  }
+
+  /**
+   * Update session cookies from response
+   */
+  private async updateSessionCookies(
+    sessionId: SessionId,
+    newCookies: Record<string, string>
+  ): Promise<void> {
+    if (Object.keys(newCookies).length === 0) return;
+
+    const currentSession = await this.sessionService.getSession(sessionId);
+    if (currentSession) {
+      const mergedCookies = { ...currentSession.cookies, ...newCookies };
+      await this.sessionService.updateSessionCookies(sessionId, mergedCookies);
+    } else {
+      await this.sessionService.createSession({
+        sessionId,
+        metadata: { cookies: newCookies },
+      });
+    }
+  }
+
+  /**
+   * Format request data for logging
+   */
+  private formatDataForLogging(data?: unknown): string | Record<string, unknown> | undefined {
+    if (!data) return undefined;
+
+    if (typeof data === 'string') {
+      return data;
+    }
+
+    if (data instanceof FormData) {
+      const formDataObj: Record<string, unknown> = {};
+      for (const [key, value] of data.entries()) {
+        if (formDataObj[key]) {
+          const existing = formDataObj[key];
+          formDataObj[key] = Array.isArray(existing) ? [...existing, value] : [existing, value];
+        } else {
+          formDataObj[key] = value;
+        }
+      }
+      return formDataObj;
+    }
+
+    return JSON.stringify(data);
+  }
+
+  /**
+   * Build request config with CSRF token and cookies
+   */
+  private buildRequestConfig(
+    csrfToken: string,
+    cookies: Record<string, string>,
+    additionalConfig?: AxiosRequestConfig
+  ): AxiosRequestConfig {
+    const requestConfig: AxiosRequestConfig = {
+      ...additionalConfig,
+      headers: {
+        ...additionalConfig?.headers,
+        'X-CSRF-Token': csrfToken,
+      },
+    };
+
+    if (Object.keys(cookies).length > 0) {
+      const cookieString = Object.entries(cookies)
+        .map(([key, value]) => `${key}=${value}`)
+        .join('; ');
+      requestConfig.headers = {
+        ...requestConfig.headers,
+        Cookie: cookieString,
+      };
+    }
+
+    return requestConfig;
+  }
+
   private async makeSessionRequest<T>(
     sessionId: SessionId,
     method: 'get' | 'post',
@@ -165,14 +254,13 @@ export class SessionApiClient {
     additionalConfig?: AxiosRequestConfig
   ): Promise<T> {
     // Get cart session data (cookies only - tokens are fetched fresh)
-    // SessionId is CartId - each cart ID serves as a session identifier
     const sessionData = await this.sessionService.getSession(sessionId);
     const session = sessionData ? { cookies: sessionData.cookies } : { cookies: {} };
 
-    // Get CSRF token (cached briefly to handle parallel requests)
+    // Get CSRF token
     const csrfToken = await this.getCsrfToken(sessionId, session.cookies);
 
-    // Log full request details
+    // Log request details
     logger.info('SessionApiClient Request', {
       sessionId,
       method: method.toUpperCase(),
@@ -182,30 +270,15 @@ export class SessionApiClient {
         Cookie: Object.keys(session.cookies).length > 0 ? 'present' : 'none',
         ...(additionalConfig?.headers || {}),
       },
-      data: data ? (typeof data === 'string' ? data : JSON.stringify(data)) : undefined,
+      data: this.formatDataForLogging(data),
       cookieCount: Object.keys(session.cookies).length,
       cookieNames: Object.keys(session.cookies),
     });
 
-    // Prepare config with fresh CSRF token and stored cookies
-    const requestConfig: AxiosRequestConfig = {
-      ...additionalConfig,
-      headers: {
-        ...additionalConfig?.headers,
-        'X-CSRF-Token': csrfToken,
-      },
-    };
+    // Build request config with CSRF token and cookies
+    const requestConfig = this.buildRequestConfig(csrfToken, session.cookies, additionalConfig);
 
-    // Add cookies if present
     if (Object.keys(session.cookies).length > 0) {
-      // Send cookies exactly as stored (they're already in the correct format from server)
-      const cookieString = Object.entries(session.cookies)
-        .map(([key, value]) => `${key}=${value}`)
-        .join('; ');
-      requestConfig.headers = {
-        ...requestConfig.headers,
-        Cookie: cookieString,
-      };
       logger.debug('Cookies added to request', {
         sessionId,
         cookieCount: Object.keys(session.cookies).length,
@@ -237,34 +310,9 @@ export class SessionApiClient {
         data: responseData,
       });
 
-      // Extract and store cookies from response, merging with existing
-      const setCookieHeaders = response.headers['set-cookie'];
-      if (setCookieHeaders) {
-        const cookies: Record<string, string> = {};
-        setCookieHeaders.forEach((cookie) => {
-          const [nameValue] = cookie.split(';');
-          const [name, value] = (nameValue || '').split('=');
-          if (name && value) {
-            cookies[name.trim()] = value.trim();
-          }
-        });
-
-        if (Object.keys(cookies).length > 0) {
-          // Get current session to merge cookies instead of replacing
-          // SessionId is CartId - each cart ID serves as a session identifier
-          const currentSession = await this.sessionService.getSession(sessionId);
-          if (currentSession) {
-            const mergedCookies = { ...currentSession.cookies, ...cookies };
-            await this.sessionService.updateSessionCookies(sessionId, mergedCookies);
-          } else {
-            // If session doesn't exist, create it with cookies
-            await this.sessionService.createSession({
-              sessionId,
-              metadata: { cookies },
-            });
-          }
-        }
-      }
+      // Update session cookies from response
+      const cookies = this.parseCookies(response.headers['set-cookie']);
+      await this.updateSessionCookies(sessionId, cookies);
 
       return response.data;
     } catch (error) {
@@ -278,71 +326,31 @@ export class SessionApiClient {
 
         try {
           // Get current session cookies
-          // SessionId is CartId - each cart ID serves as a session identifier
           const currentSession = await this.sessionService.getSession(sessionId);
           const sessionCookies = currentSession?.cookies || {};
 
-          // Get fresh token using existing cookies (maintains session)
+          // Get fresh token and updated cookies
           const { csrfToken: retryToken, cookies: updatedCookies } =
             await this.apiClient.refreshCsrfTokenWithCookies(sessionCookies);
 
-          // Update cart session with any new cookies from token refresh
-          if (Object.keys(updatedCookies).length > 0) {
-            if (currentSession) {
-              await this.sessionService.updateSessionCookies(sessionId, updatedCookies);
-            } else {
-              // Create session if it doesn't exist
-              await this.sessionService.createSession({
-                sessionId,
-                metadata: { cookies: updatedCookies },
-              });
-            }
-          }
+          // Update session with new cookies from token refresh
+          await this.updateSessionCookies(sessionId, updatedCookies);
 
           logger.info('Cookies refreshed, retrying request', { sessionId, url });
 
-          const retryConfig: AxiosRequestConfig = {
-            ...additionalConfig,
-            headers: {
-              ...additionalConfig?.headers,
-              'X-CSRF-Token': retryToken,
-            },
-          };
+          // Build retry request config
+          const retryConfig = this.buildRequestConfig(retryToken, updatedCookies, additionalConfig);
 
-          // Add cookies to retry request (use updated cookies from token refresh)
-          if (Object.keys(updatedCookies).length > 0) {
-            const cookieString = Object.entries(updatedCookies)
-              .map(([key, value]) => `${key}=${value}`)
-              .join('; ');
-            retryConfig.headers = {
-              ...retryConfig.headers,
-              Cookie: cookieString,
-            };
-          }
-
+          // Make retry request
           const retryResponse =
             method === 'get'
               ? await this.axiosInstance.get<T>(url, retryConfig)
               : await this.axiosInstance.post<T>(url, data, retryConfig);
 
           // Update cookies from retry response
-          const setCookieHeaders = retryResponse.headers['set-cookie'];
-          if (setCookieHeaders) {
-            const cookies: Record<string, string> = {};
-            setCookieHeaders.forEach((cookie) => {
-              const [nameValue] = cookie.split(';');
-              const [name, value] = (nameValue || '').split('=');
-              if (name && value) {
-                cookies[name.trim()] = value.trim();
-              }
-            });
-
-            if (Object.keys(cookies).length > 0) {
-              // Merge with cookies we already have from token refresh (don't fetch session again)
-              const mergedCookies = { ...updatedCookies, ...cookies };
-              await this.sessionService.updateSessionCookies(sessionId, mergedCookies);
-            }
-          }
+          const retryCookies = this.parseCookies(retryResponse.headers['set-cookie']);
+          const mergedCookies = { ...updatedCookies, ...retryCookies };
+          await this.updateSessionCookies(sessionId, mergedCookies);
 
           logger.info('Request succeeded after cookie refresh', { sessionId, url });
           return retryResponse.data;

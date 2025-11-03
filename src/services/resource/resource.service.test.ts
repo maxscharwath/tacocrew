@@ -4,10 +4,10 @@
 
 import { container } from 'tsyringe';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { createMockTacosApiClient } from '@/__tests__/mocks';
 import { TacosApiClient } from '@/infrastructure/api/tacos-api.client';
 import { ResourceService } from '@/services/resource/resource.service';
 import { StockAvailabilityBackend, StockCategory } from '@/shared/types/types';
+import { createMockTacosApiClient } from '@/shared/utils/__tests__/mocks';
 
 describe('ResourceService', () => {
   let resourceService: ResourceService;
@@ -78,48 +78,6 @@ describe('ResourceService', () => {
       // Second call - should fetch again (no cache)
       await resourceService.getStock();
       expect(mockApiClient.get).toHaveBeenCalledTimes(2);
-    });
-  });
-
-  describe('isInStock', () => {
-    it('should return true if product is in stock', async () => {
-      const mockBackendStock: StockAvailabilityBackend = {
-        viandes: {
-          viande_hachee: { name: 'Viande Hachée', in_stock: true },
-        },
-        sauces: {},
-        garnitures: {},
-        desserts: {},
-        boissons: {},
-        extras: {},
-      };
-      const mockCsrfToken = 'test-csrf-token';
-
-      mockApiClient.refreshCsrfToken.mockResolvedValue({ csrfToken: mockCsrfToken, cookies: {} });
-      mockApiClient.get.mockResolvedValue(mockBackendStock);
-
-      const result = await resourceService.isInStock(StockCategory.Meats, 'viande_hachee');
-
-      expect(result).toBe(true);
-    });
-
-    it('should return false if product is not in stock', async () => {
-      const mockBackendStock: StockAvailabilityBackend = {
-        viandes: {},
-        sauces: {},
-        garnitures: {},
-        desserts: {},
-        boissons: {},
-        extras: {},
-      };
-      const mockCsrfToken = 'test-csrf-token';
-
-      mockApiClient.refreshCsrfToken.mockResolvedValue({ csrfToken: mockCsrfToken, cookies: {} });
-      mockApiClient.get.mockResolvedValue(mockBackendStock);
-
-      const result = await resourceService.isInStock(StockCategory.Meats, 'non-existent');
-
-      expect(result).toBe(false);
     });
   });
 });

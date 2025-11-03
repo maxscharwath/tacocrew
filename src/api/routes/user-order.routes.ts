@@ -150,14 +150,23 @@ app.openapi(
   }
 );
 
+const StructuredAddressSchema = z.object({
+  road: z.string().min(1),
+  house_number: z.string().optional(),
+  postcode: z.string().min(1),
+  city: z.string().min(1),
+  state: z.string().optional(),
+  country: z.string().optional(),
+});
+
 const SubmitGroupOrderRequestSchema = z.object({
   customer: z.object({
-    name: z.string().min(1),
+    name: z.string().min(1), // Can be person name or company/enterprise name
     phone: z.string().min(1),
   }),
   delivery: z.object({
-    type: z.enum(['livraison', 'emporter']),
-    address: z.string().min(1),
+    type: z.enum(OrderType),
+    address: StructuredAddressSchema,
     requestedFor: TimeSlotSchema,
   }),
 });
@@ -194,11 +203,11 @@ app.openapi(
     const { id: groupOrderId } = c.req.valid('param');
     const body = c.req.valid('json');
     const submitGroupOrderUseCase = inject(SubmitGroupOrderUseCase);
-    const result = await submitGroupOrderUseCase.execute(groupOrderId, body.customer, {
-      type: body.delivery.type === 'livraison' ? OrderType.DELIVERY : OrderType.TAKEAWAY,
-      address: body.delivery.address,
-      requestedFor: body.delivery.requestedFor,
-    });
+    const result = await submitGroupOrderUseCase.execute(
+      groupOrderId,
+      body.customer,
+      body.delivery
+    );
 
     return c.json(
       {

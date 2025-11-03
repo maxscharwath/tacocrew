@@ -33,7 +33,7 @@ const dailyRotateFileTransport = new DailyRotateFile({
   format: combine(
     errors({ stack: true }),
     timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
-    json()
+    config.logging.format === 'text' || config.isDevelopment ? devFormat : json()
   ),
 });
 
@@ -47,10 +47,7 @@ export const logger = winston.createLogger({
     timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
     config.isDevelopment ? combine(colorize(), devFormat) : json()
   ),
-  transports: [
-    new winston.transports.Console(),
-    dailyRotateFileTransport,
-  ],
+  transports: [new winston.transports.Console(), dailyRotateFileTransport],
   exitOnError: false,
 });
 

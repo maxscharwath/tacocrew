@@ -5,16 +5,18 @@
 import { addHours, subMinutes } from 'date-fns';
 import { container } from 'tsyringe';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { createMockStockAvailability } from '@/__tests__/mocks';
+import type { CreateUserOrderRequestDto } from '@/api/dto/user-order.dto';
 import { GroupOrderRepository } from '@/infrastructure/repositories/group-order.repository';
+import { UserOrderRepository } from '@/infrastructure/repositories/user-order.repository';
+import { ExtraIdSchema } from '@/schemas/extra.schema';
 import { createGroupOrder } from '@/schemas/group-order.schema';
+import { GarnitureIdSchema, MeatIdSchema, SauceIdSchema } from '@/schemas/taco.schema';
 import { createUserOrderFromDb } from '@/schemas/user-order.schema';
 import { ResourceService } from '@/services/resource/resource.service';
 import { CreateUserOrderUseCase } from '@/services/user-order/create-user-order.service';
 import { GroupOrderStatus, StockCategory, TacoSize, UserOrderStatus } from '@/shared/types/types';
+import { createMockStockAvailability } from '@/shared/utils/__tests__/mocks';
 import { deterministicUUID, randomUUID } from '@/shared/utils/uuid.utils';
-import type { CreateUserOrderRequestDto } from '@/user-order/dto';
-import { UserOrderRepository } from '@/user-order/infrastructure-repository';
 
 describe('CreateUserOrderUseCase', () => {
   const groupOrderId = randomUUID();
@@ -52,11 +54,39 @@ describe('CreateUserOrderUseCase', () => {
     mockGroupOrderRepository.findById.mockResolvedValue(mockGroupOrder);
     mockResourceService.getStock.mockResolvedValue(
       createMockStockAvailability({
+        [StockCategory.Meats]: [
+          {
+            id: deterministicUUID('viande_hachee', StockCategory.Meats),
+            code: 'viande_hachee',
+            name: 'Viande Hachée',
+            price: 5,
+            in_stock: true,
+          },
+        ],
+        [StockCategory.Sauces]: [
+          {
+            id: deterministicUUID('harissa', StockCategory.Sauces),
+            code: 'harissa',
+            name: 'Harissa',
+            price: 0,
+            in_stock: true,
+          },
+        ],
+        [StockCategory.Garnishes]: [
+          {
+            id: deterministicUUID('salade', StockCategory.Garnishes),
+            code: 'salade',
+            name: 'Salade',
+            price: 0,
+            in_stock: true,
+          },
+        ],
         [StockCategory.Extras]: [
           {
             id: deterministicUUID('extra_frites', StockCategory.Extras),
             code: 'extra_frites',
             name: 'Frites',
+            price: 3,
             in_stock: true,
           },
         ],
@@ -105,25 +135,29 @@ describe('CreateUserOrderUseCase', () => {
 
   it('preserves catalog ids and assigns deterministic uuids for user order items', async () => {
     const useCase = container.resolve(CreateUserOrderUseCase);
+
+    // Get IDs from stock (simulating what would come from API)
+    const stock = await mockResourceService.getStock();
+    const meatId = stock[StockCategory.Meats][0]!.id;
+    const sauceId = stock[StockCategory.Sauces][0]!.id;
+    const garnitureId = stock[StockCategory.Garnishes][0]!.id;
+    const extraId = stock[StockCategory.Extras][0]!.id;
+
     const request: CreateUserOrderRequestDto = {
       items: {
         tacos: [
           {
-            id: 'temp-taco',
             size: TacoSize.XL,
-            meats: [{ code: 'viande_hachee', name: 'Viande Hachée', quantity: 1 }],
-            sauces: [{ code: 'harissa', name: 'Harissa' }],
-            garnitures: [{ code: 'salade', name: 'Salade' }],
+            meats: [{ id: meatId, quantity: 1 }],
+            sauces: [{ id: sauceId }],
+            garnitures: [{ id: garnitureId }],
             note: 'Spicy please',
             quantity: 1,
-            price: 12,
           },
         ],
         extras: [
           {
-            code: 'extra_frites',
-            name: 'Frites',
-            price: 3,
+            id: extraId,
             quantity: 1,
           },
         ],
@@ -147,5 +181,11 @@ describe('CreateUserOrderUseCase', () => {
     expect(result.items.tacos[0].meats[0].id).toBe(payload.items.tacos[0].meats[0].id);
     expect(result.items.tacos[0].sauces[0].id).toBe(payload.items.tacos[0].sauces[0].id);
     expect(result.items.tacos[0].garnitures[0].id).toBe(payload.items.tacos[0].garnitures[0].id);
+
+    // Verify codes are preserved
+    expect(result.items.tacos[0].meats[0].code).toBe('viande_hachee');
+    expect(result.items.tacos[0].sauces[0].code).toBe('harissa');
+    expect(result.items.tacos[0].garnitures[0].code).toBe('salade');
+    expect(result.items.extras[0].code).toBe('extra_frites');
   });
 });

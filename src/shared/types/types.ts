@@ -194,10 +194,23 @@ export type StockAvailability = {
 import type { TimeSlot } from './time-slot';
 
 /**
+ * Structured address information
+ * Based on OpenStreetMap Nominatim address format
+ */
+export interface StructuredAddress {
+  road: string;
+  house_number?: string;
+  postcode: string;
+  city: string;
+  state?: string;
+  country?: string;
+}
+
+/**
  * Customer information
  */
 export interface Customer {
-  name: string;
+  name: string; // Can be person name or company/enterprise name
   phone: string;
 }
 
@@ -206,7 +219,7 @@ export interface Customer {
  */
 export interface DeliveryInfo {
   type: OrderType;
-  address: string;
+  address: StructuredAddress;
   requestedFor: TimeSlot; // Time slot in HH:MM format (e.g., "15:00")
 }
 

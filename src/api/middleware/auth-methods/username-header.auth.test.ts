@@ -8,8 +8,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { usernameHeaderAuth } from '@/api/middleware/auth-methods/username-header.auth';
 import { UserRepository } from '@/infrastructure/repositories/user.repository';
 import type { User, UserId } from '@/schemas/user.schema';
+import { createMockUserRepository } from '@/shared/utils/__tests__/mocks';
 import { UnauthorizedError } from '@/shared/utils/errors.utils';
-import { createMockUserRepository } from '../../mocks';
 
 describe('usernameHeaderAuth', () => {
   let mockContext: Context;
