@@ -1,0 +1,78 @@
+{
+  "common": {
+    "signIn": "Sign in",
+    "signOut": "Sign out",
+    "signingIn": "Signing in…",
+    "username": "Username",
+    "loggedInAs": "Logged in as",
+    "open": "Open",
+    "loading": "Loading",
+    "error": "Error",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "submit": "Submit",
+    "back": "Back"
+  },
+  "navigation": {
+    "dashboard": "Dashboard",
+    "orders": "Orders",
+    "stock": "Stock",
+    "profile": "Profile"
+  },
+  "login": {
+    "title": "Tacobot Console",
+    "subtitle": "Sign in with your Tacobot username to manage group orders.",
+    "usernamePlaceholder": "chef-del-taco",
+    "usernameRequired": "Username is required",
+    "unexpectedError": "Unexpected error. Please try again."
+  },
+  "dashboard": {
+    "kitchenPulse": "Kitchen pulse",
+    "hero": {
+      "title": "All eyes on tonight's French tacos run",
+      "subtitle": "Track active drop windows, submissions, and stock alerts in one crisp command center. Metrics refresh every time you pop back to the dashboard."
+    },
+    "metrics": {
+      "activeOrders": "Active group orders",
+      "awaitingSubmission": "Awaiting submission",
+      "ordersOnRecord": "Orders on record",
+      "open": "Open",
+      "drafts": "Drafts",
+      "nextDispatch": "Next dispatch {{time}}"
+    },
+    "recentGroupOrders": {
+      "title": "Recent group orders",
+      "description": "Watch the heat levels on active and upcoming delivery cycles.",
+      "manageAll": "Manage all",
+      "emptyState": "No group orders yet. Spin up a delivery window to get the crew ordering.",
+      "launchFirstCycle": "Launch first cycle",
+      "untitledOrder": "Untitled group order"
+    },
+    "latestSubmissions": {
+      "title": "Latest submissions",
+      "description": "The freshest orders the kitchen has received from your squad.",
+      "emptyState": "No order history yet.",
+      "requestedFor": "Requested for {{name}}",
+      "submitted": "Submitted {{date}}"
+    },
+    "lowStockAlerts": {
+      "title": "Low stock alerts",
+      "description": "Keep ingredients topped up so every order lands with the perfect crunch.",
+      "browseInventory": "Browse inventory",
+      "allInStock": "All items are currently in stock. Keep the grill sizzling!",
+      "outOfStock": "Out of stock"
+    }
+  },
+  "root": {
+    "appTitle": "French Tacos Delivery Console",
+    "appSubtitle": "Manage sizzling group orders, stock pulses, and rider timelines in one bright workspace.",
+    "tacobot": "Tacobot Command",
+    "errors": {
+      "applicationError": "Application Error",
+      "unknownError": "Unknown Error",
+      "somethingWrong": "Something went wrong."
+    }
+  }
+}

@@ -663,12 +663,12 @@ export function OrderDetailRoute() {
                   title="No order yet"
                   description={
                     canAddOrders
-                      ? "Create your perfect taco to join this group order."
+                      ? 'Create your perfect taco to join this group order.'
                       : groupOrder.status === 'open'
-                        ? "The order period has expired."
+                        ? 'The order period has expired.'
                         : groupOrder.status === 'closed'
-                          ? "This order has been closed."
-                          : "This order has been finalized."
+                          ? 'This order has been closed.'
+                          : 'This order has been finalized.'
                   }
                 />
                 {canAddOrders && (

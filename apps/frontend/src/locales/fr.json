@@ -1,0 +1,78 @@
+{
+  "common": {
+    "signIn": "Se connecter",
+    "signOut": "Se déconnecter",
+    "signingIn": "Connexion en cours…",
+    "username": "Nom d'utilisateur",
+    "loggedInAs": "Connecté en tant que",
+    "open": "Ouvrir",
+    "loading": "Chargement",
+    "error": "Erreur",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "submit": "Soumettre",
+    "back": "Retour"
+  },
+  "navigation": {
+    "dashboard": "Tableau de bord",
+    "orders": "Commandes",
+    "stock": "Stock",
+    "profile": "Profil"
+  },
+  "login": {
+    "title": "Console Tacobot",
+    "subtitle": "Connectez-vous avec votre nom d'utilisateur Tacobot pour gérer les commandes de groupe.",
+    "usernamePlaceholder": "chef-del-taco",
+    "usernameRequired": "Le nom d'utilisateur est requis",
+    "unexpectedError": "Erreur inattendue. Veuillez réessayer."
+  },
+  "dashboard": {
+    "kitchenPulse": "Pouls de la cuisine",
+    "hero": {
+      "title": "Tous les yeux sur la tournée de tacos français ce soir",
+      "subtitle": "Suivez les fenêtres de dépôt actives, les soumissions et les alertes de stock dans un centre de commande clair. Les métriques se rafraîchissent à chaque fois que vous revenez au tableau de bord."
+    },
+    "metrics": {
+      "activeOrders": "Commandes de groupe actives",
+      "awaitingSubmission": "En attente de soumission",
+      "ordersOnRecord": "Commandes enregistrées",
+      "open": "Ouvert",
+      "drafts": "Brouillons",
+      "nextDispatch": "Prochain envoi {{time}}"
+    },
+    "recentGroupOrders": {
+      "title": "Commandes de groupe récentes",
+      "description": "Surveillez les niveaux de chaleur sur les cycles de livraison actifs et à venir.",
+      "manageAll": "Gérer tout",
+      "emptyState": "Aucune commande de groupe pour le moment. Lancez une fenêtre de livraison pour que l'équipe passe commande.",
+      "launchFirstCycle": "Lancer le premier cycle",
+      "untitledOrder": "Commande de groupe sans titre"
+    },
+    "latestSubmissions": {
+      "title": "Dernières soumissions",
+      "description": "Les commandes les plus fraîches que la cuisine a reçues de votre équipe.",
+      "emptyState": "Aucun historique de commandes pour le moment.",
+      "requestedFor": "Demandé pour {{name}}",
+      "submitted": "Soumis le {{date}}"
+    },
+    "lowStockAlerts": {
+      "title": "Alertes de stock faible",
+      "description": "Gardez les ingrédients à niveau pour que chaque commande arrive avec le croustillant parfait.",
+      "browseInventory": "Parcourir l'inventaire",
+      "allInStock": "Tous les articles sont actuellement en stock. Gardez le grill en marche !",
+      "outOfStock": "Rupture de stock"
+    }
+  },
+  "root": {
+    "appTitle": "Console de livraison de tacos français",
+    "appSubtitle": "Gérez les commandes de groupe grésillantes, les impulsions de stock et les chronologies des livreurs dans un espace de travail lumineux.",
+    "tacobot": "Commande Tacobot",
+    "errors": {
+      "applicationError": "Erreur d'application",
+      "unknownError": "Erreur inconnue",
+      "somethingWrong": "Quelque chose s'est mal passé."
+    }
+  }
+}

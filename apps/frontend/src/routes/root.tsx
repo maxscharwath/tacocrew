@@ -3,6 +3,7 @@ import { ClipboardCheck } from '@untitledui/icons/ClipboardCheck';
 import { Package } from '@untitledui/icons/Package';
 import { Users03 } from '@untitledui/icons/Users03';
 import type { ComponentType } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Form,
   isRouteErrorResponse,
@@ -11,20 +12,22 @@ import {
   useLoaderData,
   useRouteError,
 } from 'react-router';
+import { LanguageSwitcher } from '../components/language-switcher';
 import type { RootLoaderData } from './root.loader';
 
 export function RootLayout() {
+  const { t } = useTranslation();
   const { profile } = useLoaderData() as RootLoaderData;
   type NavItem = {
     href: string;
-    label: string;
+    labelKey: string;
     icon: ComponentType<{ size?: number; className?: string }>;
   };
   const navItems: NavItem[] = [
-    { href: '/', label: 'Dashboard', icon: Activity },
-    { href: '/orders', label: 'Orders', icon: ClipboardCheck },
-    { href: '/stock', label: 'Stock', icon: Package },
-    { href: '/profile', label: 'Profile', icon: Users03 },
+    { href: '/', labelKey: 'navigation.dashboard', icon: Activity },
+    { href: '/orders', labelKey: 'navigation.orders', icon: ClipboardCheck },
+    { href: '/stock', labelKey: 'navigation.stock', icon: Package },
+    { href: '/profile', labelKey: 'navigation.profile', icon: Users03 },
   ];
 
   return (
@@ -42,41 +45,43 @@ export function RootLayout() {
                 🌮
               </div>
               <div>
-                <p className="text-xs uppercase tracking-[0.3em] text-brand-200">Tacobot Command</p>
-                <h1 className="text-2xl font-semibold tracking-tight text-white">
-                  French Tacos Delivery Console
-                </h1>
-                <p className="mt-1 text-sm text-slate-300">
-                  Manage sizzling group orders, stock pulses, and rider timelines in one bright
-                  workspace.
+                <p className="text-xs uppercase tracking-[0.3em] text-brand-200">
+                  {t('root.tacobot')}
                 </p>
+                <h1 className="text-2xl font-semibold tracking-tight text-white">
+                  {t('root.appTitle')}
+                </h1>
+                <p className="mt-1 text-sm text-slate-300">{t('root.appSubtitle')}</p>
               </div>
             </div>
 
-            <div className="flex items-center gap-4 rounded-full border border-white/10 bg-slate-900/80 px-4 py-2 shadow-inner">
-              <div className="grid h-9 w-9 place-items-center rounded-full bg-brand-500/20 text-sm font-semibold text-brand-100">
-                {profile.username.slice(0, 2).toUpperCase()}
+            <div className="flex items-center gap-3">
+              <LanguageSwitcher />
+              <div className="flex items-center gap-4 rounded-full border border-white/10 bg-slate-900/80 px-4 py-2 shadow-inner">
+                <div className="grid h-9 w-9 place-items-center rounded-full bg-brand-500/20 text-sm font-semibold text-brand-100">
+                  {profile.username.slice(0, 2).toUpperCase()}
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-xs uppercase tracking-[0.3em] text-slate-400">
+                    {t('common.loggedInAs')}
+                  </span>
+                  <span className="text-sm font-medium text-white">{profile.username}</span>
+                </div>
+                <Form method="post" className="ml-3">
+                  <input type="hidden" name="_intent" value="logout" />
+                  <button
+                    type="submit"
+                    className="rounded-full bg-slate-800 px-4 py-2 text-sm font-semibold text-slate-200 shadow hover:bg-slate-700"
+                  >
+                    {t('common.signOut')}
+                  </button>
+                </Form>
               </div>
-              <div className="flex flex-col">
-                <span className="text-xs uppercase tracking-[0.3em] text-slate-400">
-                  Logged in as
-                </span>
-                <span className="text-sm font-medium text-white">{profile.username}</span>
-              </div>
-              <Form method="post" className="ml-3">
-                <input type="hidden" name="_intent" value="logout" />
-                <button
-                  type="submit"
-                  className="rounded-full bg-slate-800 px-4 py-2 text-sm font-semibold text-slate-200 shadow hover:bg-slate-700"
-                >
-                  Sign out
-                </button>
-              </Form>
             </div>
           </div>
 
           <nav className="flex flex-wrap gap-2">
-            {navItems.map(({ href, label, icon: Icon }) => (
+            {navItems.map(({ href, labelKey, icon: Icon }) => (
               <NavLink
                 key={href}
                 to={href}
@@ -91,7 +96,7 @@ export function RootLayout() {
                 }
               >
                 <Icon size={18} className="text-current" />
-                {label}
+                {t(labelKey)}
               </NavLink>
             ))}
           </nav>
@@ -106,6 +111,7 @@ export function RootLayout() {
 }
 
 export function RootErrorBoundary() {
+  const { t } = useTranslation();
   const error = useRouteError();
 
   if (isRouteErrorResponse(error)) {
@@ -113,10 +119,12 @@ export function RootErrorBoundary() {
   }
 
   if (error instanceof Error) {
-    return <ErrorState title="Application Error" message={error.message} />;
+    return <ErrorState title={t('root.errors.applicationError')} message={error.message} />;
   }
 
-  return <ErrorState title="Unknown Error" message="Something went wrong." />;
+  return (
+    <ErrorState title={t('root.errors.unknownError')} message={t('root.errors.somethingWrong')} />
+  );
 }
 
 function ErrorState({ title, message }: { title: string; message: string }) {

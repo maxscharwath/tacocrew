@@ -4,6 +4,7 @@ import { ArrowUpRight } from '@untitledui/icons/ArrowUpRight';
 import { TrendUp01 } from '@untitledui/icons/TrendUp01';
 import { Users03 } from '@untitledui/icons/Users03';
 import type { ComponentType } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { LoaderFunctionArgs } from 'react-router';
 import { Link, useLoaderData } from 'react-router';
 import {
@@ -56,6 +57,7 @@ export async function dashboardLoader(_: LoaderFunctionArgs) {
 }
 
 export function DashboardRoute() {
+  const { t } = useTranslation();
   const { metrics, groupOrders, orderHistory, lowStock } = useLoaderData() as DashboardLoaderData;
   const nextDispatch = groupOrders
     .filter((order) => new Date(order.endDate) > new Date())
@@ -70,38 +72,39 @@ export function DashboardRoute() {
         <div className="relative grid gap-8 lg:grid-cols-[minmax(0,2.2fr)_minmax(0,1.2fr)]">
           <div className="space-y-4">
             <Badge tone="brand" pill className="w-fit">
-              Kitchen pulse
+              {t('dashboard.kitchenPulse')}
             </Badge>
             <h1 className="text-3xl font-semibold tracking-tight text-white lg:text-4xl">
-              All eyes on tonight’s French tacos run
+              {t('dashboard.hero.title')}
             </h1>
-            <p className="max-w-2xl text-sm text-slate-200">
-              Track active drop windows, submissions, and stock alerts in one crisp command center.
-              Metrics refresh every time you pop back to the dashboard.
-            </p>
+            <p className="max-w-2xl text-sm text-slate-200">{t('dashboard.hero.subtitle')}</p>
           </div>
 
           <div className="grid gap-3 sm:grid-cols-3">
             <MetricCard
               icon={Activity}
               tone="brand"
-              label="Active group orders"
+              label={t('dashboard.metrics.activeOrders')}
               value={metrics.activeOrders}
-              footnote="Open"
+              footnote={t('dashboard.metrics.open')}
             />
             <MetricCard
               icon={TrendUp01}
               tone="warning"
-              label="Awaiting submission"
+              label={t('dashboard.metrics.awaitingSubmission')}
               value={metrics.pendingOrders}
-              footnote="Drafts"
+              footnote={t('dashboard.metrics.drafts')}
             />
             <MetricCard
               icon={Users03}
               tone="neutral"
-              label="Orders on record"
+              label={t('dashboard.metrics.ordersOnRecord')}
               value={metrics.historyCount}
-              footnote={nextDispatch ? `Next dispatch ${formatTime(nextDispatch)}` : '—'}
+              footnote={
+                nextDispatch
+                  ? t('dashboard.metrics.nextDispatch', { time: formatTime(nextDispatch) })
+                  : '—'
+              }
             />
           </div>
         </div>
@@ -111,16 +114,14 @@ export function DashboardRoute() {
         <Card className="p-6">
           <CardHeader className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
             <div>
-              <CardTitle className="text-white">Recent group orders</CardTitle>
-              <CardDescription>
-                Watch the heat levels on active and upcoming delivery cycles.
-              </CardDescription>
+              <CardTitle className="text-white">{t('dashboard.recentGroupOrders.title')}</CardTitle>
+              <CardDescription>{t('dashboard.recentGroupOrders.description')}</CardDescription>
             </div>
             <Link
               to="/orders"
               className="inline-flex items-center gap-2 text-sm font-semibold text-brand-100 hover:text-brand-50 cursor-pointer"
             >
-              Manage all
+              {t('dashboard.recentGroupOrders.manageAll')}
               <ArrowUpRight size={16} />
             </Link>
           </CardHeader>
@@ -128,13 +129,13 @@ export function DashboardRoute() {
             {groupOrders.length === 0 ? (
               <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-white/15 bg-slate-900/50 p-10 text-center">
                 <span className="text-sm text-slate-300">
-                  No group orders yet. Spin up a delivery window to get the crew ordering.
+                  {t('dashboard.recentGroupOrders.emptyState')}
                 </span>
                 <Link
                   to="/orders"
                   className="inline-flex items-center gap-2 rounded-full border border-brand-400/40 bg-brand-500/15 px-4 py-2 text-sm font-semibold text-brand-100 hover:border-brand-400/70 cursor-pointer"
                 >
-                  Launch first cycle
+                  {t('dashboard.recentGroupOrders.launchFirstCycle')}
                   <ArrowUpRight size={14} />
                 </Link>
               </div>
@@ -146,7 +147,7 @@ export function DashboardRoute() {
                 >
                   <div>
                     <p className="text-sm font-semibold text-white">
-                      {order.name ?? 'Untitled group order'}
+                      {order.name ?? t('dashboard.recentGroupOrders.untitledOrder')}
                     </p>
                     <p className="text-xs text-slate-400">
                       {formatDateTimeRange(order.startDate, order.endDate)}
@@ -158,7 +159,7 @@ export function DashboardRoute() {
                       to={`/orders/${order.id}`}
                       className="inline-flex items-center gap-2 rounded-full border border-brand-400/40 bg-brand-500/15 px-4 py-2 text-sm font-semibold text-brand-100 hover:border-brand-400/70 cursor-pointer"
                     >
-                      Open
+                      {t('common.open')}
                       <ArrowUpRight size={14} />
                     </Link>
                   </div>
@@ -170,15 +171,15 @@ export function DashboardRoute() {
 
         <Card className="p-6">
           <CardHeader className="flex flex-col gap-3">
-            <CardTitle className="text-white">Latest submissions</CardTitle>
-            <CardDescription>
-              The freshest orders the kitchen has received from your squad.
-            </CardDescription>
+            <CardTitle className="text-white">{t('dashboard.latestSubmissions.title')}</CardTitle>
+            <CardDescription>{t('dashboard.latestSubmissions.description')}</CardDescription>
           </CardHeader>
           <CardContent className="gap-4">
             {orderHistory.length === 0 ? (
               <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-white/15 bg-slate-900/50 p-10 text-center">
-                <span className="text-sm text-slate-300">No order history yet.</span>
+                <span className="text-sm text-slate-300">
+                  {t('dashboard.latestSubmissions.emptyState')}
+                </span>
               </div>
             ) : (
               orderHistory.map((history) => (
@@ -190,13 +191,17 @@ export function DashboardRoute() {
                     <div>
                       <p className="font-semibold text-white">{history.orderType}</p>
                       <p className="text-xs text-slate-400">
-                        Requested for {history.requestedFor ?? '—'}
+                        {t('dashboard.latestSubmissions.requestedFor', {
+                          name: history.requestedFor ?? '—',
+                        })}
                       </p>
                     </div>
                     <StatusBadge status={history.status} />
                   </div>
                   <p className="mt-3 text-xs text-slate-400">
-                    Submitted {new Date(history.createdAt).toLocaleString()}
+                    {t('dashboard.latestSubmissions.submitted', {
+                      date: new Date(history.createdAt).toLocaleString(),
+                    })}
                   </p>
                 </div>
               ))
@@ -208,23 +213,21 @@ export function DashboardRoute() {
       <Card className="p-6">
         <CardHeader className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
           <div>
-            <CardTitle className="text-white">Low stock alerts</CardTitle>
-            <CardDescription>
-              Keep ingredients topped up so every order lands with the perfect crunch.
-            </CardDescription>
+            <CardTitle className="text-white">{t('dashboard.lowStockAlerts.title')}</CardTitle>
+            <CardDescription>{t('dashboard.lowStockAlerts.description')}</CardDescription>
           </div>
           <Link
             to="/stock"
             className="inline-flex items-center gap-2 text-sm font-semibold text-brand-100 hover:text-brand-50"
           >
-            Browse inventory
+            {t('dashboard.lowStockAlerts.browseInventory')}
             <ArrowUpRight size={16} />
           </Link>
         </CardHeader>
         <CardContent className="gap-4">
           {lowStock.length === 0 ? (
             <div className="rounded-2xl border border-dashed border-white/15 bg-slate-900/60 p-8 text-center text-sm text-slate-300">
-              All items are currently in stock. Keep the grill sizzling!
+              {t('dashboard.lowStockAlerts.allInStock')}
             </div>
           ) : (
             lowStock.map(({ category, item }) => (
@@ -244,7 +247,7 @@ export function DashboardRoute() {
                   </div>
                 </div>
                 <Badge tone="warning" pill className="text-rose-50">
-                  Out of stock
+                  {t('dashboard.lowStockAlerts.outOfStock')}
                 </Badge>
               </div>
             ))
