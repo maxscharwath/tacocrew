@@ -329,6 +329,10 @@ export function OrderDetailRoute() {
   const session = sessionStore.getSession();
   const currentUserId = session?.userId;
 
+  // Check if the group order can accept new orders
+  const canAddOrders = groupOrder.canAcceptOrders;
+  const canSubmit = isLeader && groupOrder.canAcceptOrders;
+
   // Calculate total price across all orders
   // Backend stores taco.price as sum of meat prices only (not including base taco size price)
   // So we need: base taco size price + taco.price (meat prices)
@@ -403,13 +407,23 @@ export function OrderDetailRoute() {
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-3 pt-4 border-t border-white/10">
-            <Link to={`/orders/${params.orderId}/create`} className="cursor-pointer">
-              <Button variant="outline" className="gap-2" size="sm">
-                <Plus size={16} />
-                Create new order
+            {canAddOrders ? (
+              <Link to={`/orders/${params.orderId}/create`} className="cursor-pointer">
+                <Button variant="outline" className="gap-2" size="sm">
+                  <Plus size={16} />
+                  Create new order
+                </Button>
+              </Link>
+            ) : (
+              <Button variant="outline" className="gap-2" size="sm" disabled>
+                <Lock01 size={16} />
+                {groupOrder.status === 'open' && 'Order period expired'}
+                {groupOrder.status === 'closed' && 'Order closed'}
+                {groupOrder.status === 'submitted' && 'Order submitted'}
+                {groupOrder.status === 'completed' && 'Order completed'}
               </Button>
-            </Link>
-            {isLeader && groupOrder.status !== 'submitted' && (
+            )}
+            {canSubmit && (
               <Link to={`/orders/${params.orderId}/submit`} className="cursor-pointer">
                 <Button
                   variant="primary"
@@ -647,14 +661,24 @@ export function OrderDetailRoute() {
                 <EmptyState
                   icon={ShoppingBag01}
                   title="No order yet"
-                  description="Create your perfect taco to join this group order."
+                  description={
+                    canAddOrders
+                      ? "Create your perfect taco to join this group order."
+                      : groupOrder.status === 'open'
+                        ? "The order period has expired."
+                        : groupOrder.status === 'closed'
+                          ? "This order has been closed."
+                          : "This order has been finalized."
+                  }
                 />
-                <Link to={`/orders/${params.orderId}/create`} className="cursor-pointer">
-                  <Button fullWidth className="gap-2">
-                    <Plus size={16} />
-                    Create my order
-                  </Button>
-                </Link>
+                {canAddOrders && (
+                  <Link to={`/orders/${params.orderId}/create`} className="cursor-pointer">
+                    <Button fullWidth className="gap-2">
+                      <Plus size={16} />
+                      Create my order
+                    </Button>
+                  </Link>
+                )}
               </div>
             )}
           </CardContent>

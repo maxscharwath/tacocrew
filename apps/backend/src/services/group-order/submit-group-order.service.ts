@@ -7,7 +7,7 @@
 import { injectable } from 'tsyringe';
 import { GroupOrderRepository } from '@/infrastructure/repositories/group-order.repository';
 import { UserOrderRepository } from '@/infrastructure/repositories/user-order.repository';
-import type { GroupOrderId } from '@/schemas/group-order.schema';
+import { canAcceptOrders, type GroupOrderId } from '@/schemas/group-order.schema';
 import { isUserOrderEmpty } from '@/schemas/user-order.schema';
 import { BackendOrderSubmissionService } from '@/services/order/backend-order-submission.service';
 import { ResourceService } from '@/services/resource/resource.service';
@@ -45,10 +45,13 @@ export class SubmitGroupOrderUseCase {
       throw new NotFoundError(`Group order not found: ${groupOrderId}`);
     }
 
-    if (groupOrder.status !== GroupOrderStatus.OPEN) {
-      throw new ValidationError(
-        `Cannot submit group order. Group order status: ${groupOrder.status}`
-      );
+    // Check if the group order can accept orders (must be OPEN and within date range)
+    if (!canAcceptOrders(groupOrder)) {
+      const reason =
+        groupOrder.status !== GroupOrderStatus.OPEN
+          ? `status is ${groupOrder.status}`
+          : 'order period has expired';
+      throw new ValidationError(`Cannot submit group order: ${reason}`);
     }
 
     // Get all user orders

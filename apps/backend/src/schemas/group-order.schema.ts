@@ -2,6 +2,7 @@
  * Group order domain schema (Zod)
  * @module schemas/group-order
  */
+import { isWithinInterval } from 'date-fns';
 import { z } from 'zod';
 import type { UserId } from '@/schemas/user.schema';
 import { GroupOrderStatus } from '@/shared/types/types';
@@ -79,7 +80,10 @@ export function isGroupOrderOpenForOrders(order: GroupOrder, referenceDate = new
     return false;
   }
 
-  return referenceDate >= order.startDate && referenceDate <= order.endDate;
+  return isWithinInterval(referenceDate, {
+    start: order.startDate,
+    end: order.endDate,
+  });
 }
 
 /**
@@ -94,4 +98,26 @@ export function canGroupOrderBeModified(order: GroupOrder, referenceDate = new D
  */
 export function isGroupOrderLeader(order: GroupOrder, userId: UserId): boolean {
   return order['leaderId'] === userId;
+}
+
+/**
+ * Determine if a group order can accept new user orders.
+ * 
+ * Rules:
+ * - Status must be OPEN (not closed, submitted, or completed)
+ * - Current date must be within the validity period (startDate to endDate)
+ * 
+ * @param order - The group order to evaluate
+ * @param referenceDate - The date to use for comparison (defaults to now)
+ * @returns true if the order can accept new orders, false otherwise
+ */
+export function canAcceptOrders(order: GroupOrder, referenceDate = new Date()): boolean {
+  if (order.status !== GroupOrderStatus.OPEN) {
+    return false;
+  }
+
+  return isWithinInterval(referenceDate, {
+    start: order.startDate,
+    end: order.endDate,
+  });
 }

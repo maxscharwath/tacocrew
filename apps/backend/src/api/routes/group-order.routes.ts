@@ -8,7 +8,7 @@ import { z } from 'zod';
 import { jsonContent } from '@/api/schemas/shared.schemas';
 import { UserOrderItemsSchema } from '@/api/schemas/user-order.schemas';
 import { authSecurity, createAuthenticatedRouteApp, requireUserId } from '@/api/utils/route.utils';
-import { GroupOrderIdSchema } from '@/schemas/group-order.schema';
+import { canAcceptOrders, GroupOrderIdSchema } from '@/schemas/group-order.schema';
 import { CreateGroupOrderUseCase } from '@/services/group-order/create-group-order.service';
 import { GetGroupOrderUseCase } from '@/services/group-order/get-group-order.service';
 import { GetGroupOrderWithUserOrdersUseCase } from '@/services/group-order/get-group-order-with-user-orders.service';
@@ -29,6 +29,7 @@ const GroupOrderResponseSchema = z.object({
   startDate: z.string(),
   endDate: z.string(),
   status: z.string(),
+  canAcceptOrders: z.boolean(),
   createdAt: z.string().optional(),
   updatedAt: z.string().optional(),
 });
@@ -85,6 +86,7 @@ app.openapi(
         startDate: groupOrder.startDate.toISOString(),
         endDate: groupOrder.endDate.toISOString(),
         status: groupOrder.status,
+        canAcceptOrders: canAcceptOrders(groupOrder),
         createdAt: groupOrder.createdAt?.toISOString(),
         updatedAt: groupOrder.updatedAt?.toISOString(),
       },
@@ -124,6 +126,7 @@ app.openapi(
         startDate: groupOrder.startDate.toISOString(),
         endDate: groupOrder.endDate.toISOString(),
         status: groupOrder.status,
+        canAcceptOrders: canAcceptOrders(groupOrder),
         createdAt: groupOrder.createdAt?.toISOString(),
         updatedAt: groupOrder.updatedAt?.toISOString(),
       },
@@ -164,6 +167,7 @@ app.openapi(
           startDate: result.groupOrder.startDate.toISOString(),
           endDate: result.groupOrder.endDate.toISOString(),
           status: result.groupOrder.status,
+          canAcceptOrders: canAcceptOrders(result.groupOrder),
           createdAt: result.groupOrder.createdAt?.toISOString(),
           updatedAt: result.groupOrder.updatedAt?.toISOString(),
         },

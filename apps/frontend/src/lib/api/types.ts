@@ -25,6 +25,7 @@ export interface UserGroupOrder {
   id: string;
   name: string | null;
   status: string;
+  canAcceptOrders: boolean;
   startDate: string;
   endDate: string;
   createdAt: string;
@@ -75,6 +76,7 @@ export interface GroupOrder {
   startDate: string;
   endDate: string;
   status: string;
+  canAcceptOrders: boolean;
   createdAt?: string;
   updatedAt?: string;
 }
