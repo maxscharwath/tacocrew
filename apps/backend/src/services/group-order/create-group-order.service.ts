@@ -3,6 +3,7 @@
  * @module services/group-order
  */
 
+import { isAfter } from 'date-fns';
 import { injectable } from 'tsyringe';
 import type { CreateGroupOrderRequestDto } from '@/api/dto/group-order.dto';
 import { GroupOrderRepository } from '@/infrastructure/repositories/group-order.repository';
@@ -22,7 +23,7 @@ export class CreateGroupOrderUseCase {
   async execute(leaderId: UserId, request: CreateGroupOrderRequestDto): Promise<GroupOrder> {
     const { startDate, endDate } = request;
 
-    if (startDate >= endDate) {
+    if (!isAfter(endDate, startDate)) {
       throw new ValidationError('End date must be after start date');
     }
 

@@ -2,6 +2,7 @@
  * Group order domain schema (Zod)
  * @module schemas/group-order
  */
+import { isWithinInterval } from 'date-fns';
 import { z } from 'zod';
 import type { UserId } from '@/schemas/user.schema';
 import { GroupOrderStatus } from '@/shared/types/types';
@@ -79,7 +80,10 @@ export function isGroupOrderOpenForOrders(order: GroupOrder, referenceDate = new
     return false;
   }
 
-  return referenceDate >= order.startDate && referenceDate <= order.endDate;
+  return isWithinInterval(referenceDate, {
+    start: order.startDate,
+    end: order.endDate,
+  });
 }
 
 /**
@@ -112,5 +116,8 @@ export function canAcceptOrders(order: GroupOrder, referenceDate = new Date()): 
     return false;
   }
 
-  return referenceDate >= order.startDate && referenceDate <= order.endDate;
+  return isWithinInterval(referenceDate, {
+    start: order.startDate,
+    end: order.endDate,
+  });
 }
