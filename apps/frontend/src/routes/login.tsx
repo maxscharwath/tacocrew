@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import {
   type ActionFunctionArgs,
   Form,
@@ -6,6 +7,7 @@ import {
   useActionData,
   useNavigation,
 } from 'react-router';
+import { LanguageSwitcher } from '../components/language-switcher';
 import { AuthApi } from '../lib/api';
 import { ApiError } from '../lib/api/http';
 import { sessionStore } from '../lib/session/store';
@@ -54,6 +56,7 @@ export async function loginAction({ request }: ActionFunctionArgs) {
 }
 
 export function LoginRoute() {
+  const { t } = useTranslation();
   const actionData = useActionData() as LoginActionData | undefined;
   const navigation = useNavigation();
   const isSubmitting = navigation.state === 'submitting';
@@ -61,22 +64,26 @@ export function LoginRoute() {
   return (
     <div className="login-shell">
       <div className="login-card">
+        <div className="absolute right-6 top-6">
+          <LanguageSwitcher />
+        </div>
+
         <header>
           <div className="brand-icon" aria-hidden>
             🌮
           </div>
-          <h1>Tacobot Console</h1>
-          <p>Sign in with your Tacobot username to manage group orders.</p>
+          <h1>{t('login.title')}</h1>
+          <p>{t('login.subtitle')}</p>
         </header>
 
         <Form method="post" className="login-form">
-          <label htmlFor="username">Username</label>
+          <label htmlFor="username">{t('common.username')}</label>
           <input
             id="username"
             name="username"
             type="text"
             autoComplete="username"
-            placeholder="chef-del-taco"
+            placeholder={t('login.usernamePlaceholder')}
             required
             disabled={isSubmitting}
           />
@@ -84,7 +91,7 @@ export function LoginRoute() {
           {actionData?.error ? <p className="form-error">{actionData.error}</p> : null}
 
           <button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? 'Signing in…' : 'Sign in'}
+            {isSubmitting ? t('common.signingIn') : t('common.signIn')}
           </button>
         </Form>
       </div>
