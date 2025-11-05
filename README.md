@@ -1,203 +1,147 @@
-# 🌮 Tacobot - Group Ordering API
+# 🌮 Tacobot Monorepo
 
-A modern TypeScript REST API for managing group orders of tacos, built with Hono, Prisma, and Zod.
+Modern group ordering platform maintained as a pnpm workspace. The repository now houses both the TypeScript API and a new React front-end that adopts the Untitled UI design system and React Router v7 data APIs.
 
-## ✨ Features
+## Apps
 
-- 🔐 **Authentication** - Bearer token and username header authentication
-- 👥 **Group Orders** - Create and manage group orders with multiple users
-- 🛒 **User Orders** - Individual order management within group orders
-- 📦 **Stock Management** - Real-time product availability tracking
-- 📝 **OpenAPI Documentation** - Interactive Swagger UI at `/docs`
-- 🎯 **Type Safety** - 100% TypeScript with branded ID types
-- ✅ **Validation** - Zod schema validation
-- 🧪 **Testing** - Comprehensive test suite with Vitest
+- `apps/backend` – Hono + Prisma REST API with rich validation, logging, and DI (formerly `tacos-ordering-api`).
+- `apps/frontend` – Vite-powered React application using Router v7 data mode and Untitled UI Icons for the upcoming customer console.
 
-## 🚀 Quick Start
+Shared tooling (Biome, linting rules, scripts) lives at the repository root.
 
-### Prerequisites
-
-- Node.js >= 18.0.0
-- pnpm >= 9.0.0
-- PostgreSQL (or SQLite for development)
-
-### Installation
+## Quick Start
 
 ```bash
-# Install dependencies
+# Install all workspace dependencies
 pnpm install
 
-# Set up environment variables
-cp .env.example .env
-# Edit .env with your configuration
+# Configure backend environment variables
+cp apps/backend/.env.example apps/backend/.env  # if you keep an example file
+# otherwise create apps/backend/.env and set DATABASE_URL plus secrets
 
-# Generate Prisma client
-pnpm prisma:generate
-
-# Run database migrations
-pnpm prisma:migrate
-
-# Start development server
-pnpm dev
+# Configure frontend environment variables
+cp apps/frontend/.env.example apps/frontend/.env
+# set VITE_API_BASE_URL to the backend origin (defaults to http://localhost:4000)
 ```
 
-The API will be available at `http://localhost:3000` with Swagger UI at `http://localhost:3000/docs`.
-
-## 📚 Documentation
-
-- **[API Documentation](docs/API.md)** - Complete API reference
-- **[Architecture](docs/ARCHITECTURE.md)** - System architecture and design patterns
-- **[Backend Integration](docs/BACKEND_INTEGRATION.md)** - External backend integration details
-
-### Interactive Documentation
-
-- **Swagger UI**: `http://localhost:3000/docs` - Interactive API documentation
-- **OpenAPI Spec**: `http://localhost:3000/openapi.json` - Full OpenAPI 3.1 specification
-
-### API Endpoints
-
-#### System
-- `GET /health` - Health check endpoint
-- `GET /docs` - Swagger UI documentation
-- `GET /openapi.json` - OpenAPI specification
-
-#### Authentication
-- `POST /auth` - Login/Register and get bearer token
-
-#### Group Orders (`/api/v1/orders`)
-- `GET /api/v1/orders` - List all group orders
-- `POST /api/v1/orders` - Create a new group order
-- `GET /api/v1/orders/{id}` - Get group order details
-- `POST /api/v1/orders/{id}/submit` - Submit group order to backend
-
-#### User Orders (`/api/v1/orders/{id}/items`)
-- `POST /api/v1/orders/{id}/items` - Add items to user order
-- `GET /api/v1/orders/{id}/items/{itemId}` - Get user order details
-- `DELETE /api/v1/orders/{id}/items/{itemId}` - Remove user order
-
-#### Resources
-- `GET /api/v1/stock` - Get stock availability
-
-#### Users (`/api/v1/users`)
-- `GET /api/v1/users/me` - Get current user profile
-- `GET /api/v1/users/me/orders` - Get user's order history
-- `GET /api/v1/users/me/group-orders` - Get user's group orders
-
-## 🏗️ Project Structure
-
-```
-src/
-├── api/                    # API layer
-│   ├── app/                # Application setup
-│   ├── middleware/         # Authentication, validation, error handling
-│   ├── routes/             # API route definitions
-│   └── schemas/            # Request/response schemas
-├── infrastructure/          # External integrations
-│   ├── api/                # HTTP clients (backend API, session management)
-│   ├── database/           # Prisma service
-│   └── repositories/       # Data access layer
-├── schemas/                 # Domain schemas (Zod)
-├── services/                # Business logic
-│   ├── auth/               # Authentication services
-│   ├── group-order/        # Group order management
-│   ├── order/              # Backend order submission
-│   ├── resource/           # Stock/resource management
-│   ├── session/            # Session management
-│   └── user-order/         # User order management
-└── shared/                 # Shared utilities
-    ├── config/              # Application configuration
-    ├── types/               # Type definitions
-    └── utils/               # Utility functions
-```
-
-## 🛠️ Development
-
-### Available Scripts
+### Run the backend API
 
 ```bash
-pnpm dev              # Start development server with hot reload
-pnpm build            # Build for production
-pnpm check            # Type check without emitting
-pnpm test             # Run tests
-pnpm test:watch       # Run tests in watch mode
-pnpm test:ui          # Run tests with UI
-pnpm prisma:studio    # Open Prisma Studio
-pnpm prisma:migrate   # Run database migrations
-pnpm exec biome check --write  # Lint and format code
+# From the repository root
+pnpm dev:backend
+
+# or directly inside the package
+pnpm --dir apps/backend dev
 ```
 
-### Environment Variables
+The API boots on <http://localhost:4000> and exposes Swagger UI at `/docs`. All existing scripts (tests, Prisma tooling, etc.) remain available via `pnpm --filter @tacobot/backend <script>`. If you prefer to run against the bundled mock backend instead of the real service, start `pnpm --filter @tacobot/backend mock:server` and set `BACKEND_BASE_URL` to the mock host in `apps/backend/.env`.
 
-```env
-# Database
-DATABASE_URL="postgresql://user:password@localhost:5432/tacobot"
-
-# API
-PORT=3000
-NODE_ENV=development
-
-# Backend API (external PHP backend)
-BACKEND_API_URL="https://your-backend.com"
-
-# Logging
-LOG_LEVEL=info
-```
-
-## 🧪 Testing
+### Run the frontend console
 
 ```bash
-# Run all tests
-pnpm test
+# From the repository root
+pnpm dev:frontend
 
-# Run tests in watch mode
-pnpm test:watch
-
-# Run tests with UI
-pnpm test:ui
+# or directly inside the package
+pnpm --dir apps/frontend dev
 ```
 
-Tests are co-located with source files using the `__tests__` directory pattern.
+The Vite dev server runs on <http://localhost:5173> and automatically redirects unauthenticated users to `/login`. Sign in with any backend username (the API will create the user on-demand), then you can:
 
-## 🔧 Tech Stack
+- Inspect live metrics sourced from `/api/v1/users/me/*` and `/api/v1/stock` on the dashboard.
+- Create, manage, and submit group orders in the Orders workspace.
+- Build your personal order straight from backend stock data.
+- Browse low-stock inventory and review your order history.
 
-- **Runtime**: Node.js 18+
-- **Framework**: Hono 4.x
-- **Database**: Prisma ORM with PostgreSQL
-- **Validation**: Zod 4.x
-- **Testing**: Vitest
-- **Linting**: Biome
-- **TypeScript**: 5.3 with strict mode
+## Workspace Scripts
 
-## 📖 Architecture
+```bash
+pnpm dev               # Run every project in dev mode
+pnpm dev:backend       # Start only the API (Hono + Prisma)
+pnpm dev:frontend      # Start only the Vite/React console
+pnpm build             # Build every workspace project
+pnpm test              # Run test suites across the workspace
+pnpm check             # Type-check the backend package
+```
 
-The application follows a clean architecture pattern:
+Each package also exposes its own commands (`pnpm --dir apps/<name> <script>`). Backend scripts for Prisma (`prisma:generate`, `prisma:migrate`, `prisma:studio`) are unchanged—just run them through the filter or from the package directory.
 
-- **API Layer**: Route handlers, middleware, request/response schemas
-- **Service Layer**: Business logic and use cases
-- **Infrastructure Layer**: External integrations (HTTP clients, database)
-- **Domain Layer**: Core entities and schemas
+## Project Structure
 
-### Key Design Decisions
+```
+apps/
+├── backend/
+│   ├── package.json
+│   ├── prisma/             # Schema, migrations, client
+│   ├── src/                # API code (Hono routes, services, DI)
+│   ├── tsconfig.json
+│   └── vitest.config.ts
+├── frontend/
+│   ├── package.json
+│   ├── index.html
+│   ├── src/
+│   │   ├── router.tsx      # createBrowserRouter configuration (login + protected routes)
+│   │   ├── routes/
+│   │   │   ├── root.tsx         # Shell + navigation + error boundary
+│   │   │   ├── dashboard.tsx    # Data-driven dashboard
+│   │   │   ├── orders.list.tsx  # Group order listing + create flow
+│   │   │   ├── orders.detail.tsx# Participant management + submission
+│   │   │   ├── stock.tsx        # Inventory browser
+│   │   │   ├── profile.tsx      # User profile + history
+│   │   │   └── login.tsx        # Username-based bearer auth
+│   │   └── styles/
+│   │       └── global.css
+│   ├── tsconfig.json
+│   └── vite.config.ts
+docs/
+scripts/
+pnpm-workspace.yaml
+package.json              # Workspace orchestrator
+biome.json                # Shared lint/format configuration
+```
 
-- **Branded Types**: Type-safe IDs (e.g., `UserId`, `GroupOrderId`) prevent ID mixing
-- **Zod Schemas**: Single source of truth for validation and types
-- **Dependency Injection**: Using TSyringe for clean dependency management
-- **Direct Serialization**: Routes serialize responses directly (no mappers)
+## Backend Highlights
 
-## 🤝 Contributing
+- Authentication (bearer + username header) with session management
+- Group and user order orchestration with Prisma-backed persistence
+- Stock availability tracking and backend submission flows
+- Zod-powered validation + OpenAPI documentation via `@hono/zod-openapi`
+- Comprehensive Vitest test suites and logging with Winston
 
-1. Create a feature branch
-2. Make your changes
-3. Run tests: `pnpm test`
-4. Run linting: `pnpm exec biome check --write`
-5. Run type check: `pnpm check`
-6. Submit a pull request
+> All backend documentation remains under `docs/` and continues to apply.
 
-## 📝 License
+## Frontend Highlights
 
-MIT
+- Vite + React + SWC bundling for fast local iteration
+- React Router v7 data mode (`createBrowserRouter`, typed loaders/actions, protected routes)
+- Username + bearer auth backed by `/auth`, persisted in local storage, and injected via the HTTP client
+- Dashboard, stock browser, orders, and profile experiences sourced from the backend OpenAPI contract
+- Untitled UI styling and icons with custom glassmorphism panels for quick customization
+- Shared Biome configuration for consistent formatting and linting
 
----
+To import additional Untitled UI components, run the official CLI from `apps/frontend` when you are ready for interactive selection:
 
-**Built with ❤️ using TypeScript, Hono, and modern best practices**
+```bash
+cd apps/frontend
+npx untitledui@latest add button
+```
 
+The CLI is interactive, so execute it manually from your terminal session.
+
+## Tooling
+
+- **Package manager**: pnpm 9 (monorepo aware)
+- **Type-checking**: TypeScript 5.x per package
+- **Lint/format**: Biome (shared config in `biome.json`)
+- **Testing**: Vitest (backend)
+- **ORM**: Prisma with configurable datasource via `.env`
+- **Frameworks**: Hono API, Vite + React UI
+
+## Next Steps
+
+1. Flesh out the React router tree with authenticated routes as the UI evolves.
+2. Decide how shared types (e.g., API DTOs) should be published—consider a `packages/` directory for cross-app libraries.
+3. Introduce CI pipelines that run `pnpm test`, `pnpm build`, and `pnpm check` per workspace.
+4. When ready for production, configure Docker (or another deployment workflow) per app, or introduce an infra directory inside the monorepo.
+
+The monorepo layout keeps both surfaces aligned while letting each evolve independently. 🎉

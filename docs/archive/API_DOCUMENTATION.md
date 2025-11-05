@@ -77,7 +77,13 @@ All endpoints require a CSRF token in the `X-CSRF-Token` header. The token can b
   ```
 - **Taco Sizes**: `tacos_L`, `tacos_BOWL`, `tacos_L_mixte`, `tacos_XL`, `tacos_XXL`, `tacos_GIGA`
 - **Response**: HTML string (taco card HTML)
-- **Note**: Maximum 3 sauces, meat quantities depend on taco size
+- **Rules**:
+  - **Sauces**: Maximum 3 sauces for all sizes
+  - **Meats**: Limit varies by size (see Taco Size Limits below)
+  - **Garnitures**: 
+    - `tacos_BOWL`: Optional (0 garnitures allowed)
+    - All other sizes: At least 1 garniture required (or "sans garniture" must be selected)
+  - **Price**: Fixed base price per taco size (extracted from server HTML response). Final price = base price × taco quantity. Sauces and garnitures are included at no extra cost.
 
 #### Update Taco Quantity
 - **Endpoint**: `POST /ajax/owt.php`
@@ -503,12 +509,30 @@ All endpoints require a CSRF token in the `X-CSRF-Token` header. The token can b
 ```
 
 ### Taco Size Limits
-- `tacos_L`: 1 meat, 3 sauces max
-- `tacos_BOWL`: 2 meats, 3 sauces max, no garnitures
-- `tacos_L_mixte`: 3 meats, 3 sauces max
-- `tacos_XL`: 3 meats, 3 sauces max
-- `tacos_XXL`: 4 meats, 3 sauces max
-- `tacos_GIGA`: 5 meats, 3 sauces max
+Based on actual implementation in `bundle.js`:
+
+| Size | Max Meats | Max Sauces | Garnitures | Fixed Price (CHF) |
+|------|-----------|------------|------------|-------------------|
+| `tacos_L` | 1 | 3 | Required (at least 1 or "sans garniture") | 11.00 |
+| `tacos_L_mixte` | 3 | 3 | Required (at least 1 or "sans garniture") | 12.00 |
+| `tacos_XL` | 3 | 3 | Required (at least 1 or "sans garniture") | 18.50 |
+| `tacos_XXL` | 4 | 3 | Required (at least 1 or "sans garniture") | 28.00 |
+| `tacos_GIGA` | 5 | 3 | Required (at least 1 or "sans garniture") | 38.00 |
+| `tacos_BOWL` | 2 | 3 | Optional (0 allowed) | 14.00 |
+
+**Price Information:**
+- Each taco size has a **fixed base price** (not calculated from meat prices)
+- Prices are defined in the HTML select options (`index.php?content=livraison`) and embedded in server HTML responses
+- Prices are extracted from the HTML using regex pattern: `-\s*([0-9]+(?:[.,][0-9]+)?)\s*(?:CHF|EUR|€|\$)\.?`
+- Sauces and garnitures are included in the base price (no additional cost)
+- Final price = base price × taco quantity
+- Example: 2 × Tacos XL = 18.50 × 2 = 37.00 CHF
+
+**Notes:**
+- All sizes have a maximum of 3 sauces
+- Meat quantities are limited per size as shown above
+- For all sizes except `tacos_BOWL`, at least one garniture must be selected (or "sans garniture" checkbox must be checked)
+- `tacos_BOWL` is the only size that allows 0 garnitures
 
 ---
 

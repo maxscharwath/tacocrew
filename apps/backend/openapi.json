@@ -1,0 +1,1208 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Tacobot API",
+    "version": "1.0.0",
+    "description": "API documentation for Tacobot group ordering system"
+  },
+  "components": {
+    "schemas": {},
+    "parameters": {},
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "JWT token authentication. Enter your token (with or without \"Bearer \" prefix)"
+      },
+      "UsernameHeader": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-username",
+        "description": "Username header authentication. Provide your username in the x-username header."
+      }
+    }
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "tags": ["Health"],
+        "responses": {
+          "200": {
+            "description": "Health check",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": { "type": "string", "enum": ["ok"] },
+                    "timestamp": { "type": "string" }
+                  },
+                  "required": ["status", "timestamp"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth": {
+      "post": {
+        "tags": ["Auth"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": { "username": { "type": "string", "minLength": 2, "maxLength": 50 } },
+                "required": ["username"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "User created or retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "user": {
+                      "type": "object",
+                      "properties": {
+                        "id": { "type": "string" },
+                        "username": { "type": "string" },
+                        "slackId": { "type": "string" },
+                        "createdAt": { "type": "string" },
+                        "updatedAt": { "type": "string" }
+                      },
+                      "required": ["id", "username", "createdAt", "updatedAt"]
+                    },
+                    "token": { "type": "string" }
+                  },
+                  "required": ["user", "token"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/stock": {
+      "get": {
+        "tags": ["Resources"],
+        "responses": {
+          "200": {
+            "description": "Stock availability",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "meats": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": { "type": "string" },
+                          "code": { "type": "string" },
+                          "name": { "type": "string" },
+                          "price": { "type": "number" },
+                          "in_stock": { "type": "boolean" }
+                        },
+                        "required": ["id", "code", "name", "in_stock"]
+                      }
+                    },
+                    "sauces": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": { "type": "string" },
+                          "code": { "type": "string" },
+                          "name": { "type": "string" },
+                          "price": { "type": "number" },
+                          "in_stock": { "type": "boolean" }
+                        },
+                        "required": ["id", "code", "name", "in_stock"]
+                      }
+                    },
+                    "garnishes": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": { "type": "string" },
+                          "code": { "type": "string" },
+                          "name": { "type": "string" },
+                          "price": { "type": "number" },
+                          "in_stock": { "type": "boolean" }
+                        },
+                        "required": ["id", "code", "name", "in_stock"]
+                      }
+                    },
+                    "extras": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": { "type": "string" },
+                          "code": { "type": "string" },
+                          "name": { "type": "string" },
+                          "price": { "type": "number" },
+                          "in_stock": { "type": "boolean" }
+                        },
+                        "required": ["id", "code", "name", "in_stock"]
+                      }
+                    },
+                    "drinks": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": { "type": "string" },
+                          "code": { "type": "string" },
+                          "name": { "type": "string" },
+                          "price": { "type": "number" },
+                          "in_stock": { "type": "boolean" }
+                        },
+                        "required": ["id", "code", "name", "in_stock"]
+                      }
+                    },
+                    "desserts": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": { "type": "string" },
+                          "code": { "type": "string" },
+                          "name": { "type": "string" },
+                          "price": { "type": "number" },
+                          "in_stock": { "type": "boolean" }
+                        },
+                        "required": ["id", "code", "name", "in_stock"]
+                      }
+                    }
+                  },
+                  "required": ["meats", "sauces", "garnishes", "extras", "drinks", "desserts"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/users/me": {
+      "get": {
+        "tags": ["User"],
+        "security": [{ "BearerAuth": [] }, { "UsernameHeader": [] }],
+        "responses": {
+          "200": {
+            "description": "Authenticated user profile",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": { "type": "string" },
+                    "username": { "type": "string" },
+                    "slackId": { "type": "string" },
+                    "createdAt": { "type": "string", "format": "date-time" },
+                    "updatedAt": { "type": "string", "format": "date-time" }
+                  },
+                  "required": ["id", "username"]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": { "type": "string" },
+                        "message": { "type": "string" }
+                      },
+                      "required": ["code", "message"]
+                    }
+                  },
+                  "required": ["error"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/users/me/orders": {
+      "get": {
+        "tags": ["User"],
+        "security": [{ "BearerAuth": [] }, { "UsernameHeader": [] }],
+        "responses": {
+          "200": {
+            "description": "User's order history",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": { "type": "string" },
+                      "orderId": { "type": "string" },
+                      "status": { "type": "string" },
+                      "price": { "type": ["number", "null"] },
+                      "orderType": { "type": "string" },
+                      "requestedFor": { "type": "string" },
+                      "createdAt": { "type": "string", "format": "date-time" }
+                    },
+                    "required": [
+                      "id",
+                      "orderId",
+                      "status",
+                      "price",
+                      "orderType",
+                      "requestedFor",
+                      "createdAt"
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": { "type": "string" },
+                        "message": { "type": "string" }
+                      },
+                      "required": ["code", "message"]
+                    }
+                  },
+                  "required": ["error"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/users/me/group-orders": {
+      "get": {
+        "tags": ["User"],
+        "security": [{ "BearerAuth": [] }, { "UsernameHeader": [] }],
+        "responses": {
+          "200": {
+            "description": "Group orders where the user is leader",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": { "type": "string" },
+                      "name": { "type": ["string", "null"] },
+                      "status": { "type": "string" },
+                      "startDate": { "type": "string", "format": "date-time" },
+                      "endDate": { "type": "string", "format": "date-time" },
+                      "createdAt": { "type": "string", "format": "date-time" }
+                    },
+                    "required": ["id", "name", "status", "startDate", "endDate", "createdAt"]
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": { "type": "string" },
+                        "message": { "type": "string" }
+                      },
+                      "required": ["code", "message"]
+                    }
+                  },
+                  "required": ["error"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/orders": {
+      "post": {
+        "tags": ["Orders"],
+        "security": [{ "BearerAuth": [] }, { "UsernameHeader": [] }],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" },
+                  "startDate": { "type": "string", "format": "date-time" },
+                  "endDate": { "type": "string", "format": "date-time" }
+                },
+                "required": ["startDate", "endDate"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Group order created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": { "type": "string" },
+                    "leaderId": { "type": "string" },
+                    "name": { "type": ["string", "null"] },
+                    "startDate": { "type": "string" },
+                    "endDate": { "type": "string" },
+                    "status": { "type": "string" },
+                    "createdAt": { "type": "string" },
+                    "updatedAt": { "type": "string" }
+                  },
+                  "required": ["id", "leaderId", "name", "startDate", "endDate", "status"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/orders/{id}": {
+      "get": {
+        "tags": ["Orders"],
+        "security": [{ "BearerAuth": [] }, { "UsernameHeader": [] }],
+        "parameters": [
+          {
+            "schema": { "type": "string", "format": "uuid" },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Group order details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": { "type": "string" },
+                    "leaderId": { "type": "string" },
+                    "name": { "type": ["string", "null"] },
+                    "startDate": { "type": "string" },
+                    "endDate": { "type": "string" },
+                    "status": { "type": "string" },
+                    "createdAt": { "type": "string" },
+                    "updatedAt": { "type": "string" }
+                  },
+                  "required": ["id", "leaderId", "name", "startDate", "endDate", "status"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/orders/{id}/items": {
+      "get": {
+        "tags": ["Orders"],
+        "security": [{ "BearerAuth": [] }, { "UsernameHeader": [] }],
+        "parameters": [
+          {
+            "schema": { "type": "string", "format": "uuid" },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Group order with user orders",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "groupOrder": {
+                      "type": "object",
+                      "properties": {
+                        "id": { "type": "string" },
+                        "leaderId": { "type": "string" },
+                        "name": { "type": ["string", "null"] },
+                        "startDate": { "type": "string" },
+                        "endDate": { "type": "string" },
+                        "status": { "type": "string" },
+                        "createdAt": { "type": "string" },
+                        "updatedAt": { "type": "string" }
+                      },
+                      "required": ["id", "leaderId", "name", "startDate", "endDate", "status"]
+                    },
+                    "userOrders": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": { "type": "string" },
+                          "groupOrderId": { "type": "string" },
+                          "userId": { "type": "string" },
+                          "username": { "type": "string" },
+                          "status": { "type": "string" },
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "tacos": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "id": { "type": "string", "format": "uuid" },
+                                    "size": {
+                                      "type": "string",
+                                      "enum": [
+                                        "tacos_L",
+                                        "tacos_BOWL",
+                                        "tacos_L_mixte",
+                                        "tacos_XL",
+                                        "tacos_XXL",
+                                        "tacos_GIGA"
+                                      ]
+                                    },
+                                    "meats": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "properties": {
+                                          "id": { "type": "string", "format": "uuid" },
+                                          "code": { "type": "string" },
+                                          "name": { "type": "string" },
+                                          "quantity": { "type": "integer", "minimum": 1 }
+                                        },
+                                        "required": ["id", "code", "name", "quantity"]
+                                      }
+                                    },
+                                    "sauces": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "properties": {
+                                          "id": { "type": "string", "format": "uuid" },
+                                          "code": { "type": "string" },
+                                          "name": { "type": "string" }
+                                        },
+                                        "required": ["id", "code", "name"]
+                                      }
+                                    },
+                                    "garnitures": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "properties": {
+                                          "id": { "type": "string", "format": "uuid" },
+                                          "code": { "type": "string" },
+                                          "name": { "type": "string" }
+                                        },
+                                        "required": ["id", "code", "name"]
+                                      }
+                                    },
+                                    "note": { "type": "string" },
+                                    "quantity": { "type": "integer", "minimum": 1 },
+                                    "price": { "type": "number", "minimum": 0 }
+                                  },
+                                  "required": [
+                                    "id",
+                                    "size",
+                                    "meats",
+                                    "sauces",
+                                    "garnitures",
+                                    "quantity",
+                                    "price"
+                                  ]
+                                }
+                              },
+                              "extras": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "id": { "type": "string", "format": "uuid" },
+                                    "code": { "type": "string" },
+                                    "name": { "type": "string" },
+                                    "price": { "type": "number" },
+                                    "quantity": { "type": "integer", "minimum": 1 },
+                                    "free_sauce": {
+                                      "type": "object",
+                                      "properties": {
+                                        "id": { "type": "string", "format": "uuid" },
+                                        "code": { "type": "string" },
+                                        "name": { "type": "string" },
+                                        "price": { "type": "number", "minimum": 0 }
+                                      },
+                                      "required": ["id", "code", "name", "price"]
+                                    },
+                                    "free_sauces": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "properties": {
+                                          "id": { "type": "string", "format": "uuid" },
+                                          "code": { "type": "string" },
+                                          "name": { "type": "string" },
+                                          "price": { "type": "number", "minimum": 0 }
+                                        },
+                                        "required": ["id", "code", "name", "price"]
+                                      }
+                                    }
+                                  },
+                                  "required": ["id", "code", "name", "price", "quantity"]
+                                }
+                              },
+                              "drinks": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "id": { "type": "string", "format": "uuid" },
+                                    "code": { "type": "string" },
+                                    "name": { "type": "string" },
+                                    "price": { "type": "number" },
+                                    "quantity": { "type": "integer", "minimum": 1 }
+                                  },
+                                  "required": ["id", "code", "name", "price", "quantity"]
+                                }
+                              },
+                              "desserts": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "id": { "type": "string", "format": "uuid" },
+                                    "code": { "type": "string" },
+                                    "name": { "type": "string" },
+                                    "price": { "type": "number" },
+                                    "quantity": { "type": "integer", "minimum": 1 }
+                                  },
+                                  "required": ["id", "code", "name", "price", "quantity"]
+                                }
+                              }
+                            },
+                            "required": ["tacos", "extras", "drinks", "desserts"]
+                          },
+                          "createdAt": { "type": "string" },
+                          "updatedAt": { "type": "string" }
+                        },
+                        "required": [
+                          "id",
+                          "groupOrderId",
+                          "userId",
+                          "status",
+                          "items",
+                          "createdAt",
+                          "updatedAt"
+                        ]
+                      }
+                    }
+                  },
+                  "required": ["groupOrder", "userOrders"]
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Orders"],
+        "security": [{ "BearerAuth": [] }, { "UsernameHeader": [] }],
+        "parameters": [
+          {
+            "schema": { "type": "string", "format": "uuid" },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "tacos": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "size": {
+                              "type": "string",
+                              "enum": [
+                                "tacos_L",
+                                "tacos_BOWL",
+                                "tacos_L_mixte",
+                                "tacos_XL",
+                                "tacos_XXL",
+                                "tacos_GIGA"
+                              ]
+                            },
+                            "meats": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "id": { "type": "string", "format": "uuid" },
+                                  "quantity": { "type": "integer", "minimum": 1, "default": 1 }
+                                },
+                                "required": ["id"]
+                              }
+                            },
+                            "sauces": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": { "id": { "type": "string", "format": "uuid" } },
+                                "required": ["id"]
+                              }
+                            },
+                            "garnitures": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": { "id": { "type": "string", "format": "uuid" } },
+                                "required": ["id"]
+                              }
+                            },
+                            "note": { "type": "string" },
+                            "quantity": { "type": "integer", "minimum": 1, "default": 1 }
+                          },
+                          "required": ["size", "meats", "sauces", "garnitures"]
+                        }
+                      },
+                      "extras": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "id": { "type": "string", "format": "uuid" },
+                            "quantity": { "type": "integer", "minimum": 1, "default": 1 }
+                          },
+                          "required": ["id"]
+                        }
+                      },
+                      "drinks": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "id": { "type": "string", "format": "uuid" },
+                            "quantity": { "type": "integer", "minimum": 1, "default": 1 }
+                          },
+                          "required": ["id"]
+                        }
+                      },
+                      "desserts": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "id": { "type": "string", "format": "uuid" },
+                            "quantity": { "type": "integer", "minimum": 1, "default": 1 }
+                          },
+                          "required": ["id"]
+                        }
+                      }
+                    },
+                    "required": ["tacos", "extras", "drinks", "desserts"]
+                  }
+                },
+                "required": ["items"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "User order created or updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": { "type": "string" },
+                    "groupOrderId": { "type": "string" },
+                    "userId": { "type": "string" },
+                    "username": { "type": "string" },
+                    "status": { "type": "string" },
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "tacos": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "id": { "type": "string", "format": "uuid" },
+                              "size": {
+                                "type": "string",
+                                "enum": [
+                                  "tacos_L",
+                                  "tacos_BOWL",
+                                  "tacos_L_mixte",
+                                  "tacos_XL",
+                                  "tacos_XXL",
+                                  "tacos_GIGA"
+                                ]
+                              },
+                              "meats": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "id": { "type": "string", "format": "uuid" },
+                                    "code": { "type": "string" },
+                                    "name": { "type": "string" },
+                                    "quantity": { "type": "integer", "minimum": 1 }
+                                  },
+                                  "required": ["id", "code", "name", "quantity"]
+                                }
+                              },
+                              "sauces": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "id": { "type": "string", "format": "uuid" },
+                                    "code": { "type": "string" },
+                                    "name": { "type": "string" }
+                                  },
+                                  "required": ["id", "code", "name"]
+                                }
+                              },
+                              "garnitures": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "id": { "type": "string", "format": "uuid" },
+                                    "code": { "type": "string" },
+                                    "name": { "type": "string" }
+                                  },
+                                  "required": ["id", "code", "name"]
+                                }
+                              },
+                              "note": { "type": "string" },
+                              "quantity": { "type": "integer", "minimum": 1 },
+                              "price": { "type": "number", "minimum": 0 }
+                            },
+                            "required": [
+                              "id",
+                              "size",
+                              "meats",
+                              "sauces",
+                              "garnitures",
+                              "quantity",
+                              "price"
+                            ]
+                          }
+                        },
+                        "extras": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "id": { "type": "string", "format": "uuid" },
+                              "code": { "type": "string" },
+                              "name": { "type": "string" },
+                              "price": { "type": "number" },
+                              "quantity": { "type": "integer", "minimum": 1 },
+                              "free_sauce": {
+                                "type": "object",
+                                "properties": {
+                                  "id": { "type": "string", "format": "uuid" },
+                                  "code": { "type": "string" },
+                                  "name": { "type": "string" },
+                                  "price": { "type": "number", "minimum": 0 }
+                                },
+                                "required": ["id", "code", "name", "price"]
+                              },
+                              "free_sauces": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "id": { "type": "string", "format": "uuid" },
+                                    "code": { "type": "string" },
+                                    "name": { "type": "string" },
+                                    "price": { "type": "number", "minimum": 0 }
+                                  },
+                                  "required": ["id", "code", "name", "price"]
+                                }
+                              }
+                            },
+                            "required": ["id", "code", "name", "price", "quantity"]
+                          }
+                        },
+                        "drinks": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "id": { "type": "string", "format": "uuid" },
+                              "code": { "type": "string" },
+                              "name": { "type": "string" },
+                              "price": { "type": "number" },
+                              "quantity": { "type": "integer", "minimum": 1 }
+                            },
+                            "required": ["id", "code", "name", "price", "quantity"]
+                          }
+                        },
+                        "desserts": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "id": { "type": "string", "format": "uuid" },
+                              "code": { "type": "string" },
+                              "name": { "type": "string" },
+                              "price": { "type": "number" },
+                              "quantity": { "type": "integer", "minimum": 1 }
+                            },
+                            "required": ["id", "code", "name", "price", "quantity"]
+                          }
+                        }
+                      },
+                      "required": ["tacos", "extras", "drinks", "desserts"]
+                    },
+                    "createdAt": { "type": "string" },
+                    "updatedAt": { "type": "string" }
+                  },
+                  "required": [
+                    "id",
+                    "groupOrderId",
+                    "userId",
+                    "status",
+                    "items",
+                    "createdAt",
+                    "updatedAt"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/orders/{id}/items/{itemId}": {
+      "get": {
+        "tags": ["Orders"],
+        "security": [{ "BearerAuth": [] }, { "UsernameHeader": [] }],
+        "parameters": [
+          {
+            "schema": { "type": "string", "format": "uuid" },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": { "type": "string", "format": "uuid" },
+            "required": true,
+            "name": "itemId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User order details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": { "type": "string" },
+                    "groupOrderId": { "type": "string" },
+                    "userId": { "type": "string" },
+                    "username": { "type": "string" },
+                    "status": { "type": "string" },
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "tacos": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "id": { "type": "string", "format": "uuid" },
+                              "size": {
+                                "type": "string",
+                                "enum": [
+                                  "tacos_L",
+                                  "tacos_BOWL",
+                                  "tacos_L_mixte",
+                                  "tacos_XL",
+                                  "tacos_XXL",
+                                  "tacos_GIGA"
+                                ]
+                              },
+                              "meats": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "id": { "type": "string", "format": "uuid" },
+                                    "code": { "type": "string" },
+                                    "name": { "type": "string" },
+                                    "quantity": { "type": "integer", "minimum": 1 }
+                                  },
+                                  "required": ["id", "code", "name", "quantity"]
+                                }
+                              },
+                              "sauces": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "id": { "type": "string", "format": "uuid" },
+                                    "code": { "type": "string" },
+                                    "name": { "type": "string" }
+                                  },
+                                  "required": ["id", "code", "name"]
+                                }
+                              },
+                              "garnitures": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "id": { "type": "string", "format": "uuid" },
+                                    "code": { "type": "string" },
+                                    "name": { "type": "string" }
+                                  },
+                                  "required": ["id", "code", "name"]
+                                }
+                              },
+                              "note": { "type": "string" },
+                              "quantity": { "type": "integer", "minimum": 1 },
+                              "price": { "type": "number", "minimum": 0 }
+                            },
+                            "required": [
+                              "id",
+                              "size",
+                              "meats",
+                              "sauces",
+                              "garnitures",
+                              "quantity",
+                              "price"
+                            ]
+                          }
+                        },
+                        "extras": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "id": { "type": "string", "format": "uuid" },
+                              "code": { "type": "string" },
+                              "name": { "type": "string" },
+                              "price": { "type": "number" },
+                              "quantity": { "type": "integer", "minimum": 1 },
+                              "free_sauce": {
+                                "type": "object",
+                                "properties": {
+                                  "id": { "type": "string", "format": "uuid" },
+                                  "code": { "type": "string" },
+                                  "name": { "type": "string" },
+                                  "price": { "type": "number", "minimum": 0 }
+                                },
+                                "required": ["id", "code", "name", "price"]
+                              },
+                              "free_sauces": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "id": { "type": "string", "format": "uuid" },
+                                    "code": { "type": "string" },
+                                    "name": { "type": "string" },
+                                    "price": { "type": "number", "minimum": 0 }
+                                  },
+                                  "required": ["id", "code", "name", "price"]
+                                }
+                              }
+                            },
+                            "required": ["id", "code", "name", "price", "quantity"]
+                          }
+                        },
+                        "drinks": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "id": { "type": "string", "format": "uuid" },
+                              "code": { "type": "string" },
+                              "name": { "type": "string" },
+                              "price": { "type": "number" },
+                              "quantity": { "type": "integer", "minimum": 1 }
+                            },
+                            "required": ["id", "code", "name", "price", "quantity"]
+                          }
+                        },
+                        "desserts": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "id": { "type": "string", "format": "uuid" },
+                              "code": { "type": "string" },
+                              "name": { "type": "string" },
+                              "price": { "type": "number" },
+                              "quantity": { "type": "integer", "minimum": 1 }
+                            },
+                            "required": ["id", "code", "name", "price", "quantity"]
+                          }
+                        }
+                      },
+                      "required": ["tacos", "extras", "drinks", "desserts"]
+                    },
+                    "createdAt": { "type": "string" },
+                    "updatedAt": { "type": "string" }
+                  },
+                  "required": [
+                    "id",
+                    "groupOrderId",
+                    "userId",
+                    "status",
+                    "items",
+                    "createdAt",
+                    "updatedAt"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Orders"],
+        "security": [{ "BearerAuth": [] }, { "UsernameHeader": [] }],
+        "parameters": [
+          {
+            "schema": { "type": "string", "format": "uuid" },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": { "type": "string", "format": "uuid" },
+            "required": true,
+            "name": "itemId",
+            "in": "path"
+          }
+        ],
+        "responses": { "204": { "description": "User order deleted" } }
+      }
+    },
+    "/api/v1/orders/{id}/submit": {
+      "post": {
+        "tags": ["Orders"],
+        "security": [{ "BearerAuth": [] }, { "UsernameHeader": [] }],
+        "parameters": [
+          {
+            "schema": { "type": "string", "format": "uuid" },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "customer": {
+                    "type": "object",
+                    "properties": {
+                      "name": { "type": "string", "minLength": 1 },
+                      "phone": { "type": "string", "minLength": 1 }
+                    },
+                    "required": ["name", "phone"]
+                  },
+                  "delivery": {
+                    "type": "object",
+                    "properties": {
+                      "type": { "type": "string", "enum": ["livraison", "emporter"] },
+                      "address": {
+                        "type": "object",
+                        "properties": {
+                          "road": { "type": "string", "minLength": 1 },
+                          "house_number": { "type": "string" },
+                          "postcode": { "type": "string", "minLength": 1 },
+                          "city": { "type": "string", "minLength": 1 },
+                          "state": { "type": "string" },
+                          "country": { "type": "string" }
+                        },
+                        "required": ["road", "postcode", "city"]
+                      },
+                      "requestedFor": { "type": "string", "pattern": "^\\d{2}:\\d{2}$" }
+                    },
+                    "required": ["type", "address", "requestedFor"]
+                  }
+                },
+                "required": ["customer", "delivery"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Group order submitted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "groupOrderId": { "type": "string" },
+                    "submittedCount": { "type": "number" },
+                    "orderId": { "type": "string" },
+                    "transactionId": { "type": "string" }
+                  },
+                  "required": ["groupOrderId", "submittedCount", "orderId", "transactionId"]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "webhooks": {}
+}

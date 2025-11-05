@@ -1,0 +1,124 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Cart {
+  id            String   @id @default(uuid())
+  csrfToken     String
+  cookies       String   // JSON string
+  createdAt     DateTime @default(now())
+  lastActivityAt DateTime @default(now()) @updatedAt
+  metadata      String?  // JSON string for optional metadata
+
+  // Relations
+  tacoMappings  TacoMapping[]
+  orders        Order[]
+
+  @@index([lastActivityAt])
+  @@map("carts")
+}
+
+model TacoMapping {
+  id          String @id @default(uuid())
+  cartId      String
+  tacoId      String
+  backendIndex Int
+  
+  // Relations
+  cart        Cart   @relation(fields: [cartId], references: [id], onDelete: Cascade)
+
+  @@unique([cartId, tacoId])
+  @@unique([cartId, backendIndex])
+  @@index([cartId])
+  @@map("taco_mappings")
+}
+
+model User {
+  id            String   @id @default(uuid())
+  username      String   @unique
+  slackId       String?  // Slack user ID for future Slack integration
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @default(now()) @updatedAt
+
+  // Relations
+  orders        Order[]       @relation("UserOrders")
+  groupOrders   GroupOrder[]  @relation("GroupOrderLeader")
+  userOrders    UserOrder[]   @relation("UserUserOrders")
+
+  @@index([username])
+  @@index([slackId])
+  @@map("users")
+}
+
+model Order {
+  id            String   @id @default(uuid())
+  cartId        String
+  userId        String?  // Link to user if authenticated
+  customerName  String
+  customerPhone String
+  orderType     String   // 'livraison' or 'emporter'
+  address       String?
+  requestedFor  String   // Time slot
+  status        String   @default("pending")
+  price         Float?
+  orderData     String   // JSON string
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @default(now()) @updatedAt
+  
+  // Relations
+  cart          Cart     @relation(fields: [cartId], references: [id])
+  user          User?    @relation("UserOrders", fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([cartId])
+  @@index([userId])
+  @@index([createdAt])
+  @@map("orders")
+}
+
+model GroupOrder {
+  id          String   @id @default(uuid())
+  name        String?
+  leaderId    String   // User ID of the group leader
+  startDate   DateTime
+  endDate     DateTime
+  status      String   @default("open") // open, closed, submitted, completed
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now()) @updatedAt
+
+  // Relations
+  leader      User     @relation("GroupOrderLeader", fields: [leaderId], references: [id], onDelete: Cascade)
+  userOrders  UserOrder[]
+
+  @@index([leaderId])
+  @@index([startDate, endDate])
+  @@index([status])
+  @@map("group_orders")
+}
+
+model UserOrder {
+  id            String   @id @default(uuid())
+  groupOrderId  String
+  userId        String   // User ID instead of username
+  status        String   @default("draft") // draft, submitted
+  items         String   // JSON string containing tacos, extras, drinks, desserts
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @default(now()) @updatedAt
+
+  // Relations
+  groupOrder    GroupOrder @relation(fields: [groupOrderId], references: [id], onDelete: Cascade)
+  user          User       @relation("UserUserOrders", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([groupOrderId])
+  @@index([userId])
+  @@index([status])
+  @@index([groupOrderId, userId])
+  @@map("user_orders")
+}

@@ -1,0 +1,59 @@
+{
+  "name": "@tacobot/backend",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Modern TypeScript API wrapper for tacos ordering system with Web API integration",
+  "main": "dist/main.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx watch src/main.ts",
+    "check": "tsc --noEmit --pretty",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:studio": "prisma studio",
+    "postinstall": "prisma generate",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:ui": "vitest --ui",
+    "mock:server": "tsx src/mock-server/index.ts",
+    "clean": "rm -rf dist"
+  },
+  "keywords": ["tacos", "api", "typescript", "rest-api"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@hono/node-server": "^1.19.6",
+    "@hono/swagger-ui": "^0.5.2",
+    "@hono/zod-openapi": "^1.1.4",
+    "@prisma/client": "^6.18.0",
+    "axios": "^1.6.5",
+    "cheerio": "^1.1.2",
+    "date-fns": "^4.1.0",
+    "dotenv": "^17.2.3",
+    "hono": "^4.10.4",
+    "jsonwebtoken": "^9.0.2",
+    "prisma": "^6.18.0",
+    "reflect-metadata": "^0.2.2",
+    "tsyringe": "^4.10.0",
+    "tslib": "^2.8.1",
+    "uuid": "^13.0.0",
+    "winston": "^3.11.0",
+    "winston-daily-rotate-file": "^5.0.0",
+    "zod": "^4.1.12"
+  },
+  "devDependencies": {
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^24.9.2",
+    "@types/uuid": "^11.0.0",
+    "@vitest/coverage-v8": "^4.0.6",
+    "@vitest/ui": "^4.0.6",
+    "tsx": "^4.20.6",
+    "typescript": "^5.3.3",
+    "vitest": "^4.0.6"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  }
+}
