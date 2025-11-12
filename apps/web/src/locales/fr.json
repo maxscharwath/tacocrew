@@ -1,0 +1,758 @@
+{
+  "common": {
+    "signIn": "Se connecter",
+    "signOut": "Se déconnecter",
+    "signingIn": "Connexion…",
+    "username": "Identifiant",
+    "loggedInAs": "Connecté en tant que",
+    "open": "Ouvrir",
+    "loading": "Chargement",
+    "error": "Erreur",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "submit": "Envoyer",
+    "back": "Retour",
+    "outOfStock": "Rupture",
+    "labels": {
+      "dropName": "Nom de la commande",
+      "timeWindow": "Créneau",
+      "opens": "Ouverture",
+      "closes": "Clôture (limite)",
+      "quantity": "Quantité",
+      "meats": "Viandes",
+      "sauces": "Sauces",
+      "garnishes": "Garnitures",
+      "extras": "Suppléments",
+      "drinks": "Boissons",
+      "desserts": "Desserts"
+    },
+    "placeholders": {
+      "dropName": "Déjeuner du vendredi",
+      "specialInstructions": "ex. sans oignons, extra piquant, sauce à part..."
+    },
+    "status": {
+      "open": "Ouverte",
+      "pending": "En attente",
+      "submitted": "Transmise",
+      "completed": "Terminée",
+      "closed": "Fermée",
+      "draft": "Brouillon",
+      "active": "Active"
+    },
+    "currency": {
+      "chf": "CHF"
+    },
+    "dateShortcuts": {
+      "quickSelect": "Raccourcis",
+      "today": "Aujourd'hui",
+      "tomorrow": "Demain",
+      "nextWeek": "Semaine prochaine"
+    }
+  },
+  "navigation": {
+    "dashboard": "Tableau de bord",
+    "orders": "Commandes",
+    "stock": "Stock",
+    "profile": "Profil"
+  },
+  "login": {
+    "title": "TacoCrew",
+    "subtitle": "Connecte-toi pour rejoindre des commandes de groupe ou créer la tienne. Pas encore de compte ? Entre simplement ton nom !",
+    "usernamePlaceholder": "chef-del-taco",
+    "usernameRequired": "L'identifiant est requis",
+    "unexpectedError": "Erreur inattendue. Réessaie.",
+    "signUp": {
+      "title": "S'inscrire",
+      "subtitle": "Créez votre compte pour commencer"
+    },
+    "signIn": "Se connecter",
+    "signUpButton": "S'inscrire",
+    "signInWithPasskey": "Se connecter avec Passkey",
+    "orUsePassword": "Ou utiliser un mot de passe",
+    "name": {
+      "label": "Nom",
+      "placeholder": "Votre nom"
+    },
+    "email": {
+      "label": "E-mail",
+      "placeholder": "email@exemple.com"
+    },
+    "password": {
+      "label": "Mot de passe",
+      "placeholder": "••••••••"
+    },
+    "pleaseWait": "Veuillez patienter...",
+    "signInFailed": "Échec de la connexion",
+    "signUpFailed": "Échec de l'inscription",
+    "passkeySignInFailed": "Échec de la connexion avec Passkey",
+    "passkeyAuthFailed": "Échec de l'authentification Passkey"
+  },
+  "account": {
+    "title": "Paramètres du compte",
+    "subtitle": "Gérez votre compte et vos passkeys",
+    "profile": {
+      "title": "Informations du profil",
+      "description": "Vos détails de compte",
+      "name": "Nom",
+      "email": "E-mail",
+      "verified": "Vérifié",
+      "unverified": "Non vérifié"
+    },
+    "passkeys": {
+      "title": "Passkeys",
+      "description": "Authentification sans mot de passe avec votre appareil",
+      "addButton": "+ Ajouter un Passkey",
+      "registering": "Enregistrement...",
+      "deviceNamePrefix": "Appareil",
+      "emptyState": {
+        "title": "Aucun passkey enregistré",
+        "description": "Ajoutez un passkey pour activer la connexion sans mot de passe en utilisant la biométrie de votre appareil ou une clé de sécurité. Vous pouvez enregistrer plusieurs passkeys pour différents appareils."
+      },
+      "rename": "Renommer",
+      "delete": "Supprimer",
+      "registered": "Enregistré",
+      "about": {
+        "title": "À propos des Passkeys",
+        "description": "Les passkeys vous permettent de vous connecter en toute sécurité en utilisant la biométrie de votre appareil (empreinte digitale, reconnaissance faciale) ou une clé de sécurité. Ils sont plus sûrs que les mots de passe et ne peuvent pas être volés par hameçonnage. Vous pouvez enregistrer plusieurs passkeys pour différents appareils."
+      },
+      "registerSuccess": "Passkey enregistré avec succès !",
+      "deleteSuccess": "Passkey supprimé avec succès",
+      "updateSuccess": "Nom du passkey mis à jour",
+      "registerFailed": "Échec de l'enregistrement du passkey",
+      "deleteFailed": "Échec de la suppression du passkey",
+      "updateFailed": "Échec de la mise à jour du passkey",
+      "deleteConfirm": "Êtes-vous sûr de vouloir supprimer ce passkey ?",
+      "updateNameFailed": "Échec de la mise à jour du nom du passkey",
+      "unnamed": "Passkey sans nom"
+    },
+    "nameUpdate": {
+      "success": "Nom mis à jour avec succès",
+      "failed": "Échec de la mise à jour du nom"
+    },
+    "loading": "Chargement...",
+    "loadFailed": "Échec du chargement des données du compte",
+    "edit": "Modifier",
+    "saving": "Enregistrement...",
+    "save": "Enregistrer",
+    "cancel": "Annuler"
+  },
+  "dashboard": {
+    "kitchenPulse": "Vos commandes",
+    "hero": {
+      "title": "Bon retour ! Prêt pour les tacos du <StyledDay>{{day}}</StyledDay> ?",
+      "subtitle": "Consultez vos commandes de groupe actives, voyez qui participe et suivez les échéances. Tout ce dont vous avez besoin pour organiser les commandes d'équipe."
+    },
+    "metrics": {
+      "activeOrders": "Commandes actives",
+      "awaitingSubmission": "Prêtes à envoyer",
+      "ordersOnRecord": "Commandes enregistrées",
+      "open": "Ouvertes",
+      "drafts": "Brouillons",
+      "nextDispatch": "Prochain envoi {{time}}"
+    },
+    "recentGroupOrders": {
+      "title": "Commandes de groupe récentes",
+      "description": "Vos commandes de groupe actuelles et à venir. Partagez avec votre équipe pour que tout le monde commande.",
+      "manageAll": "Tout gérer",
+      "emptyState": "Pas encore de commande de groupe. Créez votre première commande du vendredi et invitez votre équipe !",
+      "launchFirstCycle": "Lancer un premier cycle",
+      "untitledOrder": "Commande sans nom"
+    },
+    "latestSubmissions": {
+      "title": "Dernières soumissions",
+      "description": "Commandes que vous avez passées avec votre équipe.",
+      "emptyState": "Pas encore d'historique.",
+      "requestedFor": "Prévue pour {{name}}",
+      "submitted": "Envoyée le {{date}}"
+    }
+  },
+  "root": {
+    "appSubtitle": "Commandez des French Tacos en équipe. Créez des commandes de groupe, invitez vos collègues et passez une grande commande.",
+    "tacobot": "TacoCrew",
+    "errors": {
+      "applicationError": "Erreur applicative",
+      "unknownError": "Erreur inconnue",
+      "somethingWrong": "Un souci est survenu."
+    }
+  },
+  "errors": {
+    "csrf": {
+      "invalid": "Le jeton CSRF est invalide ou expiré. Veuillez actualiser la page."
+    },
+    "rateLimit": {
+      "exceeded": "Trop de requêtes. Veuillez patienter un moment et réessayer."
+    },
+    "order": {
+      "duplicate": "Cette commande existe déjà.",
+      "notFound": "Commande introuvable."
+    },
+    "orders": {
+      "submit": {
+        "noUserOrders": "Impossible de soumettre une commande de groupe sans commandes utilisateur. Veuillez ajouter au moins une commande avant de soumettre.",
+        "invalidStatus": "Impossible de soumettre la commande de groupe. Le statut de la commande est {{status}}.",
+        "expired": "Impossible de soumettre la commande de groupe. La période de commande a expiré.",
+        "emptyUserOrder": "Impossible de soumettre la commande de groupe. Une ou plusieurs commandes utilisateur sont vides."
+      },
+      "modify": {
+        "invalidStatus": "Impossible de modifier la commande utilisateur. Le statut de la commande de groupe ne permet pas les modifications."
+      }
+    },
+    "validation": {
+      "failed": "La validation a échoué. Veuillez vérifier vos données et réessayer."
+    },
+    "stock": {
+      "outOfStock": "Un ou plusieurs articles sont en rupture de stock. Veuillez mettre à jour votre commande."
+    },
+    "notFound": {
+      "generic": "{{resource}} est introuvable.",
+      "generic_id": "{{resource}} avec l'identifiant {{identifier}} est introuvable.",
+      "generic_tacoID": "{{resource}} avec le tacoID {{identifier}} est introuvable.",
+      "generic_shareCode": "{{resource}} avec le code de partage {{identifier}} est introuvable.",
+      "resource": "Ressource"
+    },
+    "network": {
+      "failed": "La requête réseau a échoué. Veuillez vérifier votre connexion et réessayer."
+    },
+    "session": {
+      "notFound": "Session introuvable. Veuillez vous reconnecter.",
+      "expired": "Votre session a expiré. Veuillez vous reconnecter."
+    },
+    "unknown": {
+      "generic": "Une erreur inattendue s'est produite. Veuillez réessayer."
+    },
+    "forbidden": {
+      "generic": "Vous n'avez pas la permission d'effectuer cette action."
+    },
+    "unauthorized": {
+      "generic": "Vous devez être connecté pour effectuer cette action."
+    }
+  },
+  "orders": {
+    "common": {
+      "unnamedDrop": "Commande sans titre",
+      "randomNames": [
+        "Déjeuner {{day}}",
+        "Commande Équipe {{date}}",
+        "Commande Groupe {{day}}",
+        "Tacos Bureau {{date}}",
+        "Déjeuner Équipe {{day}}",
+        "Commande Groupe {{date}}",
+        "Tournée Taco {{day}}",
+        "Déjeuner Équipe {{date}}",
+        "Commande Bureau {{day}}",
+        "Commande Déjeuner {{date}}",
+        "Commande Équipe {{day}}",
+        "Commande Bureau {{date}}",
+        "Déjeuner Groupe {{day}}",
+        "Tacos Équipe {{date}}",
+        "Tournée Déjeuner {{day}}"
+      ],
+      "labels": {
+        "shortId": "ID {{id}}"
+      },
+      "errors": {
+        "api": "La requête n'a pas abouti ({{message}})."
+      },
+      "cookies": {
+        "title": "Cookies de session",
+        "description": "Cookies de session et détails pour la vérification de commande",
+        "loading": "Chargement des cookies...",
+        "error": "Échec du chargement des cookies. Assurez-vous que la commande a été soumise.",
+        "orderInfo": "Informations de commande",
+        "orderId": "ID de commande",
+        "transaction": "Transaction",
+        "sessionId": "ID de session",
+        "cookies": "Cookies",
+        "csrfToken": "Jeton CSRF"
+      }
+    },
+    "list": {
+      "hero": {
+        "badge": "Commandes d'équipe simplifiées",
+        "title": "Organisez des commandes de groupe pour votre équipe",
+        "subtitle": "Créez une commande de groupe, partagez-la avec vos collègues et chacun peut ajouter ses tacos. Quand c'est prêt, passez une grande commande pour toute l'équipe.",
+        "metrics": {
+          "activeCycles": "Cycles actifs",
+          "totalBatches": "Lots au total",
+          "nextDispatch": "Prochain envoi"
+        }
+      },
+      "queue": {
+        "title": "Vos commandes de groupe",
+        "subtitle": "Toutes les commandes de groupe que vous avez créées ou auxquelles vous avez participé.",
+        "scheduled_one": "{{count}} créneau planifié",
+        "scheduled_other": "{{count}} créneaux planifiés",
+        "empty": "Aucune commande pour l'instant. Créez votre première commande et invitez votre équipe !",
+        "createdMeta": "Créé par {{name}} • {{date}}",
+        "unknownLeader": "Leader inconnu"
+      },
+      "form": {
+        "title": "Créer une nouvelle commande de groupe",
+        "subtitle": "Donnez un nom, choisissez quand les commandes se ferment et partagez avec votre équipe. Tout le monde peut ajouter ses tacos !",
+        "labels": {
+          "timeWindow": "Créneau horaire",
+          "opens": "Ouverture",
+          "closes": "Clôture (limite)",
+          "deadlineHint": "Les commandes doivent arriver avant cette heure."
+        },
+        "quickDeadlines": {
+          "morning": "10 h",
+          "noon": "12 h",
+          "afternoon": "14 h",
+          "evening": "17 h"
+        },
+        "actions": {
+          "launch": "Créer la commande de groupe"
+        }
+      },
+      "errors": {
+        "datesRequired": "Les dates de début et de fin sont obligatoires.",
+        "invalidDates": "Les dates fournies sont invalides.",
+        "endBeforeStart": "La fin doit être après le début.",
+        "unexpected": "Impossible de créer la commande de groupe."
+      }
+    },
+    "create": {
+      "navigation": {
+        "backToOrder": "Retour à la commande"
+      },
+      "hero": {
+        "title": "Compose ton taco parfait",
+        "subtitle": "Choisis ta taille, tes viandes, tes sauces et ajoute des extras. Fais-le exactement comme tu l'aimes !"
+      },
+      "sizeSection": {
+        "title": "Choisis ta taille",
+        "description": "Sélectionne le format qui te convient",
+        "limits": {
+          "meats_one": "{{count}} viande",
+          "meats_other": "{{count}} viandes",
+          "sauces_one": "{{count}} sauce",
+          "sauces_other": "{{count}} sauces"
+        },
+        "limitSummary": "{{meats}} · {{sauces}}"
+      },
+      "customizeSection": {
+        "title": "Personnalise ton taco",
+        "subtitle": "Choisis tes viandes, sauces et garnitures",
+        "meatsLimit": "{{count}}/{{max}} au total",
+        "meatTypesSelected_one": "{{count}} choix",
+        "meatTypesSelected_other": "{{count}} choix"
+      },
+      "extrasSection": {
+        "title": "Ajoute des extras",
+        "subtitle": "Complète avec accompagnements et boissons"
+      },
+      "notes": {
+        "title": "Consignes spéciales",
+        "subtitle": "Des demandes spéciales ?"
+      },
+      "actions": {
+        "update": "Mettre à jour",
+        "save": "Enregistrer ma commande"
+      },
+      "summary": {
+        "title": "Récapitulatif",
+        "subtitle": "Passe en revue ta sélection",
+        "tags": {
+          "meats_one": "{{count}} viande",
+          "meats_other": "{{count}} viandes",
+          "sauces_one": "{{count}} sauce",
+          "sauces_other": "{{count}} sauces",
+          "garnishes_one": "{{count}} garniture",
+          "garnishes_other": "{{count}} garnitures",
+          "extras_one": "{{count}} extra",
+          "extras_other": "{{count}} extras",
+          "drinks_one": "{{count}} boisson",
+          "drinks_other": "{{count}} boissons",
+          "desserts_one": "{{count}} dessert",
+          "desserts_other": "{{count}} desserts"
+        },
+        "specialInstructions": "Consignes spéciales",
+        "emptyState": "Sélectionne une taille pour voir le récapitulatif",
+        "totalLabel": "Total",
+        "breakdown": {
+          "noTaco": "Aucun taco",
+          "tacos_one": "{{count}} taco",
+          "tacos_other": "{{count}} tacos",
+          "extras_one": "{{count}} extra",
+          "extras_other": "{{count}} extras",
+          "drinks_one": "{{count}} boisson",
+          "drinks_other": "{{count}} boissons",
+          "desserts_one": "{{count}} dessert",
+          "desserts_other": "{{count}} desserts"
+        }
+      },
+      "progress": {
+        "size": {
+          "label": "Taille",
+          "empty": "Choisir une taille"
+        },
+        "meats": {
+          "selectedWithMax_one": "{{count}} choix (max {{max}})",
+          "selectedWithMax_other": "{{count}} choix (max {{max}})",
+          "selected_one": "{{count}} choix",
+          "selected_other": "{{count}} choix",
+          "empty": "Ajouter des viandes"
+        },
+        "sauces": {
+          "selectedWithMax_one": "{{count}} choix (max {{max}})",
+          "selectedWithMax_other": "{{count}} choix (max {{max}})",
+          "selected_one": "{{count}} choix",
+          "selected_other": "{{count}} choix",
+          "empty": "Ajouter des sauces"
+        },
+        "garnishes": {
+          "selected_one": "{{count}} choix",
+          "selected_other": "{{count}} choix",
+          "empty": "Ajouter des garnitures (optionnel)"
+        }
+      },
+      "validation": {
+        "missingMeat": "Ajoute au moins une viande.",
+        "missingSauce": "Ajoute au moins une sauce.",
+        "missingGarnish": "Ajoute au moins une garniture.",
+        "missingSelection": "Choisis un taco ou des suppléments."
+      },
+      "previousTacos": {
+        "title": "Réutiliser un taco",
+        "description": "Ajoute depuis tes favoris ou recherche par tacoID",
+        "openModal": "Parcourir tes favoris",
+        "orderedTimes_one": "Commandé {{count}} fois",
+        "orderedTimes_other": "Commandé {{count}} fois",
+        "showing": "Affichage de {{count}} sur {{total}}"
+      },
+      "hashSearch": {
+        "title": "Trouver un taco par tacoID",
+        "description": "Entrez un tacoID pour réutiliser la recette de quelqu'un d'autre",
+        "placeholder": "Entrez le tacoID (ex. 3xK9mP2...)",
+        "errors": {
+          "empty": "Veuillez entrer un tacoID",
+          "notFound": "Taco introuvable. Veuillez vérifier le tacoID et réessayer."
+        }
+      },
+      "errors": {
+        "missingSelection": "Choisis au moins un taco ou des extras/boissons/desserts.",
+        "missingFillings": "Pour un taco, ajoute au moins une viande et une sauce.",
+        "garnishNotAvailable": "Cette taille n'accepte pas de garnitures.",
+        "unexpected": "Une erreur imprévue est survenue."
+      }
+    },
+    "detail": {
+      "hero": {
+        "badge": "Commande de groupe",
+        "participants": {
+          "label": "Participants",
+          "count_one": "{{count}} commande",
+          "count_other": "{{count}} commandes"
+        },
+        "total": {
+          "label": "Montant total",
+          "caption": "Toutes les commandes"
+        },
+        "actions": {
+          "create": "Créer une nouvelle commande",
+          "closedReasons": {
+            "open": "Créneau expiré",
+            "expired": "Créneau expiré",
+            "notStarted": "Créneau pas encore commencé",
+            "closed": "Commande clôturée",
+            "submitted": "Commande transmise",
+            "completed": "Commande terminée"
+          },
+          "submit": "Passer la commande",
+          "closeOrder": "Fermer la commande",
+          "reopenOrder": "Rouvrir la commande"
+        },
+        "leaderInfo": {
+          "label": "Chef de groupe",
+          "unknown": "Leader inconnu",
+          "you": "(vous)"
+        },
+        "share": {
+          "title": "Partager cette commande",
+          "description": "Invitez votre équipe à rejoindre cette commande de groupe",
+          "copyLink": "Copier le lien",
+          "copyCode": "Copier le code",
+          "codeLabel": "Code de participation",
+          "qrCode": "Scanner pour rejoindre",
+          "shareToSlack": "Partager sur Slack",
+          "linkCopied": "Lien copié !",
+          "codeCopied": "Code copié !",
+          "inviteInstructions": "Partagez ce lien ou ce code avec votre équipe pour rejoindre cette commande."
+        }
+      },
+      "list": {
+        "title": "Toutes les commandes",
+        "description": "Consulte toutes les commandes de ce groupe.",
+        "myOrderBadge": "MA COMMANDE",
+        "unknownUser": "Inconnu",
+        "extrasOnly": "Extras uniquement",
+        "itemCount_one": "{{count}} élément",
+        "itemCount_other": "{{count}} éléments",
+        "emptyState": {
+          "title": "Aucune commande pour l'instant",
+          "description": {
+            "default": "Compose ton taco pour rejoindre cette commande.",
+            "expired": "La période de commande est terminée.",
+            "notStarted": "La période de commande n'a pas encore commencé.",
+            "closed": "Cette commande est fermée.",
+            "finalized": "Cette commande est finalisée."
+          },
+          "cta": "Créer ma commande"
+        },
+        "footer": {
+          "backToOrders": "← Retour aux commandes",
+          "orderId": "ID commande :"
+        },
+        "tagCounts": {
+          "tacos_one": "{{count}} taco",
+          "tacos_other": "{{count}} tacos",
+          "extras_one": "{{count}} supplément",
+          "extras_other": "{{count}} suppléments",
+          "drinks_one": "{{count}} boisson",
+          "drinks_other": "{{count}} boissons",
+          "desserts_one": "{{count}} dessert",
+          "desserts_other": "{{count}} desserts"
+        }
+      },
+      "errors": {
+        "missingSelection": "Sélectionne au moins une viande, une sauce et une garniture.",
+        "missingIdentifier": "Identifiant de commande manquant.",
+        "missingCustomerDetails": "Renseigne les informations client, le mode de livraison, l'adresse et l'heure souhaitée.",
+        "unexpected": "Erreur inattendue."
+      }
+    },
+    "submit": {
+      "navigation": {
+        "back": "Retour à la commande"
+      },
+      "hero": {
+        "title": "Passer la commande",
+        "description": "Prêt à commander ? Consultez les détails ci-dessous et envoyez. Cela finalisera la commande et l'enverra au restaurant.",
+        "participants": {
+          "label": "Participants",
+          "none": "Aucun participant pour l'instant",
+          "count_one": "{{count}} participant dans cette commande",
+          "count_other": "{{count}} participants dans cette commande"
+        }
+      },
+      "form": {
+        "title": "Informations de livraison",
+        "description": "Où devons-nous livrer cette commande ? Remplissez les détails ci-dessous.",
+        "fields": {
+          "customerName": "Nom du client",
+          "customerPhone": "Téléphone",
+          "deliveryType": "Mode de livraison",
+          "street": "Rue",
+          "houseNumber": "Numéro",
+          "postcode": "Code postal",
+          "city": "Ville",
+          "state": "Canton",
+          "country": "Pays",
+          "requestedTime": "Heure souhaitée",
+          "requestedFor": "Heure souhaitée",
+          "requestedForPlaceholder": "Sélectionner une heure",
+          "asSoonAsPossible": "Dès que possible",
+          "noTimeSlotsAvailable": "Aucun créneau disponible pour aujourd'hui",
+          "paymentMethod": "Mode de paiement"
+        },
+        "deliveryTypes": {
+          "livraison": "Livraison",
+          "emporter": "À emporter"
+        },
+        "paymentMethods": {
+          "especes": "Espèces",
+          "carte": "Carte Bancaire",
+          "twint": "TWINT"
+        },
+        "sections": {
+          "address": {
+            "title": "Informations de livraison",
+            "description": "Coordonnées client, mode et adresse."
+          },
+          "preferences": {
+            "title": "Horaires & paiement",
+            "description": "Choisissez l'heure souhaitée et le mode de paiement."
+          }
+        },
+        "actions": {
+          "cancel": "Annuler",
+          "submit": "Passer la commande"
+        }
+      },
+      "saved": {
+        "title": "Adresses enregistrées",
+        "description": "Sélectionnez une adresse enregistrée ou sauvegardez ces informations pour plus tard.",
+        "selectLabel": "Profils enregistrés",
+        "selectPlaceholder": "Saisie manuelle",
+        "selectedLabel": "Aucun profil sélectionné",
+        "labelField": "Nom du profil",
+        "inputPlaceholder": "Nom du profil (ex. Bureau, Maison)",
+        "unnamedProfile": "Sans nom",
+        "actions": {
+          "clear": "Effacer la sélection",
+          "save": "Enregistrer",
+          "update": "Mettre à jour",
+          "delete": "Supprimer"
+        },
+        "form": {
+          "addDescription": "Enregistre les informations de livraison utilisées fréquemment.",
+          "editDescription": "Modifie l'adresse sélectionnée."
+        },
+        "messages": {
+          "saved": "Adresse enregistrée dans votre profil.",
+          "updated": "Adresse mise à jour.",
+          "deleted": "Adresse supprimée.",
+          "missingFields": "Renseignez le nom, le téléphone, la rue, le code postal et la ville avant d'enregistrer.",
+          "missingLabel": "Ajoutez un nom pour identifier cette adresse.",
+          "selectProfile": "Sélectionnez d'abord une adresse enregistrée.",
+          "genericError": "Impossible d'enregistrer l'adresse. Réessayez."
+        },
+        "confirmDelete": "Supprimer cette adresse enregistrée ?"
+      },
+      "reminder": {
+        "title": "Dernière étape",
+        "body": "Une fois envoyée, la commande sera finalisée et envoyée. Les participants ne pourront plus modifier leurs commandes. Assurez-vous que tout le monde a ajouté ses tacos !"
+      },
+      "errors": {
+        "missingFields": "Les informations client, le mode de livraison, l'adresse et l'heure souhaitée sont obligatoires.",
+        "unexpected": "Erreur inattendue."
+      }
+    }
+  },
+  "languageSwitcher": {
+    "languages": {
+      "en": {
+        "label": "Anglais",
+        "short": "EN",
+        "name": "Anglais"
+      },
+      "fr": {
+        "label": "Français",
+        "short": "FR",
+        "name": "Français"
+      }
+    },
+    "ariaLabel": "Passer en {{language}}"
+  },
+  "profile": {
+    "badge": "Votre profil",
+    "subtitle": "Vos informations de compte et historique de commandes.",
+    "delivery": {
+      "manageButton": "Gérer mes infos de livraison",
+      "title": "Adresses enregistrées",
+      "subtitle": "Enregistrez vos adresses de livraison habituelles pour gagner du temps lors de l'envoi.",
+      "helper": "Créez plusieurs profils (bureau, maison, clients…) puis sélectionnez-les lors de la soumission.",
+      "stats": {
+        "label": "Profils enregistrés",
+        "count_one": "{{count}} profil prêt à l'emploi",
+        "count_other": "{{count}} profils prêts à l'emploi",
+        "empty": "Aucun profil enregistré pour l'instant — ajoutez-en un pour gagner du temps."
+      },
+      "formCard": {
+        "title": "Gérer les profils de livraison",
+        "description": "Ajoutez, modifiez ou supprimez des adresses enregistrées pour accélérer vos commandes."
+      }
+    },
+    "stats": {
+      "userId": "ID utilisateur",
+      "ordersLogged": "Commandes enregistrées"
+    },
+    "accountCard": {
+      "title": "Détails du compte",
+      "description": "Vos détails de compte et préférences."
+    },
+    "fields": {
+      "username": "Identifiant",
+      "userId": "ID utilisateur",
+      "slackId": "ID Slack",
+      "created": "Création",
+      "updated": "Mise à jour"
+    },
+    "previousOrders": {
+      "title": "Mes Tacos",
+      "count_one": "{{count}} taco unique",
+      "count_other": "{{count}} tacos uniques",
+      "description": "Tous vos tacos regroupés par recette. Voyez lesquels vous commandez le plus souvent.",
+      "empty": "Aucun taco pour l'instant. Créez votre première commande !",
+      "orderedTimes": "Commandé {{count}} fois",
+      "recentOrder": "De : {{name}}",
+      "lastOrdered": "Dernière commande {{date}}",
+      "noTacos": "Aucun taco dans cette commande"
+    }
+  },
+  "stock": {
+    "badge": "Menu",
+    "title": "Ce qui est disponible",
+    "subtitle": "Parcourez les ingrédients et articles disponibles pour vos commandes.",
+    "live": "Synchronisé en direct avec les fournisseurs",
+    "overview": {
+      "title": "Vue globale du stock",
+      "description": "Changez de catégorie pour voir ce qui est disponible pour vos commandes.",
+      "ariaLabel": "Catégories de stock"
+    },
+    "sections": {
+      "meats": {
+        "label": "Viandes",
+        "blurb": "Protéines signatures et mélanges maison."
+      },
+      "sauces": {
+        "label": "Sauces",
+        "blurb": "Du feu, du sucré et tout ce qu'il faut entre les deux."
+      },
+      "garnishes": {
+        "label": "Garnitures",
+        "blurb": "Toppings frais pour finir chaque commande."
+      },
+      "extras": {
+        "label": "Suppléments",
+        "blurb": "Ajouts qui boostent croustillant et gourmandise."
+      },
+      "drinks": {
+        "label": "Boissons",
+        "blurb": "Des rafraîchissements toujours au frais."
+      },
+      "desserts": {
+        "label": "Desserts",
+        "blurb": "Des douceurs pour conclure chaque festin."
+      }
+    },
+    "stats": {
+      "categories": "Catégories",
+      "ingredients": "Ingrédients",
+      "lowStock": "Stock bas",
+      "counts": {
+        "inStock_one": "{{count}} en stock",
+        "inStock_other": "{{count}} en stock",
+        "total_one": "{{count}} total",
+        "total_other": "{{count}} total"
+      }
+    },
+    "list": {
+      "empty": "Aucun article disponible pour l'instant.",
+      "noItems": "Aucun article dans cette catégorie.",
+      "noPrice": "Pas de prix",
+      "copyIdTooltip": "Copier l'ID dans le presse-papiers",
+      "copyId": "Copier l'ID",
+      "availability": {
+        "available": "Disponible",
+        "outOfStock": "Rupture"
+      }
+    },
+    "join": {
+      "title": "Rejoignez notre commande de groupe !",
+      "subtitle": "Ajoutez vos tacos à cette commande de groupe",
+      "deadline": "La commande se ferme {{time}}",
+      "participants": "{{count}} personnes ont rejoint",
+      "participants_one": "{{count}} personne a rejoint",
+      "joinButton": "Ajouter ma commande",
+      "signInPrompt": "Connectez-vous pour ajouter votre commande",
+      "viewOrders": "Voir toutes les commandes",
+      "expired": "Cette commande est fermée",
+      "notStarted": "Cette commande n'a pas encore commencé",
+      "closed": "Cette commande est fermée"
+    }
+  }
+}

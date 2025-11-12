@@ -1,0 +1,250 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Cart {
+  id             String   @id @default(uuid())
+  csrfToken      String
+  cookies        String // JSON string
+  createdAt      DateTime @default(now())
+  lastActivityAt DateTime @default(now()) @updatedAt
+  metadata       String? // JSON string for optional metadata
+
+  // Relations
+  tacoMappings TacoMapping[]
+  orders       Order[]
+  groupOrders  GroupOrder[]  @relation("GroupOrderSession")
+
+  @@index([lastActivityAt])
+  @@map("carts")
+}
+
+model TacoMapping {
+  id           String @id @default(uuid())
+  cartId       String
+  tacoId       String
+  backendIndex Int
+
+  // Relations
+  cart Cart @relation(fields: [cartId], references: [id], onDelete: Cascade)
+
+  @@unique([cartId, tacoId])
+  @@unique([cartId, backendIndex])
+  @@index([cartId])
+  @@map("taco_mappings")
+}
+
+model User {
+  id              String   @id @default(uuid())
+  name            String
+  email           String
+  emailVerified   Boolean  @default(false)
+  image           String?
+  username        String?  @unique // Better Auth username plugin field
+  displayUsername String?  @unique // Better Auth username plugin field
+  slackId         String? // Slack user ID for future Slack integration
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @default(now()) @updatedAt
+
+  // Better Auth relations
+  sessions Session[]
+  accounts Account[]
+
+  // Existing relations
+  orders           Order[]               @relation("UserOrders")
+  groupOrders      GroupOrder[]          @relation("GroupOrderLeader")
+  userOrders       UserOrder[]           @relation("UserUserOrders")
+  deliveryProfiles UserDeliveryProfile[]
+
+  passkeys Passkey[]
+
+  @@index([username])
+  @@index([slackId])
+  @@map("users")
+  @@unique([email])
+}
+
+model UserDeliveryProfile {
+  id           String   @id @default(uuid())
+  userId       String
+  label        String?
+  contactName  String
+  phone        String
+  deliveryType String // 'livraison' or 'emporter'
+  road         String
+  houseNumber  String?
+  postcode     String
+  city         String
+  state        String?
+  country      String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @default(now()) @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@unique([id, userId])
+  @@map("user_delivery_profiles")
+}
+
+model Order {
+  id            String   @id @default(uuid())
+  cartId        String
+  userId        String? // Link to user if authenticated
+  customerName  String
+  customerPhone String
+  orderType     String // 'livraison' or 'emporter'
+  address       String?
+  requestedFor  String // Time slot
+  status        String   @default("pending")
+  price         Float?
+  orderData     String // JSON string
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @default(now()) @updatedAt
+
+  // Relations
+  cart Cart  @relation(fields: [cartId], references: [id])
+  user User? @relation("UserOrders", fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([cartId])
+  @@index([userId])
+  @@index([createdAt])
+  @@map("orders")
+}
+
+model GroupOrder {
+  id        String   @id @default(uuid())
+  name      String?
+  leaderId  String // User ID of the group leader
+  shareCode String?  @unique // Short, memorable code for sharing (e.g., "FRIDAY123")
+  startDate DateTime
+  endDate   DateTime
+  status    String   @default("open") // open, closed, submitted, completed
+  sessionId String? // Session ID for order verification (links to Cart)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  // Relations
+  leader     User        @relation("GroupOrderLeader", fields: [leaderId], references: [id], onDelete: Cascade)
+  userOrders UserOrder[]
+  session    Cart?       @relation("GroupOrderSession", fields: [sessionId], references: [id], onDelete: SetNull)
+
+  @@index([leaderId])
+  @@index([startDate, endDate])
+  @@index([status])
+  @@index([shareCode])
+  @@index([sessionId])
+  @@map("group_orders")
+}
+
+model UserOrder {
+  // Identity
+  id           String @id @default(uuid())
+  groupOrderId String
+
+  // User
+  userId String // User ID instead of username
+
+  // Metadata
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  // Order Data
+  // JSON structure: { tacos: Taco[], extras: Extra[], drinks: Drink[], desserts: Dessert[] }
+  // Each taco includes: id, size, meats[], sauces[], garnitures[], note?, quantity, price, tacoIdHex?
+  // Using Prisma Json type for automatic parsing/serialization and better type safety
+  items Json
+
+  // Denormalized: JSON array of SHA-256 taco IDs in hex format ["hash1", "hash2", ...]
+  // Computed automatically when items are created/updated. Used for efficient queries:
+  // - Find orders containing a specific taco recipe
+  // - Group orders by taco ID
+  // - Query using JSON functions: json_each() or json_array_length()
+  // Using Prisma Json type for automatic array handling
+  tacoIdsHex Json?
+
+  // Relations
+  groupOrder GroupOrder @relation(fields: [groupOrderId], references: [id], onDelete: Cascade)
+  user       User       @relation("UserUserOrders", fields: [userId], references: [id], onDelete: Cascade)
+
+  // Indexes optimized for common query patterns
+  // Get all orders in a group
+  // Get all orders for a user
+  // Get user's order in specific group
+  // User history sorted by date (common query)
+  @@index([groupOrderId])
+  @@index([userId])
+  @@index([groupOrderId, userId])
+  @@index([userId, createdAt])
+  @@map("user_orders")
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @default(now()) @updatedAt
+
+  @@map("verification")
+}
+
+model Passkey {
+  id           String    @id
+  name         String?
+  publicKey    String
+  userId       String
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  credentialID String
+  counter      Int
+  deviceType   String
+  backedUp     Boolean
+  transports   String?
+  createdAt    DateTime?
+  aaguid       String?
+
+  @@map("passkey")
+}

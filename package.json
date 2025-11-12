@@ -1,0 +1,21 @@
+{
+  "name": "tacocrew",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "packageManager": "pnpm@10.0.0",
+  "devDependencies": {
+    "@biomejs/biome": "2.3.4",
+    "esbuild": "^0.25.12",
+    "turbo": "^2.5.5"
+  },
+  "scripts": {
+    "dev": "turbo run dev --parallel",
+    "dev:api": "pnpm --filter @tacobot/api dev",
+    "dev:web": "pnpm --filter @tacobot/web dev",
+    "build": "pnpm --filter @tacobot/api build && pnpm --filter @tacobot/web build",
+    "db:setup": "pnpm --filter @tacobot/api db:setup",
+    "test": "turbo run test",
+    "check": "pnpm --filter @tacobot/api check"
+  }
+}

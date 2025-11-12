@@ -1,0 +1,33 @@
+{
+  "name": "@tacobot/gigatacos-client",
+  "version": "1.0.0",
+  "description": "Client integration for www.gt-lausanne.ch backend API",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "esbuild src/index.ts --bundle --platform=node --target=esnext --format=esm --outfile=dist/index.js --packages=external && tsc",
+    "check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "axios": "^1.13.2",
+    "cheerio": "^1.1.2",
+    "uuid": "^13.0.0"
+  },
+  "devDependencies": {
+    "@types/cheerio": "^0.22.0",
+    "@types/node": "^20.0.0",
+    "@types/uuid": "^9.0.0",
+    "esbuild": "^0.25.12",
+    "tsx": "^4.20.6",
+    "typescript": "^5.0.0",
+    "vitest": "^4.0.7"
+  }
+}

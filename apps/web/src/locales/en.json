@@ -1,0 +1,769 @@
+{
+  "common": {
+    "signIn": "Sign in",
+    "signOut": "Sign out",
+    "signingIn": "Signing in…",
+    "username": "Username",
+    "loggedInAs": "Logged in as",
+    "open": "Open",
+    "loading": "Loading",
+    "error": "Error",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "submit": "Submit",
+    "back": "Back",
+    "outOfStock": "Out of stock",
+    "labels": {
+      "dropName": "Order name",
+      "timeWindow": "Time window",
+      "opens": "Opens",
+      "closes": "Closes (deadline)",
+      "quantity": "Quantity",
+      "meats": "Meats",
+      "sauces": "Sauces",
+      "garnishes": "Garnishes",
+      "extras": "Extras",
+      "drinks": "Drinks",
+      "desserts": "Desserts"
+    },
+    "placeholders": {
+      "dropName": "Friday Lunch",
+      "specialInstructions": "e.g., No onions, extra spicy, extra sauce on the side..."
+    },
+    "status": {
+      "open": "Open",
+      "pending": "Pending",
+      "submitted": "Submitted",
+      "completed": "Completed",
+      "closed": "Closed",
+      "draft": "Draft",
+      "active": "Active"
+    },
+    "currency": {
+      "chf": "CHF"
+    },
+    "dateShortcuts": {
+      "quickSelect": "Quick select",
+      "today": "Today",
+      "tomorrow": "Tomorrow",
+      "nextWeek": "Next week"
+    }
+  },
+  "navigation": {
+    "dashboard": "Dashboard",
+    "orders": "Orders",
+    "stock": "Stock",
+    "profile": "Profile"
+  },
+  "login": {
+    "title": "TacoCrew",
+    "subtitle": "Sign in to join group orders or create your own. No account yet? Just enter your name!",
+    "usernamePlaceholder": "chef-del-taco",
+    "usernameRequired": "Username is required",
+    "unexpectedError": "Unexpected error. Please try again.",
+    "signUp": {
+      "title": "Sign Up",
+      "subtitle": "Create your account to get started"
+    },
+    "signIn": "Sign In",
+    "signUpButton": "Sign Up",
+    "signInWithPasskey": "Sign in with Passkey",
+    "orUsePassword": "Or use password",
+    "name": {
+      "label": "Name",
+      "placeholder": "Your name"
+    },
+    "email": {
+      "label": "Email",
+      "placeholder": "email@example.com"
+    },
+    "password": {
+      "label": "Password",
+      "placeholder": "••••••••"
+    },
+    "pleaseWait": "Please wait...",
+    "signInFailed": "Sign in failed",
+    "signUpFailed": "Sign up failed",
+    "passkeySignInFailed": "Passkey sign in failed",
+    "passkeyAuthFailed": "Passkey authentication failed"
+  },
+  "account": {
+    "title": "Account Settings",
+    "subtitle": "Manage your account and passkeys",
+    "profile": {
+      "title": "Profile Information",
+      "description": "Your account details",
+      "name": "Name",
+      "email": "Email",
+      "verified": "Verified",
+      "unverified": "Unverified"
+    },
+    "passkeys": {
+      "title": "Passkeys",
+      "description": "Passwordless authentication using your device",
+      "addButton": "+ Add Passkey",
+      "registering": "Registering...",
+      "deviceNamePrefix": "Device",
+      "emptyState": {
+        "title": "No passkeys registered",
+        "description": "Add a passkey to enable passwordless sign-in using your device's biometrics or security key. You can register multiple passkeys for different devices."
+      },
+      "rename": "Rename",
+      "delete": "Delete",
+      "registered": "Registered",
+      "about": {
+        "title": "About Passkeys",
+        "description": "Passkeys allow you to sign in securely using your device's biometrics (fingerprint, face recognition) or a security key. They're more secure than passwords and can't be phished. You can register multiple passkeys for different devices."
+      },
+      "registerSuccess": "Passkey registered successfully!",
+      "deleteSuccess": "Passkey deleted successfully",
+      "updateSuccess": "Passkey name updated",
+      "registerFailed": "Failed to register passkey",
+      "deleteFailed": "Failed to delete passkey",
+      "updateFailed": "Failed to update passkey",
+      "deleteConfirm": "Are you sure you want to delete this passkey?",
+      "updateNameFailed": "Failed to update passkey name",
+      "unnamed": "Unnamed Passkey"
+    },
+    "nameUpdate": {
+      "success": "Name updated successfully",
+      "failed": "Failed to update name"
+    },
+    "loading": "Loading...",
+    "loadFailed": "Failed to load account data",
+    "edit": "Edit",
+    "saving": "Saving...",
+    "save": "Save",
+    "cancel": "Cancel"
+  },
+  "dashboard": {
+    "kitchenPulse": "Your Orders",
+    "hero": {
+      "title": "Welcome back! Ready for <StyledDay>{{day}}</StyledDay> tacos?",
+      "subtitle": "See your active group orders, check who's joining, and track upcoming deadlines. Everything you need for organizing team orders."
+    },
+    "metrics": {
+      "activeOrders": "Active orders",
+      "awaitingSubmission": "Ready to submit",
+      "ordersOnRecord": "Orders on record",
+      "open": "Open",
+      "drafts": "Drafts",
+      "nextDispatch": "Next dispatch {{time}}"
+    },
+    "recentGroupOrders": {
+      "title": "Recent group orders",
+      "description": "Your current and upcoming group orders. Share with your team to get everyone ordering.",
+      "manageAll": "Manage all",
+      "emptyState": "No group orders yet. Create your first Friday order and invite your team!",
+      "launchFirstCycle": "Launch first cycle",
+      "untitledOrder": "Untitled group order"
+    },
+    "latestSubmissions": {
+      "title": "Latest submissions",
+      "description": "Orders you've successfully placed with your team.",
+      "emptyState": "No order history yet.",
+      "requestedFor": "Requested for {{name}}",
+      "submitted": "Submitted {{date}}"
+    }
+  },
+  "root": {
+    "appSubtitle": "Order French tacos together with your team. Create group orders, invite colleagues, and place one big order.",
+    "tacobot": "TacoCrew",
+    "errors": {
+      "applicationError": "Application Error",
+      "unknownError": "Unknown Error",
+      "somethingWrong": "Something went wrong."
+    }
+  },
+  "errors": {
+    "csrf": {
+      "invalid": "CSRF token is invalid or expired. Please refresh the page."
+    },
+    "rateLimit": {
+      "exceeded": "Too many requests. Please wait a moment and try again."
+    },
+    "order": {
+      "duplicate": "This order already exists.",
+      "notFound": "Order not found."
+    },
+    "orders": {
+      "submit": {
+        "noUserOrders": "Cannot submit group order with no user orders. Please add at least one order before submitting.",
+        "invalidStatus": "Cannot submit group order. The order status is {{status}}.",
+        "expired": "Cannot submit group order. The order period has expired.",
+        "emptyUserOrder": "Cannot submit group order. One or more user orders are empty."
+      },
+      "modify": {
+        "invalidStatus": "Cannot modify user order. The group order status does not allow modifications."
+      }
+    },
+    "validation": {
+      "failed": "Validation failed. Please check your input and try again."
+    },
+    "stock": {
+      "outOfStock": "One or more items are out of stock. Please update your order."
+    },
+    "notFound": {
+      "generic": "{{resource}} was not found.",
+      "generic_id": "{{resource}} with id {{identifier}} was not found.",
+      "generic_tacoID": "{{resource}} with tacoID {{identifier}} was not found.",
+      "generic_shareCode": "{{resource}} with share code {{identifier}} was not found.",
+      "resource": "Resource"
+    },
+    "network": {
+      "failed": "Network request failed. Please check your connection and try again."
+    },
+    "session": {
+      "notFound": "Session not found. Please sign in again.",
+      "expired": "Your session has expired. Please sign in again."
+    },
+    "unknown": {
+      "generic": "An unexpected error occurred. Please try again."
+    },
+    "forbidden": {
+      "generic": "You don't have permission to perform this action."
+    },
+    "unauthorized": {
+      "generic": "You must be signed in to perform this action."
+    },
+    "auth": {
+      "passkey": {
+        "notFound": "Passkey not found. Please try again or use a different authentication method.",
+        "challengeNotFound": "Authentication challenge not found. Please refresh and try again.",
+        "registrationNotAllowed": "You are not allowed to register this passkey.",
+        "verificationFailed": "Failed to verify passkey registration. Please try again."
+      },
+      "invalidCredentials": "Invalid email or password. Please check your credentials and try again.",
+      "userNotFound": "User not found. Please check your email or sign up for a new account.",
+      "emailInUse": "This email is already in use. Please sign in or use a different email.",
+      "invalidToken": "Invalid or expired token. Please try again."
+    }
+  },
+  "orders": {
+    "common": {
+      "unnamedDrop": "Untitled order",
+      "randomNames": [
+        "{{day}} Lunch Order",
+        "Team Order {{date}}",
+        "{{day}} Group Order",
+        "Office Tacos {{date}}",
+        "{{day}} Team Lunch",
+        "Group Order {{date}}",
+        "{{day}} Taco Run",
+        "Team Lunch {{date}}",
+        "{{day}} Office Order",
+        "Lunch Order {{date}}",
+        "{{day}} Team Order",
+        "Office Order {{date}}",
+        "{{day}} Group Lunch",
+        "Team Tacos {{date}}",
+        "{{day}} Lunch Run"
+      ],
+      "labels": {
+        "shortId": "ID {{id}}"
+      },
+      "errors": {
+        "api": "We couldn't complete the request ({{message}})."
+      },
+      "cookies": {
+        "title": "Session Cookies",
+        "description": "Session cookies and details for order verification",
+        "loading": "Loading cookies...",
+        "error": "Failed to fetch cookies. Make sure the order has been submitted.",
+        "orderInfo": "Order Information",
+        "orderId": "Order ID",
+        "transaction": "Transaction",
+        "sessionId": "Session ID",
+        "cookies": "Cookies",
+        "csrfToken": "CSRF Token"
+      }
+    },
+    "list": {
+      "hero": {
+        "badge": "Team Ordering Made Easy",
+        "title": "Organize group orders for your team",
+        "subtitle": "Create a group order, share it with your colleagues, and everyone can add their tacos. When ready, place one big order for the whole team.",
+        "metrics": {
+          "activeCycles": "Active cycles",
+          "totalBatches": "Total batches",
+          "nextDispatch": "Next dispatch"
+        }
+      },
+      "queue": {
+        "title": "Your group orders",
+        "subtitle": "All the group orders you've created or joined.",
+        "scheduled_one": "{{count}} scheduled",
+        "scheduled_other": "{{count}} scheduled",
+        "empty": "No group orders yet. Create your first one and invite your team!",
+        "createdMeta": "Created by {{name}} • {{date}}",
+        "unknownLeader": "Unknown leader"
+      },
+      "form": {
+        "title": "Create a new group order",
+        "subtitle": "Set a name, choose when orders close, and share with your team. Everyone can add their tacos!",
+        "labels": {
+          "timeWindow": "Time window",
+          "opens": "Opens",
+          "closes": "Closes (deadline)",
+          "deadlineHint": "Orders must be submitted before this time"
+        },
+        "quickDeadlines": {
+          "morning": "10am",
+          "noon": "12pm",
+          "afternoon": "2pm",
+          "evening": "5pm"
+        },
+        "actions": {
+          "launch": "Create group order"
+        }
+      },
+      "errors": {
+        "datesRequired": "Start and end date are required.",
+        "invalidDates": "Invalid dates provided.",
+        "endBeforeStart": "End date must be after start date.",
+        "unexpected": "Unable to create group order."
+      }
+    },
+    "create": {
+      "navigation": {
+        "backToOrder": "Back to order"
+      },
+      "hero": {
+        "title": "Build your perfect taco",
+        "subtitle": "Choose your size, meats, sauces, and add extras. Make it exactly how you like it!"
+      },
+      "sizeSection": {
+        "title": "Choose your size",
+        "description": "Select the perfect size for your taco",
+        "limits": {
+          "meats_one": "{{count}} meat",
+          "meats_other": "{{count}} meats",
+          "sauces_one": "{{count}} sauce",
+          "sauces_other": "{{count}} sauces"
+        },
+        "limitSummary": "{{meats}} · {{sauces}}"
+      },
+      "customizeSection": {
+        "title": "Customize your taco",
+        "subtitle": "Select your meats, sauces, and garnishes",
+        "meatsLimit": "{{count}}/{{max}} total",
+        "meatTypesSelected_one": "{{count}} type",
+        "meatTypesSelected_other": "{{count}} types"
+      },
+      "extrasSection": {
+        "title": "Add extras",
+        "subtitle": "Complete your meal with sides and drinks"
+      },
+      "notes": {
+        "title": "Special instructions",
+        "subtitle": "Any special requests?"
+      },
+      "actions": {
+        "update": "Update order",
+        "save": "Save my order"
+      },
+      "summary": {
+        "title": "Order summary",
+        "subtitle": "Review your selections",
+        "tags": {
+          "meats_one": "{{count}} meat",
+          "meats_other": "{{count}} meats",
+          "sauces_one": "{{count}} sauce",
+          "sauces_other": "{{count}} sauces",
+          "garnishes_one": "{{count}} garnish",
+          "garnishes_other": "{{count}} garnishes",
+          "extras_one": "{{count}} extra",
+          "extras_other": "{{count}} extras",
+          "drinks_one": "{{count}} drink",
+          "drinks_other": "{{count}} drinks",
+          "desserts_one": "{{count}} dessert",
+          "desserts_other": "{{count}} desserts"
+        },
+        "specialInstructions": "Special instructions",
+        "emptyState": "Select a taco size to see your order summary",
+        "totalLabel": "Total",
+        "breakdown": {
+          "noTaco": "No taco",
+          "tacos_one": "{{count}} taco",
+          "tacos_other": "{{count}} tacos",
+          "extras_one": "{{count}} extra",
+          "extras_other": "{{count}} extras",
+          "drinks_one": "{{count}} drink",
+          "drinks_other": "{{count}} drinks",
+          "desserts_one": "{{count}} dessert",
+          "desserts_other": "{{count}} desserts"
+        }
+      },
+      "progress": {
+        "size": {
+          "label": "Size",
+          "empty": "Select size"
+        },
+        "meats": {
+          "selectedWithMax_one": "{{count}} selected (max {{max}})",
+          "selectedWithMax_other": "{{count}} selected (max {{max}})",
+          "selected_one": "{{count}} selected",
+          "selected_other": "{{count}} selected",
+          "empty": "Add meats"
+        },
+        "sauces": {
+          "selectedWithMax_one": "{{count}} selected (max {{max}})",
+          "selectedWithMax_other": "{{count}} selected (max {{max}})",
+          "selected_one": "{{count}} selected",
+          "selected_other": "{{count}} selected",
+          "empty": "Add sauces"
+        },
+        "garnishes": {
+          "selected": "{{count}} selected",
+          "empty": "Add garnishes (optional)"
+        }
+      },
+      "validation": {
+        "missingMeat": "Select at least one meat.",
+        "missingSauce": "Select at least one sauce.",
+        "missingGarnish": "Select at least one garnish.",
+        "missingSelection": "Select at least a taco or some extras/drinks/desserts."
+      },
+      "previousTacos": {
+        "title": "Reuse a taco",
+        "description": "Add from your favorites or search by tacoID",
+        "openModal": "Browse your favorites",
+        "orderedTimes_one": "Ordered {{count}} time",
+        "orderedTimes_other": "Ordered {{count}} times",
+        "showing": "Showing {{count}} of {{total}}"
+      },
+      "hashSearch": {
+        "title": "Find taco by tacoID",
+        "description": "Enter a tacoID to reuse someone else's recipe",
+        "placeholder": "Enter tacoID (e.g., 3xK9mP2...)",
+        "errors": {
+          "empty": "Please enter a tacoID",
+          "notFound": "Taco not found. Please check the tacoID and try again."
+        }
+      },
+      "errors": {
+        "missingSelection": "Please select at least a taco or some extras/drinks/desserts.",
+        "missingFillings": "If selecting a taco, please select at least one meat and sauce.",
+        "garnishNotAvailable": "Garnishes are not available for this taco size.",
+        "unexpected": "Unexpected error occurred."
+      }
+    },
+    "detail": {
+      "hero": {
+        "badge": "Group Order",
+        "participants": {
+          "label": "Participants",
+          "count_one": "{{count}} order",
+          "count_other": "{{count}} orders"
+        },
+        "total": {
+          "label": "Total price",
+          "caption": "All orders"
+        },
+        "actions": {
+          "create": "Create new order",
+          "closedReasons": {
+            "open": "Order period expired",
+            "expired": "Order period expired",
+            "notStarted": "Order period not started yet",
+            "closed": "Order closed",
+            "submitted": "Order submitted",
+            "completed": "Order completed"
+          },
+          "submit": "Place Order",
+          "closeOrder": "Close order",
+          "reopenOrder": "Reopen order"
+        },
+        "leaderInfo": {
+          "label": "Group leader",
+          "unknown": "Unknown leader",
+          "you": "(you)"
+        },
+        "share": {
+          "title": "Share this order",
+          "description": "Invite your team to join this group order",
+          "copyLink": "Copy link",
+          "copyCode": "Copy code",
+          "codeLabel": "Join code",
+          "qrCode": "Scan to join",
+          "shareToSlack": "Share to Slack",
+          "linkCopied": "Link copied!",
+          "codeCopied": "Code copied!",
+          "inviteInstructions": "Share this link or code with your team to join this order."
+        }
+      },
+      "list": {
+        "title": "All orders",
+        "description": "View all orders in this group order",
+        "myOrderBadge": "MY ORDER",
+        "unknownUser": "Unknown",
+        "extrasOnly": "Extras only",
+        "itemCount_one": "{{count}} item",
+        "itemCount_other": "{{count}} items",
+        "emptyState": {
+          "title": "No order yet",
+          "description": {
+            "default": "Create your perfect taco to join this group order.",
+            "expired": "The order period has expired.",
+            "notStarted": "The order period has not started yet.",
+            "closed": "This order has been closed.",
+            "finalized": "This order has been finalized."
+          },
+          "cta": "Create my order"
+        },
+        "footer": {
+          "backToOrders": "← Back to orders",
+          "orderId": "Order ID:"
+        },
+        "tagCounts": {
+          "tacos_one": "{{count}} taco",
+          "tacos_other": "{{count}} tacos",
+          "extras_one": "{{count}} extra",
+          "extras_other": "{{count}} extras",
+          "drinks_one": "{{count}} drink",
+          "drinks_other": "{{count}} drinks",
+          "desserts_one": "{{count}} dessert",
+          "desserts_other": "{{count}} desserts"
+        }
+      },
+      "errors": {
+        "missingSelection": "Please select at least one meat, sauce, and garnish.",
+        "missingIdentifier": "Missing order identifier.",
+        "missingCustomerDetails": "All customer, delivery type, address, and requested time fields are required.",
+        "unexpected": "Unexpected error occurred."
+      }
+    },
+    "submit": {
+      "navigation": {
+        "back": "Back to order"
+      },
+      "hero": {
+        "title": "Place the order",
+        "description": "Ready to order? Review the details below and submit. This will finalize the order and send it to the restaurant.",
+        "participants": {
+          "label": "Participants",
+          "none": "No participants yet",
+          "count_one": "{{count}} participant in this order",
+          "count_other": "{{count}} participants in this order"
+        }
+      },
+      "form": {
+        "title": "Delivery information",
+        "description": "Where should we deliver this order? Fill in the details below.",
+        "fields": {
+          "customerName": "Customer name",
+          "customerPhone": "Phone",
+          "deliveryType": "Delivery type",
+          "street": "Street",
+          "houseNumber": "Number",
+          "postcode": "Postcode",
+          "city": "City",
+          "state": "State",
+          "country": "Country",
+          "requestedTime": "Requested time",
+          "requestedFor": "Requested time",
+          "requestedForPlaceholder": "Select a time",
+          "asSoonAsPossible": "As soon as possible",
+          "noTimeSlotsAvailable": "No time slots available for today",
+          "paymentMethod": "Payment method"
+        },
+        "deliveryTypes": {
+          "livraison": "Delivery",
+          "emporter": "Pickup"
+        },
+        "paymentMethods": {
+          "especes": "Cash",
+          "carte": "Card",
+          "twint": "TWINT"
+        },
+        "sections": {
+          "address": {
+            "title": "Delivery details",
+            "description": "Customer contact, delivery mode, and address."
+          },
+          "preferences": {
+            "title": "Timing & payment",
+            "description": "Pick the requested slot and how you'll pay."
+          }
+        },
+        "actions": {
+          "cancel": "Cancel",
+          "submit": "Place Order"
+        }
+      },
+      "saved": {
+        "title": "Saved delivery info",
+        "description": "Select a saved address or store these details for next time.",
+        "selectLabel": "Saved profiles",
+        "selectPlaceholder": "Manual entry",
+        "selectedLabel": "No profile selected",
+        "labelField": "Profile name",
+        "inputPlaceholder": "Profile label (e.g. HQ, Home)",
+        "unnamedProfile": "Unnamed",
+        "actions": {
+          "clear": "Clear selection",
+          "save": "Save as new",
+          "update": "Update profile",
+          "delete": "Delete"
+        },
+        "form": {
+          "addDescription": "Save a delivery address so you can reuse it next time.",
+          "editDescription": "Update the selected delivery details."
+        },
+        "messages": {
+          "saved": "Delivery info saved to your profile.",
+          "updated": "Delivery info updated.",
+          "deleted": "Delivery info deleted.",
+          "missingFields": "Fill in name, phone, street, postcode, and city before saving.",
+          "missingLabel": "Add a label to identify this delivery info.",
+          "selectProfile": "Select a saved delivery info first.",
+          "genericError": "Unable to save delivery info. Please try again."
+        },
+        "confirmDelete": "Delete this saved delivery info?"
+      },
+      "reminder": {
+        "title": "Final step",
+        "body": "Once you submit, the order will be finalized and sent. Participants won't be able to modify their orders anymore. Make sure everyone has added their tacos!"
+      },
+      "errors": {
+        "missingFields": "All customer, delivery type, address, and requested time fields are required.",
+        "unexpected": "Unexpected error occurred."
+      }
+    }
+  },
+  "languageSwitcher": {
+    "languages": {
+      "en": {
+        "label": "English",
+        "short": "EN",
+        "name": "English"
+      },
+      "fr": {
+        "label": "Français",
+        "short": "FR",
+        "name": "French"
+      }
+    },
+    "ariaLabel": "Switch to {{language}}"
+  },
+  "profile": {
+    "badge": "Your Profile",
+    "subtitle": "Your account information and order history.",
+    "delivery": {
+      "manageButton": "Manage delivery info",
+      "title": "Saved delivery details",
+      "subtitle": "Store office addresses or frequent drop-off points you can reuse during submission.",
+      "helper": "Create as many profiles as you need, then pick the right one when you finalize a group order.",
+      "stats": {
+        "label": "Saved profiles",
+        "count_one": "{{count}} profile ready to use",
+        "count_other": "{{count}} profiles ready to use",
+        "empty": "No saved profiles yet — add one to speed up checkout."
+      },
+      "formCard": {
+        "title": "Manage delivery profiles",
+        "description": "Add, edit, or remove saved delivery info for quick submissions."
+      }
+    },
+    "stats": {
+      "userId": "User ID",
+      "ordersLogged": "Orders logged"
+    },
+    "accountCard": {
+      "title": "Account details",
+      "description": "Your account details and preferences."
+    },
+    "fields": {
+      "username": "Username",
+      "userId": "User ID",
+      "slackId": "Slack ID",
+      "created": "Created",
+      "updated": "Updated"
+    },
+    "previousOrders": {
+      "title": "My Tacos",
+      "count_one": "{{count}} unique taco",
+      "count_other": "{{count}} unique tacos",
+      "description": "All your tacos grouped by recipe. See which ones you order most often.",
+      "empty": "No tacos yet. Create your first order!",
+      "orderedTimes": "Ordered {{count}} times",
+      "recentOrder": "From: {{name}}",
+      "lastOrdered": "Last ordered {{date}}",
+      "noTacos": "No tacos in this order"
+    }
+  },
+  "stock": {
+    "badge": "Menu",
+    "title": "What's available",
+    "subtitle": "Browse available ingredients and items for your orders.",
+    "live": "Synced live with vendors",
+    "overview": {
+      "title": "Live stock overview",
+      "description": "Switch categories to see what's available for your orders.",
+      "ariaLabel": "Stock categories"
+    },
+    "sections": {
+      "meats": {
+        "label": "Meats",
+        "blurb": "Core proteins and signature blends."
+      },
+      "sauces": {
+        "label": "Sauces",
+        "blurb": "Heat, sweetness, and everything in between."
+      },
+      "garnishes": {
+        "label": "Garnishes",
+        "blurb": "Fresh toppings to finish every order."
+      },
+      "extras": {
+        "label": "Extras",
+        "blurb": "Add-ons that boost flavour and crunch."
+      },
+      "drinks": {
+        "label": "Drinks",
+        "blurb": "Keep refreshments chilled and ready."
+      },
+      "desserts": {
+        "label": "Desserts",
+        "blurb": "Sweet endings for every feast."
+      }
+    },
+    "stats": {
+      "categories": "Categories",
+      "ingredients": "Ingredients",
+      "lowStock": "Low stock",
+      "counts": {
+        "inStock_one": "{{count}} in stock",
+        "inStock_other": "{{count}} in stock",
+        "total_one": "{{count}} total",
+        "total_other": "{{count}} total"
+      }
+    },
+    "list": {
+      "empty": "No items available yet.",
+      "noItems": "No items found for this category.",
+      "noPrice": "No price",
+      "copyIdTooltip": "Copy ID to clipboard",
+      "copyId": "Copy ID",
+      "availability": {
+        "available": "Available",
+        "outOfStock": "Out of stock"
+      }
+    },
+    "join": {
+      "title": "Join our group order!",
+      "subtitle": "Add your tacos to this group order",
+      "deadline": "Order closes {{time}}",
+      "participants": "{{count}} people have joined",
+      "participants_one": "{{count}} person has joined",
+      "joinButton": "Add my order",
+      "signInPrompt": "Sign in to add your order",
+      "viewOrders": "View all orders",
+      "expired": "This order has closed",
+      "notStarted": "This order hasn't started yet",
+      "closed": "This order is closed"
+    }
+  }
+}
