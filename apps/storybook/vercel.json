@@ -1,0 +1,7 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "cd ../.. && pnpm --filter @tacobot/ui-kit build && pnpm --filter @tacobot/storybook build",
+  "installCommand": "cd ../.. && pnpm install",
+  "outputDirectory": "storybook-static"
+}
+
