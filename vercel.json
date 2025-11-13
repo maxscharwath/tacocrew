@@ -1,6 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "pnpm --filter @tacobot/web build",
+  "buildCommand": "pnpm --filter @tacobot/ui-kit build && pnpm --filter @tacobot/web build",
   "installCommand": "pnpm install",
   "framework": "vite",
   "outputDirectory": "apps/web/dist"

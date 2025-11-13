@@ -15,7 +15,7 @@
     "dev:api": "pnpm --filter @tacobot/api dev",
     "dev:web": "pnpm --filter @tacobot/web dev",
     "dev:storybook": "pnpm --filter @tacobot/storybook dev",
-    "build": "pnpm --filter @tacobot/api build && pnpm --filter @tacobot/web build",
+    "build": "pnpm --filter @tacobot/ui-kit build && pnpm --filter @tacobot/api build && pnpm --filter @tacobot/web build",
     "build:ui-kit": "pnpm --filter @tacobot/ui-kit build",
     "db:setup": "pnpm --filter @tacobot/api db:setup",
     "test": "turbo run test",
