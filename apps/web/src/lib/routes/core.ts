@@ -24,6 +24,7 @@ export interface RouteDef<
   action?: (args: ActionFunctionArgs) => unknown | Promise<unknown>;
   element?: React.ReactNode;
   errorElement?: React.ReactNode;
+  hydrateFallback?: React.ReactNode;
   children?: TChildren;
 }
 export type AnyRouteDef = RouteDef<
@@ -280,6 +281,7 @@ const toRouteObject = (def: AnyRouteDef): RouteObject => {
     action: def.action,
     element: def.element,
     errorElement: def.errorElement,
+    hydrateFallback: def.hydrateFallback,
   };
   if (def.children) node.children = Object.values(def.children).map(toRouteObject);
   return node;
