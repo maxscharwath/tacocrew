@@ -274,17 +274,19 @@ export function createRouteBuilders<const T extends Record<string, AnyRouteDef>>
 }
 
 const toRouteObject = (def: AnyRouteDef): RouteObject => {
-  const node: RouteObject = {
+  const node: RouteObject & { hydrateFallback?: React.ReactNode } = {
     index: def.index,
     path: def.index ? undefined : def.path,
     loader: def.loader,
     action: def.action,
     element: def.element,
     errorElement: def.errorElement,
-    hydrateFallback: def.hydrateFallback,
   };
+  if (def.hydrateFallback) {
+    (node as RouteObject & { hydrateFallback: React.ReactNode }).hydrateFallback = def.hydrateFallback;
+  }
   if (def.children) node.children = Object.values(def.children).map(toRouteObject);
-  return node;
+  return node as RouteObject;
 };
 
 export function buildRouteObjects<const T extends Record<string, AnyRouteDef>>(defs: T) {
