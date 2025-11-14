@@ -1,4 +1,4 @@
-import { AlarmClock } from '@untitledui/icons';
+import { Clock } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Label, Select } from '@/components/ui';
 
@@ -44,7 +44,7 @@ export function TimeSlotSelector({
       </div>
       <div className="relative">
         <div className="-translate-y-1/2 pointer-events-none absolute top-1/2 left-3 z-10">
-          <AlarmClock size={18} className="text-slate-500" />
+          <Clock size={18} className="text-slate-500" />
         </div>
         <Select
           id="requestedFor"

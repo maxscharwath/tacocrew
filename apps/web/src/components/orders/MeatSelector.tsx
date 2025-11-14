@@ -1,6 +1,6 @@
-import { Minus, Plus } from '@untitledui/icons';
+import { Ham, Minus, Plus } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { Badge, Card, CardContent, Label } from '@/components/ui';
+import { Badge, Card, CardContent, CardHeader, CardTitle } from '@/components/ui';
 import type { StockResponse } from '@/lib/api/types';
 import { cn } from '@/lib/utils';
 import type { MeatSelection, TacoSizeItem } from '@/types/orders';
@@ -28,34 +28,24 @@ export function MeatSelector({
 
   return (
     <Card className="border-white/10 bg-slate-800/30">
-      <CardContent className="space-y-6 p-6">
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Plus size={18} className="text-brand-400" />
-              <Label className="text-sm normal-case tracking-normal">
-                {t('common.labels.meats')}
-                {size && <span className="ml-1 text-rose-400">*</span>}
-              </Label>
-            </div>
-            <div className="flex items-center gap-3">
-              {selectedTacoSize?.maxMeats !== undefined && (
-                <span className="text-slate-400 text-xs">
-                  {t('orders.create.customizeSection.meatsLimit', {
-                    count: meats.reduce((sum, m) => sum + m.quantity, 0),
-                    max: selectedTacoSize.maxMeats,
-                  })}
-                </span>
-              )}
-              {meats.some((m) => m.quantity > 0) && (
-                <Badge tone="brand" className="text-xs">
-                  {t('orders.create.customizeSection.meatTypesSelected', {
-                    count: meats.filter((m) => m.quantity > 0).length,
-                  })}
-                </Badge>
-              )}
-            </div>
+      <CardHeader className="gap-2">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Ham size={18} className="text-brand-400" />
+            <CardTitle className="text-sm text-white normal-case tracking-normal">
+              {t('common.labels.meats')}
+              {size && <span className="ml-1 text-rose-400">*</span>}
+            </CardTitle>
           </div>
+          {selectedTacoSize?.maxMeats !== undefined && (
+            <Badge tone="brand" className="text-xs">
+              {meats.reduce((sum, m) => sum + m.quantity, 0)}/{selectedTacoSize.maxMeats}
+            </Badge>
+          )}
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-4">
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {stock.meats.map((item) => {
               const existing = meats.find((m) => m.id === item.id);
@@ -166,12 +156,12 @@ export function MeatSelector({
               );
             })}
           </div>
+          {meats
+            .filter((m) => m.quantity > 0)
+            .map((meat) => (
+              <input key={meat.id} type="hidden" name="meats" value={meat.id} />
+            ))}
         </div>
-        {meats
-          .filter((m) => m.quantity > 0)
-          .map((meat) => (
-            <input key={meat.id} type="hidden" name="meats" value={meat.id} />
-          ))}
       </CardContent>
     </Card>
   );

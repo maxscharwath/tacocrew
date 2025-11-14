@@ -283,7 +283,8 @@ const toRouteObject = (def: AnyRouteDef): RouteObject => {
     errorElement: def.errorElement,
   };
   if (def.hydrateFallback) {
-    (node as RouteObject & { hydrateFallback: React.ReactNode }).hydrateFallback = def.hydrateFallback;
+    (node as RouteObject & { hydrateFallback: React.ReactNode }).hydrateFallback =
+      def.hydrateFallback;
   }
   if (def.children) node.children = Object.values(def.children).map(toRouteObject);
   return node as RouteObject;

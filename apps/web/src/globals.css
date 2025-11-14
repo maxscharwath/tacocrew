@@ -59,3 +59,40 @@ input[type="number"] {
 input[type="search"]::-webkit-search-cancel-button {
     -webkit-appearance: none;
 }
+
+/* Skeleton shimmer animation - smooth and visible */
+@keyframes shimmer {
+    0% {
+        transform: translateX(-100%) skewX(-20deg);
+        opacity: 0;
+    }
+    50% {
+        opacity: 1;
+    }
+    100% {
+        transform: translateX(300%) skewX(-20deg);
+        opacity: 0;
+    }
+}
+
+/* Skeleton pulse animation - subtle opacity change */
+@keyframes skeleton-pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.7;
+    }
+}
+
+/* Skeleton fade-in animation for staggered items */
+@keyframes skeleton-fade-in {
+    0% {
+        opacity: 0;
+        transform: translateY(8px) scale(0.98);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}

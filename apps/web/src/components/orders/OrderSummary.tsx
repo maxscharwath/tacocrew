@@ -1,6 +1,14 @@
-import { ShoppingBag01 } from '@untitledui/icons';
+import { ShoppingBag } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui';
+import {
+  Avatar,
+  Button,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui';
 import type { StockResponse } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import type { MeatSelection, PriceBreakdownItem, ProgressStep, TacoSizeItem } from '@/types/orders';
@@ -63,12 +71,12 @@ export function OrderSummary({
   const { t } = useTranslation();
 
   return (
-    <Card className="flex h-full max-h-[calc(100vh-4rem)] flex-col border-brand-400/30 bg-linear-to-br from-brand-500/10 via-slate-900/80 to-slate-950/90 p-6 shadow-[0_30px_90px_rgba(8,47,73,0.35)]">
-      <CardHeader className="gap-3 border-white/10 border-b pb-4">
+    <Card className="flex h-full max-h-[calc(100vh-4rem)] flex-col border-brand-400/30 bg-linear-to-br from-brand-500/10 via-slate-900/80 to-slate-950/90 shadow-[0_30px_90px_rgba(8,47,73,0.35)]">
+      <CardHeader className="gap-3 border-white/10 border-b">
         <div className="flex items-center gap-3">
-          <div className="grid h-10 w-10 place-items-center rounded-xl bg-linear-to-br from-brand-400 via-brand-500 to-sky-500">
-            <ShoppingBag01 size={20} className="text-white" />
-          </div>
+          <Avatar color="brand" size="md">
+            <ShoppingBag />
+          </Avatar>
           <div>
             <CardTitle className="text-white">{t('orders.create.summary.title')}</CardTitle>
             <CardDescription className="mt-0.5">
@@ -77,9 +85,13 @@ export function OrderSummary({
           </div>
         </div>
       </CardHeader>
-      <CardContent className="flex min-h-0 flex-1 flex-col overflow-hidden pt-4">
+      <CardContent className="flex min-h-0 flex-1 flex-col overflow-hidden">
         {/* Progress Stepper (only show if taco is selected) */}
-        {progressSteps.length > 0 && <ProgressStepper steps={progressSteps} />}
+        {progressSteps.length > 0 && (
+          <div className="mt-6">
+            <ProgressStepper steps={progressSteps} />
+          </div>
+        )}
         {/* Scrollable content area */}
         <div className="-mr-2 max-h-full min-h-0 flex-1 space-y-4 overflow-y-auto pr-2">
           {hasTaco || hasOtherItems ? (
@@ -159,7 +171,7 @@ export function OrderSummary({
               )}
             </div>
           ) : (
-            <div className="rounded-xl border border-white/15 border-dashed bg-slate-900/30 p-8 text-center">
+            <div className="mt-4 rounded-xl border border-white/15 border-dashed bg-slate-900/30 p-8 text-center">
               <p className="text-slate-400 text-sm">{t('orders.create.summary.emptyState')}</p>
             </div>
           )}

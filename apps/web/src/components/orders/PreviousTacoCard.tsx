@@ -1,4 +1,4 @@
-import { Clock } from '@untitledui/icons';
+import { Clock } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Badge } from '@/components/ui';
 import { useDateFormat } from '@/hooks/useDateFormat';

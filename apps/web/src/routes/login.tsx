@@ -1,16 +1,66 @@
-import { Lock01 } from '@untitledui/icons';
+import { Lock } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { type LoaderFunctionArgs, redirect, useNavigate } from 'react-router';
-import { Alert, Button, Card, Divider, Input, Label, SegmentedControl } from '@/components/ui';
+import { type LoaderFunctionArgs, redirect, useLocation, useNavigate } from 'react-router';
+import {
+  Alert,
+  Avatar,
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Divider,
+  Input,
+  Label,
+  SegmentedControl,
+} from '@/components/ui';
 import { LanguageSwitcher } from '../components/language-switcher';
+import { UserApi } from '../lib/api';
+import { ApiError } from '../lib/api/http';
 import { authClient } from '../lib/auth-client';
+import { routes } from '../lib/routes';
 
-export async function loginLoader(_: LoaderFunctionArgs) {
+export async function signinLoader(_: LoaderFunctionArgs) {
   // Check if user is already signed in with Better Auth
+  // Only redirect if we have a valid session - don't redirect if session is invalid
   const session = await authClient.getSession();
-  if (session?.data) {
-    throw redirect('/');
+  if (session?.data?.user) {
+    // Verify the session is actually valid by checking the API
+    try {
+      await UserApi.getProfile();
+      // If we get here, session is valid, redirect to home
+      throw redirect('/');
+    } catch (error) {
+      // If API returns 401, session is invalid, stay on login page
+      if (error instanceof ApiError && error.status === 401) {
+        return null;
+      }
+      // For other errors, also stay on login page
+      return null;
+    }
+  }
+  return null;
+}
+
+export async function signupLoader(_: LoaderFunctionArgs) {
+  // Check if user is already signed in with Better Auth
+  // Only redirect if we have a valid session - don't redirect if session is invalid
+  const session = await authClient.getSession();
+  if (session?.data?.user) {
+    // Verify the session is actually valid by checking the API
+    try {
+      await UserApi.getProfile();
+      // If we get here, session is valid, redirect to home
+      throw redirect('/');
+    } catch (error) {
+      // If API returns 401, session is invalid, stay on signup page
+      if (error instanceof ApiError && error.status === 401) {
+        return null;
+      }
+      // For other errors, also stay on signup page
+      return null;
+    }
   }
   return null;
 }
@@ -18,9 +68,10 @@ export async function loginLoader(_: LoaderFunctionArgs) {
 export function LoginRoute() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const location = useLocation();
+  const isSignUp = location.pathname === '/signup';
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [mode, setMode] = useState<'signin' | 'signup'>('signin');
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -42,7 +93,7 @@ export function LoginRoute() {
     setError(null);
 
     try {
-      if (mode === 'signup') {
+      if (isSignUp) {
         const result = await authClient.signUp.email({
           email: formData.email,
           password: formData.password,
@@ -181,107 +232,113 @@ export function LoginRoute() {
       {/* Login card */}
       <div className="relative flex min-h-screen items-center justify-center px-6 py-12">
         <div className="w-full max-w-md">
-          <Card className="relative overflow-hidden border-white/10 bg-slate-900/60 p-8 shadow-[0_40px_120px_rgba(8,47,73,0.35)] backdrop-blur">
-            {/* Brand header */}
-            <header className="mb-8 text-center">
-              <div className="mx-auto mb-6 grid h-16 w-16 place-items-center rounded-2xl bg-linear-to-br from-brand-400 via-brand-500 to-sky-500 text-3xl shadow-[0_20px_50px_rgba(99,102,241,0.4)]">
-                🌮
+          <Card className="relative overflow-hidden border-white/10 bg-slate-900/60 shadow-[0_40px_120px_rgba(8,47,73,0.35)] backdrop-blur">
+            <CardHeader className="text-center">
+              <div className="mx-auto mb-4">
+                <Avatar color="brandHero" size="xl" variant="elevated">
+                  <span className="text-3xl">🌮</span>
+                </Avatar>
               </div>
-              <h1 className="font-semibold text-3xl text-white tracking-tight">
-                {mode === 'signin' ? t('login.title') : t('login.signUp.title')}
-              </h1>
+              <CardTitle className="text-3xl">
+                {isSignUp ? t('login.signUp.title') : t('login.title')}
+              </CardTitle>
               <p className="mt-2 text-slate-300 text-sm">
-                {mode === 'signin' ? t('login.subtitle') : t('login.signUp.subtitle')}
+                {isSignUp ? t('login.signUp.subtitle') : t('login.subtitle')}
               </p>
-            </header>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Mode toggle */}
+              <SegmentedControl
+                value={isSignUp ? 'signup' : 'signin'}
+                onValueChange={(nextMode) => {
+                  setError(null);
+                  if (nextMode === 'signup') {
+                    navigate(routes.signup());
+                  } else {
+                    navigate(routes.signin());
+                  }
+                }}
+                options={[
+                  { value: 'signin', label: t('login.signIn') },
+                  { value: 'signup', label: t('login.signUpButton') },
+                ]}
+              />
 
-            {/* Mode toggle */}
-            <SegmentedControl
-              className="mb-6"
-              value={mode}
-              onValueChange={(nextMode) => {
-                setMode(nextMode);
-                setError(null);
-              }}
-              options={[
-                { value: 'signin', label: t('login.signIn') },
-                { value: 'signup', label: t('login.signUpButton') },
-              ]}
-            />
+              {/* Passkey Sign In Button (only for sign in mode) */}
+              {!isSignUp && (
+                <>
+                  <Button
+                    type="button"
+                    onClick={handlePasskeySignIn}
+                    disabled={isLoading}
+                    variant="secondary"
+                    fullWidth
+                  >
+                    <Lock size={18} />
+                    {t('login.signInWithPasskey')}
+                  </Button>
 
-            {/* Passkey Sign In Button (only for sign in mode) */}
-            {mode === 'signin' && (
-              <>
-                <Button
-                  type="button"
-                  onClick={handlePasskeySignIn}
-                  disabled={isLoading}
-                  variant="secondary"
-                  fullWidth
-                  className="mb-6"
-                >
-                  <Lock01 size={18} />
-                  {t('login.signInWithPasskey')}
-                </Button>
-
-                <Divider className="mb-6" label={t('login.orUsePassword')} />
-              </>
-            )}
-
-            {/* Email/Password form */}
-            <form onSubmit={handleEmailPasswordSubmit} className="space-y-4">
-              {mode === 'signup' && (
-                <div className="space-y-2">
-                  <Label htmlFor="name">{t('login.name.label')}</Label>
-                  <Input
-                    id="name"
-                    type="text"
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    placeholder={t('login.name.placeholder')}
-                  />
-                </div>
+                  <Divider label={t('login.orUsePassword')} />
+                </>
               )}
 
-              <div className="space-y-2">
-                <Label htmlFor="email">{t('login.email.label')}</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  placeholder={t('login.email.placeholder')}
-                  required
-                  disabled={isLoading}
-                  autoComplete="email"
-                />
-              </div>
+              {/* Email/Password form */}
+              <form onSubmit={handleEmailPasswordSubmit} className="space-y-4">
+                {isSignUp && (
+                  <div className="space-y-2">
+                    <Label htmlFor="name">{t('login.name.label')}</Label>
+                    <Input
+                      id="name"
+                      type="text"
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      placeholder={t('login.name.placeholder')}
+                      disabled={isLoading}
+                      autoComplete="name"
+                    />
+                  </div>
+                )}
 
-              <div className="space-y-2">
-                <Label htmlFor="password">{t('login.password.label')}</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  value={formData.password}
-                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  placeholder={t('login.password.placeholder')}
-                  required
-                  disabled={isLoading}
-                  minLength={8}
-                  autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
-                />
-              </div>
+                <div className="space-y-2">
+                  <Label htmlFor="email">{t('login.email.label')}</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    placeholder={t('login.email.placeholder')}
+                    required
+                    disabled={isLoading}
+                    autoComplete="email"
+                  />
+                </div>
 
-              {error && <Alert tone="error">{error}</Alert>}
+                <div className="space-y-2">
+                  <Label htmlFor="password">{t('login.password.label')}</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    value={formData.password}
+                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                    placeholder={t('login.password.placeholder')}
+                    required
+                    disabled={isLoading}
+                    minLength={8}
+                    autoComplete={isSignUp ? 'new-password' : 'current-password'}
+                  />
+                </div>
 
-              <Button type="submit" disabled={isLoading} variant="primary" size="lg" fullWidth>
-                {isLoading
-                  ? t('login.pleaseWait')
-                  : mode === 'signin'
-                    ? t('login.signIn')
-                    : t('login.signUpButton')}
-              </Button>
-            </form>
+                {error && <Alert tone="error">{error}</Alert>}
+
+                <Button type="submit" disabled={isLoading} variant="primary" size="lg" fullWidth>
+                  {isLoading
+                    ? t('login.pleaseWait')
+                    : isSignUp
+                      ? t('login.signUpButton')
+                      : t('login.signIn')}
+                </Button>
+              </form>
+            </CardContent>
           </Card>
         </div>
       </div>

@@ -1,8 +1,10 @@
-import { Activity, ArrowUpRight, TrendUp01, Users03 } from '@untitledui/icons';
+import { Activity, ArrowUpRight, TrendingUp, Users } from 'lucide-react';
+import { Suspense } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 import type { LoaderFunctionArgs } from 'react-router';
-import { Link, redirect, useLoaderData } from 'react-router';
+import { Await, Link, useLoaderData } from 'react-router';
 import { StatBubble } from '@/components/orders';
+import { DashboardSkeleton } from '@/components/skeletons';
 import {
   Badge,
   Card,
@@ -14,14 +16,15 @@ import {
 } from '@/components/ui';
 import { useDateFormat } from '@/hooks/useDateFormat';
 import { UserApi } from '../lib/api';
-import { ApiError } from '../lib/api/http';
 import { routes } from '../lib/routes';
 import { toDate } from '../lib/utils/date';
+import { defer } from '../lib/utils/defer';
+import { createDeferredWithAuth, requireSession } from '../lib/utils/loader-helpers';
 
 async function loadDashboard() {
   const [groupOrders, orderHistory] = await Promise.all([
-    UserApi.getGroupOrders(),
-    UserApi.getOrderHistory(),
+    createDeferredWithAuth(() => UserApi.getGroupOrders()),
+    createDeferredWithAuth(() => UserApi.getOrderHistory()),
   ]);
 
   const now = new Date();
@@ -43,22 +46,17 @@ async function loadDashboard() {
 type DashboardLoaderData = Awaited<ReturnType<typeof loadDashboard>>;
 
 export async function dashboardLoader(_: LoaderFunctionArgs) {
-  try {
-    const data = await loadDashboard();
-    return Response.json(data);
-  } catch (error) {
-    if (error instanceof ApiError && error.status === 401) {
-      throw redirect(routes.login());
-    }
-    throw error;
-  }
+  await requireSession();
+
+  return defer({
+    data: loadDashboard(),
+  });
 }
 
-export function DashboardRoute() {
+function DashboardContent({ data }: { data: DashboardLoaderData }) {
   const { t } = useTranslation();
   const { formatDateTime, formatDateTimeRange, formatDayName } = useDateFormat();
-  const { metrics, groupOrders, orderHistory } = useLoaderData() as DashboardLoaderData;
-
+  const { metrics, groupOrders, orderHistory } = data;
   const currentDay = formatDayName();
 
   return (
@@ -78,8 +76,8 @@ export function DashboardRoute() {
                 values={{ day: currentDay }}
                 components={{
                   StyledDay: (
-                    <span className="relative inline-block bg-gradient-to-r from-brand-200 via-purple-200 via-sky-200 to-brand-200 bg-clip-text font-black text-transparent uppercase tracking-wider drop-shadow-[0_0_20px_rgba(99,102,241,0.8)] [text-shadow:0_0_40px_rgba(139,92,246,0.9),0_0_80px_rgba(99,102,241,0.5)]">
-                      <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/70 to-transparent bg-clip-text text-transparent" />
+                    <span className="relative inline-block bg-linear-to-r from-brand-200 via-purple-200 via-sky-200 to-brand-200 bg-clip-text font-black text-transparent uppercase tracking-wider drop-shadow-[0_0_20px_rgba(99,102,241,0.8)] [text-shadow:0_0_40px_rgba(139,92,246,0.9),0_0_80px_rgba(99,102,241,0.5)]">
+                      <span className="absolute inset-0 bg-linear-to-r from-transparent via-white/70 to-transparent bg-clip-text text-transparent" />
                     </span>
                   ),
                 }}
@@ -98,13 +96,13 @@ export function DashboardRoute() {
               tone="brand"
             />
             <StatBubble
-              icon={TrendUp01}
+              icon={TrendingUp}
               label={t('dashboard.metrics.awaitingSubmission')}
               value={metrics.pendingOrders}
               tone="violet"
             />
             <StatBubble
-              icon={Users03}
+              icon={Users}
               label={t('dashboard.metrics.ordersOnRecord')}
               value={metrics.historyCount}
               tone="sunset"
@@ -114,7 +112,7 @@ export function DashboardRoute() {
       </section>
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)]">
-        <Card className="p-6 shadow-[0_30px_80px_rgba(8,47,73,0.28)]">
+        <Card className="shadow-[0_30px_80px_rgba(8,47,73,0.28)]">
           <CardHeader className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
             <div>
               <CardTitle className="text-white">{t('dashboard.recentGroupOrders.title')}</CardTitle>
@@ -163,9 +161,13 @@ export function DashboardRoute() {
                   </div>
 
                   <div className="flex items-center gap-4">
-                    <StatusBadge status={order.status} className="text-xs" />
+                    <StatusBadge
+                      status={order.status}
+                      label={t(`common.status.${order.status}`)}
+                      className="text-xs"
+                    />
                     <Link
-                      to={`/orders/${order.id}`}
+                      to={routes.root.orderDetail({ orderId: order.id })}
                       className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-brand-400/40 bg-brand-500/15 px-4 py-2 font-semibold text-brand-100 text-sm hover:border-brand-400/70"
                     >
                       {t('common.open')}
@@ -178,7 +180,7 @@ export function DashboardRoute() {
           </CardContent>
         </Card>
 
-        <Card className="p-6 shadow-[0_30px_80px_rgba(8,47,73,0.28)]">
+        <Card className="shadow-[0_30px_80px_rgba(8,47,73,0.28)]">
           <CardHeader className="flex flex-col gap-3">
             <CardTitle className="text-white">{t('dashboard.latestSubmissions.title')}</CardTitle>
             <CardDescription>{t('dashboard.latestSubmissions.description')}</CardDescription>
@@ -214,7 +216,11 @@ export function DashboardRoute() {
                     </p>
                   </div>
 
-                  <StatusBadge status={history.status} className="text-xs" />
+                  <StatusBadge
+                    status={history.status}
+                    label={t(`common.status.${history.status}`)}
+                    className="text-xs"
+                  />
                 </article>
               ))
             )}
@@ -222,5 +228,15 @@ export function DashboardRoute() {
         </Card>
       </div>
     </div>
+  );
+}
+
+export function DashboardRoute() {
+  const { data } = useLoaderData<{ data: Promise<DashboardLoaderData> }>();
+
+  return (
+    <Suspense fallback={<DashboardSkeleton />}>
+      <Await resolve={data}>{(resolvedData) => <DashboardContent data={resolvedData} />}</Await>
+    </Suspense>
   );
 }

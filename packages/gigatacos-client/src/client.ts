@@ -420,13 +420,48 @@ export class GigatacosClient {
               .join('; ')
           : undefined;
 
-      this.logger.debug('Fetching CSRF token from HTML page with existing cookies', {
+      this.logger.debug('Refreshing CSRF token - visiting homepage first to reinitialize session', {
         baseUrl: this.baseUrl,
         cookieCount: Object.keys(cookies).length,
       });
 
-      // Fetch the HTML page containing the CSRF token
-      const htmlResponse = await this.requestCsrfPage(cookieHeader);
+      // First, visit homepage to reinitialize PHP session properly (similar to createNewSession)
+      const homeResponse = await axios.get<string>(`${this.baseUrl}/`, {
+        headers: {
+          Accept: 'text/html',
+          ...(cookieHeader ? { Cookie: cookieHeader } : {}),
+        },
+        validateStatus: () => true,
+      });
+
+      // Extract and merge cookies from homepage response
+      const updatedCookies: Record<string, string> = { ...cookies };
+      const homeSetCookieHeaders = homeResponse.headers['set-cookie'];
+      if (homeSetCookieHeaders) {
+        for (const cookie of homeSetCookieHeaders) {
+          const [nameValue] = cookie.split(';');
+          const [name, value] = (nameValue || '').split('=');
+          if (name && value) {
+            updatedCookies[name.trim()] = value.trim();
+          }
+        }
+      }
+
+      // Build updated cookie header
+      const updatedCookieHeader =
+        Object.keys(updatedCookies).length > 0
+          ? Object.entries(updatedCookies)
+              .map(([key, value]) => `${key}=${value}`)
+              .join('; ')
+          : undefined;
+
+      this.logger.debug('Homepage visited, fetching CSRF token page', {
+        status: homeResponse.status,
+        cookieCount: Object.keys(updatedCookies).length,
+      });
+
+      // Fetch the HTML page containing the CSRF token with updated cookies
+      const htmlResponse = await this.requestCsrfPage(updatedCookieHeader);
 
       // Extract CSRF token from HTML
       const csrfToken = extractCsrfTokenFromHtml(htmlResponse.data, this.logger);
@@ -434,8 +469,7 @@ export class GigatacosClient {
         throw new CsrfError();
       }
 
-      // Extract cookies from response and merge with existing
-      const updatedCookies: Record<string, string> = { ...cookies };
+      // Extract cookies from CSRF page response and merge with existing
       const setCookieHeaders = htmlResponse.headers['set-cookie'];
       if (setCookieHeaders) {
         for (const cookie of setCookieHeaders) {

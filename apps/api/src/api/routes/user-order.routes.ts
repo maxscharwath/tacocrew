@@ -180,14 +180,8 @@ const SubmitGroupOrderRequestSchema = z.object({
     address: StructuredAddressSchema,
     requestedFor: TimeSlotSchema,
   }),
-  paymentMethod: PaymentMethodSchema.optional(),
-  dryRun: z
-    .boolean()
-    .optional()
-    .default(false)
-    .describe(
-      'If true, skips actual submission to RocknRoll.php but creates session and cart for testing'
-    ),
+  paymentMethod: PaymentMethodSchema,
+  dryRun: z.boolean().optional().default(false),
 });
 
 app.openapi(

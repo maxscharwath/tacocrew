@@ -1,4 +1,4 @@
-import { CheckCircle } from '@untitledui/icons';
+import { CheckCircle2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { ProgressStep } from '@/types/orders';
 
@@ -50,7 +50,7 @@ export function ProgressStepper({ steps }: ProgressStepperProps) {
                   )}
                 >
                   {isActive ? (
-                    <CheckCircle size={14} className="text-brand-300" />
+                    <CheckCircle2 size={14} className="text-brand-300" />
                   ) : (
                     <StepIcon
                       size={12}

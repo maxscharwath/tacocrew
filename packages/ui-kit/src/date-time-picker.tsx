@@ -1,4 +1,4 @@
-import { AlarmClock, Calendar } from '@untitledui/icons';
+import { AlarmClock, Calendar } from 'lucide-react';
 import { cn } from './utils';
 import { Input } from './input';
 import { Label } from './label';

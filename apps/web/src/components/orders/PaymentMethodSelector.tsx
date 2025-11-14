@@ -1,4 +1,4 @@
-import { BankNote03, CheckCircle, CreditCard01, Phone01 } from '@untitledui/icons';
+import { Banknote, CheckCircle2, CreditCard, Phone } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { PaymentMethod } from '@/lib/api/types';
 import { cn } from '@/lib/utils';
@@ -10,23 +10,21 @@ type PaymentMethodSelectorProps = {
   readonly required?: boolean;
 };
 
-const PAYMENT_METHOD_CONFIG: Record<
-  PaymentMethod,
-  { icon: typeof CreditCard01; labelKey: string }
-> = {
-  especes: {
-    icon: BankNote03,
-    labelKey: 'form.paymentMethods.especes',
-  },
-  carte: {
-    icon: CreditCard01,
-    labelKey: 'form.paymentMethods.carte',
-  },
-  twint: {
-    icon: Phone01,
-    labelKey: 'form.paymentMethods.twint',
-  },
-};
+const PAYMENT_METHOD_CONFIG: Record<PaymentMethod, { icon: typeof CreditCard; labelKey: string }> =
+  {
+    especes: {
+      icon: Banknote,
+      labelKey: 'form.paymentMethods.especes',
+    },
+    carte: {
+      icon: CreditCard,
+      labelKey: 'form.paymentMethods.carte',
+    },
+    twint: {
+      icon: Phone,
+      labelKey: 'form.paymentMethods.twint',
+    },
+  };
 
 export function PaymentMethodSelector({
   selected,
@@ -71,7 +69,7 @@ export function PaymentMethodSelector({
                 </div>
                 {isSelected && (
                   <div className="-top-1 -right-1 absolute grid h-6 w-6 place-items-center rounded-full border-2 border-slate-900 bg-brand-500">
-                    <CheckCircle size={14} className="text-white" />
+                    <CheckCircle2 size={14} className="text-white" />
                   </div>
                 )}
               </div>

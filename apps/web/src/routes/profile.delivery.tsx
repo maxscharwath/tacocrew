@@ -1,8 +1,16 @@
-import { ArrowLeft, Lock01, Truck01 } from '@untitledui/icons';
+import { ArrowLeft, Lock, Truck } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link, type LoaderFunctionArgs, useLoaderData } from 'react-router';
 import { DeliveryProfilesManager } from '@/components/profile/DeliveryProfilesManager';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui';
+import {
+  Badge,
+  Button,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui';
 import { UserApi } from '@/lib/api';
 import { routes } from '@/lib/routes';
 
@@ -19,19 +27,18 @@ export function ProfileDeliveryRoute() {
   const { t } = useTranslation();
   const tt = (key: string, options?: Record<string, unknown>) =>
     t(`profile.delivery.${key}`, options);
-  const { profiles } = useLoaderData() as LoaderData;
+  const { profiles } = useLoaderData<LoaderData>();
   const savedCountText =
     profiles.length === 0 ? tt('stats.empty') : tt('stats.count', { count: profiles.length });
 
   return (
     <div className="space-y-8">
       <div className="flex items-center gap-4">
-        <Link
-          to={routes.root.profile()}
-          className="inline-flex cursor-pointer items-center gap-2 font-medium text-slate-300 text-sm transition-colors hover:text-brand-100"
-        >
-          <ArrowLeft size={18} />
-          {t('profile.history.backToProfile', 'Back to profile')}
+        <Link to={routes.root.profile()}>
+          <Button variant="ghost" size="sm" className="gap-2">
+            <ArrowLeft size={18} />
+            {t('profile.history.backToProfile', 'Back to profile')}
+          </Button>
         </Link>
       </div>
 
@@ -41,7 +48,7 @@ export function ProfileDeliveryRoute() {
         <div className="relative space-y-4">
           <div className="flex items-center gap-3">
             <div className="grid h-12 w-12 place-items-center rounded-xl bg-linear-to-br from-amber-400 via-amber-500 to-rose-500">
-              <Lock01 size={24} className="text-white" />
+              <Lock size={24} className="text-white" />
             </div>
             <div>
               <h1 className="font-semibold text-2xl text-white tracking-tight">{tt('title')}</h1>
@@ -49,19 +56,27 @@ export function ProfileDeliveryRoute() {
             </div>
           </div>
 
-          <div className="rounded-xl border border-white/10 bg-slate-900/50 p-4">
-            <p className="text-slate-400 text-xs uppercase tracking-[0.2em]">{tt('stats.label')}</p>
-            <p className="mt-2 font-semibold text-2xl text-white">{profiles.length}</p>
-            <p className="mt-1 text-slate-400 text-xs">{savedCountText}</p>
-          </div>
+          <Card className="border-white/10 bg-slate-900/50">
+            <CardContent className="p-4">
+              <p className="text-slate-400 text-xs uppercase tracking-[0.2em]">
+                {tt('stats.label')}
+              </p>
+              <div className="mt-2 flex items-baseline gap-2">
+                <p className="font-semibold text-2xl text-white">{profiles.length}</p>
+                <Badge tone="neutral" pill>
+                  {savedCountText}
+                </Badge>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </section>
 
-      <Card className="p-6">
+      <Card>
         <CardHeader className="gap-2">
           <div className="flex items-center gap-3">
             <div className="grid h-10 w-10 place-items-center rounded-xl bg-linear-to-br from-amber-400 via-amber-500 to-rose-500">
-              <Truck01 size={20} className="text-white" />
+              <Truck size={20} className="text-white" />
             </div>
             <div>
               <CardTitle className="text-white">{tt('formCard.title')}</CardTitle>

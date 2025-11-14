@@ -1,8 +1,20 @@
-import { Edit01, InfoCircle, Key01, Laptop01, Lock01, Phone01 } from '@untitledui/icons';
+import { Check, Edit, Key, Laptop, Lock, Mail, Phone, RefreshCw, User, X } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { type LoaderFunctionArgs, redirect } from 'react-router';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui';
+import {
+  Alert,
+  Avatar,
+  Badge,
+  Button,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  EmptyState,
+  Input,
+} from '@/components/ui';
 import { authClient } from '@/lib/auth-client';
 import { ENV } from '@/lib/env';
 
@@ -42,12 +54,15 @@ function NameEditor({
 
   if (isEditing) {
     return (
-      <div>
-        <label className="mb-1 block font-medium text-slate-200 text-sm">
+      <div className="space-y-2">
+        <label className="flex items-center gap-2 font-medium text-slate-200 text-sm">
+          <Avatar color="blue" size="sm">
+            <User />
+          </Avatar>
           {t('account.profile.name')}
         </label>
-        <div className="flex gap-2">
-          <input
+        <div className="flex items-center gap-2">
+          <Input
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
@@ -60,40 +75,47 @@ function NameEditor({
             }}
             autoFocus
             disabled={isSaving}
-            className="flex-1 rounded-xl border border-white/10 bg-slate-800/60 px-4 py-2 text-white placeholder-slate-500 shadow-inner transition focus:border-brand-400/50 focus:outline-none focus:ring-2 focus:ring-brand-500/20 disabled:cursor-not-allowed disabled:opacity-60"
+            className="flex-1"
           />
-          <button
+          <Button
             onClick={handleSave}
             disabled={isSaving || !name.trim()}
-            className="rounded-lg border border-brand-400/30 bg-brand-500/10 px-4 py-2 font-semibold text-brand-400 text-sm transition hover:bg-brand-500/20 disabled:cursor-not-allowed disabled:opacity-60"
+            variant="primary"
+            size="sm"
+            className="h-11 w-11 p-0"
+            title={isSaving ? t('account.saving') : t('account.save')}
           >
-            {isSaving ? t('account.saving') : t('account.save')}
-          </button>
-          <button
+            {isSaving ? <RefreshCw size={16} className="animate-spin" /> : <Check size={16} />}
+          </Button>
+          <Button
             onClick={handleCancel}
             disabled={isSaving}
-            className="rounded-lg border border-white/10 bg-slate-700/40 px-4 py-2 font-semibold text-sm text-white transition hover:bg-slate-600/40 disabled:cursor-not-allowed disabled:opacity-60"
+            variant="outline"
+            size="sm"
+            className="h-11 w-11 p-0"
+            title={t('account.cancel')}
           >
-            {t('account.cancel')}
-          </button>
+            <X size={16} />
+          </Button>
         </div>
       </div>
     );
   }
 
   return (
-    <div>
-      <label className="mb-1 block font-medium text-slate-200 text-sm">
+    <div className="space-y-2">
+      <label className="flex items-center gap-2 font-medium text-slate-200 text-sm">
+        <Avatar color="blue" size="sm">
+          <User />
+        </Avatar>
         {t('account.profile.name')}
       </label>
       <div className="flex items-center gap-2">
         <div className="flex-1 text-white">{currentName}</div>
-        <button
-          onClick={() => setIsEditing(true)}
-          className="rounded-lg border border-white/10 bg-slate-700/40 px-3 py-1.5 font-semibold text-sm text-white transition hover:bg-slate-600/40"
-        >
+        <Button onClick={() => setIsEditing(true)} variant="outline" size="sm" className="gap-2">
+          <Edit size={14} />
           {t('account.edit')}
-        </button>
+        </Button>
       </div>
     </div>
   );
@@ -135,7 +157,7 @@ function PasskeyNameEditor({
   if (isEditing) {
     return (
       <div className="flex items-center gap-2">
-        <input
+        <Input
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
@@ -149,22 +171,28 @@ function PasskeyNameEditor({
           autoFocus
           disabled={isSaving}
           placeholder={placeholder}
-          className="flex-1 rounded-lg border border-white/10 bg-slate-700/40 px-2 py-1 text-sm text-white placeholder-slate-500 shadow-inner transition focus:border-brand-400/50 focus:outline-none focus:ring-2 focus:ring-brand-500/20 disabled:cursor-not-allowed disabled:opacity-60"
+          className="flex-1 text-sm"
         />
-        <button
+        <Button
           onClick={handleSave}
           disabled={isSaving}
-          className="rounded-lg border border-brand-400/30 bg-brand-500/10 px-2 py-1 font-semibold text-brand-400 text-xs transition hover:bg-brand-500/20 disabled:cursor-not-allowed disabled:opacity-60"
+          variant="primary"
+          size="sm"
+          className="h-9 w-9 p-0"
+          title={isSaving ? t('account.saving') : t('account.save')}
         >
-          {isSaving ? t('account.saving') : t('account.save')}
-        </button>
-        <button
+          {isSaving ? <RefreshCw size={14} className="animate-spin" /> : <Check size={14} />}
+        </Button>
+        <Button
           onClick={handleCancel}
           disabled={isSaving}
-          className="rounded-lg border border-white/10 bg-slate-700/40 px-2 py-1 font-semibold text-white text-xs transition hover:bg-slate-600/40 disabled:cursor-not-allowed disabled:opacity-60"
+          variant="outline"
+          size="sm"
+          className="h-9 w-9 p-0"
+          title={t('account.cancel')}
         >
-          {t('account.cancel')}
-        </button>
+          <X size={14} />
+        </Button>
       </div>
     );
   }
@@ -172,14 +200,16 @@ function PasskeyNameEditor({
   return (
     <div className="flex items-center gap-2">
       <span className="font-semibold text-white">{currentName || placeholder}</span>
-      <button
+      <Button
         onClick={() => setIsEditing(true)}
-        className="flex h-7 w-7 items-center justify-center rounded-lg border border-white/10 bg-slate-700/40 transition hover:bg-slate-600/40"
+        variant="ghost"
+        size="sm"
+        className="h-7 w-7 p-0"
         title={t('account.passkeys.rename')}
         aria-label={t('account.passkeys.rename')}
       >
-        <Edit01 className="h-3.5 w-3.5 text-slate-300" />
-      </button>
+        <Edit className="h-3.5 w-3.5" />
+      </Button>
     </div>
   );
 }
@@ -384,13 +414,13 @@ export function AccountRoute() {
   const getDeviceIcon = (deviceType: string) => {
     const type = deviceType.toLowerCase();
     if (type.includes('phone') || type.includes('mobile') || type.includes('tablet')) {
-      return Phone01;
+      return Phone;
     }
     if (type.includes('laptop') || type.includes('computer') || type.includes('desktop')) {
-      return Laptop01;
+      return Laptop;
     }
-    // For other devices, use Lock01 (security key icon)
-    return Lock01;
+    // For other devices, use Lock (security key icon)
+    return Lock;
   };
 
   if (isLoading) {
@@ -412,25 +442,17 @@ export function AccountRoute() {
         <p className="mt-2 text-slate-400 text-sm">{t('account.subtitle')}</p>
       </div>
 
-      {error && (
-        <div className="rounded-xl border border-rose-400/30 bg-rose-500/10 px-4 py-3 text-rose-100 text-sm">
-          {error}
-        </div>
-      )}
+      {error && <Alert tone="error">{error}</Alert>}
 
-      {success && (
-        <div className="rounded-xl border border-green-400/30 bg-green-500/10 px-4 py-3 text-green-100 text-sm">
-          {success}
-        </div>
-      )}
+      {success && <Alert tone="success">{success}</Alert>}
 
       {/* Profile Information */}
       <Card>
-        <CardHeader className="px-6 pt-6">
+        <CardHeader>
           <CardTitle>{t('account.profile.title')}</CardTitle>
           <CardDescription>{t('account.profile.description')}</CardDescription>
         </CardHeader>
-        <CardContent className="px-6 pb-6">
+        <CardContent>
           <div className="space-y-4">
             <NameEditor
               currentName={session.user.name}
@@ -454,20 +476,23 @@ export function AccountRoute() {
                 }
               }}
             />
-            <div>
-              <label className="mb-1 block font-medium text-slate-200 text-sm">
+            <div className="space-y-2 border-white/10 border-t pt-4">
+              <label className="flex items-center gap-2 font-medium text-slate-200 text-sm">
+                <Avatar color="emerald" size="sm">
+                  <Mail />
+                </Avatar>
                 {t('account.profile.email')}
               </label>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3">
                 <span className="text-white">{session.user.email}</span>
                 {session.user.emailVerified ? (
-                  <span className="rounded-full bg-green-500/20 px-2 py-0.5 font-semibold text-green-400 text-xs">
+                  <Badge tone="success" pill>
                     {t('account.profile.verified')}
-                  </span>
+                  </Badge>
                 ) : (
-                  <span className="rounded-full bg-yellow-500/20 px-2 py-0.5 font-semibold text-xs text-yellow-400">
+                  <Badge tone="warning" pill>
                     {t('account.profile.unverified')}
-                  </span>
+                  </Badge>
                 )}
               </div>
             </div>
@@ -477,36 +502,32 @@ export function AccountRoute() {
 
       {/* Passkeys */}
       <Card>
-        <CardHeader className="px-6 pt-6">
+        <CardHeader>
           <div className="flex items-center justify-between">
             <div>
               <CardTitle>{t('account.passkeys.title')}</CardTitle>
               <CardDescription>{t('account.passkeys.description')}</CardDescription>
             </div>
-            <button
+            <Button
               onClick={handleRegisterPasskey}
               disabled={isRegistering}
-              className="rounded-lg border border-brand-400/30 bg-brand-500/10 px-4 py-2 font-semibold text-brand-400 text-sm transition hover:bg-brand-500/20 disabled:cursor-not-allowed disabled:opacity-60"
+              variant="primary"
+              size="sm"
+              loading={isRegistering}
             >
-              {isRegistering ? t('account.passkeys.registering') : t('account.passkeys.addButton')}
-            </button>
+              {t('account.passkeys.addButton')}
+            </Button>
           </div>
         </CardHeader>
-        <CardContent className="px-6 pb-6">
+        <CardContent>
           <div className="space-y-3">
             {passkeys.length === 0 ? (
-              <div className="rounded-xl border border-white/10 bg-slate-800/40 p-6 text-center">
-                <div className="mb-3 flex justify-center">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-slate-700/50">
-                    <Key01 className="h-6 w-6 text-slate-400" />
-                  </div>
-                </div>
-                <div className="mb-1 font-semibold text-white">
-                  {t('account.passkeys.emptyState.title')}
-                </div>
-                <div className="text-slate-400 text-sm">
-                  {t('account.passkeys.emptyState.description')}
-                </div>
+              <div className="mt-4">
+                <EmptyState
+                  icon={Key}
+                  title={t('account.passkeys.emptyState.title')}
+                  description={t('account.passkeys.emptyState.description')}
+                />
               </div>
             ) : (
               passkeys.map((passkey) => {
@@ -535,35 +556,22 @@ export function AccountRoute() {
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <button
+                      <Button
                         onClick={() => handleDeletePasskey(passkey.id)}
-                        className="rounded-lg border border-rose-400/30 bg-rose-500/10 px-3 py-1.5 font-semibold text-rose-400 text-sm transition hover:bg-rose-500/20"
+                        variant="danger"
+                        size="sm"
                       >
                         {t('account.passkeys.delete')}
-                      </button>
+                      </Button>
                     </div>
                   </div>
                 );
               })
             )}
           </div>
-        </CardContent>
-      </Card>
-
-      {/* Info Card */}
-      <Card className="border-blue-400/20 bg-blue-500/10">
-        <CardContent className="px-6 py-6">
-          <div className="flex gap-3">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-400/20">
-              <InfoCircle className="h-5 w-5 text-blue-300" />
-            </div>
-            <div className="flex-1">
-              <div className="mb-1 font-semibold text-blue-100">
-                {t('account.passkeys.about.title')}
-              </div>
-              <div className="text-blue-200 text-sm">{t('account.passkeys.about.description')}</div>
-            </div>
-          </div>
+          <Alert tone="info" title={t('account.passkeys.about.title')} className="mt-4">
+            {t('account.passkeys.about.description')}
+          </Alert>
         </CardContent>
       </Card>
     </div>

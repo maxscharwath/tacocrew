@@ -1,27 +1,12 @@
-import { Trash01 } from '@untitledui/icons';
-import { useCallback, useMemo, useState } from 'react';
+import { Trash2 } from 'lucide-react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { DeliveryType } from '@/components/orders/DeliveryTypeSelector';
 import { DeliveryTypeSelector } from '@/components/orders/DeliveryTypeSelector';
 import { Alert, Button, Input, Label } from '@/components/ui';
 import { SWISS_CANTONS, SWITZERLAND_COUNTRY } from '@/constants/location';
 import { UserApi } from '@/lib/api';
 import type { DeliveryProfile, DeliveryProfilePayload } from '@/lib/api/types';
-
-const initialFormState = () => ({
-  label: '',
-  contactName: '',
-  phone: '',
-  deliveryType: 'livraison' as DeliveryType,
-  address: {
-    road: '',
-    houseNumber: '',
-    postcode: '',
-    city: '',
-    state: SWISS_CANTONS[0]?.code ?? '',
-    country: SWITZERLAND_COUNTRY,
-  },
-});
+import { getInitialDeliveryFormState, profileToForm } from '@/utils/delivery-profile-helpers';
 
 interface DeliveryProfilesManagerProps {
   readonly profiles: DeliveryProfile[];
@@ -29,96 +14,42 @@ interface DeliveryProfilesManagerProps {
 
 export function DeliveryProfilesManager({ profiles }: DeliveryProfilesManagerProps) {
   const { t } = useTranslation();
-  const tt = useCallback(
-    (key: string, options?: Record<string, unknown>) => t(`orders.submit.saved.${key}`, options),
-    [t]
-  );
+  const tt = (key: string, options?: Record<string, unknown>) =>
+    t(`orders.submit.saved.${key}`, options);
 
   const [items, setItems] = useState<DeliveryProfile[]>(profiles);
   const [selectedId, setSelectedId] = useState<string>(profiles[0]?.id ?? '');
-  const [form, setForm] = useState<DeliveryProfilePayload>(() => {
-    if (!profiles[0]) {
-      return initialFormState();
-    }
-    const base = profiles[0];
-    return {
-      label: base.label ?? '',
-      contactName: base.contactName,
-      phone: base.phone,
-      deliveryType: base.deliveryType,
-      address: {
-        road: base.address.road,
-        houseNumber: base.address.houseNumber ?? '',
-        postcode: base.address.postcode,
-        city: base.address.city,
-        state:
-          SWISS_CANTONS.find((canton) => canton.code === base.address.state)?.code ??
-          SWISS_CANTONS[0]?.code ??
-          '',
-        country: SWITZERLAND_COUNTRY,
-      },
-    };
-  });
+  const [form, setForm] = useState<DeliveryProfilePayload>(() => profileToForm(profiles[0]));
   const [busy, setBusy] = useState(false);
   const [feedback, setFeedback] = useState<{ tone: 'success' | 'error'; text: string } | null>(
     null
   );
 
-  const selectProfile = useCallback(
-    (profileId: string) => {
-      setSelectedId(profileId);
-      if (!profileId) {
-        setForm(initialFormState());
-        return;
-      }
-      const profile = items.find((item) => item.id === profileId);
-      if (!profile) {
-        setForm(initialFormState());
-        return;
-      }
-      setForm({
-        label: profile.label ?? '',
-        contactName: profile.contactName,
-        phone: profile.phone,
-        deliveryType: profile.deliveryType,
-        address: {
-          road: profile.address.road,
-          houseNumber: profile.address.houseNumber ?? '',
-          postcode: profile.address.postcode,
-          city: profile.address.city,
-          state:
-            SWISS_CANTONS.find((canton) => canton.code === profile.address.state)?.code ??
-            SWISS_CANTONS[0]?.code ??
-            '',
-          country: SWITZERLAND_COUNTRY,
-        },
-      });
-    },
-    [items]
-  );
+  const selectProfile = (profileId: string) => {
+    setSelectedId(profileId);
+    const profile = profileId ? items.find((item) => item.id === profileId) : null;
+    setForm(profileToForm(profile));
+  };
 
-  const setField = useCallback(
-    <K extends keyof DeliveryProfilePayload>(field: K, value: DeliveryProfilePayload[K]) => {
-      setForm((prev) => ({
-        ...prev,
+  const setField = <K extends keyof DeliveryProfilePayload>(
+    field: K,
+    value: DeliveryProfilePayload[K]
+  ) => {
+    setForm((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+  const setAddressField = (field: keyof DeliveryProfilePayload['address'], value: string) => {
+    setForm((prev) => ({
+      ...prev,
+      address: {
+        ...prev.address,
         [field]: value,
-      }));
-    },
-    []
-  );
-
-  const setAddressField = useCallback(
-    (field: keyof DeliveryProfilePayload['address'], value: string) => {
-      setForm((prev) => ({
-        ...prev,
-        address: {
-          ...prev.address,
-          [field]: value,
-        },
-      }));
-    },
-    []
-  );
+      },
+    }));
+  };
 
   const validate = () => {
     if (
@@ -191,7 +122,7 @@ export function DeliveryProfilesManager({ profiles }: DeliveryProfilesManagerPro
       await UserApi.deleteDeliveryProfile(selectedId);
       setItems((prev) => prev.filter((item) => item.id !== selectedId));
       setSelectedId('');
-      setForm(initialFormState());
+      setForm(getInitialDeliveryFormState());
       setFeedback({ tone: 'success', text: tt('messages.deleted') });
     } catch (error) {
       setFeedback({
@@ -203,44 +134,40 @@ export function DeliveryProfilesManager({ profiles }: DeliveryProfilesManagerPro
     }
   };
 
-  const profileCards = useMemo(
-    () =>
-      items.map((profile) => (
-        <button
-          key={profile.id}
-          type="button"
-          className={`flex w-full flex-col gap-1 rounded-2xl border px-4 py-3 text-left transition duration-200 ${
-            profile.id === selectedId
-              ? 'border-brand-400 bg-brand-500/10 text-white shadow-[0_12px_40px_rgba(99,102,241,0.25)]'
-              : 'border-white/10 bg-slate-900/50 text-slate-200 hover:border-brand-400/40 hover:text-white'
-          }`}
-          onClick={() => selectProfile(profile.id)}
-          disabled={busy}
-        >
-          <div className="flex items-center justify-between gap-2">
-            <p className="font-semibold text-sm">{profile.label ?? tt('unnamedProfile')}</p>
-            <span className="rounded-full border border-white/15 px-2 py-0.5 text-[11px] text-slate-300 uppercase tracking-wide">
-              {t(`orders.submit.form.deliveryTypes.${profile.deliveryType}`)}
-            </span>
-          </div>
-          <p className="text-slate-400 text-xs">
-            {profile.contactName} • {profile.phone}
-          </p>
-          <p className="text-slate-500 text-xs">
-            {profile.address.road}
-            {profile.address.houseNumber ? ` ${profile.address.houseNumber}` : ''},&nbsp;
-            {profile.address.postcode} {profile.address.city}
-          </p>
-        </button>
-      )),
-    [busy, items, selectProfile, selectedId, t, tt]
-  );
+  const profileCards = items.map((profile) => (
+    <button
+      key={profile.id}
+      type="button"
+      className={`flex w-full flex-col gap-1 rounded-2xl border px-4 py-3 text-left transition duration-200 ${
+        profile.id === selectedId
+          ? 'border-brand-400 bg-brand-500/10 text-white shadow-[0_12px_40px_rgba(99,102,241,0.25)]'
+          : 'border-white/10 bg-slate-900/50 text-slate-200 hover:border-brand-400/40 hover:text-white'
+      }`}
+      onClick={() => selectProfile(profile.id)}
+      disabled={busy}
+    >
+      <div className="flex items-center justify-between gap-2">
+        <p className="font-semibold text-sm">{profile.label ?? tt('unnamedProfile')}</p>
+        <span className="rounded-full border border-white/15 px-2 py-0.5 text-[11px] text-slate-300 uppercase tracking-wide">
+          {t(`orders.submit.form.deliveryTypes.${profile.deliveryType}`)}
+        </span>
+      </div>
+      <p className="text-slate-400 text-xs">
+        {profile.contactName} • {profile.phone}
+      </p>
+      <p className="text-slate-500 text-xs">
+        {profile.address.road}
+        {profile.address.houseNumber ? ` ${profile.address.houseNumber}` : ''},&nbsp;
+        {profile.address.postcode} {profile.address.city}
+      </p>
+    </button>
+  ));
 
-  const handleClearSelection = useCallback(() => {
+  const handleClearSelection = () => {
     setSelectedId('');
-    setForm(initialFormState());
+    setForm(getInitialDeliveryFormState());
     setFeedback(null);
-  }, []);
+  };
 
   return (
     <div className="grid gap-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)] lg:items-start">
@@ -385,7 +312,7 @@ export function DeliveryProfilesManager({ profiles }: DeliveryProfilesManagerPro
               onClick={handleDelete}
               disabled={busy || !selectedId}
             >
-              <Trash01 size={16} />
+              <Trash2 size={16} />
               {tt('actions.delete')}
             </Button>
           </div>

@@ -18,11 +18,11 @@ export function Card({ className, ...props }: CardProps) {
 type CardSectionProps = ComponentPropsWithoutRef<'div'>;
 
 export function CardHeader({ className, ...props }: CardSectionProps) {
-  return <div className={cn('flex flex-col gap-2 p-6 pb-4', className)} {...props} />;
+  return <div className={cn('flex flex-col gap-2 px-6 pt-6 pb-3', className)} {...props} />;
 }
 
 export function CardContent({ className, ...props }: CardSectionProps) {
-  return <div className={cn('flex flex-col gap-6 p-6 pt-0', className)} {...props} />;
+  return <div className={cn('flex flex-col gap-6 px-6 pb-6', className)} {...props} />;
 }
 
 export function CardFooter({ className, ...props }: CardSectionProps) {

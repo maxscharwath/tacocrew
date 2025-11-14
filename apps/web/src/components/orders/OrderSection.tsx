@@ -1,4 +1,4 @@
-import { CheckCircle } from '@untitledui/icons';
+import { CheckCircle2 } from 'lucide-react';
 import { Badge } from '@/components/ui';
 
 /**
@@ -47,7 +47,7 @@ export function OrderSection({
               key={`order-item-${name}-${quantity ?? ''}-${idx}`}
               className="inline-flex items-center gap-1.5 rounded-lg border border-brand-400/20 bg-brand-500/10 px-2.5 py-1 font-medium text-brand-100 text-xs"
             >
-              <CheckCircle size={12} className="text-brand-300" />
+              <CheckCircle2 size={12} className="text-brand-300" />
               {name}
               {quantity !== undefined && quantity > 1 && (
                 <Badge tone="brand" className="px-1.5 py-0 font-semibold text-[9px]">

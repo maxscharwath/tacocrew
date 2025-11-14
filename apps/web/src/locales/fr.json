@@ -59,7 +59,7 @@
   },
   "login": {
     "title": "TacoCrew",
-    "subtitle": "Connecte-toi pour rejoindre des commandes de groupe ou créer la tienne. Pas encore de compte ? Entre simplement ton nom !",
+    "subtitle": "Créez votre compte pour rejoindre des commandes de groupe ou créer la vôtre.",
     "usernamePlaceholder": "chef-del-taco",
     "usernameRequired": "L'identifiant est requis",
     "unexpectedError": "Erreur inattendue. Réessaie.",
@@ -87,7 +87,9 @@
     "signInFailed": "Échec de la connexion",
     "signUpFailed": "Échec de l'inscription",
     "passkeySignInFailed": "Échec de la connexion avec Passkey",
-    "passkeyAuthFailed": "Échec de l'authentification Passkey"
+    "passkeyAuthFailed": "Échec de l'authentification Passkey",
+    "alreadyHaveAccount": "Vous avez déjà un compte ?",
+    "noAccount": "Vous n'avez pas de compte ?"
   },
   "account": {
     "title": "Paramètres du compte",
@@ -588,6 +590,7 @@
         "selectLabel": "Profils enregistrés",
         "selectPlaceholder": "Saisie manuelle",
         "selectedLabel": "Aucun profil sélectionné",
+        "emptyState": "Aucun profil de livraison enregistré pour le moment.",
         "labelField": "Nom du profil",
         "inputPlaceholder": "Nom du profil (ex. Bureau, Maison)",
         "unnamedProfile": "Sans nom",
@@ -615,6 +618,12 @@
       "reminder": {
         "title": "Dernière étape",
         "body": "Une fois envoyée, la commande sera finalisée et envoyée. Les participants ne pourront plus modifier leurs commandes. Assurez-vous que tout le monde a ajouté ses tacos !"
+      },
+      "confirmation": {
+        "title": "Commande confirmée !",
+        "successTitle": "Commande soumise avec succès",
+        "successMessage": "Votre commande a été confirmée et envoyée au restaurant. Vous serez redirigé vers la page des détails de la commande.",
+        "closeButton": "Voir les détails de la commande"
       },
       "errors": {
         "missingFields": "Les informations client, le mode de livraison, l'adresse et l'heure souhaitée sont obligatoires.",
@@ -736,6 +745,7 @@
       "noPrice": "Pas de prix",
       "copyIdTooltip": "Copier l'ID dans le presse-papiers",
       "copyId": "Copier l'ID",
+      "copied": "Copié !",
       "availability": {
         "available": "Disponible",
         "outOfStock": "Rupture"

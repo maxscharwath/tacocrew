@@ -1,7 +1,7 @@
-import { Lock01, LockUnlocked01, Plus } from '@untitledui/icons';
+import { Lock, LockOpen, Plus } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { Form, Link } from 'react-router';
-import { Badge, Button, StatusBadge } from '@/components/ui';
+import { Form, Link, useRevalidator } from 'react-router';
+import { Avatar, Badge, Button, Card, CardContent, StatusBadge } from '@/components/ui';
 import { useDateFormat } from '@/hooks/useDateFormat';
 import type { GroupOrder, UserOrderSummary } from '@/lib/api';
 import { routes } from '@/lib/routes';
@@ -24,6 +24,8 @@ type OrderHeroProps = {
   readonly isClosedManually?: boolean;
   readonly isSubmitting?: boolean;
   readonly isLeader?: boolean;
+  readonly isDeveloperMode?: boolean;
+  readonly isSubmitted?: boolean;
 };
 
 export function OrderHero({
@@ -39,9 +41,12 @@ export function OrderHero({
   isClosedManually = false,
   isSubmitting = false,
   isLeader = false,
+  isDeveloperMode = false,
+  isSubmitted = false,
 }: OrderHeroProps) {
   const { t } = useTranslation();
   const { formatDateTimeRange } = useDateFormat();
+  const revalidator = useRevalidator();
   const { status, name, startDate, endDate, leader } = groupOrder;
 
   const nowTime = Date.now();
@@ -56,31 +61,35 @@ export function OrderHero({
   const closedReasonKey =
     status === 'open' ? (isNotStartedYet ? 'notStarted' : isExpired ? 'expired' : 'open') : status;
 
-  const statusButtonConfig = isClosedManually
+  const isReopening = isClosedManually || (isDeveloperMode && isSubmitted);
+  const statusButtonConfig = isReopening
     ? {
         variant: 'primary' as const,
         className: 'gap-2 bg-emerald-600 text-white hover:bg-emerald-500',
-        icon: <LockUnlocked01 size={18} />,
+        icon: <LockOpen size={18} />,
         label: t('orders.detail.hero.actions.reopenOrder'),
       }
     : {
         variant: 'outline' as const,
         className: 'gap-2 border-rose-400/60 text-rose-100 hover:bg-rose-500/20',
-        icon: <Lock01 size={18} />,
+        icon: <Lock size={18} />,
         label: t('orders.detail.hero.actions.closeOrder'),
       };
 
   return (
-    <section className="relative overflow-hidden rounded-3xl border border-white/10 bg-linear-to-br from-brand-500/20 via-slate-900/80 to-slate-950/90 p-6 lg:p-8">
+    <Card className="relative overflow-hidden border-brand-400/30 bg-linear-to-br from-brand-500/20 via-slate-900/80 to-slate-950/90 p-6 lg:p-8">
       <div className="-top-24 pointer-events-none absolute right-0 h-60 w-60 rounded-full bg-brand-400/30 blur-3xl" />
       <div className="-bottom-16 pointer-events-none absolute left-10 h-56 w-56 rounded-full bg-purple-500/25 blur-3xl" />
-      <div className="relative space-y-4">
+      <CardContent className="relative space-y-4 p-0">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex flex-wrap items-center gap-3">
             <Badge tone="brand" pill>
               {t('orders.detail.hero.badge')}
             </Badge>
-            <StatusBadge status={groupOrder.status} />
+            <StatusBadge
+              status={groupOrder.status}
+              label={t(`common.status.${groupOrder.status}`)}
+            />
           </div>
           {userOrders.length > 0 && (
             <div className="flex items-center gap-6">
@@ -113,10 +122,10 @@ export function OrderHero({
             {name ?? t('orders.common.unnamedDrop')}
           </h1>
           <p className="text-slate-200 text-sm">{formatDateTimeRange(startDate, endDate)}</p>
-          <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white/90">
-            <div className="grid h-10 w-10 place-items-center rounded-xl bg-white/15 font-semibold text-base text-white">
+          <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-3 py-2">
+            <Avatar color="neutral" size="md">
               {leaderInitial}
-            </div>
+            </Avatar>
             <div>
               <p className="text-slate-400 text-xs uppercase tracking-[0.3em]">
                 {t('orders.detail.hero.leaderInfo.label')}
@@ -142,19 +151,26 @@ export function OrderHero({
             </Link>
           ) : (
             <Button variant="outline" className="gap-2" size="sm" disabled>
-              <Lock01 size={16} />
+              <Lock size={16} />
               {t(`orders.detail.hero.actions.closedReasons.${closedReasonKey}`)}
             </Button>
           )}
           <div className="flex-1" />
           {canManageStatus && statusIntent && (
-            <Form method="post">
-              <input type="hidden" name="_intent" value={statusIntent} />
+            <Form method="PATCH">
+              <input
+                type="hidden"
+                name="status"
+                value={isClosedManually || (isDeveloperMode && isSubmitted) ? 'open' : 'closed'}
+              />
               <Button
                 type="submit"
                 variant={statusButtonConfig.variant}
                 size="sm"
-                disabled={isSubmitting}
+                disabled={
+                  isSubmitting ||
+                  (isDeveloperMode && isSubmitted && revalidator.state === 'loading')
+                }
                 className={statusButtonConfig.className}
               >
                 {statusButtonConfig.icon}
@@ -169,13 +185,13 @@ export function OrderHero({
                 className="gap-2 bg-linear-to-r from-emerald-500 via-emerald-600 to-teal-600 font-bold text-white shadow-emerald-500/30 shadow-xl hover:from-emerald-600 hover:via-emerald-700 hover:to-teal-700"
                 size="sm"
               >
-                <Lock01 size={18} />
+                <Lock size={18} />
                 {t('orders.detail.hero.actions.submit')}
               </Button>
             </Link>
           )}
         </div>
-      </div>
-    </section>
+      </CardContent>
+    </Card>
   );
 }

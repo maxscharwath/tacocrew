@@ -1,7 +1,7 @@
-import { Package } from '@untitledui/icons';
+import { Package } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button } from '@/components/ui';
+import { Avatar, Button } from '@/components/ui';
 import type { PreviousOrder, StockResponse, TacoOrder } from '@/lib/api/types';
 import { PreviousTacosModal } from './PreviousTacosModal';
 import { TacoHashSearch } from './TacoHashSearch';
@@ -41,9 +41,9 @@ export function PreviousTacos({
     <>
       <div className="space-y-6 rounded-3xl border border-white/10 bg-slate-900/50 p-6">
         <div className="flex items-center gap-3 border-white/10 border-b pb-4">
-          <div className="grid h-10 w-10 place-items-center rounded-xl border border-purple-400/30 bg-linear-to-br from-purple-400/20 to-violet-500/20">
-            <Package size={20} className="text-purple-300" />
-          </div>
+          <Avatar color="indigo" size="md">
+            <Package />
+          </Avatar>
           <div>
             <h2 className="font-semibold text-lg text-white">
               {t('orders.create.previousTacos.title')}

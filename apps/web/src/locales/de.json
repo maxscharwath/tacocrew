@@ -59,7 +59,7 @@
   },
   "login": {
     "title": "TacoCrew",
-    "subtitle": "Melde dich an, um Gruppenbestellungen beizutreten oder eigene zu erstellen. Noch kein Konto? Gib einfach deinen Namen ein!",
+    "subtitle": "Erstelle dein Konto, um Gruppenbestellungen beizutreten oder eigene zu erstellen.",
     "usernamePlaceholder": "chef-del-taco",
     "usernameRequired": "Benutzername ist erforderlich",
     "unexpectedError": "Unerwarteter Fehler. Bitte versuche es erneut.",
@@ -87,7 +87,9 @@
     "signInFailed": "Anmeldung fehlgeschlagen",
     "signUpFailed": "Registrierung fehlgeschlagen",
     "passkeySignInFailed": "Passkey-Anmeldung fehlgeschlagen",
-    "passkeyAuthFailed": "Passkey-Authentifizierung fehlgeschlagen"
+    "passkeyAuthFailed": "Passkey-Authentifizierung fehlgeschlagen",
+    "alreadyHaveAccount": "Hast du bereits ein Konto?",
+    "noAccount": "Hast du noch kein Konto?"
   },
   "account": {
     "title": "Kontoeinstellungen",
@@ -586,6 +588,7 @@
         "selectLabel": "Gespeicherte Profile",
         "selectPlaceholder": "Manuelle Eingabe",
         "selectedLabel": "Kein Profil ausgewählt",
+        "emptyState": "Noch keine gespeicherten Lieferprofile vorhanden.",
         "labelField": "Profilname",
         "inputPlaceholder": "Profilname (z. B. Büro, Zuhause)",
         "unnamedProfile": "Ohne Namen",
@@ -613,6 +616,12 @@
       "reminder": {
         "title": "Letzter Schritt",
         "body": "Nach dem Absenden wird die Bestellung finalisiert und gesendet. Teilnehmer können ihre Bestellungen nicht mehr ändern. Stelle sicher, dass alle ihre Tacos hinzugefügt haben!"
+      },
+      "confirmation": {
+        "title": "Bestellung bestätigt!",
+        "successTitle": "Bestellung erfolgreich übermittelt",
+        "successMessage": "Ihre Bestellung wurde bestätigt und an das Restaurant gesendet. Sie werden zur Bestelldetailseite weitergeleitet.",
+        "closeButton": "Bestelldetails anzeigen"
       },
       "errors": {
         "missingFields": "Alle Felder für Kunde, Lieferart, Adresse und gewünschte Zeit sind erforderlich.",
@@ -739,6 +748,7 @@
       "noPrice": "Kein Preis",
       "copyIdTooltip": "ID in Zwischenablage kopieren",
       "copyId": "ID kopieren",
+      "copied": "Kopiert!",
       "availability": {
         "available": "Verfügbar",
         "outOfStock": "Nicht verfügbar"

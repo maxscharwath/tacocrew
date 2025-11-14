@@ -51,7 +51,10 @@ export function submitGroupOrder(groupOrderId: string, body: GroupOrderSubmissio
   });
 }
 
-export function updateGroupOrderStatus(groupOrderId: string, status: 'open' | 'closed') {
+export function updateGroupOrderStatus(
+  groupOrderId: string,
+  status: 'open' | 'closed' | 'submitted'
+) {
   return apiClient.post<GroupOrder>(`/api/v1/orders/${groupOrderId}/status`, {
     body: { status },
   });

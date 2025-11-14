@@ -8,14 +8,9 @@ import { GroupOrderRepository } from '../../infrastructure/repositories/group-or
 import { type GroupOrderId } from '../../schemas/group-order.schema';
 import type { UserId } from '../../schemas/user.schema';
 import { GroupOrderStatus } from '../../shared/types/types';
-import { ForbiddenError, NotFoundError, ValidationError } from '../../shared/utils/errors.utils';
+import { ForbiddenError, NotFoundError } from '../../shared/utils/errors.utils';
 import { inject } from '../../shared/utils/inject.utils';
 import { logger } from '../../shared/utils/logger.utils';
-
-const toggleableStatuses = new Set<GroupOrderStatus>([
-  GroupOrderStatus.OPEN,
-  GroupOrderStatus.CLOSED,
-]);
 
 @injectable()
 export class UpdateGroupOrderStatusUseCase {
@@ -29,14 +24,6 @@ export class UpdateGroupOrderStatusUseCase {
 
     if (groupOrder.leaderId !== requesterId) {
       throw new ForbiddenError();
-    }
-
-    if (!toggleableStatuses.has(nextStatus)) {
-      throw new ValidationError({ status: nextStatus });
-    }
-
-    if (!toggleableStatuses.has(groupOrder.status)) {
-      throw new ValidationError({ status: groupOrder.status });
     }
 
     if (groupOrder.status === nextStatus) {

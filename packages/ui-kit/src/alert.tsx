@@ -1,4 +1,4 @@
-import { AlertCircle, CheckCircle, InfoCircle, XCircle } from '@untitledui/icons';
+import { AlertCircle, CheckCircle2, Info, XCircle } from 'lucide-react';
 import { cva, type VariantProps } from 'class-variance-authority';
 import type { ComponentPropsWithoutRef, ComponentType } from 'react';
 import { cn } from './utils';
@@ -22,23 +22,24 @@ const toneIcons: Record<
   ComponentType<{ size?: number; className?: string }>
 > = {
   error: XCircle,
-  success: CheckCircle,
+  success: CheckCircle2,
   warning: AlertCircle,
-  info: InfoCircle,
+  info: Info,
 };
 
 type AlertProps = ComponentPropsWithoutRef<'div'> &
   VariantProps<typeof alertVariants> & {
     readonly title?: string;
+    readonly hideIcon?: boolean;
   };
 
-export function Alert({ tone, title, children, className, ...props }: AlertProps) {
+export function Alert({ tone, title, children, className, hideIcon = false, ...props }: AlertProps) {
   const Icon = toneIcons[tone ?? 'info'];
 
   return (
     <div className={cn(alertVariants({ tone }), className)} {...props}>
       <div className="flex items-start gap-3">
-        <Icon size={20} className="mt-0.5 shrink-0" />
+        {!hideIcon && <Icon size={20} className="mt-0.5 shrink-0" />}
         <div className="flex-1">
           {title && <p className="font-semibold">{title}</p>}
           <div className={title ? 'mt-1' : ''}>{children}</div>

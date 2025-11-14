@@ -1,18 +1,17 @@
-import { ArrowLeft, Lock01, Send03, Truck01 } from '@untitledui/icons';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { ArrowLeft, Lock, Send, Truck } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  type ActionFunctionArgs,
   Form,
   Link,
   type LoaderFunctionArgs,
   redirect,
   useActionData,
   useLoaderData,
+  useNavigate,
   useNavigation,
   useParams,
 } from 'react-router';
-import { z } from 'zod';
 import {
   Alert,
   Button,
@@ -26,6 +25,7 @@ import {
   Label,
 } from '@/components/ui';
 import { type DeliveryType, DeliveryTypeSelector } from '../components/orders/DeliveryTypeSelector';
+import { OrderConfirmationModal } from '../components/orders/OrderConfirmationModal';
 import { PaymentMethodSelector } from '../components/orders/PaymentMethodSelector';
 import { TimeSlotSelector } from '../components/orders/TimeSlotSelector';
 import { SWISS_CANTONS, SWITZERLAND_COUNTRY } from '../constants/location';
@@ -35,6 +35,9 @@ import { ApiError } from '../lib/api/http';
 import type { DeliveryProfile, DeliveryProfilePayload, PaymentMethod } from '../lib/api/types';
 import { authClient } from '../lib/auth-client';
 import { routes } from '../lib/routes';
+import type { DeliveryFormData } from '../lib/types/form-data';
+import { createActionHandler } from '../lib/utils/action-handler';
+import { parseFormData } from '../lib/utils/form-data';
 
 type LoaderData = {
   groupOrder: Awaited<ReturnType<typeof OrdersApi.getGroupOrderWithOrders>>['groupOrder'];
@@ -46,26 +49,12 @@ type ActionData = {
   errorKey?: string;
   errorMessage?: string;
   errorDetails?: Record<string, unknown>;
+  fieldErrors?: Record<string, string>;
+  success?: boolean;
+  groupOrderId?: string;
 };
 
-const CANTON_CODES = SWISS_CANTONS.map((canton) => canton.code) as [string, ...string[]];
-
-const DeliveryFormSchema = z.object({
-  customerName: z.string().trim().min(1),
-  customerPhone: z.string().trim().min(1),
-  deliveryType: z.enum(['livraison', 'emporter']),
-  road: z.string().trim().min(1),
-  houseNumber: z.string().trim().optional(),
-  postcode: z.string().trim().min(1),
-  city: z.string().trim().min(1),
-  state: z.enum(CANTON_CODES),
-  country: z.literal(SWITZERLAND_COUNTRY).optional(),
-  requestedFor: z.string().trim().optional(),
-  paymentMethod: z.enum(['especes', 'carte', 'twint']),
-  dryRun: z.string().optional(),
-});
-
-export async function orderSubmitLoader({ params }: LoaderFunctionArgs) {
+export async function orderSubmitLoader({ params }: LoaderFunctionArgs): Promise<Response> {
   const groupOrderId = params.orderId;
   if (!groupOrderId) {
     throw new Response('Order not found', { status: 404 });
@@ -74,7 +63,7 @@ export async function orderSubmitLoader({ params }: LoaderFunctionArgs) {
   // Check Better Auth session
   const session = await authClient.getSession();
   if (!session?.data?.user) {
-    throw redirect(routes.login());
+    throw redirect(routes.signin());
   }
 
   const userId = session.data.user.id;
@@ -98,97 +87,95 @@ export async function orderSubmitLoader({ params }: LoaderFunctionArgs) {
     });
   } catch (error) {
     if (error instanceof ApiError && error.status === 401) {
-      throw redirect(routes.login());
+      throw redirect(routes.signin());
     }
     throw error;
   }
 }
 
-export async function orderSubmitAction({ request, params }: ActionFunctionArgs) {
-  const groupOrderId = params.orderId;
-  if (!groupOrderId) {
-    throw new Response('Order not found', { status: 404 });
-  }
+export const orderSubmitAction = createActionHandler({
+  handlers: {
+    POST: async (_unused, request, params) => {
+      const groupOrderId = params?.orderId;
+      if (!groupOrderId) throw new Response('Order not found', { status: 404 });
 
-  const formData = await request.formData();
-  const parsed = DeliveryFormSchema.safeParse(Object.fromEntries(formData));
+      const data = await parseFormData<DeliveryFormData>(request);
+      const dryRun = data.dryRun === 'on';
 
-  if (!parsed.success) {
-    return Response.json(
-      {
-        errorKey: 'orders.submit.errors.missingFields',
-      },
-      { status: 400 }
-    );
-  }
-
-  const {
-    customerName,
-    customerPhone,
-    deliveryType,
-    road,
-    houseNumber,
-    postcode,
-    city,
-    state,
-    requestedFor,
-    paymentMethod,
-    dryRun: dryRunRaw,
-  } = parsed.data;
-  const dryRun = dryRunRaw === 'on';
-
-  try {
-    await OrdersApi.submitGroupOrder(groupOrderId, {
-      customer: {
-        name: customerName,
-        phone: customerPhone,
-      },
-      delivery: {
-        type: deliveryType,
-        address: {
-          road,
-          house_number: houseNumber,
-          postcode,
-          city,
-          state,
-          country: SWITZERLAND_COUNTRY,
-        },
-        requestedFor: requestedFor ?? '',
-      },
-      paymentMethod,
-      dryRun,
-    });
-
-    return redirect(routes.root.orderDetail({ orderId: groupOrderId }));
-  } catch (error) {
-    if (error instanceof ApiError) {
-      // Use the error's key for translation, fall back to message
-      if (error.key) {
-        return Response.json(
-          { errorKey: error.key, errorDetails: error.details },
-          { status: error.status }
-        );
+      if (!data.paymentMethod) {
+        throw new Response('Payment method is required', { status: 400 });
       }
-      const errorMessage =
-        typeof error.body === 'object' && error.body && 'error' in error.body
-          ? ((error.body as { error?: { message?: string } }).error?.message ?? error.message)
-          : error.message;
 
-      return Response.json({ errorMessage }, { status: error.status });
-    }
+      // Ensure requestedFor is a string (handle case where it might be an array from duplicate form fields)
+      const requestedFor =
+        typeof data.requestedFor === 'string'
+          ? data.requestedFor
+          : Array.isArray(data.requestedFor)
+            ? (data.requestedFor[0] ?? '')
+            : '';
 
-    return Response.json({ errorKey: 'orders.submit.errors.unexpected' }, { status: 500 });
-  }
+      await OrdersApi.submitGroupOrder(groupOrderId, {
+        customer: {
+          name: data.customerName,
+          phone: data.customerPhone,
+        },
+        delivery: {
+          type: data.deliveryType,
+          address: {
+            road: data.road,
+            house_number: data.houseNumber,
+            postcode: data.postcode,
+            city: data.city,
+            state: data.state,
+            country: SWITZERLAND_COUNTRY,
+          },
+          requestedFor,
+        },
+        paymentMethod: data.paymentMethod,
+        dryRun,
+      });
+    },
+  },
+  getFormName: () => 'submit',
+  onSuccess: (_request, params) => {
+    const groupOrderId = params.orderId;
+    if (!groupOrderId) throw new Response('Order not found', { status: 404 });
+    // Return success data instead of redirecting immediately
+    // The component will handle showing the modal and redirecting
+    return Response.json({ success: true, groupOrderId });
+  },
+});
+
+/**
+ * Map API field paths to user-friendly field names
+ */
+function getFieldLabel(fieldPath: string, t: ReturnType<typeof useTranslation>['t']): string {
+  const fieldMap: Record<string, string> = {
+    'customer.name': t('orders.submit.form.fields.customerName'),
+    'customer.phone': t('orders.submit.form.fields.customerPhone'),
+    'delivery.type': t('orders.submit.form.fields.deliveryType'),
+    'delivery.address.road': t('orders.submit.form.fields.street'),
+    'delivery.address.house_number': t('orders.submit.form.fields.houseNumber'),
+    'delivery.address.postcode': t('orders.submit.form.fields.postcode'),
+    'delivery.address.city': t('orders.submit.form.fields.city'),
+    'delivery.address.state': t('orders.submit.form.fields.state'),
+    'delivery.address.country': t('orders.submit.form.fields.country'),
+    'delivery.requestedFor': t('orders.submit.form.fields.requestedFor'),
+    paymentMethod: t('orders.submit.form.fields.paymentMethod'),
+  };
+
+  return fieldMap[fieldPath] || fieldPath;
 }
 
 export function OrderSubmitRoute() {
   const { t } = useTranslation();
-  const tt = (key: string, options?: Record<string, unknown>) => t(`orders.submit.${key}`, options);
-  const { userOrders, deliveryProfiles } = useLoaderData() as LoaderData;
+  const { userOrders, deliveryProfiles } = useLoaderData<LoaderData>();
   const actionData = useActionData() as ActionData | undefined;
   const navigation = useNavigation();
   const params = useParams();
+  const navigate = useNavigate();
   const isSubmitting = navigation.state === 'submitting';
+  const [showConfirmation, setShowConfirmation] = useState(false);
   const { isEnabled: isDeveloperMode } = useDeveloperMode();
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('especes');
   const [deliveryType, setDeliveryType] = useState<DeliveryType>('livraison');
@@ -211,16 +198,13 @@ export function OrderSubmitRoute() {
   const [profileLoading, setProfileLoading] = useState(false);
   const participantText =
     userOrders.length === 0
-      ? tt('hero.participants.none')
-      : tt('hero.participants.count', { count: userOrders.length });
+      ? t('orders.submit.hero.participants.none')
+      : t('orders.submit.hero.participants.count', { count: userOrders.length });
 
-  const resolveProfileError = useCallback(
-    (error: unknown) =>
-      error instanceof ApiError ? error.message : tt('saved.messages.genericError'),
-    [tt]
-  );
+  const resolveProfileError = (error: unknown) =>
+    error instanceof ApiError ? error.message : t('orders.submit.saved.messages.genericError');
 
-  const applyProfile = useCallback((profile: DeliveryProfile) => {
+  const applyProfile = (profile: DeliveryProfile) => {
     setCustomerName(profile.contactName);
     setCustomerPhone(profile.phone);
     setDeliveryType(profile.deliveryType as DeliveryType);
@@ -235,7 +219,7 @@ export function OrderSubmitRoute() {
     );
     setProfileLabel(profile.label ?? '');
     setProfileMessage(null);
-  }, []);
+  };
 
   useEffect(() => {
     if (!selectedProfileId) {
@@ -245,7 +229,7 @@ export function OrderSubmitRoute() {
     if (profile) {
       applyProfile(profile);
     }
-  }, [selectedProfileId, deliveryProfilesState, applyProfile]);
+  }, [selectedProfileId, deliveryProfilesState]);
 
   useEffect(() => {
     if (deliveryProfilesState.length > 0 && !selectedProfileId && !manualProfileClearRef.current) {
@@ -253,63 +237,64 @@ export function OrderSubmitRoute() {
       setSelectedProfileId(first.id);
       applyProfile(first);
     }
-  }, [deliveryProfilesState, selectedProfileId, applyProfile]);
+  }, [deliveryProfilesState, selectedProfileId]);
 
-  const handleProfileSelect = useCallback((profileId: string) => {
+  // Show confirmation modal when order is successfully submitted
+  useEffect(() => {
+    if (actionData?.success && actionData?.groupOrderId) {
+      setShowConfirmation(true);
+    }
+  }, [actionData]);
+
+  const handleCloseConfirmation = () => {
+    setShowConfirmation(false);
+    if (actionData?.groupOrderId) {
+      navigate(routes.root.orderDetail({ orderId: actionData.groupOrderId }));
+    }
+  };
+
+  const handleProfileSelect = (profileId: string) => {
     manualProfileClearRef.current = false;
     setSelectedProfileId(profileId);
-  }, []);
+  };
 
-  const handleClearProfileSelection = useCallback(() => {
+  const handleClearProfileSelection = () => {
     manualProfileClearRef.current = true;
     setSelectedProfileId('');
-  }, []);
+  };
 
-  const buildProfilePayload = useCallback(
-    (labelOverride?: string): DeliveryProfilePayload => ({
-      label: (labelOverride ?? profileLabel).trim() || undefined,
-      contactName: customerName,
-      phone: customerPhone,
-      deliveryType,
-      address: {
-        road,
-        houseNumber: houseNumber || undefined,
-        postcode,
-        city,
-        state: stateRegion,
-        country: SWITZERLAND_COUNTRY,
-      },
-    }),
-    [
-      profileLabel,
-      customerName,
-      customerPhone,
-      deliveryType,
+  const buildProfilePayload = (labelOverride?: string): DeliveryProfilePayload => ({
+    label: (labelOverride ?? profileLabel).trim() || undefined,
+    contactName: customerName,
+    phone: customerPhone,
+    deliveryType,
+    address: {
       road,
-      houseNumber,
+      houseNumber: houseNumber || undefined,
       postcode,
       city,
-      stateRegion,
-    ]
-  );
+      state: stateRegion,
+      country: SWITZERLAND_COUNTRY,
+    },
+  });
 
-  const ensureProfileFields = useCallback(() => {
+  const ensureProfileFields = () => {
     if (!customerName || !customerPhone || !road || !postcode || !city) {
-      setProfileMessage({ type: 'error', text: tt('saved.messages.missingFields') });
+      setProfileMessage({ type: 'error', text: t('orders.submit.saved.messages.missingFields') });
       return false;
     }
     return true;
-  }, [customerName, customerPhone, road, postcode, city, tt]);
+  };
 
-  const ensureProfileLabel = useCallback(() => {
+  const ensureProfileLabel = () => {
     if (!profileLabel.trim()) {
-      setProfileMessage({ type: 'error', text: tt('saved.messages.missingLabel') });
+      setProfileMessage({ type: 'error', text: t('orders.submit.saved.messages.missingLabel') });
       return false;
     }
     return true;
-  }, [profileLabel, tt]);
+  };
 
-  const handleSaveProfile = useCallback(async () => {
+  const handleSaveProfile = async () => {
     if (!ensureProfileFields() || !ensureProfileLabel()) {
       return;
     }
@@ -321,17 +306,17 @@ export function OrderSubmitRoute() {
       setDeliveryProfilesState((prev) => [...prev, profile]);
       manualProfileClearRef.current = false;
       setSelectedProfileId(profile.id);
-      setProfileMessage({ type: 'success', text: tt('saved.messages.saved') });
+      setProfileMessage({ type: 'success', text: t('orders.submit.saved.messages.saved') });
     } catch (error) {
       setProfileMessage({ type: 'error', text: resolveProfileError(error) });
     } finally {
       setProfileLoading(false);
     }
-  }, [buildProfilePayload, ensureProfileFields, ensureProfileLabel, resolveProfileError, tt]);
+  };
 
-  const handleUpdateProfile = useCallback(async () => {
+  const handleUpdateProfile = async () => {
     if (!selectedProfileId) {
-      setProfileMessage({ type: 'error', text: tt('saved.messages.selectProfile') });
+      setProfileMessage({ type: 'error', text: t('orders.submit.saved.messages.selectProfile') });
       return;
     }
     if (!ensureProfileFields() || !ensureProfileLabel()) {
@@ -345,27 +330,20 @@ export function OrderSubmitRoute() {
       setDeliveryProfilesState((prev) =>
         prev.map((item) => (item.id === profile.id ? profile : item))
       );
-      setProfileMessage({ type: 'success', text: tt('saved.messages.updated') });
+      setProfileMessage({ type: 'success', text: t('orders.submit.saved.messages.updated') });
     } catch (error) {
       setProfileMessage({ type: 'error', text: resolveProfileError(error) });
     } finally {
       setProfileLoading(false);
     }
-  }, [
-    buildProfilePayload,
-    ensureProfileFields,
-    ensureProfileLabel,
-    resolveProfileError,
-    selectedProfileId,
-    tt,
-  ]);
+  };
 
-  const handleDeleteProfile = useCallback(async () => {
+  const handleDeleteProfile = async () => {
     if (!selectedProfileId) {
-      setProfileMessage({ type: 'error', text: tt('saved.messages.selectProfile') });
+      setProfileMessage({ type: 'error', text: t('orders.submit.saved.messages.selectProfile') });
       return;
     }
-    if (!globalThis.window.confirm(tt('saved.confirmDelete'))) {
+    if (!globalThis.window.confirm(t('orders.submit.saved.confirmDelete'))) {
       return;
     }
     setProfileLoading(true);
@@ -376,23 +354,23 @@ export function OrderSubmitRoute() {
       manualProfileClearRef.current = false;
       setSelectedProfileId('');
       setProfileLabel('');
-      setProfileMessage({ type: 'success', text: tt('saved.messages.deleted') });
+      setProfileMessage({ type: 'success', text: t('orders.submit.saved.messages.deleted') });
     } catch (error) {
       setProfileMessage({ type: 'error', text: resolveProfileError(error) });
     } finally {
       setProfileLoading(false);
     }
-  }, [resolveProfileError, selectedProfileId, tt]);
+  };
 
   return (
     <div className="space-y-8">
       <div className="flex items-center gap-4">
         <Link
-          to={`/orders/${params.orderId}`}
+          to={routes.root.orderDetail({ orderId: params.orderId! })}
           className="inline-flex cursor-pointer items-center gap-2 font-medium text-slate-300 text-sm hover:text-brand-100"
         >
           <ArrowLeft size={18} />
-          {tt('navigation.back')}
+          {t('orders.submit.navigation.back')}
         </Link>
       </div>
 
@@ -402,19 +380,19 @@ export function OrderSubmitRoute() {
         <div className="relative space-y-4">
           <div className="flex items-center gap-3">
             <div className="grid h-12 w-12 place-items-center rounded-xl bg-linear-to-br from-amber-400 via-amber-500 to-rose-500">
-              <Lock01 size={24} className="text-white" />
+              <Lock size={24} className="text-white" />
             </div>
             <div>
               <h1 className="font-semibold text-2xl text-white tracking-tight">
-                {tt('hero.title')}
+                {t('orders.submit.hero.title')}
               </h1>
-              <p className="text-slate-300 text-sm">{tt('hero.description')}</p>
+              <p className="text-slate-300 text-sm">{t('orders.submit.hero.description')}</p>
             </div>
           </div>
 
           <div className="rounded-xl border border-white/10 bg-slate-900/50 p-4">
             <p className="text-slate-400 text-xs uppercase tracking-[0.2em]">
-              {tt('hero.participants.label')}
+              {t('orders.submit.hero.participants.label')}
             </p>
             <p className="mt-2 font-semibold text-2xl text-white">{userOrders.length}</p>
             <p className="mt-1 text-slate-400 text-xs">{participantText}</p>
@@ -422,38 +400,37 @@ export function OrderSubmitRoute() {
         </div>
       </div>
 
-      <Card className="p-6">
+      <Card>
         <CardHeader className="gap-2">
           <div className="flex items-center gap-3">
             <div className="grid h-10 w-10 place-items-center rounded-xl bg-linear-to-br from-amber-400 via-amber-500 to-rose-500">
-              <Truck01 size={20} className="text-white" />
+              <Truck size={20} className="text-white" />
             </div>
             <div>
-              <CardTitle className="text-white">{tt('form.title')}</CardTitle>
-              <CardDescription>{tt('form.description')}</CardDescription>
+              <CardTitle className="text-white">{t('orders.submit.form.title')}</CardTitle>
+              <CardDescription>{t('orders.submit.form.description')}</CardDescription>
             </div>
           </div>
         </CardHeader>
         <CardContent>
           <Form method="post" className="space-y-6">
-            <input type="hidden" name="requestedFor" value={requestedFor} />
             <input type="hidden" name="country" value={SWITZERLAND_COUNTRY} />
             <div className="grid gap-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(280px,0.85fr)] lg:items-start xl:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)]">
               <div className="space-y-5">
                 <section className="space-y-5 rounded-2xl border border-white/10 bg-slate-900/50 p-5">
                   <div className="space-y-1">
                     <p className="font-semibold text-sm text-white">
-                      {tt('form.sections.address.title')}
+                      {t('orders.submit.form.sections.address.title')}
                     </p>
                     <p className="text-slate-400 text-xs">
-                      {tt('form.sections.address.description')}
+                      {t('orders.submit.form.sections.address.description')}
                     </p>
                   </div>
 
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div className="grid gap-2">
                       <Label htmlFor="customerName" required>
-                        {tt('form.fields.customerName')}
+                        {t('orders.submit.form.fields.customerName')}
                       </Label>
                       <Input
                         id="customerName"
@@ -467,7 +444,7 @@ export function OrderSubmitRoute() {
                     </div>
                     <div className="grid gap-2">
                       <Label htmlFor="customerPhone" required>
-                        {tt('form.fields.customerPhone')}
+                        {t('orders.submit.form.fields.customerPhone')}
                       </Label>
                       <Input
                         id="customerPhone"
@@ -491,7 +468,7 @@ export function OrderSubmitRoute() {
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div className="grid gap-2">
                       <Label htmlFor="road" required>
-                        {tt('form.fields.street')}
+                        {t('orders.submit.form.fields.street')}
                       </Label>
                       <Input
                         id="road"
@@ -504,7 +481,9 @@ export function OrderSubmitRoute() {
                       />
                     </div>
                     <div className="grid gap-2">
-                      <Label htmlFor="houseNumber">{tt('form.fields.houseNumber')}</Label>
+                      <Label htmlFor="houseNumber">
+                        {t('orders.submit.form.fields.houseNumber')}
+                      </Label>
                       <Input
                         id="houseNumber"
                         name="houseNumber"
@@ -519,7 +498,7 @@ export function OrderSubmitRoute() {
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div className="grid gap-2">
                       <Label htmlFor="postcode" required>
-                        {tt('form.fields.postcode')}
+                        {t('orders.submit.form.fields.postcode')}
                       </Label>
                       <Input
                         id="postcode"
@@ -533,7 +512,7 @@ export function OrderSubmitRoute() {
                     </div>
                     <div className="grid gap-2">
                       <Label htmlFor="city" required>
-                        {tt('form.fields.city')}
+                        {t('orders.submit.form.fields.city')}
                       </Label>
                       <Input
                         id="city"
@@ -549,7 +528,7 @@ export function OrderSubmitRoute() {
 
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div className="grid gap-2">
-                      <Label htmlFor="state">{tt('form.fields.state')}</Label>
+                      <Label htmlFor="state">{t('orders.submit.form.fields.state')}</Label>
                       <select
                         id="state"
                         name="state"
@@ -566,7 +545,7 @@ export function OrderSubmitRoute() {
                       </select>
                     </div>
                     <div className="grid gap-2">
-                      <Label htmlFor="country">{tt('form.fields.country')}</Label>
+                      <Label htmlFor="country">{t('orders.submit.form.fields.country')}</Label>
                       <Input
                         id="country"
                         name="country"
@@ -581,30 +560,32 @@ export function OrderSubmitRoute() {
                 </section>
               </div>
 
-              <div className="flex h-full flex-col rounded-3xl border border-white/10 bg-slate-900/60 p-5">
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div className="space-y-1">
-                    <p className="font-semibold text-sm text-white">{tt('saved.title')}</p>
-                    <p className="text-slate-400 text-xs">{tt('saved.description')}</p>
+              <Card className="flex h-full flex-col border-white/10 bg-slate-800/30">
+                <CardHeader className="gap-2">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                      <CardTitle className="text-white">{t('orders.submit.saved.title')}</CardTitle>
+                      <CardDescription>{t('orders.submit.saved.description')}</CardDescription>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleClearProfileSelection}
+                      disabled={profileLoading}
+                    >
+                      {t('orders.submit.saved.actions.clear')}
+                    </Button>
                   </div>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleClearProfileSelection}
-                    disabled={profileLoading}
-                  >
-                    {tt('saved.actions.clear')}
-                  </Button>
-                </div>
+                </CardHeader>
 
-                <div className="mt-4 flex-1 space-y-4">
-                  <div className="grid gap-3 sm:grid-cols-2 lg:max-h-[360px] lg:overflow-y-auto lg:pr-1">
+                <CardContent className="flex min-h-0 flex-1 flex-col">
+                  <div className="mb-6 grid gap-3 sm:grid-cols-2 lg:max-h-[360px] lg:overflow-y-auto lg:pr-1">
                     {deliveryProfilesState.slice(0, 4).map((profile) => (
                       <button
                         key={profile.id}
                         type="button"
-                        className={`flex w-full flex-col gap-1 rounded-2xl border px-4 py-3 text-left transition duration-200 ${
+                        className={`flex w-full flex-col gap-1 rounded-xl border px-4 py-3 text-left transition duration-200 ${
                           profile.id === selectedProfileId
                             ? 'border-brand-400 bg-brand-500/10 text-white shadow-[0_10px_30px_rgba(99,102,241,0.35)]'
                             : 'border-white/10 bg-slate-900/50 text-slate-200 hover:border-brand-400/40 hover:text-white'
@@ -614,10 +595,10 @@ export function OrderSubmitRoute() {
                       >
                         <div className="flex items-center justify-between gap-2">
                           <p className="font-semibold text-sm">
-                            {profile.label ?? tt('saved.unnamedProfile')}
+                            {profile.label ?? t('orders.submit.saved.unnamedProfile')}
                           </p>
                           <span className="rounded-full border border-white/15 px-2 py-0.5 text-[11px] text-slate-300 uppercase tracking-wide">
-                            {tt(`form.deliveryTypes.${profile.deliveryType}`)}
+                            {t(`orders.submit.form.deliveryTypes.${profile.deliveryType}`)}
                           </span>
                         </div>
                         <p className="text-slate-400 text-xs">
@@ -633,67 +614,69 @@ export function OrderSubmitRoute() {
                       </button>
                     ))}
                     {deliveryProfilesState.length === 0 && (
-                      <div className="rounded-2xl border border-white/10 border-dashed bg-slate-900/30 p-4 text-center text-slate-500 text-sm">
-                        {tt('saved.emptyState')}
+                      <div className="col-span-full rounded-xl border border-white/10 border-dashed bg-slate-900/30 p-4 text-center text-slate-500 text-sm">
+                        {t('orders.submit.saved.emptyState')}
                       </div>
                     )}
                   </div>
-                </div>
 
-                <div className="mt-auto space-y-3 rounded-2xl border border-white/10 bg-slate-950/40 p-4">
-                  <div className="grid gap-2">
-                    <Label htmlFor="profileLabelMain">{tt('saved.labelField')}</Label>
-                    <Input
-                      id="profileLabelMain"
-                      placeholder={tt('saved.inputPlaceholder')}
-                      value={profileLabel}
-                      onChange={(event) => setProfileLabel(event.target.value)}
-                      disabled={profileLoading}
-                    />
+                  <div className="mt-auto space-y-3">
+                    <div className="grid gap-2">
+                      <Label htmlFor="profileLabelMain">
+                        {t('orders.submit.saved.labelField')}
+                      </Label>
+                      <Input
+                        id="profileLabelMain"
+                        placeholder={t('orders.submit.saved.inputPlaceholder')}
+                        value={profileLabel}
+                        onChange={(event) => setProfileLabel(event.target.value)}
+                        disabled={profileLoading}
+                      />
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={handleSaveProfile}
+                        disabled={profileLoading}
+                      >
+                        {t('orders.submit.saved.actions.save')}
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={handleUpdateProfile}
+                        disabled={profileLoading || !selectedProfileId}
+                      >
+                        {t('orders.submit.saved.actions.update')}
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        onClick={handleDeleteProfile}
+                        disabled={profileLoading || !selectedProfileId}
+                        className="text-rose-300 hover:text-rose-200"
+                      >
+                        {t('orders.submit.saved.actions.delete')}
+                      </Button>
+                    </div>
+                    {profileMessage ? (
+                      <Alert tone={profileMessage.type === 'success' ? 'success' : 'error'}>
+                        {profileMessage.text}
+                      </Alert>
+                    ) : null}
                   </div>
-                  <div className="flex flex-wrap gap-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={handleSaveProfile}
-                      disabled={profileLoading}
-                    >
-                      {tt('saved.actions.save')}
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={handleUpdateProfile}
-                      disabled={profileLoading || !selectedProfileId}
-                    >
-                      {tt('saved.actions.update')}
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      onClick={handleDeleteProfile}
-                      disabled={profileLoading || !selectedProfileId}
-                      className="text-rose-300 hover:text-rose-200"
-                    >
-                      {tt('saved.actions.delete')}
-                    </Button>
-                  </div>
-                  {profileMessage ? (
-                    <Alert tone={profileMessage.type === 'success' ? 'success' : 'error'}>
-                      {profileMessage.text}
-                    </Alert>
-                  ) : null}
-                </div>
-              </div>
+                </CardContent>
+              </Card>
             </div>
 
             <section className="space-y-4 rounded-2xl border border-white/10 bg-slate-900/50 p-5">
               <div className="space-y-1">
                 <p className="font-semibold text-sm text-white">
-                  {tt('form.sections.preferences.title')}
+                  {t('orders.submit.form.sections.preferences.title')}
                 </p>
                 <p className="text-slate-400 text-xs">
-                  {tt('form.sections.preferences.description')}
+                  {t('orders.submit.form.sections.preferences.description')}
                 </p>
               </div>
 
@@ -716,41 +699,65 @@ export function OrderSubmitRoute() {
               tone="warning"
               className="mt-4 border-amber-400/40 bg-amber-500/10 text-amber-100"
             >
-              {tt('reminder.body')}
+              {t('orders.submit.reminder.body')}
             </Alert>
 
             {isDeveloperMode && (
-              <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-4">
-                <div className="flex items-start gap-3">
-                  <Checkbox id="dryRun" name="dryRun" disabled={isSubmitting} className="mt-0.5" />
-                  <div className="flex-1 space-y-1">
-                    <Label
-                      htmlFor="dryRun"
-                      className="cursor-pointer font-medium text-amber-100 text-sm"
-                    >
-                      Dry Run Mode (Developer)
-                    </Label>
-                    <p className="text-amber-200/80 text-xs">
-                      Skip actual submission to external backend. Creates session and cart for
-                      testing cookie injection.
-                    </p>
+              <label htmlFor="dryRun" className="block cursor-pointer">
+                <Alert tone="warning" hideIcon className="cursor-pointer">
+                  <div className="flex items-start gap-3">
+                    <Checkbox
+                      id="dryRun"
+                      name="dryRun"
+                      disabled={isSubmitting}
+                      color="amber"
+                      className="mt-0.5"
+                    />
+                    <div className="flex-1 space-y-1">
+                      <Label
+                        htmlFor="dryRun"
+                        className="cursor-pointer font-medium text-amber-100 text-sm"
+                      >
+                        Dry Run Mode (Developer)
+                      </Label>
+                      <p className="text-amber-100/80 text-xs">
+                        Skip actual submission to external backend. Creates session and cart for
+                        testing cookie injection.
+                      </p>
+                    </div>
                   </div>
-                </div>
-              </div>
+                </Alert>
+              </label>
             )}
 
             {actionData?.errorKey || actionData?.errorMessage ? (
               <Alert tone="error">
-                {actionData?.errorKey
-                  ? t(actionData.errorKey, actionData.errorDetails || {})
-                  : actionData?.errorMessage}
+                <div className="space-y-2">
+                  <div>
+                    {actionData?.errorKey
+                      ? t(actionData.errorKey, actionData.errorDetails || {})
+                      : actionData?.errorMessage}
+                  </div>
+                  {actionData?.fieldErrors && Object.keys(actionData.fieldErrors).length > 0 && (
+                    <ul className="mt-2 list-inside list-disc space-y-1 text-sm">
+                      {Object.entries(actionData.fieldErrors).map(([field, message]) => (
+                        <li key={field}>
+                          <span className="font-medium">{getFieldLabel(field, t)}:</span> {message}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
               </Alert>
             ) : null}
 
             <div className="flex flex-wrap items-center gap-4">
-              <Link to={`/orders/${params.orderId}`} className="cursor-pointer">
+              <Link
+                to={routes.root.orderDetail({ orderId: params.orderId! })}
+                className="cursor-pointer"
+              >
                 <Button type="button" variant="outline" disabled={isSubmitting}>
-                  {tt('form.actions.cancel')}
+                  {t('orders.submit.form.actions.cancel')}
                 </Button>
               </Link>
               <Button
@@ -760,13 +767,15 @@ export function OrderSubmitRoute() {
                 variant="primary"
                 className="gap-2 shadow-[0_10px_35px_rgba(59,130,246,0.35)]"
               >
-                <Send03 size={16} />
-                {tt('form.actions.submit')}
+                <Send size={16} />
+                {t('orders.submit.form.actions.submit')}
               </Button>
             </div>
           </Form>
         </CardContent>
       </Card>
+
+      <OrderConfirmationModal isOpen={showConfirmation} onClose={handleCloseConfirmation} />
     </div>
   );
 }

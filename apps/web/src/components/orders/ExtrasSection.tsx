@@ -1,7 +1,7 @@
-import { Plus, ShoppingBag01 } from '@untitledui/icons';
+import { CakeSlice, CupSoda, Package, ShoppingBag } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { SelectionGroup } from '@/components/orders';
-import { Card, CardContent } from '@/components/ui';
+import { Avatar, Card, CardContent, CardHeader, CardTitle } from '@/components/ui';
 import type { StockResponse } from '@/lib/api/types';
 
 type ExtrasSectionProps = {
@@ -28,9 +28,9 @@ export function ExtrasSection({
   return (
     <div className="space-y-6 rounded-3xl border border-white/10 bg-slate-900/50 p-6">
       <div className="flex items-center gap-3 border-white/10 border-b pb-4">
-        <div className="grid h-10 w-10 place-items-center rounded-xl border border-violet-400/30 bg-linear-to-br from-violet-400/20 to-purple-500/20">
-          <ShoppingBag01 size={20} className="text-violet-300" />
-        </div>
+        <Avatar color="emerald" size="md">
+          <ShoppingBag />
+        </Avatar>
         <div>
           <h2 className="font-semibold text-lg text-white">
             {t('orders.create.extrasSection.title')}
@@ -40,14 +40,16 @@ export function ExtrasSection({
       </div>
 
       <Card className="border-white/10 bg-slate-800/30">
-        <CardContent className="space-y-6 p-6">
-          <SelectionGroup
-            title={t('common.labels.extras')}
-            items={stock.extras}
-            selected={extras}
-            onToggle={onToggleExtra}
-            icon={Plus}
-          />
+        <CardHeader className="gap-2">
+          <div className="flex items-center gap-2">
+            <Package size={18} className="text-brand-400" />
+            <CardTitle className="text-sm text-white normal-case tracking-normal">
+              {t('common.labels.extras')}
+            </CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <SelectionGroup items={stock.extras} selected={extras} onToggle={onToggleExtra} />
           {extras.map((id) => (
             <input key={id} type="hidden" name="extras" value={id} />
           ))}
@@ -55,14 +57,16 @@ export function ExtrasSection({
       </Card>
 
       <Card className="border-white/10 bg-slate-800/30">
-        <CardContent className="space-y-6 p-6">
-          <SelectionGroup
-            title={t('common.labels.drinks')}
-            items={stock.drinks}
-            selected={drinks}
-            onToggle={onToggleDrink}
-            icon={Plus}
-          />
+        <CardHeader className="gap-2">
+          <div className="flex items-center gap-2">
+            <CupSoda size={18} className="text-brand-400" />
+            <CardTitle className="text-sm text-white normal-case tracking-normal">
+              {t('common.labels.drinks')}
+            </CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <SelectionGroup items={stock.drinks} selected={drinks} onToggle={onToggleDrink} />
           {drinks.map((id) => (
             <input key={id} type="hidden" name="drinks" value={id} />
           ))}
@@ -70,14 +74,16 @@ export function ExtrasSection({
       </Card>
 
       <Card className="border-white/10 bg-slate-800/30">
-        <CardContent className="space-y-6 p-6">
-          <SelectionGroup
-            title={t('common.labels.desserts')}
-            items={stock.desserts}
-            selected={desserts}
-            onToggle={onToggleDessert}
-            icon={Plus}
-          />
+        <CardHeader className="gap-2">
+          <div className="flex items-center gap-2">
+            <CakeSlice size={18} className="text-brand-400" />
+            <CardTitle className="text-sm text-white normal-case tracking-normal">
+              {t('common.labels.desserts')}
+            </CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <SelectionGroup items={stock.desserts} selected={desserts} onToggle={onToggleDessert} />
           {desserts.map((id) => (
             <input key={id} type="hidden" name="desserts" value={id} />
           ))}

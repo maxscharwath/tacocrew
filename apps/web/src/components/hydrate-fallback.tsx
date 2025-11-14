@@ -9,7 +9,7 @@ export function HydrateFallback() {
       </div>
 
       <div className="relative mx-auto flex min-h-screen w-full max-w-7xl flex-col px-6 pt-10 pb-20">
-        <Card className="p-6">
+        <Card>
           <CardContent className="flex flex-col items-start gap-6">
             <div className="flex w-full flex-col gap-6 md:flex-row md:items-center md:justify-between">
               <div className="flex items-center gap-4">

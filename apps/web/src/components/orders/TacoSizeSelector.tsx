@@ -1,6 +1,6 @@
-import { CheckCircle, Package } from '@untitledui/icons';
+import { CheckCircle2, Ruler } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui';
+import { Avatar, Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui';
 import type { StockResponse } from '@/lib/api';
 import { TACO_SIZE_CONFIG } from '@/lib/taco-config';
 import { cn } from '@/lib/utils';
@@ -20,12 +20,12 @@ export function TacoSizeSelector({ sizes, selected, onSelect, currency }: TacoSi
   const { t } = useTranslation();
 
   return (
-    <Card className="p-6">
-      <CardHeader className="gap-3 pb-6">
+    <Card>
+      <CardHeader className="gap-3">
         <div className="flex items-center gap-3">
-          <div className="grid h-10 w-10 place-items-center rounded-xl border border-brand-400/30 bg-linear-to-br from-brand-400/20 to-sky-500/20">
-            <Package size={20} className="text-brand-300" />
-          </div>
+          <Avatar color="blue" size="md">
+            <Ruler />
+          </Avatar>
           <div>
             <CardTitle className="text-white">{t('orders.create.sizeSection.title')}</CardTitle>
             <CardDescription className="mt-0.5">
@@ -34,7 +34,7 @@ export function TacoSizeSelector({ sizes, selected, onSelect, currency }: TacoSi
           </div>
         </div>
       </CardHeader>
-      <CardContent className="pt-0">
+      <CardContent>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {sizes.map((tacoSize) => {
             const config = TACO_SIZE_CONFIG[tacoSize.code];
@@ -59,7 +59,7 @@ export function TacoSizeSelector({ sizes, selected, onSelect, currency }: TacoSi
                   </span>
                   {isSelected && (
                     <div className="-top-1 -right-1 absolute grid h-6 w-6 place-items-center rounded-full border-2 border-slate-900 bg-brand-500">
-                      <CheckCircle size={14} className="text-white" />
+                      <CheckCircle2 size={14} className="text-white" />
                     </div>
                   )}
                 </div>

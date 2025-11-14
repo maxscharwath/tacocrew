@@ -1,24 +1,26 @@
-import { Activity, ClipboardCheck, Package, Terminal, Users03 } from '@untitledui/icons';
+import { Activity, ClipboardCheck, LogOut, Package, Settings, Terminal, Users } from 'lucide-react';
 import type { ComponentType } from 'react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Form,
   isRouteErrorResponse,
+  Link,
   NavLink,
   Outlet,
   useLoaderData,
   useRouteError,
 } from 'react-router';
-import { Alert, Avatar, Button } from '@/components/ui';
+import { Alert, Avatar, Button, Card } from '@/components/ui';
 import { LanguageSwitcher } from '../components/language-switcher';
 import { useDeveloperMode } from '../hooks/useDeveloperMode';
 import { authClient } from '../lib/auth-client';
+import { routes } from '../lib/routes';
 import type { RootLoaderData } from './root.loader';
 
 export function RootLayout() {
   const { t } = useTranslation();
-  const { profile } = useLoaderData() as RootLoaderData;
+  const { profile } = useLoaderData<RootLoaderData>();
   const { isEnabled: isDeveloperMode, toggle: toggleDeveloperMode } = useDeveloperMode();
   const [userName, setUserName] = useState<string>(profile?.username || 'User');
   const [userInitials, setUserInitials] = useState<string>(
@@ -61,7 +63,7 @@ export function RootLayout() {
     { href: '/', labelKey: 'navigation.dashboard', icon: Activity },
     { href: '/orders', labelKey: 'navigation.orders', icon: ClipboardCheck },
     { href: '/stock', labelKey: 'navigation.stock', icon: Package },
-    { href: '/profile', labelKey: 'navigation.profile', icon: Users03 },
+    { href: '/profile', labelKey: 'navigation.profile', icon: Users },
   ];
 
   return (
@@ -72,14 +74,14 @@ export function RootLayout() {
       </div>
 
       <div className="relative mx-auto flex min-h-screen w-full max-w-7xl flex-col px-6 pt-10 pb-20">
-        <header className="overflow-hidden rounded-3xl border border-white/10 bg-slate-900/60 shadow-[0_40px_120px_rgba(8,47,73,0.25)] backdrop-blur">
+        <Card className="overflow-hidden border-white/10 bg-slate-900/60 shadow-[0_40px_120px_rgba(8,47,73,0.25)] backdrop-blur">
           {/* Top Section: Brand + User Actions */}
           <div className="flex items-center justify-between gap-4 border-white/10 border-b px-6 py-4">
             {/* Brand Section */}
             <div className="flex min-w-0 items-center gap-3">
-              <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-linear-to-br from-brand-400 via-brand-500 to-sky-500 text-base shadow-glow-brand">
-                🌮
-              </div>
+              <Avatar color="brandHero" size="md" variant="elevated">
+                <span className="text-base">🌮</span>
+              </Avatar>
               <h1 className="truncate font-semibold text-white text-xl tracking-tight">
                 {t('root.tacobot')}
               </h1>
@@ -99,26 +101,39 @@ export function RootLayout() {
               </Button>
               <LanguageSwitcher />
               <div className="flex h-11 items-center gap-2 rounded-xl border border-white/10 bg-linear-to-br from-slate-900/90 via-slate-900/80 to-slate-950/90 px-2.5 py-1.5 shadow-black/20 shadow-lg backdrop-blur-sm">
-                <Avatar
-                  size="sm"
-                  initials={userInitials}
-                  className="shrink-0 bg-linear-to-br from-brand-400 via-brand-500 to-sky-500 text-[10px]"
-                />
-                <span
-                  className="max-w-[100px] truncate font-semibold text-white text-xs sm:max-w-[150px]"
+                <Link to={routes.root.profile()} className="cursor-pointer">
+                  <Avatar color="brandHero" size="sm">
+                    {userInitials}
+                  </Avatar>
+                </Link>
+                <Link
+                  to={routes.root.profile()}
+                  className="max-w-[100px] truncate font-semibold text-white text-xs hover:text-brand-100 sm:max-w-[150px]"
                   title={userName}
                 >
                   {userName}
-                </span>
+                </Link>
+                <Link to={routes.root.profileAccount()} className="shrink-0">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 w-7 p-0"
+                    title={t('navigation.profile')}
+                  >
+                    <Settings size={14} />
+                  </Button>
+                </Link>
                 <Form method="post" className="shrink-0">
                   <input type="hidden" name="_intent" value="logout" />
                   <Button
                     type="submit"
                     variant="ghost"
                     size="sm"
-                    className="px-2.5 py-1 text-[11px]"
+                    className="h-7 w-7 p-0"
+                    title={t('common.signOut')}
                   >
-                    {t('common.signOut')}
+                    <LogOut size={14} />
                   </Button>
                 </Form>
               </div>
@@ -146,7 +161,7 @@ export function RootLayout() {
               </NavLink>
             ))}
           </nav>
-        </header>
+        </Card>
 
         <main className="mt-10 flex-1">
           <Outlet />

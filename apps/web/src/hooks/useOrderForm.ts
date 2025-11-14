@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { StockResponse } from '@/lib/api';
 import type { UserOrderDetail } from '@/lib/api/orders';
 import type { MeatSelection, TacoSizeItem } from '@/types/orders';
@@ -13,7 +13,7 @@ type UseOrderFormProps = {
 };
 
 export function useOrderForm({ stock, myOrder }: UseOrderFormProps) {
-  const defaultSelections = useMemo(() => {
+  const getDefaultSelections = () => {
     if (!myOrder) {
       return {
         size: '',
@@ -43,7 +43,9 @@ export function useOrderForm({ stock, myOrder }: UseOrderFormProps) {
       desserts: myOrder.items.desserts.map((dessert: { id: string }) => dessert.id),
       note: taco?.note ?? '',
     };
-  }, [myOrder]);
+  };
+
+  const defaultSelections = getDefaultSelections();
 
   const [size, setSize] = useState(defaultSelections.size);
   const [meats, setMeats] = useState<MeatSelection[]>(defaultSelections.meats);
@@ -54,10 +56,9 @@ export function useOrderForm({ stock, myOrder }: UseOrderFormProps) {
   const [desserts, setDesserts] = useState<string[]>(defaultSelections.desserts);
   const [note, setNote] = useState(defaultSelections.note);
 
-  const selectedTacoSize = useMemo((): TacoSizeItem | null => {
-    if (!size) return null;
-    return stock.tacos.find((t) => t.code === size) ?? null;
-  }, [size, stock.tacos]);
+  const selectedTacoSize: TacoSizeItem | null = size
+    ? (stock.tacos.find((t) => t.code === size) ?? null)
+    : null;
 
   const toggleSelection = (
     id: string,
@@ -163,14 +164,17 @@ export function useOrderForm({ stock, myOrder }: UseOrderFormProps) {
   }, [size]);
 
   // Calculate total price
-  const totalPrice = useMemo(() => {
-    return calculateOrderTotalPrice(selectedTacoSize, meats, extras, drinks, desserts, stock);
-  }, [selectedTacoSize, meats, extras, drinks, desserts, stock]);
+  const totalPrice = calculateOrderTotalPrice(
+    selectedTacoSize,
+    meats,
+    extras,
+    drinks,
+    desserts,
+    stock
+  );
 
   // Generate price breakdown
-  const priceBreakdown = useMemo(() => {
-    return generatePriceBreakdown(selectedTacoSize, extras, drinks, desserts, stock);
-  }, [selectedTacoSize, extras, drinks, desserts, stock]);
+  const priceBreakdown = generatePriceBreakdown(selectedTacoSize, extras, drinks, desserts, stock);
 
   /**
    * Prefill form with taco data - only sets form state, does NOT validate or submit

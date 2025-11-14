@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { Avatar } from '@/components/ui';
 
 export function OrderCreateHero() {
   const { t } = useTranslation();
@@ -9,9 +10,9 @@ export function OrderCreateHero() {
       <div className="-bottom-16 pointer-events-none absolute left-12 h-60 w-60 rounded-full bg-purple-500/25 blur-3xl" />
       <div className="relative space-y-6">
         <div className="flex items-center gap-3">
-          <div className="grid h-14 w-14 place-items-center rounded-xl bg-linear-to-br from-brand-400 via-brand-500 to-sky-500 shadow-[0_10px_30px_rgba(99,102,241,0.35)]">
+          <Avatar color="brandHero" size="xl" variant="elevated">
             <span className="text-3xl">🌮</span>
-          </div>
+          </Avatar>
           <div className="flex-1">
             <h1 className="font-semibold text-3xl text-white tracking-tight lg:text-4xl">
               {t('orders.create.hero.title')}

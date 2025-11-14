@@ -59,7 +59,7 @@
   },
   "login": {
     "title": "TacoCrew",
-    "subtitle": "Sign in to join group orders or create your own. No account yet? Just enter your name!",
+    "subtitle": "Create your account to join group orders or create your own.",
     "usernamePlaceholder": "chef-del-taco",
     "usernameRequired": "Username is required",
     "unexpectedError": "Unexpected error. Please try again.",
@@ -87,7 +87,9 @@
     "signInFailed": "Sign in failed",
     "signUpFailed": "Sign up failed",
     "passkeySignInFailed": "Passkey sign in failed",
-    "passkeyAuthFailed": "Passkey authentication failed"
+    "passkeyAuthFailed": "Passkey authentication failed",
+    "alreadyHaveAccount": "Already have an account?",
+    "noAccount": "Don't have an account?"
   },
   "account": {
     "title": "Account Settings",
@@ -599,6 +601,7 @@
         "selectLabel": "Saved profiles",
         "selectPlaceholder": "Manual entry",
         "selectedLabel": "No profile selected",
+        "emptyState": "No saved delivery profiles yet.",
         "labelField": "Profile name",
         "inputPlaceholder": "Profile label (e.g. HQ, Home)",
         "unnamedProfile": "Unnamed",
@@ -626,6 +629,12 @@
       "reminder": {
         "title": "Final step",
         "body": "Once you submit, the order will be finalized and sent. Participants won't be able to modify their orders anymore. Make sure everyone has added their tacos!"
+      },
+      "confirmation": {
+        "title": "Order Confirmed!",
+        "successTitle": "Order Submitted Successfully",
+        "successMessage": "Your order has been confirmed and sent to the restaurant. You will be redirected to the order details page.",
+        "closeButton": "View Order Details"
       },
       "errors": {
         "missingFields": "All customer, delivery type, address, and requested time fields are required.",
@@ -747,6 +756,7 @@
       "noPrice": "No price",
       "copyIdTooltip": "Copy ID to clipboard",
       "copyId": "Copy ID",
+      "copied": "Copied!",
       "availability": {
         "available": "Available",
         "outOfStock": "Out of stock"

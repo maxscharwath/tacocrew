@@ -1,7 +1,6 @@
-import { ArrowLeft, CheckCircle, Package, Plus } from '@untitledui/icons';
+import { ArrowLeft, Droplets, FileText, Leaf, Sliders } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import {
-  type ActionFunctionArgs,
   Form,
   Link,
   type LoaderFunctionArgs,
@@ -24,6 +23,8 @@ import {
 } from '@/components/orders';
 import {
   Alert,
+  Avatar,
+  Badge,
   Card,
   CardContent,
   CardDescription,
@@ -33,11 +34,14 @@ import {
 } from '@/components/ui';
 import { useOrderForm } from '@/hooks/useOrderForm';
 import { useOrderValidation } from '@/hooks/useOrderValidation';
+import { useProgressSteps } from '@/hooks/useProgressSteps';
 import { OrdersApi, StockApi, UserApi } from '../lib/api';
 import { ApiError } from '../lib/api/http';
 import type { UpsertUserOrderBody } from '../lib/api/orders';
 import { authClient } from '../lib/auth-client';
 import { routes } from '../lib/routes';
+import { createActionHandler } from '../lib/utils/action-handler';
+import { getSummaryBreakdown } from '../utils/order-helpers';
 
 type LoaderData = {
   groupOrder: Awaited<ReturnType<typeof OrdersApi.getGroupOrderWithOrders>>['groupOrder'];
@@ -51,7 +55,7 @@ type ActionData = {
   errorMessage?: string;
 };
 
-export async function orderCreateLoader({ params, request }: LoaderFunctionArgs) {
+export async function orderCreateLoader({ params, request }: LoaderFunctionArgs): Promise<Response> {
   const groupOrderId = params.orderId;
   if (!groupOrderId) {
     throw new Response('Order not found', { status: 404 });
@@ -60,7 +64,7 @@ export async function orderCreateLoader({ params, request }: LoaderFunctionArgs)
   // Check Better Auth session
   const session = await authClient.getSession();
   if (!session?.data?.user) {
-    throw redirect(routes.login());
+    throw redirect(routes.signin());
   }
 
   const userId = session.data.user.id;
@@ -107,130 +111,117 @@ export async function orderCreateLoader({ params, request }: LoaderFunctionArgs)
     });
   } catch (error) {
     if (error instanceof ApiError && error.status === 401) {
-      throw redirect(routes.login());
+      throw redirect(routes.signin());
     }
     throw error;
   }
 }
 
-export async function orderCreateAction({ request, params }: ActionFunctionArgs) {
-  const groupOrderId = params.orderId;
-  if (!groupOrderId) {
-    throw new Response('Order not found', { status: 404 });
-  }
+export const orderCreateAction = createActionHandler({
+  handlers: {
+    POST: async ({ formData }, _request, params) => {
+      const groupOrderId = params?.orderId;
+      if (!groupOrderId) throw new Response('Order not found', { status: 404 });
 
-  // Check Better Auth session
-  const session = await authClient.getSession();
-  if (!session?.data?.user) {
-    throw redirect(routes.login());
-  }
-
-  const formData = await request.formData();
-  type TacoSize = UpsertUserOrderBody['items']['tacos'][number]['size'];
-
-  const size = formData.get('tacoSize')?.toString() as TacoSize | undefined;
-  const editOrderId = formData.get('editOrderId')?.toString();
-
-  // Parse meats with quantities (only include meats with quantity > 0)
-  const meatIds = formData.getAll('meats').map((value) => value.toString());
-  const meats = meatIds
-    .map((id) => {
-      const quantityStr = formData.get(`meat_quantity_${id}`);
-      const quantity = quantityStr ? Number(quantityStr) : 0;
-      return quantity > 0 ? { id, quantity } : null;
-    })
-    .filter((m): m is { id: string; quantity: number } => m !== null);
-
-  const sauces = formData.getAll('sauces').map((value) => ({ id: value.toString() }));
-  const garnitures = formData.getAll('garnitures').map((value) => ({ id: value.toString() }));
-  const extras = formData.getAll('extras').map((value) => ({ id: value.toString(), quantity: 1 }));
-  const drinks = formData.getAll('drinks').map((value) => ({ id: value.toString(), quantity: 1 }));
-  const desserts = formData
-    .getAll('desserts')
-    .map((value) => ({ id: value.toString(), quantity: 1 }));
-  const note = formData.get('note')?.toString().trim();
-
-  // Validation: must have either a taco OR other items
-  // Get taco size config to validate garnitures availability
-  const stock = await StockApi.getStock();
-  const tacoSize = stock.tacos.find((t) => t.code === size);
-
-  // Garnitures are always optional - never required
-  const hasTaco = size && meats.length > 0 && sauces.length > 0;
-  const hasOtherItems = extras.length > 0 || drinks.length > 0 || desserts.length > 0;
-
-  if (!hasTaco && !hasOtherItems) {
-    return Response.json({ errorKey: 'orders.create.errors.missingSelection' }, { status: 400 });
-  }
-
-  // If taco is selected, validate it
-  // Garnitures are optional - only validate that they're not selected if allowGarnitures is false
-  if (size && (!meats.length || !sauces.length)) {
-    return Response.json({ errorKey: 'orders.create.errors.missingFillings' }, { status: 400 });
-  }
-
-  // Validate that garnitures are not selected if they're not available
-  if (size && tacoSize && !tacoSize.allowGarnitures && garnitures.length > 0) {
-    return Response.json({ errorKey: 'orders.create.errors.garnishNotAvailable' }, { status: 400 });
-  }
-
-  try {
-    // If editing an existing order, delete it first
-    if (editOrderId) {
-      try {
-        await OrdersApi.deleteUserOrder(groupOrderId, editOrderId);
-      } catch {
-        // If delete fails (e.g., order doesn't exist or unauthorized), continue to create
-        // This allows creating a new order even if the old one can't be deleted
+      // Check Better Auth session
+      const session = await authClient.getSession();
+      if (!session?.data?.user) {
+        throw redirect(routes.signin());
       }
-    }
 
-    await OrdersApi.upsertUserOrder(groupOrderId, {
-      items: {
-        tacos: hasTaco
-          ? [
-              {
-                size: size!,
-                meats,
-                sauces,
-                garnitures,
-                note,
-                quantity: 1, // Always 1
-              },
-            ]
-          : [],
-        extras,
-        drinks,
-        desserts,
-      },
-    });
+      type TacoSize = UpsertUserOrderBody['items']['tacos'][number]['size'];
 
-    return redirect(routes.root.orderDetail({ orderId: groupOrderId }));
-  } catch (error) {
-    if (error instanceof ApiError) {
-      const errorMessage =
-        typeof error.body === 'object' && error.body && 'error' in error.body
-          ? ((error.body as { error?: { message?: string } }).error?.message ?? error.message)
-          : error.message;
+      const size = formData.get('tacoSize')?.toString() as TacoSize | undefined;
+      const editOrderId = formData.get('editOrderId')?.toString();
 
-      return Response.json(
-        {
-          errorKey: 'orders.common.errors.api',
-          errorMessage,
+      // Parse meats with quantities (only include meats with quantity > 0)
+      const meatIds = formData.getAll('meats').map((value) => value.toString());
+      const meats = meatIds
+        .map((id) => {
+          const quantityStr = formData.get(`meat_quantity_${id}`);
+          const quantity = quantityStr ? Number(quantityStr) : 0;
+          return quantity > 0 ? { id, quantity } : null;
+        })
+        .filter((m): m is { id: string; quantity: number } => m !== null);
+
+      const sauces = formData.getAll('sauces').map((value) => ({ id: value.toString() }));
+      const garnitures = formData.getAll('garnitures').map((value) => ({ id: value.toString() }));
+      const extras = formData
+        .getAll('extras')
+        .map((value) => ({ id: value.toString(), quantity: 1 }));
+      const drinks = formData
+        .getAll('drinks')
+        .map((value) => ({ id: value.toString(), quantity: 1 }));
+      const desserts = formData
+        .getAll('desserts')
+        .map((value) => ({ id: value.toString(), quantity: 1 }));
+      const note = formData.get('note')?.toString().trim();
+
+      // Validation: must have either a taco OR other items
+      // Get taco size config to validate garnitures availability
+      const stock = await StockApi.getStock();
+      const tacoSize = stock.tacos.find((t) => t.code === size);
+
+      // Garnitures are always optional - never required
+      const hasTaco = size && meats.length > 0 && sauces.length > 0;
+      const hasOtherItems = extras.length > 0 || drinks.length > 0 || desserts.length > 0;
+
+      if (!hasTaco && !hasOtherItems) {
+        throw new Response('Missing selection', { status: 400 });
+      }
+
+      // If taco is selected, validate it
+      if (size && (!meats.length || !sauces.length)) {
+        throw new Response('Missing fillings', { status: 400 });
+      }
+
+      // Validate that garnitures are not selected if they're not available
+      if (size && tacoSize && !tacoSize.allowGarnitures && garnitures.length > 0) {
+        throw new Response('Garnish not available', { status: 400 });
+      }
+
+      // If editing an existing order, delete it first
+      if (editOrderId) {
+        try {
+          await OrdersApi.deleteUserOrder(groupOrderId, editOrderId);
+        } catch {
+          // If delete fails, continue to create
+        }
+      }
+
+      await OrdersApi.upsertUserOrder(groupOrderId, {
+        items: {
+          tacos: hasTaco
+            ? [
+                {
+                  size: size!,
+                  meats,
+                  sauces,
+                  garnitures,
+                  note,
+                  quantity: 1,
+                },
+              ]
+            : [],
+          extras,
+          drinks,
+          desserts,
         },
-        { status: error.status }
-      );
-    }
-
-    return Response.json({ errorKey: 'orders.create.errors.unexpected' }, { status: 500 });
-  }
-}
+      });
+    },
+  },
+  getFormName: () => 'create',
+  onSuccess: (_request, params) => {
+    const groupOrderId = params.orderId;
+    if (!groupOrderId) throw new Response('Order not found', { status: 404 });
+    return redirect(routes.root.orderDetail({ orderId: groupOrderId }));
+  },
+});
 
 export function OrderCreateRoute() {
   const { t } = useTranslation();
-  const tt = (key: string, options?: Record<string, unknown>) => t(`orders.create.${key}`, options);
   const currency = t('common.currency.chf');
-  const { myOrder, stock, previousOrders } = useLoaderData() as LoaderData;
+  const { myOrder, stock, previousOrders } = useLoaderData<LoaderData>();
   const actionData = useActionData() as ActionData | undefined;
   const navigation = useNavigation();
   const navigate = useNavigate();
@@ -275,73 +266,17 @@ export function OrderCreateRoute() {
     drinks,
     desserts,
     selectedTacoSize,
-    tt,
   });
 
-  const summaryBreakdown = [
-    size ? tt('summary.breakdown.tacos', { count: 1 }) : tt('summary.breakdown.noTaco'),
-    tt('summary.breakdown.extras', { count: extras.length }),
-    tt('summary.breakdown.drinks', { count: drinks.length }),
-    tt('summary.breakdown.desserts', { count: desserts.length }),
-  ].join(' · ');
-
   const totalMeatQuantity = meats.reduce((sum, m) => sum + m.quantity, 0);
-
-  const progressSteps = size
-    ? [
-        {
-          key: 'size',
-          completed: true,
-          label: tt('progress.size.label'),
-          icon: Package,
-          description: selectedTacoSize?.name ?? tt('progress.size.empty'),
-        },
-        {
-          key: 'meats',
-          completed: totalMeatQuantity > 0,
-          label: t('common.labels.meats'),
-          icon: Plus,
-          description:
-            totalMeatQuantity > 0
-              ? selectedTacoSize?.maxMeats
-                ? tt('progress.meats.selectedWithMax', {
-                    count: totalMeatQuantity,
-                    max: selectedTacoSize.maxMeats,
-                  })
-                : tt('progress.meats.selected', { count: totalMeatQuantity })
-              : tt('progress.meats.empty'),
-        },
-        {
-          key: 'sauces',
-          completed: sauces.length > 0,
-          label: t('common.labels.sauces'),
-          icon: Plus,
-          description:
-            sauces.length > 0
-              ? selectedTacoSize?.maxSauces
-                ? tt('progress.sauces.selectedWithMax', {
-                    count: sauces.length,
-                    max: selectedTacoSize.maxSauces,
-                  })
-                : tt('progress.sauces.selected', { count: sauces.length })
-              : tt('progress.sauces.empty'),
-        },
-        ...(selectedTacoSize?.allowGarnitures
-          ? [
-              {
-                key: 'garnishes',
-                completed: garnitures.length > 0,
-                label: t('common.labels.garnishes'),
-                icon: CheckCircle,
-                description:
-                  garnitures.length > 0
-                    ? tt('progress.garnishes.selected', { count: garnitures.length })
-                    : tt('progress.garnishes.empty'),
-              },
-            ]
-          : []),
-      ]
-    : [];
+  const summaryBreakdown = getSummaryBreakdown(size, extras, drinks, desserts, t);
+  const progressSteps = useProgressSteps({
+    size,
+    selectedTacoSize,
+    totalMeatQuantity,
+    sauces,
+    garnitures,
+  });
 
   return (
     <div className="space-y-8">
@@ -351,7 +286,7 @@ export function OrderCreateRoute() {
           className="inline-flex cursor-pointer items-center gap-2 font-medium text-slate-300 text-sm transition-colors hover:text-brand-100"
         >
           <ArrowLeft size={18} />
-          {tt('navigation.backToOrder')}
+          {t('orders.create.navigation.backToOrder')}
         </Link>
       </div>
 
@@ -384,86 +319,114 @@ export function OrderCreateRoute() {
             currency={currency}
           />
 
-          <div className="space-y-6 rounded-3xl border border-white/10 bg-slate-900/50 p-6">
-            <div className="flex items-center gap-3 border-white/10 border-b pb-4">
-              <div className="grid h-10 w-10 place-items-center rounded-xl border border-amber-400/30 bg-linear-to-br from-amber-400/20 to-rose-500/20">
-                <span className="text-xl">🍖</span>
+          {size && (
+            <div className="space-y-6 rounded-3xl border border-white/10 bg-slate-900/50 p-6">
+              <div className="flex items-center gap-3 border-white/10 border-b pb-4">
+                <Avatar color="orange" size="md">
+                  <Sliders />
+                </Avatar>
+                <div>
+                  <h2 className="font-semibold text-lg text-white">
+                    {t('orders.create.customizeSection.title')}
+                  </h2>
+                  <p className="text-slate-400 text-xs">
+                    {t('orders.create.customizeSection.subtitle')}
+                  </p>
+                </div>
               </div>
-              <div>
-                <h2 className="font-semibold text-lg text-white">{tt('customizeSection.title')}</h2>
-                <p className="text-slate-400 text-xs">{tt('customizeSection.subtitle')}</p>
-              </div>
-            </div>
 
-            <MeatSelector
-              meats={meats}
-              stock={stock}
-              selectedTacoSize={selectedTacoSize}
-              size={size}
-              currency={currency}
-              isSubmitting={isSubmitting}
-              updateMeatQuantity={updateMeatQuantity}
-            />
+              <MeatSelector
+                meats={meats}
+                stock={stock}
+                selectedTacoSize={selectedTacoSize}
+                size={size}
+                currency={currency}
+                isSubmitting={isSubmitting}
+                updateMeatQuantity={updateMeatQuantity}
+              />
 
-            <Card className="border-white/10 bg-slate-800/30">
-              <CardContent className="space-y-6 p-6">
-                <SelectionGroup
-                  title={t('common.labels.sauces')}
-                  items={stock.sauces}
-                  selected={sauces}
-                  onToggle={(id) =>
-                    toggleSelection(id, sauces, setSauces, selectedTacoSize?.maxSauces)
-                  }
-                  icon={Plus}
-                  required
-                  maxSelections={selectedTacoSize?.maxSauces}
-                  disabled={!size}
-                />
-                {sauces.map((id) => (
-                  <input key={id} type="hidden" name="sauces" value={id} />
-                ))}
-              </CardContent>
-            </Card>
-
-            {selectedTacoSize && selectedTacoSize.allowGarnitures && (
               <Card className="border-white/10 bg-slate-800/30">
-                <CardContent className="space-y-6 p-6">
+                <CardHeader className="gap-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Droplets size={18} className="text-brand-400" />
+                      <CardTitle className="text-sm text-white normal-case tracking-normal">
+                        {t('common.labels.sauces')}
+                        <span className="ml-1 text-rose-400">*</span>
+                      </CardTitle>
+                    </div>
+                    {selectedTacoSize?.maxSauces !== undefined && (
+                      <Badge tone="brand" className="text-xs">
+                        {sauces.length}/{selectedTacoSize.maxSauces}
+                      </Badge>
+                    )}
+                  </div>
+                </CardHeader>
+                <CardContent>
                   <SelectionGroup
-                    title={t('common.labels.garnishes')}
-                    items={stock.garnishes}
-                    selected={garnitures}
-                    onToggle={(id) => toggleSelection(id, garnitures, setGarnitures)}
-                    icon={CheckCircle}
+                    items={stock.sauces}
+                    selected={sauces}
+                    onToggle={(id) =>
+                      toggleSelection(id, sauces, setSauces, selectedTacoSize?.maxSauces)
+                    }
+                    maxSelections={selectedTacoSize?.maxSauces}
                     disabled={!size}
                   />
-                  {garnitures.map((id) => (
-                    <input key={id} type="hidden" name="garnitures" value={id} />
+                  {sauces.map((id) => (
+                    <input key={id} type="hidden" name="sauces" value={id} />
                   ))}
                 </CardContent>
               </Card>
-            )}
 
-            {size && (
-              <Card className="border-white/10 bg-slate-800/30">
-                <CardHeader className="gap-2">
-                  <CardTitle className="text-white">{tt('notes.title')}</CardTitle>
-                  <CardDescription>{tt('notes.subtitle')}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Textarea
-                    name="note"
-                    placeholder={t('common.placeholders.specialInstructions')}
-                    value={note}
-                    onChange={(e) => setNote(e.target.value)}
-                    disabled={isSubmitting}
-                    rows={3}
-                    className="resize-none"
-                  />
-                  <input type="hidden" name="note" value={note} />
-                </CardContent>
-              </Card>
-            )}
-          </div>
+              {selectedTacoSize && selectedTacoSize.allowGarnitures && (
+                <Card className="border-white/10 bg-slate-800/30">
+                  <CardHeader className="gap-2">
+                    <div className="flex items-center gap-2">
+                      <Leaf size={18} className="text-brand-400" />
+                      <CardTitle className="text-sm text-white normal-case tracking-normal">
+                        {t('common.labels.garnishes')}
+                      </CardTitle>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <SelectionGroup
+                      items={stock.garnishes}
+                      selected={garnitures}
+                      onToggle={(id) => toggleSelection(id, garnitures, setGarnitures)}
+                      disabled={!size}
+                    />
+                    {garnitures.map((id) => (
+                      <input key={id} type="hidden" name="garnitures" value={id} />
+                    ))}
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          )}
+
+          {size && (
+            <Card className="border-white/10 bg-slate-800/30">
+              <CardHeader className="gap-2">
+                <div className="flex items-center gap-2">
+                  <FileText size={18} className="text-brand-400" />
+                  <CardTitle className="text-white">{t('orders.create.notes.title')}</CardTitle>
+                </div>
+                <CardDescription>{t('orders.create.notes.subtitle')}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Textarea
+                  name="note"
+                  placeholder={t('common.placeholders.specialInstructions')}
+                  value={note}
+                  onChange={(e) => setNote(e.target.value)}
+                  disabled={isSubmitting}
+                  rows={3}
+                  className="resize-none"
+                />
+                <input type="hidden" name="note" value={note} />
+              </CardContent>
+            </Card>
+          )}
 
           <ExtrasSection
             stock={stock}

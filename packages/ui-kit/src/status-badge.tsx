@@ -18,15 +18,16 @@ const DEFAULT_STATUS_TONES: Record<string, BadgeTone> = {
 type StatusBadgeProps = Omit<ComponentPropsWithoutRef<typeof Badge>, 'tone' | 'pill'> & {
   status: string;
   tones?: StatusToneOverrides;
+  label?: string;
 };
 
-export function StatusBadge({ status, tones, className, ...props }: StatusBadgeProps) {
+export function StatusBadge({ status, tones, className, label, ...props }: StatusBadgeProps) {
   const tone = resolveTone(status, tones);
-  const label = formatStatusLabel(status);
+  const displayLabel = label ?? formatStatusLabel(status);
 
   return (
     <Badge tone={tone} pill className={className} {...props}>
-      {label}
+      {displayLabel}
     </Badge>
   );
 }

@@ -12,7 +12,7 @@ export const supportedLngs = languages.map((lang) => lang.code);
 
 i18n
   .use(LanguageDetector)
-  .use(resourcesToBackend((language) => import(`../locales/${language}.json`)))
+  .use(resourcesToBackend((language: string) => import(`../locales/${language}.json`)))
   .use(initReactI18next)
   .init({
     defaultNS,

@@ -1,4 +1,4 @@
-import { X } from '@untitledui/icons';
+import { X } from 'lucide-react';
 import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { cn } from './utils';

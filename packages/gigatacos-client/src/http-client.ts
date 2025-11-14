@@ -28,7 +28,8 @@ export class HttpClient {
   private readonly proxyConfig?: ProxyConfig;
 
   constructor(config: HttpClientConfig) {
-    this.baseUrl = config.baseUrl;
+    // Normalize baseUrl to remove trailing slash
+    this.baseUrl = config.baseUrl.endsWith('/') ? config.baseUrl.slice(0, -1) : config.baseUrl;
     this.logger = config.logger ?? noopLogger;
     this.proxyConfig = config.proxy;
 
@@ -45,7 +46,9 @@ export class HttpClient {
    * Uses proxy URL if configured, otherwise uses original baseUrl
    */
   private getAxiosBaseUrl(): string {
-    return this.proxyConfig?.url || this.baseUrl;
+    const url = this.proxyConfig?.url || this.baseUrl;
+    // Ensure no trailing slash for axios baseURL
+    return url.endsWith('/') ? url.slice(0, -1) : url;
   }
 
   /**
@@ -149,11 +152,14 @@ export class HttpClient {
    * Build request headers with CSRF token and cookies
    */
   private buildHeaders(config: RequestConfig, additionalHeaders?: Record<string, string>): Record<string, string> {
+    // Normalize baseUrl to remove trailing slash for Origin
+    const normalizedBaseUrl = this.baseUrl.endsWith('/') ? this.baseUrl.slice(0, -1) : this.baseUrl;
+    
     const headers: Record<string, string> = {
       'X-CSRF-Token': config.csrfToken,
       'X-Requested-With': 'XMLHttpRequest',
-      'Referer': this.baseUrl + '/',
-      'Origin': this.baseUrl,
+      'Referer': `${normalizedBaseUrl}/index.php?content=livraison`,
+      'Origin': normalizedBaseUrl,
       ...additionalHeaders,
       ...config.headers,
     };

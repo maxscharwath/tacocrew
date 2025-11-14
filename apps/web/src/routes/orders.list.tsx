@@ -1,9 +1,9 @@
-import { ArrowUpRight, Calendar, Package, Truck01 } from '@untitledui/icons';
 import { addHours, format, setHours, setMinutes } from 'date-fns';
-import { useEffect, useState } from 'react';
+import { ArrowUpRight, Calendar, Package, Truck } from 'lucide-react';
+import { Suspense, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  type ActionFunctionArgs,
+  Await,
   Form,
   Link,
   type LoaderFunctionArgs,
@@ -13,12 +13,14 @@ import {
   useNavigation,
 } from 'react-router';
 import { StatBubble } from '@/components/orders';
+import { OrdersSkeleton } from '@/components/skeletons';
 import { Alert, Button, DateTimePicker, Input, Label, StatusBadge } from '@/components/ui';
 import { useDateFormat } from '@/hooks/useDateFormat';
 import { OrdersApi, UserApi } from '../lib/api';
-import { ApiError } from '../lib/api/http';
 import { routes } from '../lib/routes';
 import { toDate } from '../lib/utils/date';
+import { defer } from '../lib/utils/defer';
+import { createDeferredWithAuth, requireSession } from '../lib/utils/loader-helpers';
 
 type LoaderData = {
   groupOrders: Awaited<ReturnType<typeof UserApi.getGroupOrders>>;
@@ -30,73 +32,81 @@ type ActionData = {
 };
 
 export async function ordersLoader(_: LoaderFunctionArgs) {
-  try {
-    const groupOrders = await UserApi.getGroupOrders();
-    return Response.json({ groupOrders });
-  } catch (error) {
-    if (error instanceof ApiError && error.status === 401) {
-      throw redirect(routes.login());
-    }
-    throw error;
-  }
+  await requireSession();
+
+  return defer({
+    groupOrders: createDeferredWithAuth(() => UserApi.getGroupOrders()),
+  });
 }
 
-export async function ordersAction({ request }: ActionFunctionArgs): Promise<Response | null> {
-  const formData = await request.formData();
-  const intent = formData.get('_intent');
+import type { CreateGroupOrderFormData } from '../lib/types/form-data';
+import { createActionHandler } from '../lib/utils/action-handler';
+import { parseFormData } from '../lib/utils/form-data';
 
-  if (intent === 'create') {
-    const name = (formData.get('name') ?? '').toString().trim();
-    const startDateRaw = formData.get('startDate')?.toString();
-    const endDateRaw = formData.get('endDate')?.toString();
+export const ordersAction = createActionHandler({
+  handlers: {
+    POST: async ({ formData }, request) => {
+      // Check for create intent
+      if (formData.get('_intent') !== 'create') {
+        throw new Response('Invalid action', { status: 400 });
+      }
 
-    if (!startDateRaw || !endDateRaw) {
-      return Response.json({ errorKey: 'orders.list.errors.datesRequired' }, { status: 400 });
-    }
+      const data = await parseFormData<CreateGroupOrderFormData>(request);
 
-    const startDate = new Date(startDateRaw);
-    const endDate = new Date(endDateRaw);
+      // Convert to Date objects for validation
+      // Handle both full ISO strings and YYYY-MM-DDTHH:mm format
+      const startDateStr =
+        data.startDate.includes(':') &&
+        !data.startDate.includes('Z') &&
+        !data.startDate.includes('+')
+          ? `${data.startDate}:00` // Add seconds if missing
+          : data.startDate;
+      const endDateStr =
+        data.endDate.includes(':') && !data.endDate.includes('Z') && !data.endDate.includes('+')
+          ? `${data.endDate}:00` // Add seconds if missing
+          : data.endDate;
 
-    if (Number.isNaN(startDate.valueOf()) || Number.isNaN(endDate.valueOf())) {
-      return Response.json({ errorKey: 'orders.list.errors.invalidDates' }, { status: 400 });
-    }
+      const startDate = new Date(startDateStr);
+      const endDate = new Date(endDateStr);
 
-    if (endDate <= startDate) {
-      return Response.json({ errorKey: 'orders.list.errors.endBeforeStart' }, { status: 400 });
-    }
+      if (Number.isNaN(startDate.valueOf()) || Number.isNaN(endDate.valueOf())) {
+        return Response.json(
+          {
+            form: 'create',
+            errorKey: 'errors.validation.failed',
+            errorMessage: 'Invalid date format. Please check your dates and times.',
+          },
+          { status: 400 }
+        );
+      }
 
-    try {
+      if (endDate <= startDate) {
+        return Response.json(
+          {
+            form: 'create',
+            errorKey: 'errors.validation.failed',
+            errorMessage: 'End date must be after start date.',
+          },
+          { status: 400 }
+        );
+      }
+
       const created = await OrdersApi.createGroupOrder({
-        name: name || undefined,
+        name: data.name,
         startDate: startDate.toISOString(),
         endDate: endDate.toISOString(),
       });
 
       return redirect(routes.root.orderDetail({ orderId: created.id }));
-    } catch (error) {
-      if (error instanceof ApiError) {
-        const message =
-          typeof error.body === 'object' && error.body && 'error' in error.body
-            ? ((error.body as { error?: { message?: string } }).error?.message ?? error.message)
-            : error.message;
+    },
+  },
+  getFormName: (method) => {
+    if (method === 'POST') return 'create';
+    return 'unknown';
+  },
+});
 
-        return Response.json(
-          {
-            errorKey: 'orders.common.errors.api',
-            errorMessage: message,
-          },
-          { status: error.status }
-        );
-      }
-
-      return Response.json({ errorKey: 'orders.list.errors.unexpected' }, { status: 500 });
-    }
-  }
-
-  return null;
-}
-
-export function OrdersRoute() {
+function OrdersContent({ groupOrders }: { groupOrders: LoaderData['groupOrders'] }) {
   const { t } = useTranslation();
   const {
     formatDateTime,
@@ -106,7 +116,6 @@ export function OrdersRoute() {
     formatTime12Hour,
     formatDateTimeWithYear,
   } = useDateFormat();
-  const { groupOrders } = useLoaderData() as LoaderData;
   const actionData = useActionData() as ActionData | undefined;
   const navigation = useNavigation();
   const isSubmitting = navigation.state === 'submitting';
@@ -270,7 +279,7 @@ export function OrdersRoute() {
               tone="violet"
             />
             <StatBubble
-              icon={Truck01}
+              icon={Truck}
               label={t('orders.list.hero.metrics.nextDispatch')}
               value={upcomingOrders[0]?.endDate ? formatDate(upcomingOrders[0].endDate) : '—'}
               tone="sunset"
@@ -324,9 +333,13 @@ export function OrdersRoute() {
                   </div>
 
                   <div className="flex items-center gap-4">
-                    <StatusBadge status={order.status} className="text-xs" />
+                    <StatusBadge
+                      status={order.status}
+                      label={t(`common.status.${order.status}`)}
+                      className="text-xs"
+                    />
                     <Link
-                      to={`/orders/${order.id}`}
+                      to={routes.root.orderDetail({ orderId: order.id })}
                       className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-brand-400/40 bg-brand-500/15 px-4 py-2 font-semibold text-brand-100 text-sm hover:border-brand-400/70"
                     >
                       {t('common.open')}
@@ -431,12 +444,13 @@ export function OrdersRoute() {
               </div>
             </div>
 
-            {actionData?.errorKey ? (
+            {actionData?.errorKey || actionData?.errorMessage ? (
               <Alert tone="error">
-                {t(
-                  actionData.errorKey,
-                  actionData.errorMessage ? { message: actionData.errorMessage } : undefined
-                )}
+                {actionData.errorMessage
+                  ? actionData.errorMessage
+                  : actionData.errorKey
+                    ? t(actionData.errorKey)
+                    : null}
               </Alert>
             ) : null}
 
@@ -447,5 +461,17 @@ export function OrdersRoute() {
         </section>
       </div>
     </div>
+  );
+}
+
+export function OrdersRoute() {
+  const { groupOrders } = useLoaderData<{ groupOrders: Promise<LoaderData['groupOrders']> }>();
+
+  return (
+    <Suspense fallback={<OrdersSkeleton />}>
+      <Await resolve={groupOrders}>
+        {(resolvedGroupOrders) => <OrdersContent groupOrders={resolvedGroupOrders} />}
+      </Await>
+    </Suspense>
   );
 }

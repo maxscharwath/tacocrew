@@ -1,9 +1,10 @@
-import { AlertTriangle, Package } from '@untitledui/icons';
-import { useEffect, useState } from 'react';
+import { AlertTriangle, CheckCircle2, Copy, Package } from 'lucide-react';
+import { Suspense, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { LoaderFunctionArgs } from 'react-router';
-import { useLoaderData } from 'react-router';
+import { Await, useLoaderData } from 'react-router';
 import { StatBubble } from '@/components/orders';
+import { StockSkeleton } from '@/components/skeletons';
 import {
   Badge,
   Button,
@@ -16,14 +17,19 @@ import {
 import { cn } from '@/lib/utils';
 import type { StockItem, StockResponse } from '../lib/api';
 import { StockApi } from '../lib/api';
+import { defer } from '../lib/utils/defer';
+import { createDeferredWithAuth, requireSession } from '../lib/utils/loader-helpers';
 
 type LoaderData = {
   stock: Awaited<ReturnType<typeof StockApi.getStock>>;
 };
 
 export async function stockLoader(_: LoaderFunctionArgs) {
-  const stock = await StockApi.getStock();
-  return Response.json({ stock });
+  await requireSession();
+
+  return defer({
+    stock: createDeferredWithAuth(() => StockApi.getStock()),
+  });
 }
 
 const STOCK_SECTIONS = [
@@ -40,10 +46,21 @@ const STOCK_SECTIONS = [
 
 type StockSectionKey = (typeof STOCK_SECTIONS)[number]['key'];
 
-export function StockRoute() {
+function StockContent({ stock }: { stock: LoaderData['stock'] }) {
   const { t } = useTranslation();
   const tt = (key: string, options?: Record<string, unknown>) => t(`stock.${key}`, options);
-  const { stock } = useLoaderData() as LoaderData;
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  const handleCopyId = async (id: string) => {
+    try {
+      await navigator.clipboard.writeText(id);
+      setCopiedId(id);
+      setTimeout(() => setCopiedId(null), 2000);
+    } catch (err) {
+      console.error('Failed to copy ID:', err);
+    }
+  };
+
   const sections = STOCK_SECTIONS.map((section) => ({
     ...section,
     label: tt(`sections.${section.key}.label`),
@@ -122,7 +139,7 @@ export function StockRoute() {
         </div>
       </section>
 
-      <Card className="p-6 shadow-[0_30px_80px_rgba(8,47,73,0.28)]">
+      <Card className="shadow-[0_30px_80px_rgba(8,47,73,0.28)]">
         <CardHeader className="gap-4">
           <div>
             <CardTitle className="text-white">{tt('overview.title')}</CardTitle>
@@ -190,33 +207,35 @@ export function StockRoute() {
                         <article
                           key={item.id}
                           className={cn(
-                            'space-y-5 rounded-2xl border bg-slate-900/70 p-5 shadow-[0_20px_60px_rgba(8,47,73,0.25)] transition hover:border-brand-400/40 hover:shadow-[0_20px_60px_rgba(99,102,241,0.35)]',
+                            'relative space-y-5 rounded-2xl border bg-slate-900/70 p-5 shadow-[0_20px_60px_rgba(8,47,73,0.25)] transition hover:border-brand-400/40 hover:shadow-[0_20px_60px_rgba(99,102,241,0.35)]',
                             item.in_stock
                               ? 'border-white/10'
                               : 'border-rose-400/40 bg-rose-500/10 hover:border-rose-400/60'
                           )}
                         >
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleCopyId(item.id)}
+                            className="absolute top-4 right-4 z-10 h-8 w-8 rounded-lg p-0 transition-transform hover:scale-110 hover:bg-emerald-500/25"
+                            title={
+                              copiedId === item.id ? tt('list.copied') : tt('list.copyIdTooltip')
+                            }
+                          >
+                            {copiedId === item.id ? (
+                              <CheckCircle2 size={14} className="text-emerald-400" />
+                            ) : (
+                              <Copy
+                                size={14}
+                                className="text-slate-400 transition-colors hover:text-emerald-300"
+                              />
+                            )}
+                          </Button>
                           <header className="space-y-3">
                             <div className="flex items-start justify-between gap-3">
                               <h3 className="font-semibold text-base text-white">{item.name}</h3>
-                              <Badge
-                                tone="neutral"
-                                pill
-                                className="text-[11px] uppercase tracking-[0.3em]"
-                              >
-                                {item.code}
-                              </Badge>
                             </div>
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => navigator.clipboard.writeText(item.id)}
-                              className="text-[11px] uppercase tracking-[0.3em]"
-                              title={tt('list.copyIdTooltip')}
-                            >
-                              {tt('list.copyId')}
-                            </Button>
                           </header>
                           <footer className="flex items-center justify-between">
                             <Badge tone={item.in_stock ? 'success' : 'warning'} pill>
@@ -257,4 +276,14 @@ function formatPrice(value: number) {
     style: 'currency',
     currency: 'CHF',
   });
+}
+
+export function StockRoute() {
+  const { stock } = useLoaderData<{ stock: Promise<LoaderData['stock']> }>();
+
+  return (
+    <Suspense fallback={<StockSkeleton />}>
+      <Await resolve={stock}>{(resolvedStock) => <StockContent stock={resolvedStock} />}</Await>
+    </Suspense>
+  );
 }

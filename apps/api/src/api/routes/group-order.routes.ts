@@ -64,7 +64,7 @@ const GroupOrderWithUserOrdersSchema = z.object({
 });
 
 const UpdateGroupOrderStatusRequestSchema = z.object({
-  status: z.enum([GroupOrderStatus.OPEN, GroupOrderStatus.CLOSED]),
+  status: z.enum([GroupOrderStatus.OPEN, GroupOrderStatus.CLOSED, GroupOrderStatus.SUBMITTED]),
 });
 
 async function serializeGroupOrderResponse(groupOrder: GroupOrder) {

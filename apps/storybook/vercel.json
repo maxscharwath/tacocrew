@@ -4,4 +4,3 @@
   "installCommand": "cd ../.. && pnpm install",
   "outputDirectory": "storybook-static"
 }
-

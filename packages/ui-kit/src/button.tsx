@@ -1,4 +1,4 @@
-import { RefreshCcw01 } from '@untitledui/icons';
+import { RefreshCw } from 'lucide-react';
 import type { VariantProps } from 'class-variance-authority';
 import type { ButtonHTMLAttributes } from 'react';
 import { cn } from './utils';
@@ -36,7 +36,7 @@ export function Button({
       type={isTab ? 'button' : props.type}
       {...props}
     >
-      {loading && <RefreshCcw01 size={16} className="animate-spin" />}
+      {loading && <RefreshCw size={16} className="animate-spin" />}
       {children}
     </button>
   );

@@ -1,4 +1,4 @@
-import { ArrowRight, Link01 } from '@untitledui/icons';
+import { ArrowRight, Link } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button, Input } from '@/components/ui';
@@ -48,7 +48,7 @@ export function TacoHashSearch({ onSelectTaco, disabled }: TacoHashSearchProps) 
   return (
     <div className="space-y-3 border-white/10 border-b pb-4">
       <div className="flex items-center gap-2">
-        <Link01 size={16} className="shrink-0 text-blue-300" />
+        <Link size={16} className="shrink-0 text-blue-300" />
         <span className="font-medium text-sm text-white">
           {t('orders.create.hashSearch.title')}
         </span>

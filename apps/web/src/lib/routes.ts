@@ -1,8 +1,9 @@
 // routes/app.tsx
 import React from 'react';
 import { z } from 'zod';
+import { HydrateFallback } from '../components/hydrate-fallback';
 import { DashboardRoute, dashboardLoader } from '../routes/dashboard';
-import { LoginRoute, loginLoader } from '../routes/login';
+import { LoginRoute, signinLoader, signupLoader } from '../routes/login';
 import { OrderCreateRoute, orderCreateAction, orderCreateLoader } from '../routes/orders.create';
 import { OrderDetailRoute, orderDetailAction, orderDetailLoader } from '../routes/orders.detail';
 import { OrdersRoute, ordersAction, ordersLoader } from '../routes/orders.list';
@@ -17,12 +18,23 @@ import { defineRoutes } from './routes/core';
 
 const orderParams = z.object({ orderId: z.string().min(1) });
 const loginSearch = z.object({ redirect: z.string().optional() });
+const orderCreateSearch = z.object({
+  orderId: z.string().optional(),
+  duplicate: z.string().optional(),
+});
 
 export const { routes, routerConfig } = defineRoutes({
-  login: {
-    path: '/login',
+  signin: {
+    path: '/signin',
     search: loginSearch,
-    loader: loginLoader,
+    loader: signinLoader,
+    element: React.createElement(LoginRoute),
+    errorElement: React.createElement(RootErrorBoundary),
+  },
+  signup: {
+    path: '/signup',
+    search: loginSearch,
+    loader: signupLoader,
     element: React.createElement(LoginRoute),
     errorElement: React.createElement(RootErrorBoundary),
   },
@@ -32,6 +44,7 @@ export const { routes, routerConfig } = defineRoutes({
     action: rootAction,
     element: React.createElement(RootLayout),
     errorElement: React.createElement(RootErrorBoundary),
+    hydrateFallback: React.createElement(HydrateFallback),
     children: {
       dashboard: {
         index: true,
@@ -54,6 +67,7 @@ export const { routes, routerConfig } = defineRoutes({
       orderCreate: {
         path: 'orders/:orderId/create',
         params: orderParams,
+        search: orderCreateSearch,
         element: React.createElement(OrderCreateRoute),
         loader: orderCreateLoader,
         action: orderCreateAction,

@@ -78,6 +78,20 @@ export class BackendIntegrationClient {
   }
 
   /**
+   * Update session with new cookies and CSRF token
+   */
+  private async updateSession(
+    sessionId: SessionId,
+    cookies: Record<string, string>,
+    csrfToken?: string
+  ): Promise<void> {
+    await this.sessionService.updateSessionCookies(sessionId, cookies);
+    if (csrfToken) {
+      await this.sessionService.updateSessionCsrfToken(sessionId, csrfToken);
+    }
+  }
+
+  /**
    * Execute request with automatic CSRF token regeneration on error
    * Always gets a fresh session context before each operation
    * Updates session cookies after successful operations
@@ -88,25 +102,17 @@ export class BackendIntegrationClient {
     retries = 1
   ): Promise<T> {
     for (let attempt = 0; attempt <= retries; attempt++) {
-      // Always get a fresh session context before each operation
       const context = await this.getSessionContext(sessionId);
 
       try {
         const result = await operation(context);
 
         // Update session cookies after successful operation
-        if (result.cookies && Object.keys(result.cookies).length > 0) {
-          logger.debug('Updating session cookies after successful operation', {
-            sessionId,
-            cookieCount: Object.keys(result.cookies).length,
-            cookieNames: Object.keys(result.cookies),
-          });
-          await this.sessionService.updateSessionCookies(sessionId, {
+        if (Object.keys(result.cookies).length > 0) {
+          await this.updateSession(sessionId, {
             ...context.cookies,
             ...result.cookies,
           });
-        } else {
-          logger.debug('No cookies returned from operation', { sessionId });
         }
 
         return result.data;
@@ -120,20 +126,18 @@ export class BackendIntegrationClient {
 
           // Regenerate CSRF token and update session
           const refreshed = await this.client.refreshCsrfToken(context);
-          const newToken = refreshed.csrfToken;
-          const updatedCookies = refreshed.cookies;
+          await this.updateSession(
+            sessionId,
+            {
+              ...context.cookies,
+              ...refreshed.cookies,
+            },
+            refreshed.csrfToken
+          );
 
-          await this.sessionService.updateSessionCookies(sessionId, {
-            ...context.cookies,
-            ...updatedCookies,
-          });
-          await this.sessionService.updateSessionCsrfToken(sessionId, newToken);
-
-          // Retry with fresh session on next iteration
           continue;
         }
 
-        // Not a CSRF error or max retries reached
         throw error;
       }
     }
@@ -143,29 +147,12 @@ export class BackendIntegrationClient {
 
   /**
    * Get order summary with totals and delivery fees
-   * Regenerates CSRF token before attempting since POST operations invalidate it
    */
   async getOrderSummary(sessionId: SessionId): Promise<OrderSummary | null> {
-    // Get current session context
-    const context = await this.getSessionContext(sessionId);
-
-    // Regenerate CSRF token before GET request since POST operations invalidate it
-    logger.debug('Regenerating CSRF token before getOrderSummary', { sessionId });
-    const refreshed = await this.client.refreshCsrfToken(context);
-    const newToken = refreshed.csrfToken;
-    const updatedCookies = refreshed.cookies;
-
-    await this.sessionService.updateSessionCookies(sessionId, {
-      ...context.cookies,
-      ...updatedCookies,
-    });
-    await this.sessionService.updateSessionCsrfToken(sessionId, newToken);
-
-    // Now try to get order summary with fresh token
     return await this.executeWithRetry(
       sessionId,
-      (freshContext) => this.client.getOrderSummary(freshContext),
-      1 // Allow 1 retry in case of any issues
+      (context) => this.client.getOrderSummary(context),
+      1
     );
   }
 
@@ -179,8 +166,10 @@ export class BackendIntegrationClient {
     tacoId: string,
     stockData?: StockAvailability
   ): Promise<Taco | null> {
-    return await this.executeWithRetry(sessionId, (context) =>
-      this.client.addTacoToCart(context, formData, tacoId, stockData)
+    return await this.executeWithRetry(
+      sessionId,
+      (context) => this.client.addTacoToCart(context, formData, tacoId, stockData),
+      2
     );
   }
 

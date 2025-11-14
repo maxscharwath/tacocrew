@@ -1,7 +1,7 @@
-import { Lock01, Terminal } from '@untitledui/icons';
+import { Lock, Terminal } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Modal } from '@/components/ui';
+import { Alert, Card, CardContent, CardHeader, CardTitle, Modal } from '@/components/ui';
 import { getOrderCookies } from '@/lib/api/orders';
 
 type CookieInjectionModalProps = {
@@ -60,22 +60,20 @@ export function CookieInjectionModal({
           </div>
         )}
 
-        {error && (
-          <div className="rounded-lg border border-red-500/20 bg-red-500/10 p-4 text-red-400 text-sm">
-            {error}
-          </div>
-        )}
+        {error && <Alert tone="error">{error}</Alert>}
 
         {cookieData && (
           <>
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <Terminal size={16} className="text-brand-400" />
-                <h3 className="font-medium text-sm text-white">
-                  {t('orders.common.cookies.cookies')}
-                </h3>
-              </div>
-              <div className="rounded-lg border border-slate-800 bg-slate-950/50 p-4">
+            <Card>
+              <CardHeader>
+                <div className="flex items-center gap-2">
+                  <Terminal size={16} className="text-brand-400" />
+                  <CardTitle className="text-sm text-white">
+                    {t('orders.common.cookies.cookies')}
+                  </CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
                 <div className="space-y-2 text-xs">
                   {Object.entries(cookieData.cookies).map(([name, value]) => (
                     <div key={name} className="flex items-start gap-2 font-mono">
@@ -84,22 +82,24 @@ export function CookieInjectionModal({
                     </div>
                   ))}
                 </div>
-              </div>
-            </div>
+              </CardContent>
+            </Card>
 
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <Lock01 size={16} className="text-brand-400" />
-                <h3 className="font-medium text-sm text-white">
-                  {t('orders.common.cookies.csrfToken')}
-                </h3>
-              </div>
-              <div className="rounded-lg border border-slate-800 bg-slate-950/50 p-4">
+            <Card>
+              <CardHeader>
+                <div className="flex items-center gap-2">
+                  <Lock size={16} className="text-brand-400" />
+                  <CardTitle className="text-sm text-white">
+                    {t('orders.common.cookies.csrfToken')}
+                  </CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
                 <code className="break-all font-mono text-slate-300 text-xs">
                   {cookieData.csrfToken}
                 </code>
-              </div>
-            </div>
+              </CardContent>
+            </Card>
           </>
         )}
       </div>

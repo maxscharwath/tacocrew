@@ -1,4 +1,4 @@
-import { CheckCircle, ShoppingBag02, Truck01 } from '@untitledui/icons';
+import { CheckCircle2, ShoppingBag, Truck } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 
@@ -11,13 +11,13 @@ type DeliveryTypeSelectorProps = {
   required?: boolean;
 };
 
-const DELIVERY_TYPE_CONFIG: Record<DeliveryType, { icon: typeof Truck01; labelKey: string }> = {
+const DELIVERY_TYPE_CONFIG: Record<DeliveryType, { icon: typeof Truck; labelKey: string }> = {
   livraison: {
-    icon: Truck01,
+    icon: Truck,
     labelKey: 'form.deliveryTypes.livraison',
   },
   emporter: {
-    icon: ShoppingBag02,
+    icon: ShoppingBag,
     labelKey: 'form.deliveryTypes.emporter',
   },
 };
@@ -65,7 +65,7 @@ export function DeliveryTypeSelector({
                 </div>
                 {isSelected && (
                   <div className="-top-1 -right-1 absolute grid h-6 w-6 place-items-center rounded-full border-2 border-slate-900 bg-brand-500">
-                    <CheckCircle size={14} className="text-white" />
+                    <CheckCircle2 size={14} className="text-white" />
                   </div>
                 )}
               </div>
