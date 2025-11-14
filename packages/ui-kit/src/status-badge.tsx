@@ -35,8 +35,8 @@ export function StatusBadge({ status, tones, className, label, ...props }: Statu
 function resolveTone(status: string, overrides?: StatusToneOverrides): BadgeTone {
   const normalized = status.toLowerCase();
 
-  if (overrides && overrides[normalized]) {
-    return overrides[normalized] as BadgeTone;
+  if (overrides?.[normalized]) {
+    return overrides[normalized];
   }
 
   return DEFAULT_STATUS_TONES[normalized] ?? 'neutral';

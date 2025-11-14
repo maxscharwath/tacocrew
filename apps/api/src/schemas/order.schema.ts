@@ -3,8 +3,8 @@
  * @module schemas/order
  */
 
+import { OrderStatus, OrderType } from '@tacobot/gigatacos-client';
 import { z } from 'zod';
-import { OrderStatus } from '../shared/types/types';
 import type { Id } from '../shared/utils/branded-ids.utils';
 import { zId } from '../shared/utils/branded-ids.utils';
 import type { CartId } from './cart.schema';
@@ -28,9 +28,9 @@ export const OrderSchema = z.object({
   cartId: zId<CartId>(),
   customerName: z.string(),
   customerPhone: z.string(),
-  orderType: z.enum(['livraison', 'emporter']),
+  orderType: z.enum(OrderType),
   requestedFor: z.string(),
-  status: z.enum(['pending', 'confirmed', 'ondelivery', 'delivered', 'cancelled']),
+  status: z.enum(OrderStatus),
   price: z.number().optional(),
   address: z.string().optional(),
   userId: zId<UserId>().optional(),

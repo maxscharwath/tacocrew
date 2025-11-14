@@ -17,7 +17,7 @@ type TacoCardProps = {
 export function TacoCard({ taco, badge, footer, showTacoID = false, className }: TacoCardProps) {
   const { t } = useTranslation();
   const [copiedTacoID, setCopiedTacoID] = useState(false);
-  const tacoConfig = TACO_SIZE_CONFIG[taco.size as keyof typeof TACO_SIZE_CONFIG];
+  const tacoConfig = TACO_SIZE_CONFIG[taco.size];
   const sizeName = formatTacoSizeName(taco.size);
 
   const handleCopyTacoID = async () => {

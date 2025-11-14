@@ -26,7 +26,7 @@ const themeDecorator: Decorator = (Story, context) => {
     if (backgrounds?.value !== desiredBackground) {
       updateGlobals({
         backgrounds: {
-          ...(backgrounds ?? {}),
+          ...backgrounds,
           value: desiredBackground,
         },
       });

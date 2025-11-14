@@ -245,7 +245,7 @@ const buildOne = <R extends AnyRouteDef>(def: R, basePath: string): BuilderNode<
   const url = ((a?: unknown) => {
     const path = builderFn(a as ArgsOf<R>);
     // Use globalThis.location.origin in browser, or provide a way to configure base URL
-    if (typeof globalThis.location !== 'undefined') {
+    if (globalThis.location) {
       return `${globalThis.location.origin}${path}`;
     }
     // Fallback for SSR or when location is not available
@@ -256,7 +256,7 @@ const buildOne = <R extends AnyRouteDef>(def: R, basePath: string): BuilderNode<
   const children: Record<string, BuilderNode<AnyRouteDef>> = {};
   if (def.children) {
     for (const [k, child] of Object.entries(def.children)) {
-      children[k] = buildOne(child as AnyRouteDef, fullPath);
+      children[k] = buildOne(child, fullPath);
     }
   }
 
@@ -268,9 +268,9 @@ export function createRouteBuilders<const T extends Record<string, AnyRouteDef>>
 ): Builders<T> {
   const out = {} as Builders<T>;
   for (const [k, def] of Object.entries(defs)) {
-    (out as Record<string, BuilderNode<AnyRouteDef>>)[k] = buildOne(def as AnyRouteDef, '');
+    (out as Record<string, BuilderNode<AnyRouteDef>>)[k] = buildOne(def, '');
   }
-  return out as Builders<T>;
+  return out;
 }
 
 const toRouteObject = (def: AnyRouteDef): RouteObject => {

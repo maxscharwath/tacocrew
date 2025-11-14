@@ -14,7 +14,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui';
-import type { StockItem, StockResponse } from '@/lib/api';
+import type { StockResponse } from '@/lib/api';
 import { StockApi } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import { defer } from '@/lib/utils/defer';
@@ -46,9 +46,8 @@ const STOCK_SECTIONS = [
 
 type StockSectionKey = (typeof STOCK_SECTIONS)[number]['key'];
 
-function StockContent({ stock }: { stock: LoaderData['stock'] }) {
+function StockContent({ stock }: Readonly<{ stock: LoaderData['stock'] }>) {
   const { t } = useTranslation();
-  const tt = (key: string, options?: Record<string, unknown>) => t(`stock.${key}`, options);
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
   const handleCopyId = async (id: string) => {
@@ -63,8 +62,8 @@ function StockContent({ stock }: { stock: LoaderData['stock'] }) {
 
   const sections = STOCK_SECTIONS.map((section) => ({
     ...section,
-    label: tt(`sections.${section.key}.label`),
-    blurb: tt(`sections.${section.key}.blurb`),
+    label: t(`stock.sections.${section.key}.label`),
+    blurb: t(`stock.sections.${section.key}.blurb`),
   })).filter((section) => stock[section.key]?.length);
   const [activeTab, setActiveTab] = useState<StockSectionKey>(
     sections[0]?.key ?? STOCK_SECTIONS[0].key
@@ -82,7 +81,7 @@ function StockContent({ stock }: { stock: LoaderData['stock'] }) {
   }, [sections, activeTab]);
 
   const currentSection = sections.find((section) => section.key === activeTab) ?? sections[0];
-  const items = (currentSection ? stock[currentSection.key] : []) as StockItem[];
+  const items = currentSection ? stock[currentSection.key] : [];
   const inStockCount = items.filter((item) => item.in_stock).length;
   const totalCategories = sections.length;
   const totalItems = Object.values(stock).reduce((acc, category) => acc + category.length, 0);
@@ -101,37 +100,39 @@ function StockContent({ stock }: { stock: LoaderData['stock'] }) {
         <div className="relative flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
           <div className="space-y-2">
             <Badge tone="brand" pill className="uppercase tracking-[0.3em]">
-              {tt('badge')}
+              {t(`stock.badge`)}
             </Badge>
             <h1 className="font-semibold text-2xl text-white leading-tight tracking-tight lg:text-3xl">
-              {tt('title')}
+              {t(`stock.title`)}
             </h1>
-            <p className="max-w-2xl text-slate-200 text-sm leading-relaxed">{tt('subtitle')}</p>
+            <p className="max-w-2xl text-slate-200 text-sm leading-relaxed">
+              {t(`stock.subtitle`)}
+            </p>
             <div className="flex items-center gap-3 text-emerald-200 text-xs uppercase tracking-[0.3em]">
               <span className="relative flex h-2 w-2">
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400/60" />
                 <span className="relative inline-flex h-full w-full rounded-full bg-emerald-400" />
               </span>
-              {tt('live')}
+              {t(`stock.live`)}
             </div>
           </div>
 
           <div className="grid h-fit w-full grid-cols-1 items-stretch gap-3 rounded-2xl border border-white/10 bg-slate-900/70 p-3 shadow-[0_20px_60px_rgba(0,0,0,0.3)] backdrop-blur-sm sm:w-fit sm:grid-cols-3 sm:p-5">
             <StatBubble
               icon={Package}
-              label={tt('stats.categories')}
+              label={t(`stock.stats.categories`)}
               value={totalCategories}
               tone="brand"
             />
             <StatBubble
               icon={Package}
-              label={tt('stats.ingredients')}
+              label={t(`stock.stats.ingredients`)}
               value={totalItems}
               tone="violet"
             />
             <StatBubble
               icon={AlertTriangle}
-              label={tt('stats.lowStock')}
+              label={t(`stock.stats.lowStock`)}
               value={lowStockCount}
               tone="sunset"
             />
@@ -142,21 +143,21 @@ function StockContent({ stock }: { stock: LoaderData['stock'] }) {
       <Card className="shadow-[0_30px_80px_rgba(8,47,73,0.28)]">
         <CardHeader className="gap-4">
           <div>
-            <CardTitle className="text-white">{tt('overview.title')}</CardTitle>
-            <CardDescription>{tt('overview.description')}</CardDescription>
+            <CardTitle className="text-white">{t(`stock.overview.title`)}</CardTitle>
+            <CardDescription>{t(`stock.overview.description`)}</CardDescription>
           </div>
         </CardHeader>
         <CardContent className="gap-6">
           {sections.length === 0 ? (
             <div className="rounded-2xl border border-white/15 border-dashed bg-slate-900/50 p-10 text-center text-slate-300 text-sm">
-              {tt('list.empty')}
+              {t(`stock.list.empty`)}
             </div>
           ) : (
             <>
               <div
                 className="flex flex-wrap gap-2 overflow-x-auto pt-2 pb-2"
                 role="tablist"
-                aria-label={tt('overview.ariaLabel')}
+                aria-label={t(`stock.overview.ariaLabel`)}
               >
                 {sections.map(({ key, label, tone }) => {
                   const isActive = key === activeTab;
@@ -189,17 +190,17 @@ function StockContent({ stock }: { stock: LoaderData['stock'] }) {
                     </div>
                     <div className="flex flex-wrap items-center gap-3">
                       <Badge tone="success" pill>
-                        {tt('stats.counts.inStock', { count: inStockCount })}
+                        {t(`stock.stats.counts.inStock`, { count: inStockCount })}
                       </Badge>
                       <Badge tone="neutral" pill>
-                        {tt('stats.counts.total', { count: items.length })}
+                        {t(`stock.stats.counts.total`, { count: items.length })}
                       </Badge>
                     </div>
                   </div>
 
                   {items.length === 0 ? (
                     <div className="rounded-2xl border border-white/15 border-dashed bg-slate-900/50 p-10 text-center text-slate-300 text-sm">
-                      {tt('list.noItems')}
+                      {t(`stock.list.noItems`)}
                     </div>
                   ) : (
                     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
@@ -220,7 +221,9 @@ function StockContent({ stock }: { stock: LoaderData['stock'] }) {
                             onClick={() => handleCopyId(item.id)}
                             className="absolute top-4 right-4 z-10 h-8 w-8 rounded-lg p-0 transition-transform hover:scale-110 hover:bg-emerald-500/25"
                             title={
-                              copiedId === item.id ? tt('list.copied') : tt('list.copyIdTooltip')
+                              copiedId === item.id
+                                ? t(`stock.list.copied`)
+                                : t(`stock.list.copyIdTooltip`)
                             }
                           >
                             {copiedId === item.id ? (
@@ -240,15 +243,15 @@ function StockContent({ stock }: { stock: LoaderData['stock'] }) {
                           <footer className="flex items-center justify-between">
                             <Badge tone={item.in_stock ? 'success' : 'warning'} pill>
                               {item.in_stock
-                                ? tt('list.availability.available')
-                                : tt('list.availability.outOfStock')}
+                                ? t(`stock.list.availability.available`)
+                                : t(`stock.list.availability.outOfStock`)}
                             </Badge>
                             <span className="font-semibold text-sm text-white">
                               {typeof item.price === 'number' ? (
                                 formatPrice(item.price)
                               ) : (
                                 <span className="font-normal text-slate-400 text-xs">
-                                  {tt('list.noPrice')}
+                                  {t(`stock.list.noPrice`)}
                                 </span>
                               )}
                             </span>
@@ -260,7 +263,7 @@ function StockContent({ stock }: { stock: LoaderData['stock'] }) {
                 </div>
               ) : (
                 <div className="rounded-2xl border border-white/15 border-dashed bg-slate-900/50 p-10 text-center text-slate-300 text-sm">
-                  {tt('list.empty')}
+                  {t(`stock.list.empty`)}
                 </div>
               )}
             </>

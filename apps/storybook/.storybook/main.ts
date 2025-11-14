@@ -23,7 +23,7 @@ const config: StorybookConfig = {
     config.resolve = {
       ...config.resolve,
       alias: {
-        ...(config.resolve?.alias ?? {}),
+        ...config.resolve?.alias,
         '@tacobot/ui-kit': uiKitPath,
       },
     };

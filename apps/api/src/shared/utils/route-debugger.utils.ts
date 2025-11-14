@@ -25,14 +25,14 @@ export function debugRoutes(routes: RouteDefinition[], framework: 'Hono'): void 
   const groupedByPath = new Map<string, Set<string>>();
   const groupedByMethod = new Map<string, number>();
 
-  routes.forEach(({ method, path }) => {
+  for (const { method, path } of routes) {
     if (!groupedByPath.has(path)) {
       groupedByPath.set(path, new Set());
     }
     groupedByPath.get(path)!.add(method);
 
     groupedByMethod.set(method, (groupedByMethod.get(method) ?? 0) + 1);
-  });
+  }
 
   const methodsSummary = Array.from(groupedByMethod.entries())
     .sort(([a], [b]) => a.localeCompare(b))

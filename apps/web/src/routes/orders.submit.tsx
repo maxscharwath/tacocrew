@@ -107,13 +107,6 @@ export const orderSubmitAction = createActionHandler({
       }
 
       // Ensure requestedFor is a string (handle case where it might be an array from duplicate form fields)
-      const requestedFor =
-        typeof data.requestedFor === 'string'
-          ? data.requestedFor
-          : Array.isArray(data.requestedFor)
-            ? (data.requestedFor[0] ?? '')
-            : '';
-
       await OrdersApi.submitGroupOrder(groupOrderId, {
         customer: {
           name: data.customerName,
@@ -129,7 +122,7 @@ export const orderSubmitAction = createActionHandler({
             state: data.state,
             country: SWITZERLAND_COUNTRY,
           },
-          requestedFor,
+          requestedFor: data.requestedFor,
         },
         paymentMethod: data.paymentMethod,
         dryRun,
@@ -170,7 +163,7 @@ function getFieldLabel(fieldPath: string, t: ReturnType<typeof useTranslation>['
 export function OrderSubmitRoute() {
   const { t } = useTranslation();
   const { userOrders, deliveryProfiles } = useLoaderData<LoaderData>();
-  const actionData = useActionData() as ActionData | undefined;
+  const actionData = useActionData<ActionData | undefined>();
   const navigation = useNavigation();
   const params = useParams();
   const navigate = useNavigate();
@@ -207,7 +200,7 @@ export function OrderSubmitRoute() {
   const applyProfile = (profile: DeliveryProfile) => {
     setCustomerName(profile.contactName);
     setCustomerPhone(profile.phone);
-    setDeliveryType(profile.deliveryType as DeliveryType);
+    setDeliveryType(profile.deliveryType);
     setRoad(profile.address.road);
     setHouseNumber(profile.address.houseNumber ?? '');
     setPostcode(profile.address.postcode);

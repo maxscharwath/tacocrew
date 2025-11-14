@@ -241,11 +241,7 @@ function OrderDetailContent({
 
         {groupOrder.shareCode && (
           <div className="space-y-3 lg:sticky lg:top-8 lg:h-fit">
-            <ShareButton
-              groupOrderId={groupOrder.id}
-              shareCode={groupOrder.shareCode}
-              orderName={groupOrder.name}
-            />
+            <ShareButton groupOrderId={groupOrder.id} />
             {isDeveloperMode && isSubmitted && (
               <Button
                 variant="outline"

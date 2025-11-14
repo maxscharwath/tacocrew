@@ -1,63 +1,33 @@
 /**
- * Taco size configuration
- * Based on backend: apps/api/src/shared/types/types.ts
+ * Taco size configuration for frontend
+ * Extends base config from gigatacos-client with UI-specific fields (emojis)
  */
+import {
+  TACO_SIZE_CONFIG as BASE_TACO_SIZE_CONFIG,
+  type TacoSizeConfig as BaseTacoSizeConfig,
+  TacoSize,
+} from '@tacobot/gigatacos-client';
 
-export type TacoSize =
-  | 'tacos_L'
-  | 'tacos_BOWL'
-  | 'tacos_L_mixte'
-  | 'tacos_XL'
-  | 'tacos_XXL'
-  | 'tacos_GIGA';
-
-export interface TacoSizeConfig {
-  maxMeats: number;
-  maxSauces: number;
-  allowGarnitures: boolean;
+/**
+ * Frontend-specific taco size config with emoji
+ */
+export interface TacoSizeConfig extends BaseTacoSizeConfig {
   emoji: string;
 }
 
+/**
+ * Frontend taco size configuration with emojis
+ * Extends the base configuration from gigatacos-client
+ */
 export const TACO_SIZE_CONFIG: Record<TacoSize, TacoSizeConfig> = {
-  tacos_L: { maxMeats: 1, maxSauces: 3, allowGarnitures: true, emoji: '🌮' },
-  tacos_BOWL: { maxMeats: 2, maxSauces: 3, allowGarnitures: true, emoji: '🥗' },
-  tacos_L_mixte: { maxMeats: 3, maxSauces: 3, allowGarnitures: true, emoji: '🌯' },
-  tacos_XL: { maxMeats: 3, maxSauces: 3, allowGarnitures: true, emoji: '🌯' },
-  tacos_XXL: { maxMeats: 4, maxSauces: 3, allowGarnitures: true, emoji: '🌯' },
-  tacos_GIGA: { maxMeats: 5, maxSauces: 3, allowGarnitures: true, emoji: '🔥' },
+  [TacoSize.L]: { ...BASE_TACO_SIZE_CONFIG[TacoSize.L], emoji: '🌮' },
+  [TacoSize.BOWL]: { ...BASE_TACO_SIZE_CONFIG[TacoSize.BOWL], emoji: '🥗' },
+  [TacoSize.L_MIXTE]: { ...BASE_TACO_SIZE_CONFIG[TacoSize.L_MIXTE], emoji: '🌯' },
+  [TacoSize.XL]: { ...BASE_TACO_SIZE_CONFIG[TacoSize.XL], emoji: '🌯' },
+  [TacoSize.XXL]: { ...BASE_TACO_SIZE_CONFIG[TacoSize.XXL], emoji: '🌯' },
+  [TacoSize.GIGA]: { ...BASE_TACO_SIZE_CONFIG[TacoSize.GIGA], emoji: '🔥' },
 };
 
-export function getTacoSizeConfig(size: TacoSize | string): TacoSizeConfig | null {
-  return TACO_SIZE_CONFIG[size as TacoSize] ?? null;
-}
-
-/**
- * Format taco size code to display name
- * Examples:
- * - "tacos_L" -> "Tacos L"
- * - "tacos_L_mixte" -> "Tacos L Mixte"
- * - "tacos_XL" -> "Tacos XL"
- */
-export function formatTacoSizeName(size: string): string {
-  const withoutPrefix = size.replace(/^tacos_/, '');
-  const parts = withoutPrefix.split('_');
-  const formatted = parts
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
-    .join(' ');
-  return `Tacos ${formatted}`;
-}
-
-/**
- * Convert hex tacoId to base58 tacoID
- * This is used to display user-friendly tacoIDs
- */
-export function hexToTacoID(hexTacoId: string): string {
-  try {
-    // Import bs58 dynamically to avoid SSR issues
-    const bs58 = require('bs58');
-    const hash = Buffer.from(hexTacoId, 'hex');
-    return bs58.encode(hash);
-  } catch {
-    throw new Error('Invalid tacoId format');
-  }
+export function formatTacoSizeName(size: string | TacoSize): string {
+  return TACO_SIZE_CONFIG[size as TacoSize].name;
 }

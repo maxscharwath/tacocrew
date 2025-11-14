@@ -48,7 +48,7 @@ export function SegmentedControl<T extends string = string>({
   disabled,
   variant = 'primary',
   renderOption,
-}: SegmentedControlProps<T>) {
+}: Readonly<SegmentedControlProps<T>>) {
   return (
     <div className={cn(containerVariants[variant], className)}>
       {variant === 'secondary' && (

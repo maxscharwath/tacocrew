@@ -3,7 +3,7 @@ import { cn } from './utils';
 
 type CardProps = ComponentPropsWithoutRef<'div'>;
 
-export function Card({ className, ...props }: CardProps) {
+export function Card({ className, ...props }: Readonly<CardProps>) {
   return (
     <div
       className={cn(
@@ -17,21 +17,21 @@ export function Card({ className, ...props }: CardProps) {
 
 type CardSectionProps = ComponentPropsWithoutRef<'div'>;
 
-export function CardHeader({ className, ...props }: CardSectionProps) {
+export function CardHeader({ className, ...props }: Readonly<CardSectionProps>) {
   return <div className={cn('flex flex-col gap-2 px-6 pt-6 pb-3', className)} {...props} />;
 }
 
-export function CardContent({ className, ...props }: CardSectionProps) {
+export function CardContent({ className, ...props }: Readonly<CardSectionProps>) {
   return <div className={cn('flex flex-col gap-6 px-6 pb-6', className)} {...props} />;
 }
 
-export function CardFooter({ className, ...props }: CardSectionProps) {
+export function CardFooter({ className, ...props }: Readonly<CardSectionProps>) {
   return <div className={cn('flex flex-col gap-4 p-6 pt-0', className)} {...props} />;
 }
 
 type CardTitleProps = ComponentPropsWithoutRef<'h2'>;
 
-export function CardTitle({ className, ...props }: CardTitleProps) {
+export function CardTitle({ className, ...props }: Readonly<CardTitleProps>) {
   return (
     <h2
       className={cn('font-semibold text-lg text-white tracking-tight md:text-xl', className)}
@@ -42,6 +42,6 @@ export function CardTitle({ className, ...props }: CardTitleProps) {
 
 type CardDescriptionProps = ComponentPropsWithoutRef<'p'>;
 
-export function CardDescription({ className, ...props }: CardDescriptionProps) {
+export function CardDescription({ className, ...props }: Readonly<CardDescriptionProps>) {
   return <p className={cn('text-slate-300 text-sm', className)} {...props} />;
 }

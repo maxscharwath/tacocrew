@@ -14,8 +14,8 @@ export function OrderConfirmationModal({ isOpen, onClose }: OrderConfirmationMod
   const { t } = useTranslation();
   const [showConfetti, setShowConfetti] = useState(false);
   const [windowSize, setWindowSize] = useState({
-    width: typeof window !== 'undefined' ? window.innerWidth : 0,
-    height: typeof window !== 'undefined' ? window.innerHeight : 0,
+    width: window.innerWidth,
+    height: window.innerHeight,
   });
 
   useEffect(() => {

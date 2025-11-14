@@ -9,9 +9,7 @@ class DeveloperModeStore {
   constructor() {
     this.isEnabled = this.readFromStorage();
     // Listen for storage changes from other tabs
-    if (typeof globalThis.window !== 'undefined') {
-      globalThis.window.addEventListener('storage', this.handleStorageChange.bind(this));
-    }
+    globalThis.window.addEventListener('storage', this.handleStorageChange.bind(this));
   }
 
   private handleStorageChange(event: StorageEvent) {
@@ -53,7 +51,7 @@ class DeveloperModeStore {
   }
 
   private readFromStorage(): boolean {
-    if (typeof globalThis.window === 'undefined') {
+    if (!globalThis.window) {
       return false;
     }
     try {
@@ -64,7 +62,7 @@ class DeveloperModeStore {
   }
 
   private writeToStorage(enabled: boolean) {
-    if (typeof globalThis.window === 'undefined') {
+    if (!globalThis.window) {
       return;
     }
     try {

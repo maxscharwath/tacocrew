@@ -10,6 +10,7 @@
     "lint": "biome check ."
   },
   "dependencies": {
+    "@tacobot/gigatacos-client": "workspace:^",
     "@tacobot/ui-kit": "workspace:^",
     "@tailwindcss/vite": "^4.1.17",
     "better-auth": "^1.3.34",

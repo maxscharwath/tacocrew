@@ -27,11 +27,6 @@ export interface StockAvailabilityBackend {
 }
 
 /**
- * Session ID type (simple string - no branding to allow flexibility)
- */
-export type SessionId = string;
-
-/**
  * Taco size options
  */
 export enum TacoSize {
@@ -41,6 +36,86 @@ export enum TacoSize {
   XL = 'tacos_XL',
   XXL = 'tacos_XXL',
   GIGA = 'tacos_GIGA',
+}
+
+/**
+ * Taco size configuration with metadata
+ * Shared between API and frontend
+ */
+export interface TacoSizeConfig {
+  name: string;
+  price: number;
+  maxMeats: number;
+  maxSauces: number;
+  allowGarnitures: boolean;
+}
+
+/**
+ * Complete taco size configurations - single source of truth
+ * Contains all metadata for each taco size including pricing and constraints
+ */
+export const TACO_SIZE_CONFIG: Record<TacoSize, TacoSizeConfig> = {
+  [TacoSize.L]: {
+    name: 'Tacos L',
+    price: 11,
+    maxMeats: 1,
+    maxSauces: 3,
+    allowGarnitures: true,
+  },
+  [TacoSize.BOWL]: {
+    name: 'Tacos Bowl',
+    price: 14,
+    maxMeats: 2,
+    maxSauces: 3,
+    allowGarnitures: true,
+  },
+  [TacoSize.L_MIXTE]: {
+    name: 'Tacos L Mixte',
+    price: 12,
+    maxMeats: 3,
+    maxSauces: 3,
+    allowGarnitures: true,
+  },
+  [TacoSize.XL]: {
+    name: 'Tacos XL',
+    price: 18.5,
+    maxMeats: 3,
+    maxSauces: 3,
+    allowGarnitures: true,
+  },
+  [TacoSize.XXL]: {
+    name: 'Tacos XXL',
+    price: 28,
+    maxMeats: 4,
+    maxSauces: 3,
+    allowGarnitures: true,
+  },
+  [TacoSize.GIGA]: {
+    name: 'Tacos GIGA',
+    price: 38,
+    maxMeats: 5,
+    maxSauces: 3,
+    allowGarnitures: true,
+  },
+};
+
+/**
+ * Order type (delivery or takeaway)
+ */
+export enum OrderType {
+  DELIVERY = 'livraison',
+  TAKEAWAY = 'emporter',
+}
+
+/**
+ * Order status lifecycle
+ */
+export enum OrderStatus {
+  PENDING = 'pending',
+  CONFIRMED = 'confirmed',
+  ON_DELIVERY = 'ondelivery',
+  DELIVERED = 'delivered',
+  CANCELLED = 'cancelled',
 }
 
 /**
@@ -116,7 +191,7 @@ export interface Logger {
  * Session context - contains session ID, CSRF token, and cookies
  */
 export interface SessionContext {
-  sessionId: SessionId;
+  sessionId: string;
   csrfToken: string;
   cookies: Record<string, string>;
 }
@@ -165,22 +240,73 @@ export interface OrderSubmissionData {
 }
 
 /**
+ * Ingredient in RocknRoll response (meat/viande)
+ */
+export interface RocknRollIngredient {
+  slug: string;
+  name: string;
+  quantity: number;
+}
+
+/**
+ * Simple ingredient in RocknRoll response (sauce/garniture)
+ */
+export interface RocknRollSimpleIngredient {
+  slug: string;
+  name: string;
+}
+
+/**
+ * Taco in RocknRoll response
+ */
+export interface RocknRollTaco {
+  slug: string;
+  taille: string;
+  name: string;
+  price: number;
+  viande: RocknRollIngredient[];
+  garniture: RocknRollSimpleIngredient[];
+  sauce: RocknRollSimpleIngredient[];
+  tacosNote: string;
+  quantity: number;
+}
+
+/**
+ * Delivery data in RocknRoll response
+ */
+export interface RocknRollDeliveryData {
+  minOrderAmount: number;
+  postalcode: string;
+  ville: string;
+}
+
+/**
  * Order data structure from RocknRoll.php response
  */
 export interface OrderData {
-  status?: string;
-  type?: string;
-  date?: string;
-  price?: number;
-  requestedFor?: string;
-  [key: string]: unknown; // Allow additional fields from backend
+  price: string;
+  time: string;
+  totalPrice: number;
+  name: string;
+  phone: string;
+  address: string;
+  status: OrderStatus;
+  date: string;
+  type: OrderType;
+  requestedFor: string;
 }
 
 /**
  * Order submission response from RocknRoll.php
  */
 export interface OrderSubmissionResponse {
+  success: boolean;
   orderId: string;
+  tacos: RocknRollTaco[];
+  extras: unknown[];
+  boissons: unknown[];
+  desserts: unknown[];
+  DeliveryData: RocknRollDeliveryData;
   OrderData: OrderData;
 }
 

@@ -225,7 +225,7 @@ export function OrderCreateRoute() {
   const { t } = useTranslation();
   const currency = t('common.currency.chf');
   const { myOrder, stock, previousOrders } = useLoaderData<LoaderData>();
-  const actionData = useActionData() as ActionData | undefined;
+  const actionData = useActionData<ActionData | undefined>();
   const navigation = useNavigation();
   const navigate = useNavigate();
   const params = useParams();

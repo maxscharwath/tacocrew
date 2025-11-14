@@ -1,9 +1,9 @@
 import type { StockResponse } from '@/lib/api';
-import type { MeatSelection, TacoSizeItem } from '@/types/orders';
+import type { MeatSelection, PriceBreakdownItem, TacoSizeItem } from '@/types/orders';
 
 /**
  * Calculate the price of a taco order
- * Base taco price + meat prices
+ * Base taco price and meat prices
  */
 export function calculateTacoPrice(
   tacoSize: TacoSizeItem | null,
@@ -56,11 +56,6 @@ export function calculateOrderTotalPrice(
 
   return tacoPrice + extrasPrice + drinksPrice + dessertsPrice;
 }
-
-/**
- * Generate price breakdown for order summary
- */
-import type { PriceBreakdownItem } from '@/types/orders';
 
 export function generatePriceBreakdown(
   tacoSize: TacoSizeItem | null,

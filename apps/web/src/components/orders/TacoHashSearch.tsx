@@ -62,7 +62,7 @@ export function TacoHashSearch({ onSelectTaco, disabled }: TacoHashSearchProps) 
             setHash(e.target.value);
             setError(null);
           }}
-          onKeyPress={handleKeyPress}
+          onKeyDown={handleKeyPress}
           disabled={disabled || isLoading}
           className="flex-1 font-mono text-sm"
         />

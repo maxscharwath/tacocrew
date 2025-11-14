@@ -106,7 +106,7 @@ export const ordersAction = createActionHandler({
   },
 });
 
-function OrdersContent({ groupOrders }: { groupOrders: LoaderData['groupOrders'] }) {
+function OrdersContent({ groupOrders }: Readonly<{ groupOrders: LoaderData['groupOrders'] }>) {
   const { t } = useTranslation();
   const {
     formatDateTime,
@@ -116,7 +116,7 @@ function OrdersContent({ groupOrders }: { groupOrders: LoaderData['groupOrders']
     formatTime12Hour,
     formatDateTimeWithYear,
   } = useDateFormat();
-  const actionData = useActionData() as ActionData | undefined;
+  const actionData = useActionData<ActionData | undefined>();
   const navigation = useNavigation();
   const isSubmitting = navigation.state === 'submitting';
 

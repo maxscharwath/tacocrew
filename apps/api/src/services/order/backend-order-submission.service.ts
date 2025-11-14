@@ -5,7 +5,7 @@
  */
 
 import { randomBytes } from 'node:crypto';
-import { PaymentMethod } from '@tacobot/gigatacos-client';
+import { type OrderSubmissionResponse, PaymentMethod } from '@tacobot/gigatacos-client';
 import axios from 'axios';
 import { injectable } from 'tsyringe';
 import { BackendIntegrationClient } from '../../infrastructure/api/backend-integration.client';
@@ -41,7 +41,7 @@ export class BackendOrderSubmissionService {
   ): Promise<{
     orderId: string;
     transactionId: string;
-    orderData: unknown;
+    orderData: OrderSubmissionResponse['OrderData'];
     sessionId: string;
     dryRun?: boolean;
   }> {
@@ -70,7 +70,7 @@ export class BackendOrderSubmissionService {
       // Generate transaction ID (format: timestamp_random)
       const transactionId = `${Date.now()}_${randomBytes(8).toString('hex')}`;
 
-      let orderResult: { orderId: string; OrderData: unknown };
+      let orderResult: OrderSubmissionResponse;
 
       if (dryRun) {
         // Dry run: Skip actual submission, create mock response
@@ -81,14 +81,34 @@ export class BackendOrderSubmissionService {
         });
 
         orderResult = {
+          success: true,
           orderId: `dry-run-${transactionId}`,
+          tacos: [],
+          extras: [],
+          boissons: [],
+          desserts: [],
+          DeliveryData: {
+            minOrderAmount: 0,
+            postalcode: delivery.address.postcode,
+            ville: delivery.address.city,
+          },
           OrderData: {
-            dryRun: true,
-            message: 'Order not submitted - dry run mode',
-            sessionId,
-            transactionId,
-            customer: customer.name,
-            deliveryType: delivery.type,
+            price: '0.00',
+            time: 'NOW',
+            totalPrice: 0,
+            name: customer.name,
+            phone: customer.phone,
+            address: formatAddressForBackend(delivery.address),
+            status: 'dry-run',
+            date: new Date().toISOString(),
+            type: delivery.type,
+            requestedFor: delivery.requestedFor,
+            ...({
+              dryRun: true,
+              message: 'Order not submitted - dry run mode',
+              sessionId,
+              transactionId,
+            } as Record<string, unknown>),
           },
         };
       } else {

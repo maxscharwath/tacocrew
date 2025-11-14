@@ -13,7 +13,7 @@ export function Divider({
   className,
   lineClassName,
   labelClassName,
-}: DividerProps) {
+}: Readonly<DividerProps>) {
   if (!label) {
     return (
       <div className={cn('flex items-center', className)}>

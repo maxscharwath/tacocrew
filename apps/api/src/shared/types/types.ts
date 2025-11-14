@@ -3,6 +3,26 @@
  * @module types
  */
 
+import { OrderType, TacoSize } from '@tacobot/gigatacos-client';
+import { CartId } from '../../schemas/cart.schema';
+import { Dessert } from '../../schemas/dessert.schema';
+import { Drink } from '../../schemas/drink.schema';
+import { Extra } from '../../schemas/extra.schema';
+import { GroupOrderId } from '../../schemas/group-order.schema';
+import type { Taco } from '../../schemas/taco.schema';
+import { UserId } from '../../schemas/user.schema';
+import { UserOrderId } from '../../schemas/user-order.schema';
+import { TimeSlot } from '../../shared/types/time-slot';
+
+// Re-export enums and config from gigatacos-client for convenience
+// These are external enums used for API communication
+export {
+  OrderStatus,
+  OrderType,
+  TACO_SIZE_CONFIG,
+  TacoSize,
+  type TacoSizeConfig,
+} from '@tacobot/gigatacos-client';
 export type { CartId } from '../../schemas/cart.schema';
 export type { Dessert, DessertId } from '../../schemas/dessert.schema';
 export { DessertIdSchema } from '../../schemas/dessert.schema';
@@ -23,37 +43,6 @@ export type { UserId } from '../../schemas/user.schema';
 export type { UserOrderId } from '../../schemas/user-order.schema';
 export * from './api';
 export * from './session';
-
-/**
- * Taco size options with their meat capacity
- */
-export enum TacoSize {
-  L = 'tacos_L',
-  BOWL = 'tacos_BOWL',
-  L_MIXTE = 'tacos_L_mixte',
-  XL = 'tacos_XL',
-  XXL = 'tacos_XXL',
-  GIGA = 'tacos_GIGA',
-}
-
-/**
- * Order type (delivery or takeaway)
- */
-export enum OrderType {
-  DELIVERY = 'livraison',
-  TAKEAWAY = 'emporter',
-}
-
-/**
- * Order status lifecycle
- */
-export enum OrderStatus {
-  PENDING = 'pending',
-  CONFIRMED = 'confirmed',
-  ON_DELIVERY = 'ondelivery',
-  DELIVERED = 'delivered',
-  CANCELLED = 'cancelled',
-}
 
 // Meat, Sauce, Garniture, and Taco types are now exported from @/schemas/taco.schema
 
@@ -117,17 +106,6 @@ export interface CartMetadata {
     [key: string]: unknown;
   };
 }
-
-import { CartId } from '../../schemas/cart.schema';
-// Import types from domain schemas for use in this file
-import type { Dessert } from '../../schemas/dessert.schema';
-import type { Drink } from '../../schemas/drink.schema';
-import type { Extra } from '../../schemas/extra.schema';
-import { GroupOrderId } from '../../schemas/group-order.schema';
-import type { Taco } from '../../schemas/taco.schema';
-import { UserId } from '../../schemas/user.schema';
-import { UserOrderId } from '../../schemas/user-order.schema';
-import type { TimeSlot } from './time-slot';
 
 /**
  * Complete cart contents with session data
@@ -274,27 +252,6 @@ export interface ApiResponse<T> {
   data?: T;
   error?: ApiError;
 }
-
-/**
- * Taco size configuration
- */
-export interface TacoSizeConfig {
-  maxMeats: number;
-  maxSauces: number;
-  allowGarnitures: boolean;
-}
-
-/**
- * Taco size configurations map
- */
-export const TACO_SIZE_CONFIG: Record<TacoSize, TacoSizeConfig> = {
-  [TacoSize.L]: { maxMeats: 1, maxSauces: 3, allowGarnitures: true },
-  [TacoSize.BOWL]: { maxMeats: 2, maxSauces: 3, allowGarnitures: true },
-  [TacoSize.L_MIXTE]: { maxMeats: 3, maxSauces: 3, allowGarnitures: true },
-  [TacoSize.XL]: { maxMeats: 3, maxSauces: 3, allowGarnitures: true },
-  [TacoSize.XXL]: { maxMeats: 4, maxSauces: 3, allowGarnitures: true },
-  [TacoSize.GIGA]: { maxMeats: 5, maxSauces: 3, allowGarnitures: true },
-};
 
 /**
  * Group order status

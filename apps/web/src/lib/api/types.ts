@@ -1,3 +1,4 @@
+import { TacoSize } from '@tacobot/gigatacos-client';
 import type { DeliveryType } from '@/components/orders';
 
 export interface LoginRequestBody {
@@ -55,7 +56,6 @@ export interface DeliveryProfilePayload {
 export interface UserGroupOrder {
   id: string;
   name: string | null;
-  shareCode: string | null;
   status: string;
   canAcceptOrders: boolean;
   startDate: string;
@@ -128,14 +128,6 @@ export interface GroupOrder {
   createdAt?: string;
   updatedAt?: string;
 }
-
-export type TacoSize =
-  | 'tacos_L'
-  | 'tacos_BOWL'
-  | 'tacos_L_mixte'
-  | 'tacos_XL'
-  | 'tacos_XXL'
-  | 'tacos_GIGA';
 
 export interface TacoMeatSelection {
   id: string;

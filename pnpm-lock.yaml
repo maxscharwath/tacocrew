@@ -175,6 +175,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@tacobot/gigatacos-client':
+        specifier: workspace:^
+        version: link:../../packages/gigatacos-client
       '@tacobot/ui-kit':
         specifier: workspace:^
         version: link:../../packages/ui-kit

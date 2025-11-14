@@ -1,4 +1,7 @@
 // routes/app.tsx
+
+import React, { lazy } from 'react';
+import { z } from 'zod';
 import { HydrateFallback } from '@/components/hydrate-fallback';
 import {
   DashboardSkeleton,
@@ -8,20 +11,18 @@ import {
   ProfileSkeleton,
   StockSkeleton,
 } from '@/components/skeletons';
-import { dashboardLoader, DashboardRoute } from '@/routes/dashboard';
+import { DashboardRoute, dashboardLoader } from '@/routes/dashboard';
 import { authenticationLoader, LoginRoute } from '@/routes/login';
-import { orderCreateAction, orderCreateLoader, OrderCreateRoute } from '@/routes/orders.create';
+import { OrderCreateRoute, orderCreateAction, orderCreateLoader } from '@/routes/orders.create';
 import { orderDetailAction, orderDetailLoader } from '@/routes/orders.detail';
-import { ordersAction, ordersLoader, OrdersRoute } from '@/routes/orders.list';
-import { orderSubmitAction, orderSubmitLoader, OrderSubmitRoute } from '@/routes/orders.submit';
-import { profileLoader, ProfileRoute } from '@/routes/profile';
-import { accountLoader, AccountRoute } from '@/routes/profile.account';
-import { profileDeliveryLoader, ProfileDeliveryRoute } from '@/routes/profile.delivery';
+import { OrdersRoute, ordersAction, ordersLoader } from '@/routes/orders.list';
+import { OrderSubmitRoute, orderSubmitAction, orderSubmitLoader } from '@/routes/orders.submit';
+import { ProfileRoute, profileLoader } from '@/routes/profile';
+import { AccountRoute, accountLoader } from '@/routes/profile.account';
+import { ProfileDeliveryRoute, profileDeliveryLoader } from '@/routes/profile.delivery';
 import { RootErrorBoundary, RootLayout } from '@/routes/root';
 import { rootAction, rootLoader } from '@/routes/root.loader';
-import { stockLoader, StockRoute } from '@/routes/stock';
-import React, { lazy } from 'react';
-import { z } from 'zod';
+import { StockRoute, stockLoader } from '@/routes/stock';
 import { defineRoutes } from './routes/core';
 
 // Lazy load the order detail route to prevent hydration issues

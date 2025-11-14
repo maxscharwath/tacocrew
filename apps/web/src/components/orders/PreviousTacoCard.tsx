@@ -17,7 +17,7 @@ export function PreviousTacoCard({ order, stock, disabled, onSelect }: PreviousT
   const { t } = useTranslation();
   const { formatRelativeTime } = useDateFormat();
   const taco = order.taco;
-  const tacoConfig = TACO_SIZE_CONFIG[taco.size as keyof typeof TACO_SIZE_CONFIG];
+  const tacoConfig = TACO_SIZE_CONFIG[taco.size];
   const tacoSize = stock.tacos.find((t) => t.code === taco.size);
   const sizeName = formatTacoSizeName(taco.size);
   const isDisabled = disabled || !tacoSize;

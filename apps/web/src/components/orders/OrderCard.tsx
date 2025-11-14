@@ -68,9 +68,7 @@ export function OrderCard({
     }
   };
 
-  const tacoConfig = taco
-    ? TACO_SIZE_CONFIG[taco.size as keyof typeof TACO_SIZE_CONFIG]
-    : undefined;
+  const tacoConfig = taco ? TACO_SIZE_CONFIG[taco.size] : undefined;
 
   return (
     <Card

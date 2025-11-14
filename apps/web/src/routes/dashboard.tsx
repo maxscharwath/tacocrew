@@ -53,7 +53,7 @@ export async function dashboardLoader(_: LoaderFunctionArgs) {
   });
 }
 
-function DashboardContent({ data }: { data: DashboardLoaderData }) {
+function DashboardContent({ data }: Readonly<{ data: DashboardLoaderData }>) {
   const { t } = useTranslation();
   const { formatDateTime, formatDateTimeRange, formatDayName } = useDateFormat();
   const { metrics, groupOrders, orderHistory } = data;

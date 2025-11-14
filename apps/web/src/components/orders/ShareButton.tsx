@@ -6,8 +6,6 @@ import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle } fro
 
 interface ShareButtonProps {
   readonly groupOrderId: string;
-  readonly shareCode?: string | null;
-  readonly orderName?: string | null;
 }
 
 export function ShareButton({ groupOrderId }: ShareButtonProps) {

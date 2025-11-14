@@ -10,10 +10,7 @@ class SessionStore {
 
   constructor() {
     this.session = this.readFromStorage();
-    // Listen for storage changes from other tabs
-    if (typeof globalThis.window !== 'undefined') {
-      globalThis.window.addEventListener('storage', this.handleStorageChange.bind(this));
-    }
+    globalThis.window?.addEventListener('storage', this.handleStorageChange.bind(this));
   }
 
   private handleStorageChange(event: StorageEvent) {
@@ -39,7 +36,7 @@ class SessionStore {
   public clearSession() {
     this.session = null;
     try {
-      if (typeof globalThis.window !== 'undefined') {
+      if (globalThis.window) {
         globalThis.window.localStorage.removeItem(STORAGE_KEY);
       }
     } catch {
@@ -63,7 +60,7 @@ class SessionStore {
   }
 
   private readFromStorage(): Session | null {
-    if (typeof globalThis.window === 'undefined') {
+    if (!globalThis.window) {
       return null;
     }
     try {
@@ -80,7 +77,7 @@ class SessionStore {
   }
 
   private writeToStorage(session: Session) {
-    if (typeof globalThis.window === 'undefined') {
+    if (!globalThis.window) {
       return;
     }
     try {
