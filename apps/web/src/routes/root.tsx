@@ -28,11 +28,15 @@ export function RootLayout() {
   );
 
   // Get Better Auth session to display the updated name
-  // Use setTimeout to defer execution until after hydration completes
+  // Only run in browser after React is fully initialized
   useEffect(() => {
+    // Guard: only run if we're in the browser and React is ready
+    if (typeof window === 'undefined') return;
+    
     let cleanup: (() => void) | undefined;
 
-    const timeoutId = setTimeout(() => {
+    // Use requestAnimationFrame to ensure React is fully ready
+    const rafId = requestAnimationFrame(() => {
       const loadSession = () => {
         authClient.getSession().then((session) => {
           if (session?.data?.user) {
@@ -50,17 +54,17 @@ export function RootLayout() {
         loadSession();
       };
 
-      globalThis.window.addEventListener('userNameUpdated', handleNameUpdate);
-      globalThis.window.addEventListener('focus', loadSession);
+      window.addEventListener('userNameUpdated', handleNameUpdate);
+      window.addEventListener('focus', loadSession);
 
       cleanup = () => {
-        globalThis.window.removeEventListener('userNameUpdated', handleNameUpdate);
-        globalThis.window.removeEventListener('focus', loadSession);
+        window.removeEventListener('userNameUpdated', handleNameUpdate);
+        window.removeEventListener('focus', loadSession);
       };
-    }, 0);
+    });
 
     return () => {
-      clearTimeout(timeoutId);
+      cancelAnimationFrame(rafId);
       cleanup?.();
     };
   }, []);
