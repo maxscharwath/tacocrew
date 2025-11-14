@@ -24,7 +24,6 @@ export interface RouteDef<
   action?: (args: ActionFunctionArgs) => unknown | Promise<unknown>;
   element?: React.ReactNode;
   errorElement?: React.ReactNode;
-  hydrateFallback?: React.ReactNode;
   children?: TChildren;
 }
 export type AnyRouteDef = RouteDef<
@@ -274,7 +273,7 @@ export function createRouteBuilders<const T extends Record<string, AnyRouteDef>>
 }
 
 const toRouteObject = (def: AnyRouteDef): RouteObject => {
-  const node: RouteObject & { hydrateFallbackElement?: React.ReactNode } = {
+  const node: RouteObject = {
     index: def.index,
     path: def.index ? undefined : def.path,
     loader: def.loader,
@@ -282,12 +281,8 @@ const toRouteObject = (def: AnyRouteDef): RouteObject => {
     element: def.element,
     errorElement: def.errorElement,
   };
-  if (def.hydrateFallback) {
-    (node as RouteObject & { hydrateFallbackElement: React.ReactNode }).hydrateFallbackElement =
-      def.hydrateFallback;
-  }
   if (def.children) node.children = Object.values(def.children).map(toRouteObject);
-  return node as RouteObject;
+  return node;
 };
 
 export function buildRouteObjects<const T extends Record<string, AnyRouteDef>>(defs: T) {

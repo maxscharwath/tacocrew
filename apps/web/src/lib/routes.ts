@@ -1,7 +1,6 @@
 // routes/app.tsx
 import React from 'react';
 import { z } from 'zod';
-import { HydrateFallback } from '../components/hydrate-fallback';
 import { DashboardRoute, dashboardLoader } from '../routes/dashboard';
 import { LoginRoute, signinLoader, signupLoader } from '../routes/login';
 import { OrderCreateRoute, orderCreateAction, orderCreateLoader } from '../routes/orders.create';
@@ -44,7 +43,6 @@ export const { routes, routerConfig } = defineRoutes({
     action: rootAction,
     element: React.createElement(RootLayout),
     errorElement: React.createElement(RootErrorBoundary),
-    hydrateFallback: React.createElement(HydrateFallback),
     children: {
       dashboard: {
         index: true,
@@ -63,6 +61,7 @@ export const { routes, routerConfig } = defineRoutes({
         element: React.createElement(OrderDetailRoute),
         loader: orderDetailLoader,
         action: orderDetailAction,
+        errorElement: React.createElement(RootErrorBoundary),
       },
       orderCreate: {
         path: 'orders/:orderId/create',
