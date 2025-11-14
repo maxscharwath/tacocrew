@@ -28,30 +28,40 @@ export function RootLayout() {
   );
 
   // Get Better Auth session to display the updated name
+  // Use setTimeout to defer execution until after hydration completes
   useEffect(() => {
-    const loadSession = () => {
-      authClient.getSession().then((session) => {
-        if (session?.data?.user) {
-          const name = session.data.user.name || session.data.user.email.split('@')[0];
-          setUserName(name);
-          setUserInitials(name.slice(0, 2).toUpperCase());
-        }
-      });
-    };
+    let cleanup: (() => void) | undefined;
 
-    loadSession();
+    const timeoutId = setTimeout(() => {
+      const loadSession = () => {
+        authClient.getSession().then((session) => {
+          if (session?.data?.user) {
+            const name = session.data.user.name || session.data.user.email.split('@')[0];
+            setUserName(name);
+            setUserInitials(name.slice(0, 2).toUpperCase());
+          }
+        });
+      };
 
-    // Listen for name update events
-    const handleNameUpdate = () => {
       loadSession();
-    };
 
-    globalThis.window.addEventListener('userNameUpdated', handleNameUpdate);
-    globalThis.window.addEventListener('focus', loadSession);
+      // Listen for name update events
+      const handleNameUpdate = () => {
+        loadSession();
+      };
+
+      globalThis.window.addEventListener('userNameUpdated', handleNameUpdate);
+      globalThis.window.addEventListener('focus', loadSession);
+
+      cleanup = () => {
+        globalThis.window.removeEventListener('userNameUpdated', handleNameUpdate);
+        globalThis.window.removeEventListener('focus', loadSession);
+      };
+    }, 0);
 
     return () => {
-      globalThis.window.removeEventListener('userNameUpdated', handleNameUpdate);
-      globalThis.window.removeEventListener('focus', loadSession);
+      clearTimeout(timeoutId);
+      cleanup?.();
     };
   }, []);
   type NavItem = {
