@@ -22,10 +22,10 @@
     "uuid": "^13.0.0"
   },
   "devDependencies": {
-    "@types/cheerio": "^0.22.0",
-    "@types/node": "^20.0.0",
-    "@types/uuid": "^9.0.0",
-    "esbuild": "^0.25.12",
+    "@types/cheerio": "^1.0.0",
+    "@types/node": "^24.10.1",
+    "@types/uuid": "^11.0.0",
+    "esbuild": "^0.27.0",
     "tsx": "^4.20.6",
     "typescript": "^5.0.0",
     "vitest": "^4.0.7"
