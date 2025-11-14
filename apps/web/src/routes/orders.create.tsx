@@ -55,7 +55,10 @@ type ActionData = {
   errorMessage?: string;
 };
 
-export async function orderCreateLoader({ params, request }: LoaderFunctionArgs): Promise<Response> {
+export async function orderCreateLoader({
+  params,
+  request,
+}: LoaderFunctionArgs): Promise<Response> {
   const groupOrderId = params.orderId;
   if (!groupOrderId) {
     throw new Response('Order not found', { status: 404 });

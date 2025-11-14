@@ -78,7 +78,10 @@ export function Avatar({
     isValidElement(children) && typeof children.type !== 'string'
       ? cloneElement(children as ReactElement<{ size?: number; className?: string }>, {
           size: iconSizeMap[size || 'md'],
-          className: cn('text-current', (children as ReactElement).props?.className),
+          className: cn(
+            'text-current',
+            (children as ReactElement<{ size?: number; className?: string }>).props?.className
+          ),
         })
       : typeof children === 'string' ? (
           <span className="select-none">{children}</span>

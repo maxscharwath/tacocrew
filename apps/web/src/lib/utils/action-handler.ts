@@ -25,6 +25,18 @@ type ActionConfig = {
   getFormName?: (method: string, request: Request) => string | Promise<string>;
 };
 
+const HTTP_STATUS = {
+  METHOD_NOT_ALLOWED: 405,
+  BAD_REQUEST: 400,
+  INTERNAL_SERVER_ERROR: 500,
+} as const;
+
+const ERROR_KEYS = {
+  UNSUPPORTED_METHOD: 'errors.unsupportedMethod',
+  VALIDATION_FAILED: 'errors.validation.failed',
+  UNEXPECTED_GENERIC: 'errors.unexpected.generic',
+} as const;
+
 /**
  * Generic action handler that routes by HTTP method and handles errors consistently
  */
@@ -37,41 +49,7 @@ export function createActionHandler(
     const form = (await config.getFormName?.(method, request)) || 'unknown';
 
     try {
-      let handler: ActionHandler<{ formData: FormData }> | ActionHandler<void> | undefined;
-      if (method === 'POST') {
-        handler = config.handlers.POST;
-      } else if (method === 'DELETE') {
-        handler = config.handlers.DELETE;
-      } else if (method === 'PATCH') {
-        handler = config.handlers.PATCH;
-      } else if (method === 'PUT') {
-        handler = config.handlers.PUT;
-      } else if (method === 'GET') {
-        handler = config.handlers.GET;
-      }
-
-      if (!handler) {
-        return Response.json({ form, errorKey: 'errors.unsupportedMethod' }, { status: 405 });
-      }
-
-      // For POST, pass formData to help distinguish between different POST actions
-      let handlerResult: void | Response | undefined;
-      if (method === 'POST') {
-        const formData = await request.clone().formData();
-        if (config.handlers.POST) {
-          handlerResult = await config.handlers.POST({ formData }, request, params);
-        }
-      } else if (method === 'DELETE' && config.handlers.DELETE) {
-        handlerResult = await config.handlers.DELETE(undefined, request, params);
-      } else if (method === 'PATCH' && config.handlers.PATCH) {
-        handlerResult = await config.handlers.PATCH(undefined, request, params);
-      } else if (method === 'PUT' && config.handlers.PUT) {
-        handlerResult = await config.handlers.PUT(undefined, request, params);
-      } else if (method === 'GET' && config.handlers.GET) {
-        handlerResult = await config.handlers.GET(undefined, request, params);
-      }
-
-      // If handler returns a Response, use it (for redirects, etc.)
+      const handlerResult = await executeHandler(method, config, request, params, form);
       if (handlerResult instanceof Response) {
         return handlerResult;
       }
@@ -87,6 +65,61 @@ export function createActionHandler(
       return handleActionError(error, form);
     }
   };
+}
+
+/**
+ * Execute the appropriate handler based on HTTP method
+ */
+async function executeHandler(
+  method: string,
+  config: ActionConfig,
+  request: Request,
+  params: ActionFunctionArgs['params'],
+  form: string
+): Promise<void | Response | undefined> {
+  const unsupportedMethodResponse = () =>
+    Response.json(
+      { form, errorKey: ERROR_KEYS.UNSUPPORTED_METHOD },
+      {
+        status: HTTP_STATUS.METHOD_NOT_ALLOWED,
+      }
+    );
+
+  switch (method) {
+    case 'POST': {
+      if (!config.handlers.POST) {
+        return unsupportedMethodResponse();
+      }
+      const formData = await request.clone().formData();
+      return await config.handlers.POST({ formData }, request, params);
+    }
+    case 'DELETE': {
+      if (!config.handlers.DELETE) {
+        return unsupportedMethodResponse();
+      }
+      return await config.handlers.DELETE(undefined, request, params);
+    }
+    case 'PATCH': {
+      if (!config.handlers.PATCH) {
+        return unsupportedMethodResponse();
+      }
+      return await config.handlers.PATCH(undefined, request, params);
+    }
+    case 'PUT': {
+      if (!config.handlers.PUT) {
+        return unsupportedMethodResponse();
+      }
+      return await config.handlers.PUT(undefined, request, params);
+    }
+    case 'GET': {
+      if (!config.handlers.GET) {
+        return unsupportedMethodResponse();
+      }
+      return await config.handlers.GET(undefined, request, params);
+    }
+    default:
+      return unsupportedMethodResponse();
+  }
 }
 
 /**
@@ -166,7 +199,7 @@ function handleActionError(error: unknown, form: string): Response {
       return Response.json(
         {
           form,
-          errorKey: 'errors.validation.failed',
+          errorKey: ERROR_KEYS.VALIDATION_FAILED,
           errorMessage: zodError.message,
           fieldErrors: zodError.fieldErrors,
         },
@@ -209,18 +242,18 @@ function handleActionError(error: unknown, form: string): Response {
     return Response.json(
       {
         form,
-        errorKey: 'errors.validation.failed',
+        errorKey: ERROR_KEYS.VALIDATION_FAILED,
         errorMessage: error.message,
       },
-      { status: 400 }
+      { status: HTTP_STATUS.BAD_REQUEST }
     );
   }
 
   return Response.json(
     {
       form,
-      errorKey: 'errors.unexpected.generic',
+      errorKey: ERROR_KEYS.UNEXPECTED_GENERIC,
     },
-    { status: 500 }
+    { status: HTTP_STATUS.INTERNAL_SERVER_ERROR }
   );
 }
