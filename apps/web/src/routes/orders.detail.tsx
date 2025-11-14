@@ -1,8 +1,7 @@
 import { Terminal } from 'lucide-react';
-import { Suspense, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  Await,
   Link,
   type LoaderFunctionArgs,
   redirect,
@@ -11,7 +10,6 @@ import {
   useParams,
 } from 'react-router';
 import { CookieInjectionModal, OrderHero, OrdersList, ShareButton } from '@/components/orders';
-import { OrderDetailSkeleton } from '@/components/skeletons';
 import { Button } from '@/components/ui';
 import { useDeveloperMode } from '@/hooks/useDeveloperMode';
 import { useTotalPrice } from '../hooks/useOrderPrice';
@@ -25,7 +23,6 @@ import type {
   UserOrderFormData,
 } from '../lib/types/form-data';
 import { createActionHandler } from '../lib/utils/action-handler';
-import { defer } from '../lib/utils/defer';
 import { parseFormData } from '../lib/utils/form-data';
 import { createDeferredWithAuth, requireSession } from '../lib/utils/loader-helpers';
 
@@ -54,23 +51,26 @@ export async function orderDetailLoader({ params }: LoaderFunctionArgs) {
 
   const { userId } = await requireSession();
 
-  // Defer both fetches separately for progressive loading
-  return defer({
-    groupOrderData: createDeferredWithAuth(async () => {
-      const groupOrderWithUsers = await OrdersApi.getGroupOrderWithOrders(groupOrderId);
-      const myOrders = groupOrderWithUsers.userOrders.filter((order) => order.userId === userId);
-      const isLeader = groupOrderWithUsers.groupOrder.leader.id === userId;
+  // Load data immediately instead of deferring to avoid hydration issues
+  // Deferring can cause problems when promises reject with redirects during hydration
+  const [groupOrderWithUsers, stockData] = await Promise.all([
+    createDeferredWithAuth(() => OrdersApi.getGroupOrderWithOrders(groupOrderId)),
+    createDeferredWithAuth(() => StockApi.getStock()),
+  ]);
 
-      return {
-        groupOrder: groupOrderWithUsers.groupOrder,
-        userOrders: groupOrderWithUsers.userOrders,
-        myOrders,
-        isLeader,
-        currentUserId: userId,
-      };
-    }),
-    stock: createDeferredWithAuth(() => StockApi.getStock()),
-  });
+  const myOrders = groupOrderWithUsers.userOrders.filter((order) => order.userId === userId);
+  const isLeader = groupOrderWithUsers.groupOrder.leader.id === userId;
+
+  return {
+    groupOrderData: {
+      groupOrder: groupOrderWithUsers.groupOrder,
+      userOrders: groupOrderWithUsers.userOrders,
+      myOrders,
+      isLeader,
+      currentUserId: userId,
+    },
+    stock: stockData,
+  };
 }
 
 export const orderDetailAction = createActionHandler({
@@ -286,23 +286,9 @@ function OrderDetailContent({
 
 export function OrderDetailRoute() {
   const { groupOrderData, stock } = useLoaderData<{
-    groupOrderData: Promise<GroupOrderData>;
-    stock: Promise<LoaderData['stock']>;
+    groupOrderData: GroupOrderData;
+    stock: LoaderData['stock'];
   }>();
 
-  return (
-    <Suspense fallback={<OrderDetailSkeleton />}>
-      <Await resolve={groupOrderData}>
-        {(resolvedGroupOrderData) => (
-          <Suspense fallback={<OrderDetailSkeleton />}>
-            <Await resolve={stock}>
-              {(resolvedStock) => (
-                <OrderDetailContent groupOrderData={resolvedGroupOrderData} stock={resolvedStock} />
-              )}
-            </Await>
-          </Suspense>
-        )}
-      </Await>
-    </Suspense>
-  );
+  return <OrderDetailContent groupOrderData={groupOrderData} stock={stock} />;
 }
