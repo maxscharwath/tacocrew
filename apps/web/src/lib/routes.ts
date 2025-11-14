@@ -25,6 +25,12 @@ import { z } from 'zod';
 import { defineRoutes } from './routes/core';
 
 // Lazy load the order detail route to prevent hydration issues
+const LazyOrderDetailRoute = lazy(() =>
+  import('@/routes/orders.detail').then((module) => ({
+    default: module.OrderDetailRoute,
+  }))
+);
+
 const orderParams = z.object({ orderId: z.string().min(1) });
 const loginSearch = z.object({ redirect: z.string().optional() });
 const orderCreateSearch = z.object({
@@ -76,11 +82,7 @@ export const { routes, routerConfig } = defineRoutes({
         element: React.createElement(
           React.Suspense,
           { fallback: React.createElement(OrderDetailSkeleton) },
-          React.createElement(lazy(() =>
-            import('@/routes/orders.detail').then((module) => ({
-              default: module.OrderDetailRoute,
-            }))
-          ))
+          React.createElement(LazyOrderDetailRoute)
         ),
         loader: orderDetailLoader,
         action: orderDetailAction,

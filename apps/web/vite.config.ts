@@ -25,6 +25,7 @@ export default defineConfig({
       '@': resolve(__dirname, './src'),
       '@tacobot/ui-kit': resolve(__dirname, '../../packages/ui-kit/src'),
     },
+    dedupe: ['react', 'react-dom', 'react-router'],
   },
   optimizeDeps: {
     include: ['react', 'react-dom', 'react-router'],
