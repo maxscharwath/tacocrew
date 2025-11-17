@@ -464,7 +464,10 @@
           },
           "submit": "Bestellung aufgeben",
           "closeOrder": "Bestellung schließen",
-          "reopenOrder": "Bestellung öffnen"
+          "reopenOrder": "Bestellung öffnen",
+          "deleteOrder": "Bestellung löschen",
+          "deleteConfirmation": "Möchten Sie \"{{orderName}}\" wirklich löschen? Dadurch werden die Gruppenbestellung und alle zugehörigen Benutzerbestellungen dauerhaft gelöscht. Diese Aktion kann nicht rückgängig gemacht werden.",
+          "deleteError": "Die Gruppenbestellung konnte nicht gelöscht werden. Bitte versuchen Sie es erneut."
         },
         "leaderInfo": {
           "label": "Gruppenleiter",

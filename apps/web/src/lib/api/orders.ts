@@ -45,6 +45,10 @@ export function deleteUserOrder(groupOrderId: string, itemId: string) {
   return apiClient.delete<void>(`/api/v1/orders/${groupOrderId}/items/${itemId}`);
 }
 
+export function deleteGroupOrder(groupOrderId: string) {
+  return apiClient.delete<void>(`/api/v1/orders/${groupOrderId}`);
+}
+
 export function submitGroupOrder(groupOrderId: string, body: GroupOrderSubmissionBody) {
   return apiClient.post<GroupOrderSubmissionResponse>(`/api/v1/orders/${groupOrderId}/submit`, {
     body,

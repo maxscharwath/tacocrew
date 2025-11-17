@@ -465,7 +465,10 @@
           },
           "submit": "Passer la commande",
           "closeOrder": "Fermer la commande",
-          "reopenOrder": "Rouvrir la commande"
+          "reopenOrder": "Rouvrir la commande",
+          "deleteOrder": "Supprimer la commande",
+          "deleteConfirmation": "Êtes-vous sûr de vouloir supprimer \"{{orderName}}\" ? Cela supprimera définitivement la commande de groupe et toutes les commandes utilisateur associées. Cette action est irréversible.",
+          "deleteError": "Échec de la suppression de la commande de groupe. Veuillez réessayer."
         },
         "leaderInfo": {
           "label": "Chef de groupe",

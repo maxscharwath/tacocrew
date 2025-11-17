@@ -476,7 +476,10 @@
           },
           "submit": "Place Order",
           "closeOrder": "Close order",
-          "reopenOrder": "Reopen order"
+          "reopenOrder": "Reopen order",
+          "deleteOrder": "Delete Order",
+          "deleteConfirmation": "Are you sure you want to delete \"{{orderName}}\"? This will permanently delete the group order and all associated user orders. This action cannot be undone.",
+          "deleteError": "Failed to delete the group order. Please try again."
         },
         "leaderInfo": {
           "label": "Group leader",

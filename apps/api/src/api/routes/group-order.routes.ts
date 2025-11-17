@@ -13,6 +13,7 @@ import {
   GroupOrderIdSchema,
 } from '../../schemas/group-order.schema';
 import { CreateGroupOrderUseCase } from '../../services/group-order/create-group-order.service';
+import { DeleteGroupOrderUseCase } from '../../services/group-order/delete-group-order.service';
 import { GetGroupOrderUseCase } from '../../services/group-order/get-group-order.service';
 import { GetGroupOrderWithUserOrdersUseCase } from '../../services/group-order/get-group-order-with-user-orders.service';
 import { UpdateGroupOrderStatusUseCase } from '../../services/group-order/update-group-order-status.service';
@@ -306,6 +307,41 @@ app.openapi(
       instructions:
         'Copy the cookieString and paste it into your browser console. Note: HttpOnly cookies cannot be set via JavaScript and must be set manually via DevTools.',
     });
+  }
+);
+
+// Endpoint to delete a group order
+app.openapi(
+  createRoute({
+    method: 'delete',
+    path: '/orders/{id}',
+    tags: ['Orders'],
+    security: authSecurity,
+    request: {
+      params: z.object({
+        id: GroupOrderIdSchema,
+      }),
+    },
+    responses: {
+      204: {
+        description: 'Group order deleted successfully',
+      },
+      403: {
+        description: 'Only the group order leader can delete the group order',
+      },
+      404: {
+        description: 'Group order not found',
+      },
+    },
+  }),
+  async (c) => {
+    const { id } = c.req.valid('param');
+    const userId = requireUserId(c);
+    const deleteGroupOrderUseCase = inject(DeleteGroupOrderUseCase);
+
+    await deleteGroupOrderUseCase.execute(id, userId);
+
+    return c.body(null, 204);
   }
 );
 

@@ -1,9 +1,11 @@
-import { Lock, LockOpen, Plus } from 'lucide-react';
+import { Lock, LockOpen, Plus, Trash2 } from 'lucide-react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Form, Link, useRevalidator } from 'react-router';
+import { Form, Link, useNavigate, useRevalidator } from 'react-router';
 import { Avatar, Badge, Button, Card, CardContent, StatusBadge } from '@/components/ui';
 import { useDateFormat } from '@/hooks/useDateFormat';
 import type { GroupOrder, UserOrderSummary } from '@/lib/api';
+import { OrdersApi } from '@/lib/api';
 import { routes } from '@/lib/routes';
 import { toDate } from '@/lib/utils/date';
 
@@ -47,6 +49,8 @@ export function OrderHero({
   const { t } = useTranslation();
   const { formatDateTimeRange } = useDateFormat();
   const revalidator = useRevalidator();
+  const navigate = useNavigate();
+  const [isDeleting, setIsDeleting] = useState(false);
   const { status, name, startDate, endDate, leader } = groupOrder;
 
   const nowTime = Date.now();
@@ -75,6 +79,27 @@ export function OrderHero({
         icon: <Lock size={18} />,
         label: t('orders.detail.hero.actions.closeOrder'),
       };
+
+  const handleDeleteGroupOrder = async () => {
+    const orderName = name ?? t('orders.common.unnamedDrop');
+    const confirmMessage = t('orders.detail.hero.actions.deleteConfirmation', {
+      orderName,
+    });
+
+    if (!globalThis.confirm(confirmMessage)) {
+      return;
+    }
+
+    setIsDeleting(true);
+    try {
+      await OrdersApi.deleteGroupOrder(groupOrder.id);
+      navigate(routes.root.orders());
+    } catch (error) {
+      console.error('Failed to delete group order:', error);
+      alert(t('orders.detail.hero.actions.deleteError'));
+      setIsDeleting(false);
+    }
+  };
 
   return (
     <Card className="relative overflow-hidden border-brand-400/30 bg-linear-to-br from-brand-500/20 via-slate-900/80 to-slate-950/90 p-6 lg:p-8">
@@ -189,6 +214,18 @@ export function OrderHero({
                 {t('orders.detail.hero.actions.submit')}
               </Button>
             </Link>
+          )}
+          {isLeader && !isSubmitted && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleDeleteGroupOrder}
+              disabled={isDeleting || isSubmitting}
+              className="gap-2 border-rose-400/60 text-rose-100 hover:bg-rose-500/20"
+            >
+              <Trash2 size={16} />
+              {t('orders.detail.hero.actions.deleteOrder')}
+            </Button>
           )}
         </div>
       </CardContent>
