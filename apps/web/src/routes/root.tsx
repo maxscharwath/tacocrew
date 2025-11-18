@@ -1,6 +1,6 @@
 import { Activity, ClipboardCheck, LogOut, Package, Settings, Terminal, Users } from 'lucide-react';
 import type { ComponentType } from 'react';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Form,
@@ -14,7 +14,7 @@ import {
 import { LanguageSwitcher } from '@/components/language-switcher';
 import { Alert, Avatar, Button, Card } from '@/components/ui';
 import { useDeveloperMode } from '@/hooks/useDeveloperMode';
-import { authClient } from '@/lib/auth-client';
+import { useSession } from '@/lib/auth-client';
 import { routes } from '@/lib/routes';
 import type { RootLoaderData } from './root.loader';
 
@@ -22,37 +22,26 @@ export function RootLayout() {
   const { t } = useTranslation();
   const { profile } = useLoaderData<RootLoaderData>();
   const { isEnabled: isDeveloperMode, toggle: toggleDeveloperMode } = useDeveloperMode();
-  const [userName, setUserName] = useState<string>(profile?.username || 'User');
-  const [userInitials, setUserInitials] = useState<string>(
-    (profile?.username || 'User').slice(0, 2).toUpperCase()
-  );
 
-  // Get Better Auth session to display the updated name
+  // Use Better Auth's useSession hook for reactive, cached session data
+  const { data: session, refetch } = useSession();
+
+  // Compute user name and initials from session or fallback to profile
+  const userName = session?.user?.name || profile?.username || 'User';
+  const userInitials = userName.slice(0, 2).toUpperCase();
+
+  // Listen for custom name update events to refetch session
   useEffect(() => {
-    const loadSession = () => {
-      authClient.getSession().then((session) => {
-        if (session?.data?.user) {
-          const name = session.data.user.name;
-          setUserName(name);
-          setUserInitials(name.slice(0, 2).toUpperCase());
-        }
-      });
-    };
-
-    loadSession();
-
     const handleNameUpdate = () => {
-      loadSession();
+      refetch?.();
     };
 
     globalThis.addEventListener('userNameUpdated', handleNameUpdate);
-    globalThis.addEventListener('focus', loadSession);
 
     return () => {
       globalThis.removeEventListener('userNameUpdated', handleNameUpdate);
-      globalThis.removeEventListener('focus', loadSession);
     };
-  }, []);
+  }, [refetch]);
   type NavItem = {
     href: string;
     labelKey: string;

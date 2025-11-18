@@ -124,7 +124,6 @@ model GroupOrder {
   id        String   @id @default(uuid())
   name      String?
   leaderId  String // User ID of the group leader
-  shareCode String?  @unique // Short, memorable code for sharing (e.g., "FRIDAY123")
   startDate DateTime
   endDate   DateTime
   status    String   @default("open") // open, closed, submitted, completed
@@ -140,7 +139,6 @@ model GroupOrder {
   @@index([leaderId])
   @@index([startDate, endDate])
   @@index([status])
-  @@index([shareCode])
   @@index([sessionId])
   @@map("group_orders")
 }

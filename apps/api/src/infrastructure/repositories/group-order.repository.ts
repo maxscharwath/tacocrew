@@ -13,7 +13,6 @@ import type { UserId } from '../../schemas/user.schema';
 import { GroupOrderStatus } from '../../shared/types/types';
 import { inject } from '../../shared/utils/inject.utils';
 import { logger } from '../../shared/utils/logger.utils';
-import { generateShareCode } from '../../shared/utils/share-code.utils';
 import { PrismaService } from '../database/prisma.service';
 
 /**
@@ -30,30 +29,6 @@ export class GroupOrderRepository {
     endDate: Date;
   }): Promise<GroupOrder> {
     try {
-      // Generate unique share code
-      let shareCode: string;
-      let attempts = 0;
-      const maxAttempts = 10;
-
-      do {
-        shareCode = generateShareCode();
-        attempts++;
-
-        // Check if code already exists
-        const existing = await this.prisma.client.groupOrder.findUnique({
-          where: { shareCode },
-        });
-
-        if (!existing) {
-          break; // Code is unique, use it
-        }
-
-        if (attempts >= maxAttempts) {
-          logger.error('Failed to generate unique share code after max attempts');
-          throw new Error('Failed to generate unique share code');
-        }
-      } while (attempts < maxAttempts);
-
       const dbGroupOrder = await this.prisma.client.groupOrder.create({
         data: {
           name: data.name,
@@ -61,7 +36,6 @@ export class GroupOrderRepository {
           startDate: data.startDate,
           endDate: data.endDate,
           status: GroupOrderStatus.OPEN,
-          shareCode,
         },
         include: {
           leader: {
@@ -73,7 +47,7 @@ export class GroupOrderRepository {
         },
       });
 
-      logger.debug('Group order created', { id: dbGroupOrder.id, shareCode });
+      logger.debug('Group order created', { id: dbGroupOrder.id });
       return createGroupOrderFromDb(dbGroupOrder);
     } catch (error) {
       logger.error('Failed to create group order', { error });

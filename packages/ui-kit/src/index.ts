@@ -8,6 +8,7 @@ export * from './utils';
 
 // Components
 export * from './alert';
+export * from './alert-dialog';
 export * from './avatar';
 export * from './avatar-label-group';
 export * from './badge';
@@ -16,15 +17,16 @@ export * from './button';
 export * from './card';
 export * from './checkbox';
 export * from './date-time-picker';
+export * from './divider';
+export * from './dropdown-menu';
 export * from './empty-state';
 export * from './input';
 export * from './label';
 export * from './modal';
 export * from './select';
+export * from './segmented-control';
 export * from './skeleton';
 export * from './status-badge';
 export * from './textarea';
-export * from './segmented-control';
-export * from './divider';
 export * from './tokens';
 export * from './variants';

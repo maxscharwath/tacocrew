@@ -63,7 +63,6 @@ const UserOrderHistoryEntrySchema = z.object({
 const UserGroupOrderSchema = z.object({
   id: z.string(),
   name: z.string().nullable(),
-  shareCode: z.string().nullable(),
   status: z.string(),
   canAcceptOrders: z.boolean(),
   startDate: IsoDateStringSchema,

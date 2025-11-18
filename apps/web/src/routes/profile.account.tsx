@@ -15,7 +15,7 @@ import {
   EmptyState,
   Input,
 } from '@/components/ui';
-import { authClient } from '@/lib/auth-client';
+import { authClient, useSession } from '@/lib/auth-client';
 import { ENV } from '@/lib/env';
 import { routes } from '@/lib/routes';
 
@@ -222,20 +222,6 @@ type Passkey = {
   createdAt: string;
 };
 
-type UserSession = {
-  user: {
-    id: string;
-    name: string;
-    email: string;
-    emailVerified: boolean;
-    image?: string;
-  };
-  session: {
-    id: string;
-    expiresAt: string;
-  };
-};
-
 export async function accountLoader(_: LoaderFunctionArgs) {
   const session = await authClient.getSession();
   if (!session?.data) {
@@ -246,7 +232,7 @@ export async function accountLoader(_: LoaderFunctionArgs) {
 
 export function AccountRoute() {
   const { t } = useTranslation();
-  const [session, setSession] = useState<UserSession | null>(null);
+  const { data: session } = useSession();
   const [passkeys, setPasskeys] = useState<Passkey[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -263,16 +249,11 @@ export function AccountRoute() {
     try {
       isLoadingRef.current = true;
       setIsLoading(true);
-      const sessionData = await authClient.getSession();
 
-      if (sessionData?.data) {
-        setSession(sessionData.data as unknown as UserSession);
-
-        // Fetch passkeys
-        const passkeysResult = await authClient.passkey.listUserPasskeys();
-        if (passkeysResult.data) {
-          setPasskeys(passkeysResult.data as unknown as Passkey[]);
-        }
+      // Fetch passkeys
+      const passkeysResult = await authClient.passkey.listUserPasskeys();
+      if (passkeysResult.data) {
+        setPasskeys(passkeysResult.data as unknown as Passkey[]);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : t('account.loadFailed'));

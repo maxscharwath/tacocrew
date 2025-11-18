@@ -119,7 +119,6 @@ export interface GroupOrder {
   id: string;
   leader: GroupLeader;
   name: string | null;
-  shareCode: string | null;
   startDate: string;
   endDate: string;
   status: string;

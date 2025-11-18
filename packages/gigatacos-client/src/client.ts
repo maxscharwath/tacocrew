@@ -29,7 +29,6 @@ import {
 import { HttpClient } from './http-client';
 import { noopLogger } from './utils/logger';
 import { extractCsrfTokenFromHtml } from './parsers';
-import axios, { AxiosResponse } from 'axios';
 import { CsrfError } from './errors';
 
 /**

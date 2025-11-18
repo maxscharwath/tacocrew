@@ -1,8 +1,27 @@
-import { Lock, LockOpen, Plus, Trash2 } from 'lucide-react';
+import { Lock, LockOpen, MoreVertical, Plus, Send, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Form, Link, useNavigate, useRevalidator } from 'react-router';
-import { Avatar, Badge, Button, Card, CardContent, StatusBadge } from '@/components/ui';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  Avatar,
+  Badge,
+  Button,
+  Card,
+  CardContent,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  StatusBadge,
+} from '@/components/ui';
 import { useDateFormat } from '@/hooks/useDateFormat';
 import type { GroupOrder, UserOrderSummary } from '@/lib/api';
 import { OrdersApi } from '@/lib/api';
@@ -51,6 +70,8 @@ export function OrderHero({
   const revalidator = useRevalidator();
   const navigate = useNavigate();
   const [isDeleting, setIsDeleting] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showErrorDialog, setShowErrorDialog] = useState(false);
   const { status, name, startDate, endDate, leader } = groupOrder;
 
   const nowTime = Date.now();
@@ -59,7 +80,7 @@ export function OrderHero({
   const isNotStartedYet = nowTime < startTime;
   const isExpired = nowTime > endTime;
   const leaderName = leader?.name ?? t('orders.detail.hero.leaderInfo.unknown');
-  const leaderInitial = leaderName.at(0)?.toUpperCase() ?? '?';
+  const leaderInitial = leaderName.slice(0, 2).toUpperCase();
   const uniqueParticipantCount = new Set(userOrders.map((o) => o.userId)).size;
 
   const closedReasonKey =
@@ -80,24 +101,20 @@ export function OrderHero({
         label: t('orders.detail.hero.actions.closeOrder'),
       };
 
-  const handleDeleteGroupOrder = async () => {
-    const orderName = name ?? t('orders.common.unnamedDrop');
-    const confirmMessage = t('orders.detail.hero.actions.deleteConfirmation', {
-      orderName,
-    });
+  const handleDeleteClick = () => {
+    setShowDeleteDialog(true);
+  };
 
-    if (!globalThis.confirm(confirmMessage)) {
-      return;
-    }
-
+  const handleConfirmDelete = async () => {
     setIsDeleting(true);
+    setShowDeleteDialog(false);
     try {
       await OrdersApi.deleteGroupOrder(groupOrder.id);
       navigate(routes.root.orders());
     } catch (error) {
       console.error('Failed to delete group order:', error);
-      alert(t('orders.detail.hero.actions.deleteError'));
       setIsDeleting(false);
+      setShowErrorDialog(true);
     }
   };
 
@@ -106,7 +123,7 @@ export function OrderHero({
       <div className="-top-24 pointer-events-none absolute right-0 h-60 w-60 rounded-full bg-brand-400/30 blur-3xl" />
       <div className="-bottom-16 pointer-events-none absolute left-10 h-56 w-56 rounded-full bg-purple-500/25 blur-3xl" />
       <CardContent className="relative space-y-4 p-0">
-        <div className="flex flex-wrap items-center justify-between gap-4">
+        <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="flex flex-wrap items-center gap-3">
             <Badge tone="brand" pill>
               {t('orders.detail.hero.badge')}
@@ -116,31 +133,58 @@ export function OrderHero({
               label={t(`common.status.${groupOrder.status}`)}
             />
           </div>
-          {userOrders.length > 0 && (
-            <div className="flex items-center gap-6">
-              <div className="text-right">
-                <p className="font-semibold text-slate-300 text-xs uppercase tracking-wider">
-                  {t('orders.detail.hero.participants.label')}
-                </p>
-                <p className="mt-1 font-bold text-2xl text-white">{uniqueParticipantCount}</p>
-                <p className="mt-0.5 text-slate-400 text-xs">
-                  {t('orders.detail.hero.participants.count', { count: userOrders.length })}
-                </p>
-              </div>
-              <div className="h-12 w-px bg-white/10" />
-              <div className="text-right">
-                <p className="font-semibold text-slate-300 text-xs uppercase tracking-wider">
-                  {t('orders.detail.hero.total.label')}
-                </p>
-                <p className="mt-1 font-bold text-2xl text-brand-100">
-                  {totalPrice.toFixed(2)} {currency}
-                </p>
-                <p className="mt-0.5 text-slate-400 text-xs">
-                  {t('orders.detail.hero.total.caption')}
-                </p>
-              </div>
-            </div>
-          )}
+          <div className="flex items-center gap-6">
+            {userOrders.length > 0 && (
+              <>
+                <div className="text-right">
+                  <p className="font-semibold text-slate-300 text-xs uppercase tracking-wider">
+                    {t('orders.detail.hero.participants.label')}
+                  </p>
+                  <p className="mt-1 font-bold text-2xl text-white">{uniqueParticipantCount}</p>
+                  <p className="mt-0.5 text-slate-400 text-xs">
+                    {t('orders.detail.hero.participants.count', { count: userOrders.length })}
+                  </p>
+                </div>
+                <div className="h-12 w-px bg-white/10" />
+                <div className="text-right">
+                  <p className="font-semibold text-slate-300 text-xs uppercase tracking-wider">
+                    {t('orders.detail.hero.total.label')}
+                  </p>
+                  <p className="mt-1 font-bold text-2xl text-brand-100">
+                    {totalPrice.toFixed(2)} {currency}
+                  </p>
+                  <p className="mt-0.5 text-slate-400 text-xs">
+                    {t('orders.detail.hero.total.caption')}
+                  </p>
+                </div>
+                <div className="h-12 w-px bg-white/10" />
+              </>
+            )}
+            {isLeader && !isSubmitted && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-9 w-9 p-0"
+                    title={t('orders.detail.hero.actions.moreOptions')}
+                  >
+                    <MoreVertical size={18} />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem
+                    destructive
+                    onClick={handleDeleteClick}
+                    disabled={isDeleting || isSubmitting}
+                  >
+                    <Trash2 size={16} />
+                    {t('orders.detail.hero.actions.deleteOrder')}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+          </div>
         </div>
         <div className="space-y-1">
           <h1 className="font-semibold text-2xl text-white tracking-tight lg:text-3xl">
@@ -148,7 +192,7 @@ export function OrderHero({
           </h1>
           <p className="text-slate-200 text-sm">{formatDateTimeRange(startDate, endDate)}</p>
           <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-3 py-2">
-            <Avatar color="neutral" size="md">
+            <Avatar color="brandHero" size="md" variant="elevated">
               {leaderInitial}
             </Avatar>
             <div>
@@ -210,25 +254,50 @@ export function OrderHero({
                 className="gap-2 bg-linear-to-r from-emerald-500 via-emerald-600 to-teal-600 font-bold text-white shadow-emerald-500/30 shadow-xl hover:from-emerald-600 hover:via-emerald-700 hover:to-teal-700"
                 size="sm"
               >
-                <Lock size={18} />
+                <Send size={18} />
                 {t('orders.detail.hero.actions.submit')}
               </Button>
             </Link>
           )}
-          {isLeader && !isSubmitted && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleDeleteGroupOrder}
-              disabled={isDeleting || isSubmitting}
-              className="gap-2 border-rose-400/60 text-rose-100 hover:bg-rose-500/20"
-            >
-              <Trash2 size={16} />
-              {t('orders.detail.hero.actions.deleteOrder')}
-            </Button>
-          )}
         </div>
       </CardContent>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('orders.detail.hero.actions.deleteOrder')}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('orders.detail.hero.actions.deleteConfirmation', {
+                orderName: name ?? t('orders.common.unnamedDrop'),
+              })}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
+            <AlertDialogAction variant="destructive" onClick={handleConfirmDelete}>
+              {t('common.delete')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Error Alert Dialog */}
+      <AlertDialog open={showErrorDialog} onOpenChange={setShowErrorDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('common.error')}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('orders.detail.hero.actions.deleteError')}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={() => setShowErrorDialog(false)}>
+              {t('common.ok')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 }

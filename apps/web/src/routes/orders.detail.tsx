@@ -239,32 +239,21 @@ function OrderDetailContent({
           canAddOrders={canAddOrders}
         />
 
-        {groupOrder.shareCode && (
-          <div className="space-y-3 lg:sticky lg:top-8 lg:h-fit">
-            <ShareButton groupOrderId={groupOrder.id} />
-            {isDeveloperMode && isSubmitted && (
-              <Button
-                variant="outline"
-                fullWidth
-                onClick={() => setIsCookieModalOpen(true)}
-                className="gap-2"
-              >
-                <Terminal size={16} />
-                Cookie Injection
-              </Button>
-            )}
-          </div>
-        )}
-      </div>
-
-      {isDeveloperMode && isSubmitted && !groupOrder.shareCode && (
-        <div className="flex justify-end gap-3">
-          <Button variant="outline" onClick={() => setIsCookieModalOpen(true)} className="gap-2">
-            <Terminal size={16} />
-            Cookie Injection
-          </Button>
+        <div className="space-y-3 lg:sticky lg:top-8 lg:h-fit">
+          <ShareButton groupOrderId={groupOrder.id} />
+          {isDeveloperMode && isSubmitted && (
+            <Button
+              variant="outline"
+              fullWidth
+              onClick={() => setIsCookieModalOpen(true)}
+              className="gap-2"
+            >
+              <Terminal size={16} />
+              Cookie Injection
+            </Button>
+          )}
         </div>
-      )}
+      </div>
 
       <CookieInjectionModal
         isOpen={isCookieModalOpen}

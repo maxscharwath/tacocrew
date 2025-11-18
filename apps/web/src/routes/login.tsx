@@ -18,7 +18,7 @@ import {
 } from '@/components/ui';
 import { UserApi } from '@/lib/api';
 import { ApiError } from '@/lib/api/http';
-import { authClient } from '@/lib/auth-client';
+import { authClient, useSession } from '@/lib/auth-client';
 import { routes } from '@/lib/routes';
 
 /**
@@ -62,14 +62,15 @@ export function LoginRoute() {
     name: '',
   });
 
-  // Check session on mount
+  // Use Better Auth's useSession hook for reactive, cached session data
+  const { data: session } = useSession();
+
+  // Redirect if already authenticated
   useEffect(() => {
-    authClient.getSession().then((session) => {
-      if (session?.data) {
-        navigate(routes.root());
-      }
-    });
-  }, [navigate]);
+    if (session) {
+      navigate(routes.root());
+    }
+  }, [session, navigate]);
 
   const handleEmailPasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

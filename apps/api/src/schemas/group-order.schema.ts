@@ -29,7 +29,6 @@ export const GroupOrderSchema = z.object({
   endDate: z.date(),
   status: z.enum(GroupOrderStatus),
   name: z.string().nullish(),
-  shareCode: z.string().nullish(),
   sessionId: z.string().nullish(), // Session ID for order verification
   createdAt: z.date().optional(),
   updatedAt: z.date().optional(),
@@ -47,7 +46,6 @@ export const GroupOrderFromDbSchema = z.object({
   endDate: z.date(),
   status: z.string(),
   name: z.string().nullish(),
-  shareCode: z.string().nullish(),
   sessionId: z.string().nullish(), // Session ID for order verification
   createdAt: z.date(),
   updatedAt: z.date(),
@@ -71,7 +69,6 @@ export function createGroupOrder(props: {
   endDate: Date;
   status: GroupOrderStatus;
   name?: string;
-  shareCode?: string;
   createdAt?: Date;
   updatedAt?: Date;
 }): GroupOrder {
@@ -83,7 +80,6 @@ export function createGroupOrder(props: {
     endDate: props.endDate,
     status: props.status,
     name: props.name ?? undefined,
-    shareCode: props.shareCode ?? undefined,
     createdAt: props.createdAt,
     updatedAt: props.updatedAt,
   };
@@ -107,7 +103,6 @@ export function createGroupOrderFromDb(data: z.infer<typeof GroupOrderFromDbSche
     endDate: validated.endDate,
     status: validated.status as GroupOrderStatus,
     name: validated.name ?? undefined,
-    shareCode: validated.shareCode ?? undefined,
     sessionId: validated.sessionId ?? undefined,
     createdAt: validated.createdAt,
     updatedAt: validated.updatedAt,

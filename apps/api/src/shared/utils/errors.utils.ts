@@ -126,15 +126,13 @@ export class NotFoundError extends ApiError {
    * Normalize details to have consistent identifier and context format
    */
   private static normalizeDetails(details: Record<string, unknown>): Record<string, unknown> {
-    const { resource, id, tacoID, shareCode, groupOrderId, ...rest } = details;
+    const { resource, id, tacoID, groupOrderId, ...rest } = details;
 
     // Determine identifier and context type (prefer specific types over generic id)
-    const identifier = tacoID || shareCode || id || groupOrderId;
+    const identifier = tacoID || id || groupOrderId;
     let context: string;
     if (tacoID) {
       context = 'tacoID';
-    } else if (shareCode) {
-      context = 'shareCode';
     } else {
       context = 'id';
     }

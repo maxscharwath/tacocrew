@@ -1,5 +1,5 @@
-import { createAuthClient } from 'better-auth/client';
 import { passkeyClient } from 'better-auth/client/plugins';
+import { createAuthClient } from 'better-auth/react';
 import { ENV } from './env';
 
 export const authClient = createAuthClient({
@@ -11,3 +11,6 @@ export const authClient = createAuthClient({
     passkeyClient(), // Enable passkey authentication
   ],
 });
+
+// Export the useSession hook for components
+export const { useSession } = authClient;

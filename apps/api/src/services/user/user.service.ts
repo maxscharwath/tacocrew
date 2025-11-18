@@ -116,7 +116,6 @@ export class UserService {
     Array<{
       id: GroupOrderId;
       name: string | null;
-      shareCode: string | null;
       status: string;
       canAcceptOrders: boolean;
       startDate: Date;
@@ -133,7 +132,6 @@ export class UserService {
       select: {
         id: true,
         name: true,
-        shareCode: true,
         leaderId: true,
         status: true,
         startDate: true,
@@ -156,7 +154,6 @@ export class UserService {
       return {
         id: go.id as GroupOrderId,
         name: go.name,
-        shareCode: go.shareCode,
         status: go.status,
         canAcceptOrders: canAcceptOrders(groupOrder),
         startDate: go.startDate,
