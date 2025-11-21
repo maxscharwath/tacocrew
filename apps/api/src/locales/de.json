@@ -1,21 +1,23 @@
 {
-  "notifications": {
-    "orderSubmitted": {
-      "title": "Bestellung übermittelt",
-      "body": "Die Gruppenbestellung \"{{orderName}}\" wurde erfolgreich übermittelt!"
-    },
-    "paymentUpdate": {
-      "title": "Zahlungsaktualisierung",
-      "body": "{{userName}} hat seine Bestellung als bezahlt markiert"
-    },
-    "reimbursementUpdate": {
-      "title": "Rückerstattungsaktualisierung",
-      "bodyReimbursed": "Ihre Bestellung wurde als zurückerstattet markiert",
-      "bodyUpdated": "Der Rückerstattungsstatus Ihrer Bestellung wurde aktualisiert"
-    },
-    "test": {
-      "title": "Test-Benachrichtigung",
-      "body": "Dies ist eine Test-Benachrichtigung von TacoBot!"
+  "translation": {
+    "notifications": {
+      "orderSubmitted": {
+        "title": "Bestellung übermittelt",
+        "body": "Die Gruppenbestellung \"{{orderName}}\" wurde erfolgreich übermittelt!"
+      },
+      "paymentUpdate": {
+        "title": "Zahlungsaktualisierung",
+        "body": "{{userName}} hat seine Bestellung als bezahlt markiert"
+      },
+      "reimbursementUpdate": {
+        "title": "Rückerstattungsaktualisierung",
+        "bodyReimbursed": "Ihre Bestellung wurde als zurückerstattet markiert",
+        "bodyUpdated": "Der Rückerstattungsstatus Ihrer Bestellung wurde aktualisiert"
+      },
+      "test": {
+        "title": "Test-Benachrichtigung",
+        "body": "Dies ist eine Test-Benachrichtigung von TacoBot!"
+      }
     }
   }
 }

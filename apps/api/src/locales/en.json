@@ -1,21 +1,23 @@
 {
-  "notifications": {
-    "orderSubmitted": {
-      "title": "Order Submitted",
-      "body": "The group order \"{{orderName}}\" has been submitted successfully!"
-    },
-    "paymentUpdate": {
-      "title": "Order Payment Update",
-      "body": "{{userName}} marked their order as paid"
-    },
-    "reimbursementUpdate": {
-      "title": "Reimbursement Update",
-      "bodyReimbursed": "Your order has been marked as reimbursed",
-      "bodyUpdated": "Your order reimbursement status has been updated"
-    },
-    "test": {
-      "title": "Test Notification",
-      "body": "This is a test notification from TacoBot!"
+  "translation": {
+    "notifications": {
+      "orderSubmitted": {
+        "title": "Order Submitted",
+        "body": "The group order \"{{orderName}}\" has been submitted successfully!"
+      },
+      "paymentUpdate": {
+        "title": "Order Payment Update",
+        "body": "{{userName}} marked their order as paid"
+      },
+      "reimbursementUpdate": {
+        "title": "Reimbursement Update",
+        "bodyReimbursed": "Your order has been marked as reimbursed",
+        "bodyUpdated": "Your order reimbursement status has been updated"
+      },
+      "test": {
+        "title": "Test Notification",
+        "body": "This is a test notification from TacoBot!"
+      }
     }
   }
 }

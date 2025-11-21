@@ -16,18 +16,11 @@ i18next.init({
   lng: 'en',
   fallbackLng: 'en',
   supportedLngs: [...supportedLngs],
-  defaultNS: 'notifications',
-  ns: ['notifications'],
+  defaultNS: 'translation',
   resources: {
-    en: {
-      notifications: enTranslations.notifications,
-    },
-    fr: {
-      notifications: frTranslations.notifications,
-    },
-    de: {
-      notifications: deTranslations.notifications,
-    },
+    en: enTranslations,
+    fr: frTranslations,
+    de: deTranslations,
   },
   interpolation: { escapeValue: false },
   initImmediate: true,
@@ -36,7 +29,5 @@ i18next.init({
 export function t(key: string, options?: { lng?: string; [key: string]: unknown }): string {
   const lang = options?.lng?.toLowerCase() ?? 'en';
   const validLang = supportedLngs.includes(lang) ? lang : 'en';
-  // Remove 'notifications.' prefix if present since getFixedT already sets the namespace
-  const cleanKey = key.startsWith('notifications.') ? key.slice('notifications.'.length) : key;
-  return i18next.getFixedT(validLang, 'notifications')(cleanKey, options);
+  return i18next.t(key, { lng: validLang, ...options });
 }

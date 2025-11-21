@@ -1,21 +1,23 @@
 {
-  "notifications": {
-    "orderSubmitted": {
-      "title": "Commande soumise",
-      "body": "La commande groupée \"{{orderName}}\" a été soumise avec succès !"
-    },
-    "paymentUpdate": {
-      "title": "Mise à jour du paiement",
-      "body": "{{userName}} a marqué sa commande comme payée"
-    },
-    "reimbursementUpdate": {
-      "title": "Mise à jour du remboursement",
-      "bodyReimbursed": "Votre commande a été marquée comme remboursée",
-      "bodyUpdated": "Le statut de remboursement de votre commande a été mis à jour"
-    },
-    "test": {
-      "title": "Notification de test",
-      "body": "Ceci est une notification de test de TacoBot !"
+  "translation": {
+    "notifications": {
+      "orderSubmitted": {
+        "title": "Commande soumise",
+        "body": "La commande groupée \"{{orderName}}\" a été soumise avec succès !"
+      },
+      "paymentUpdate": {
+        "title": "Mise à jour du paiement",
+        "body": "{{userName}} a marqué sa commande comme payée"
+      },
+      "reimbursementUpdate": {
+        "title": "Mise à jour du remboursement",
+        "bodyReimbursed": "Votre commande a été marquée comme remboursée",
+        "bodyUpdated": "Le statut de remboursement de votre commande a été mis à jour"
+      },
+      "test": {
+        "title": "Notification de test",
+        "body": "Ceci est une notification de test de TacoBot !"
+      }
     }
   }
 }
