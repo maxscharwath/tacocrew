@@ -6,6 +6,7 @@
  */
 
 import { Prisma, PrismaClient } from '@prisma/client';
+import { PrismaPg } from '@prisma/adapter-pg';
 import { logger } from '../../shared/utils/logger.utils';
 
 // Singleton pattern to ensure only one PrismaClient instance exists
@@ -22,11 +23,19 @@ export function getPrismaClient(): PrismaClient {
       { level: 'warn', emit: 'event' },
     ] satisfies Prisma.LogDefinition[];
 
-    // Prisma 7: Use classic engine via prisma.config.ts
-    // The DATABASE_URL is read from environment variables automatically
-    // when configured in prisma.config.ts with engine: 'classic'
+    // Prisma 7: Create adapter using @prisma/adapter-pg for PostgreSQL
+    const databaseUrl = process.env['DATABASE_URL'];
+    if (!databaseUrl) {
+      throw new Error('DATABASE_URL environment variable is required');
+    }
+
+    const adapter = new PrismaPg({
+      connectionString: databaseUrl,
+    });
+
     prismaClient = new PrismaClient({
       log: logConfig,
+      adapter,
     }) as PrismaClient<Prisma.PrismaClientOptions, 'query' | 'error' | 'warn'>;
 
     // Log queries in development
