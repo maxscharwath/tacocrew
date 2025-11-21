@@ -4,9 +4,9 @@
  */
 
 import i18next from 'i18next';
+import deTranslations from '../locales/de.json';
 import enTranslations from '../locales/en.json';
 import frTranslations from '../locales/fr.json';
-import deTranslations from '../locales/de.json';
 
 const supportedLngs: readonly string[] = ['en', 'fr', 'de'];
 
@@ -36,5 +36,7 @@ i18next.init({
 export function t(key: string, options?: { lng?: string; [key: string]: unknown }): string {
   const lang = options?.lng?.toLowerCase() ?? 'en';
   const validLang = supportedLngs.includes(lang) ? lang : 'en';
-  return i18next.getFixedT(validLang, 'notifications')(key, options);
+  // Remove 'notifications.' prefix if present since getFixedT already sets the namespace
+  const cleanKey = key.startsWith('notifications.') ? key.slice('notifications.'.length) : key;
+  return i18next.getFixedT(validLang, 'notifications')(cleanKey, options);
 }

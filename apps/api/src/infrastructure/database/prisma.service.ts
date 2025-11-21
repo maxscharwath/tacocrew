@@ -3,8 +3,8 @@
  * @module database/prisma
  */
 
-import { PrismaClient } from '../../generated/client';
 import { injectable } from 'tsyringe';
+import { PrismaClient } from '../../generated/client';
 import { logger } from '../../shared/utils/logger.utils';
 import { getPrismaClient } from './prisma.client';
 
