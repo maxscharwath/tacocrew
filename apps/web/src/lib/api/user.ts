@@ -47,9 +47,12 @@ export function updateUserLanguage(language: 'en' | 'fr' | 'de') {
   });
 }
 
-export function uploadAvatar(imageFile: File) {
+export function uploadAvatar(imageFile: File, backgroundColor?: string | null) {
   const formData = new FormData();
   formData.append('image', imageFile);
+  if (backgroundColor && backgroundColor !== 'transparent') {
+    formData.append('backgroundColor', backgroundColor);
+  }
   return apiClient.post<UserProfile>('/api/v1/users/me/avatar', {
     body: formData,
   });

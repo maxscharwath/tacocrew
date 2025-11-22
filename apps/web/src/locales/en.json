@@ -199,7 +199,11 @@
       "dropHere": "Drop image here",
       "supportedFormats": "JPG, PNG, WebP, GIF up to 5MB",
       "uploadSuccess": "Profile image uploaded successfully!",
-      "retry": "Retry"
+      "retry": "Retry",
+      "chooseAvatar": "Choose Avatar",
+      "uploadCustom": "Upload Custom",
+      "backgroundColor": "Background Color",
+      "selectPredefined": "Select a predefined avatar"
     },
     "loading": "Loading...",
     "loadFailed": "Failed to load account data",

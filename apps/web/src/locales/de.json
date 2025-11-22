@@ -199,7 +199,11 @@
       "dropHere": "Bild hier ablegen",
       "supportedFormats": "JPG, PNG, WebP, GIF bis 5 MB",
       "uploadSuccess": "Profilbild erfolgreich hochgeladen!",
-      "retry": "Erneut versuchen"
+      "retry": "Erneut versuchen",
+      "chooseAvatar": "Avatar auswählen",
+      "uploadCustom": "Eigenes Bild hochladen",
+      "backgroundColor": "Hintergrundfarbe",
+      "selectPredefined": "Wähle einen vordefinierten Avatar"
     },
     "loading": "Laden...",
     "loadFailed": "Kontodaten konnten nicht geladen werden",

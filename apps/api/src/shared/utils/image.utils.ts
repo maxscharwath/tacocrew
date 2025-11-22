@@ -52,10 +52,40 @@ function ensureValidFile(file: UploadableFile) {
 }
 
 /**
+ * Convert hex color to RGB array for Sharp
+ */
+function hexToRgb(hex: string): [number, number, number] | null {
+  // Remove # if present
+  const cleanHex = hex.replace('#', '');
+  
+  // Handle 3-digit hex
+  if (cleanHex.length === 3) {
+    const r = parseInt(cleanHex[0] + cleanHex[0], 16);
+    const g = parseInt(cleanHex[1] + cleanHex[1], 16);
+    const b = parseInt(cleanHex[2] + cleanHex[2], 16);
+    return [r, g, b];
+  }
+  
+  // Handle 6-digit hex
+  if (cleanHex.length === 6) {
+    const r = parseInt(cleanHex.substring(0, 2), 16);
+    const g = parseInt(cleanHex.substring(2, 4), 16);
+    const b = parseInt(cleanHex.substring(4, 6), 16);
+    return [r, g, b];
+  }
+  
+  return null;
+}
+
+/**
  * Process and compress an image file.
  * Resizes to max 512x512, converts to WebP, and returns a Buffer.
+ * Optionally composites the image over a background color for transparent images.
  */
-export async function processProfileImage(file: UploadableFile): Promise<Buffer> {
+export async function processProfileImage(
+  file: UploadableFile,
+  backgroundColor?: string
+): Promise<Buffer> {
   try {
     const mimeType = ensureValidFile(file);
 
@@ -63,16 +93,46 @@ export async function processProfileImage(file: UploadableFile): Promise<Buffer>
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    // Process image with sharp - normalize orientation, resize, and convert to WebP
-    const processedBuffer = await sharp(buffer)
+    // Create sharp instance and resize first
+    let image = sharp(buffer)
       .rotate() // Honor EXIF orientation
       .resize(MAX_IMAGE_SIZE, MAX_IMAGE_SIZE, {
         fit: 'cover',
         position: 'center',
         withoutEnlargement: true,
-      })
-      .webp({ quality: QUALITY })
-      .toBuffer();
+      });
+
+    // If background color is provided, composite the image over a colored background
+    if (backgroundColor) {
+      const rgb = hexToRgb(backgroundColor);
+      if (rgb) {
+        // Get resized image metadata to determine final dimensions
+        const metadata = await image.metadata();
+        const width = metadata.width || MAX_IMAGE_SIZE;
+        const height = metadata.height || MAX_IMAGE_SIZE;
+
+        // Create a background image with the specified color
+        const background = sharp({
+          create: {
+            width,
+            height,
+            channels: 3,
+            background: { r: rgb[0], g: rgb[1], b: rgb[2] },
+          },
+        });
+
+        // Composite the resized image over the background
+        image = background.composite([
+          {
+            input: await image.toBuffer(),
+            blend: 'over',
+          },
+        ]);
+      }
+    }
+
+    // Convert to WebP
+    const processedBuffer = await image.webp({ quality: QUALITY }).toBuffer();
 
     logger.debug('Image processed successfully', {
       originalSize: file.size,
@@ -82,6 +142,7 @@ export async function processProfileImage(file: UploadableFile): Promise<Buffer>
         : undefined,
       originalMime: mimeType,
       outputMime: OUTPUT_MIME_TYPE,
+      hasBackground: Boolean(backgroundColor),
     });
 
     return processedBuffer;

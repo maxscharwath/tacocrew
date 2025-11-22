@@ -332,6 +332,7 @@ app.openapi(
           'multipart/form-data': {
             schema: z.object({
               image: z.any(),
+              backgroundColor: z.string().optional(),
             }),
           },
         },
@@ -362,8 +363,12 @@ app.openapi(
     }
 
     try {
-      // Process and compress the image
-      const processedImage = await processProfileImage(file);
+      // Extract optional background color
+      const backgroundColor = formData.get('backgroundColor');
+      const bgColor = backgroundColor && typeof backgroundColor === 'string' ? backgroundColor : undefined;
+
+      // Process and compress the image with optional background color
+      const processedImage = await processProfileImage(file, bgColor);
 
       // Update user image
       const userService = inject(UserService);
