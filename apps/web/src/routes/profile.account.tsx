@@ -14,6 +14,7 @@ import {
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { type LoaderFunctionArgs, redirect } from 'react-router';
+import { ImageUploader } from '@/components/profile/ImageUploader';
 import {
   Alert,
   Avatar,
@@ -500,6 +501,26 @@ export function AccountRoute() {
       {error && <Alert tone="error">{error}</Alert>}
 
       {success && <Alert tone="success">{success}</Alert>}
+
+      {/* Profile Image */}
+      <div className="rounded-2xl border border-white/10 bg-linear-to-br from-slate-950/70 via-slate-900/60 to-slate-900/40 p-5 shadow-xl">
+        <div className="flex flex-col gap-2 text-white">
+          <p className="font-semibold">{t('account.avatar.title') || 'Profile Picture'}</p>
+          <p className="text-slate-400 text-sm">
+            {t('account.avatar.description') ||
+              'Upload a profile picture to personalize your account'}
+          </p>
+        </div>
+        <div className="mt-3">
+          <ImageUploader
+            currentImage={session.user.image || null}
+            onImageUpdate={async (image) => {
+              await loadData(); // Reload to get updated session
+            }}
+            size="xl"
+          />
+        </div>
+      </div>
 
       {/* Profile Information */}
       <Card>
