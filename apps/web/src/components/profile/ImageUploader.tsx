@@ -1,17 +1,9 @@
-import {
-  Camera,
-  Check,
-  Palette,
-  Plus,
-  RotateCcw,
-  Trash2,
-  X,
-} from 'lucide-react';
+import { Camera, Check, Palette, Plus, RotateCcw, Trash2, X } from 'lucide-react';
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Alert, Button } from '@/components/ui';
-import { PREDEFINED_AVATARS, imageUrlToFile } from '@/lib/avatars';
 import { deleteAvatar, uploadAvatar } from '@/lib/api/user';
+import { imageUrlToFile, PREDEFINED_AVATARS } from '@/lib/avatars';
 import { cn } from '@/lib/utils';
 
 const AVATAR_BG_COLOR_KEY = 'avatarBackgroundColor';
@@ -165,7 +157,8 @@ export function ImageUploader({ currentImage, onImageUpdate }: ImageUploaderProp
 
   const handleConfirmUpload = useCallback(async () => {
     const fileToUpload =
-      pendingFile || (pendingAvatarUrl ? await imageUrlToFile(pendingAvatarUrl, 'avatar.png') : null);
+      pendingFile ||
+      (pendingAvatarUrl ? await imageUrlToFile(pendingAvatarUrl, 'avatar.png') : null);
     if (!fileToUpload) return;
 
     setIsUploading(true);
@@ -222,7 +215,11 @@ export function ImageUploader({ currentImage, onImageUpdate }: ImageUploaderProp
   }, [currentImage]);
 
   const handleDelete = useCallback(async () => {
-    if (!confirm(t('account.avatar.deleteConfirm') || 'Are you sure you want to delete your profile image?')) {
+    if (
+      !confirm(
+        t('account.avatar.deleteConfirm') || 'Are you sure you want to delete your profile image?'
+      )
+    ) {
       return;
     }
 
@@ -235,7 +232,9 @@ export function ImageUploader({ currentImage, onImageUpdate }: ImageUploaderProp
       setPreview(null);
       onImageUpdate?.(null);
 
-      globalThis.dispatchEvent(new CustomEvent('userImageUpdated', { detail: { ...updatedProfile, image: null } }));
+      globalThis.dispatchEvent(
+        new CustomEvent('userImageUpdated', { detail: { ...updatedProfile, image: null } })
+      );
     } catch (err) {
       setError(
         err instanceof Error
@@ -284,7 +283,8 @@ export function ImageUploader({ currentImage, onImageUpdate }: ImageUploaderProp
   const getBackgroundStyle = () => {
     if (backgroundColor === 'transparent') {
       return {
-        background: 'linear-gradient(to bottom, rgba(15, 23, 42, 0.8), rgba(15, 23, 42, 0.6), rgba(15, 23, 42, 0.2))',
+        background:
+          'linear-gradient(to bottom, rgba(15, 23, 42, 0.8), rgba(15, 23, 42, 0.6), rgba(15, 23, 42, 0.2))',
       };
     }
     return { background: backgroundColor };
@@ -303,13 +303,15 @@ export function ImageUploader({ currentImage, onImageUpdate }: ImageUploaderProp
         )}
       >
         {/* Preview Section */}
-        <div className="flex shrink-0 basis-72 flex-col gap-4 justify-center md:justify-start">
+        <div className="flex shrink-0 basis-72 flex-col justify-center gap-4 md:justify-start">
           <div className="relative w-full max-w-[18rem]" style={{ aspectRatio: '1 / 1' }}>
             <div
               className={cn(
                 'relative h-full w-full overflow-hidden rounded-3xl border border-white/15 shadow-xl transition-all duration-300',
                 hasPendingSelection && 'ring-2 ring-brand-400 ring-offset-2 ring-offset-slate-900',
-                success && !isUploading && 'ring-2 ring-emerald-400 ring-offset-2 ring-offset-slate-900'
+                success &&
+                  !isUploading &&
+                  'ring-2 ring-emerald-400 ring-offset-2 ring-offset-slate-900'
               )}
               style={getBackgroundStyle()}
             >
@@ -317,7 +319,9 @@ export function ImageUploader({ currentImage, onImageUpdate }: ImageUploaderProp
                 <img src={preview} alt="Profile" className="h-full w-full object-cover" />
               ) : (
                 <div className="flex h-full w-full items-center justify-center">
-                  <Camera className={cn(getIconColorForBackground(backgroundColor), 'h-[40%] w-[40%]')} />
+                  <Camera
+                    className={cn(getIconColorForBackground(backgroundColor), 'h-[40%] w-[40%]')}
+                  />
                 </div>
               )}
             </div>
@@ -326,13 +330,13 @@ export function ImageUploader({ currentImage, onImageUpdate }: ImageUploaderProp
           {/* Background Color Picker */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <label className="text-sm font-medium text-white">
+              <label className="font-medium text-sm text-white">
                 {t('account.avatar.backgroundColor') || 'Background Color'}
               </label>
               <button
                 type="button"
                 onClick={() => setShowColorPicker(!showColorPicker)}
-                className="flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs text-slate-400 transition-colors hover:text-white"
+                className="flex items-center gap-1.5 rounded-lg px-2 py-1 text-slate-400 text-xs transition-colors hover:text-white"
               >
                 <Palette size={14} />
                 {showColorPicker ? 'Hide' : 'Custom'}
@@ -350,10 +354,10 @@ export function ImageUploader({ currentImage, onImageUpdate }: ImageUploaderProp
                     disabled={isUploading}
                     className={cn(
                       'relative h-8 w-8 rounded-lg border-2 transition-all',
-                      color.value === 'transparent' && 'border-dashed border-white/20',
+                      color.value === 'transparent' && 'border-white/20 border-dashed',
                       isSelected
-                        ? 'ring-2 ring-brand-400 ring-offset-1 ring-offset-slate-900 scale-110'
-                        : 'border-white/10 hover:border-brand-400/50 hover:scale-105',
+                        ? 'scale-110 ring-2 ring-brand-400 ring-offset-1 ring-offset-slate-900'
+                        : 'border-white/10 hover:scale-105 hover:border-brand-400/50',
                       isUploading && 'pointer-events-none opacity-50'
                     )}
                     style={
@@ -432,14 +436,18 @@ export function ImageUploader({ currentImage, onImageUpdate }: ImageUploaderProp
                     isUploading && 'pointer-events-none opacity-50'
                   )}
                 >
-                  <img src={avatarUrl} alt={`Avatar ${index + 1}`} className="h-full w-full object-cover" />
+                  <img
+                    src={avatarUrl}
+                    alt={`Avatar ${index + 1}`}
+                    className="h-full w-full object-cover"
+                  />
                   {isSelected && (
                     <div className="absolute inset-0 flex items-center justify-center bg-brand-500/30">
                       <Check className="text-white" size={16} />
                     </div>
                   )}
                   {isCurrent && !isSelected && (
-                    <div className="absolute right-0.5 top-0.5 flex h-3 w-3 items-center justify-center rounded-full bg-emerald-500">
+                    <div className="absolute top-0.5 right-0.5 flex h-3 w-3 items-center justify-center rounded-full bg-emerald-500">
                       <Check className="text-white" size={8} />
                     </div>
                   )}
@@ -452,7 +460,7 @@ export function ImageUploader({ currentImage, onImageUpdate }: ImageUploaderProp
               onClick={() => fileInputRef.current?.click()}
               disabled={isUploading}
               className={cn(
-                'flex aspect-square items-center justify-center rounded-lg border-2 border-dashed border-white/20 bg-slate-900/40 transition-all hover:border-brand-400/50 hover:bg-slate-900/60',
+                'flex aspect-square items-center justify-center rounded-lg border-2 border-white/20 border-dashed bg-slate-900/40 transition-all hover:border-brand-400/50 hover:bg-slate-900/60',
                 isUploading && 'pointer-events-none opacity-50'
               )}
               title={t('account.avatar.select') || 'Upload custom image'}

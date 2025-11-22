@@ -122,7 +122,11 @@ export function RootLayout() {
               <LanguageSwitcher />
               <div className="flex h-11 items-center gap-2 rounded-xl border border-white/10 bg-linear-to-br from-slate-900/90 via-slate-900/80 to-slate-950/90 px-2.5 py-1.5 shadow-black/20 shadow-lg backdrop-blur-sm">
                 <Link to={routes.root.profile()} className="cursor-pointer">
-                  <Avatar color="brandHero" size="sm" src={resolveImageUrl(userImage, { size: 32 })}>
+                  <Avatar
+                    color="brandHero"
+                    size="sm"
+                    src={resolveImageUrl(userImage, { size: 32 })}
+                  >
                     {userInitials}
                   </Avatar>
                 </Link>
