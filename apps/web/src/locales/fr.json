@@ -101,6 +101,7 @@
       "description": "Vos détails de compte",
       "name": "Nom",
       "email": "E-mail",
+      "language": "Langue",
       "verified": "Vérifié",
       "unverified": "Non vérifié"
     },
@@ -393,6 +394,11 @@
     },
     "create": {
       "navigation": {
+        "back": "Retour",
+        "backToOrder": "Retour à la commande"
+      },
+      "navigation": {
+        "back": "Retour",
         "backToOrder": "Retour à la commande"
       },
       "hero": {

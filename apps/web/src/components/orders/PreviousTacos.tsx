@@ -24,28 +24,22 @@ export function PreviousTacos({
 
   const handleSelect = (taco: PreviousOrder['taco'] | TacoOrder) => {
     if (disabled) return;
-    // Only prefills the form - does NOT validate or submit automatically
-    // User must manually review and click submit to place the order
     onSelectTaco(taco);
     setIsModalOpen(false);
-    // Scroll to the form section after a brief delay to show the prefilled form
     setTimeout(() => {
-      const formElement = document.querySelector('form');
-      if (formElement) {
-        formElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
+      document.querySelector('form')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 100);
   };
 
   return (
     <>
-      <div className="space-y-6 rounded-3xl border border-white/10 bg-slate-900/50 p-6">
-        <div className="flex items-center gap-3 border-white/10 border-b pb-4">
-          <Avatar color="indigo" size="md">
+      <div className="space-y-4 rounded-2xl border border-white/10 bg-slate-900/50 p-4 sm:space-y-6 sm:rounded-3xl sm:p-6">
+        <div className="flex items-center gap-2 border-white/10 border-b pb-3 sm:gap-3 sm:pb-4">
+          <Avatar color="indigo" size="sm" className="sm:size-md">
             <Package />
           </Avatar>
           <div>
-            <h2 className="font-semibold text-lg text-white">
+            <h2 className="font-semibold text-base text-white sm:text-lg">
               {t('orders.create.previousTacos.title')}
             </h2>
             <p className="text-slate-400 text-xs">{t('orders.create.previousTacos.description')}</p>
@@ -61,9 +55,9 @@ export function PreviousTacos({
             variant="outline"
             onClick={() => setIsModalOpen(true)}
             disabled={disabled}
-            className="w-full gap-2"
+            className="w-full gap-1.5 text-xs sm:gap-2 sm:text-sm"
           >
-            <Package size={16} />
+            <Package size={14} className="sm:w-4" />
             {t('orders.create.previousTacos.openModal')}
           </Button>
         )}

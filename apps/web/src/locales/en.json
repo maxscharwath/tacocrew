@@ -101,6 +101,7 @@
       "description": "Your account details",
       "name": "Name",
       "email": "Email",
+      "language": "Language",
       "verified": "Verified",
       "unverified": "Unverified"
     },
@@ -405,6 +406,7 @@
     },
     "create": {
       "navigation": {
+        "back": "Back",
         "backToOrder": "Back to order"
       },
       "hero": {

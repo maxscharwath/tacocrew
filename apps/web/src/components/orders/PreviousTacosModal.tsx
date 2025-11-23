@@ -29,7 +29,7 @@ export function PreviousTacosModal({
       title={t('orders.create.previousTacos.title')}
       description={t('orders.create.previousTacos.description')}
     >
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3 lg:grid-cols-3">
         {previousOrders.map((order) => (
           <PreviousTacoCard
             key={order.tacoID}

@@ -26,69 +26,62 @@ export function ExtrasSection({
   const { t } = useTranslation();
 
   return (
-    <div className="space-y-6 rounded-3xl border border-white/10 bg-slate-900/50 p-6">
-      <div className="flex items-center gap-3 border-white/10 border-b pb-4">
-        <Avatar color="emerald" size="md">
+    <div className="space-y-4 rounded-2xl border border-white/10 bg-slate-900/50 p-4 sm:space-y-6 sm:rounded-3xl sm:p-6">
+      <div className="flex items-center gap-2 border-white/10 border-b pb-3 sm:gap-3 sm:pb-4">
+        <Avatar color="emerald" size="sm" className="sm:size-md">
           <ShoppingBag />
         </Avatar>
         <div>
-          <h2 className="font-semibold text-lg text-white">
+          <h2 className="font-semibold text-base text-white sm:text-lg">
             {t('orders.create.extrasSection.title')}
           </h2>
           <p className="text-slate-400 text-xs">{t('orders.create.extrasSection.subtitle')}</p>
         </div>
       </div>
 
-      <Card className="border-white/10 bg-slate-800/30">
-        <CardHeader className="gap-2">
-          <div className="flex items-center gap-2">
-            <Package size={18} className="text-brand-400" />
-            <CardTitle className="text-sm text-white normal-case tracking-normal">
-              {t('common.labels.extras')}
-            </CardTitle>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <SelectionGroup items={stock.extras} selected={extras} onToggle={onToggleExtra} />
-          {extras.map((id) => (
-            <input key={id} type="hidden" name="extras" value={id} />
-          ))}
-        </CardContent>
-      </Card>
-
-      <Card className="border-white/10 bg-slate-800/30">
-        <CardHeader className="gap-2">
-          <div className="flex items-center gap-2">
-            <CupSoda size={18} className="text-brand-400" />
-            <CardTitle className="text-sm text-white normal-case tracking-normal">
-              {t('common.labels.drinks')}
-            </CardTitle>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <SelectionGroup items={stock.drinks} selected={drinks} onToggle={onToggleDrink} />
-          {drinks.map((id) => (
-            <input key={id} type="hidden" name="drinks" value={id} />
-          ))}
-        </CardContent>
-      </Card>
-
-      <Card className="border-white/10 bg-slate-800/30">
-        <CardHeader className="gap-2">
-          <div className="flex items-center gap-2">
-            <CakeSlice size={18} className="text-brand-400" />
-            <CardTitle className="text-sm text-white normal-case tracking-normal">
-              {t('common.labels.desserts')}
-            </CardTitle>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <SelectionGroup items={stock.desserts} selected={desserts} onToggle={onToggleDessert} />
-          {desserts.map((id) => (
-            <input key={id} type="hidden" name="desserts" value={id} />
-          ))}
-        </CardContent>
-      </Card>
+      {[
+        {
+          icon: Package,
+          label: t('common.labels.extras'),
+          items: stock.extras,
+          selected: extras,
+          onToggle: onToggleExtra,
+          name: 'extras',
+        },
+        {
+          icon: CupSoda,
+          label: t('common.labels.drinks'),
+          items: stock.drinks,
+          selected: drinks,
+          onToggle: onToggleDrink,
+          name: 'drinks',
+        },
+        {
+          icon: CakeSlice,
+          label: t('common.labels.desserts'),
+          items: stock.desserts,
+          selected: desserts,
+          onToggle: onToggleDessert,
+          name: 'desserts',
+        },
+      ].map(({ icon: Icon, label, items, selected, onToggle, name }) => (
+        <Card key={name} className="border-white/10 bg-slate-800/30">
+          <CardHeader className="gap-1.5 sm:gap-2">
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <Icon size={16} className="text-brand-400 sm:w-4.5" />
+              <CardTitle className="text-white text-xs normal-case tracking-normal sm:text-sm">
+                {label}
+              </CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <SelectionGroup items={items} selected={selected} onToggle={onToggle} />
+            {selected.map((id) => (
+              <input key={id} type="hidden" name={name} value={id} />
+            ))}
+          </CardContent>
+        </Card>
+      ))}
     </div>
   );
 }

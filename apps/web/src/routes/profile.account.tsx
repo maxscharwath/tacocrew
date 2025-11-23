@@ -2,6 +2,7 @@ import {
   Bell,
   Check,
   Edit,
+  Globe,
   Key,
   Laptop,
   Lock,
@@ -14,6 +15,7 @@ import {
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { type LoaderFunctionArgs, redirect } from 'react-router';
+import { LanguageSwitcher } from '@/components/language-switcher';
 import { ImageUploader } from '@/components/profile/ImageUploader';
 import {
   Alert,
@@ -570,6 +572,17 @@ export function AccountRoute() {
                     {t('account.profile.unverified')}
                   </Badge>
                 )}
+              </div>
+            </div>
+            <div className="space-y-2 border-white/10 border-t pt-4">
+              <label className="flex items-center gap-2 font-medium text-slate-200 text-sm">
+                <Avatar color="indigo" size="sm">
+                  <Globe />
+                </Avatar>
+                {t('account.profile.language')}
+              </label>
+              <div className="flex items-center gap-3">
+                <LanguageSwitcher />
               </div>
             </div>
           </div>

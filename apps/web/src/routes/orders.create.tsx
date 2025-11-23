@@ -282,21 +282,22 @@ export function OrderCreateRoute() {
   });
 
   return (
-    <div className="space-y-8">
-      <div className="flex items-center gap-4">
+    <div className="space-y-4 sm:space-y-8">
+      <div className="flex items-center gap-2 sm:gap-4">
         <Link
           to={routes.root.orderDetail({ orderId: params.orderId ?? '' })}
           className="inline-flex cursor-pointer items-center gap-2 font-medium text-slate-300 text-sm transition-colors hover:text-brand-100"
         >
-          <ArrowLeft size={18} />
-          {t('orders.create.navigation.backToOrder')}
+          <ArrowLeft size={16} className="sm:w-4.5" />
+          <span className="hidden sm:inline">{t('orders.create.navigation.backToOrder')}</span>
+          <span className="sm:hidden">{t('orders.create.navigation.back')}</span>
         </Link>
       </div>
 
       <OrderCreateHero />
 
-      <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,400px)]">
-        <Form method="post" className="space-y-8" id="order-form">
+      <div className="grid gap-4 sm:gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,400px)]">
+        <Form method="post" className="space-y-4 sm:space-y-8" id="order-form">
           <input type="hidden" name="tacoSize" value={size} />
           {editOrderId && <input type="hidden" name="editOrderId" value={editOrderId} />}
 
@@ -323,13 +324,13 @@ export function OrderCreateRoute() {
           />
 
           {size && (
-            <div className="space-y-6 rounded-3xl border border-white/10 bg-slate-900/50 p-6">
-              <div className="flex items-center gap-3 border-white/10 border-b pb-4">
-                <Avatar color="orange" size="md">
+            <div className="space-y-4 rounded-2xl border border-white/10 bg-slate-900/50 p-4 sm:space-y-6 sm:rounded-3xl sm:p-6">
+              <div className="flex items-center gap-2 border-white/10 border-b pb-3 sm:gap-3 sm:pb-4">
+                <Avatar color="orange" size="sm" className="sm:size-md">
                   <Sliders />
                 </Avatar>
                 <div>
-                  <h2 className="font-semibold text-lg text-white">
+                  <h2 className="font-semibold text-base text-white sm:text-lg">
                     {t('orders.create.customizeSection.title')}
                   </h2>
                   <p className="text-slate-400 text-xs">
