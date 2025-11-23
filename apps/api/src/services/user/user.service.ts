@@ -122,6 +122,10 @@ export class UserService {
         name: string | null;
         image: string | null;
       };
+      participants: Array<{
+        id: UserId;
+        name: string | null;
+      }>;
     }>
   > {
     // Get all group orders (not just where user is leader)
@@ -147,6 +151,36 @@ export class UserService {
       orderBy: { createdAt: 'desc' },
     });
 
+    // Get unique participants for all group orders in a single query
+    const groupOrderIds = dbGroupOrders.map((go) => go.id);
+    const participantsData = await this.prisma.client.userOrder.findMany({
+      where: {
+        groupOrderId: { in: groupOrderIds },
+      },
+      select: {
+        groupOrderId: true,
+        userId: true,
+        user: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+      distinct: ['groupOrderId', 'userId'],
+    });
+
+    // Group participants by groupOrderId
+    const participantsByGroupOrder = new Map<string, Array<{ id: UserId; name: string | null }>>();
+    for (const { groupOrderId, userId, user } of participantsData) {
+      const existing = participantsByGroupOrder.get(groupOrderId) ?? [];
+      existing.push({
+        id: userId as UserId,
+        name: user?.name ?? null,
+      });
+      participantsByGroupOrder.set(groupOrderId, existing);
+    }
+
     return dbGroupOrders.map((go) => {
       const groupOrder = createGroupOrderFromDb(go);
       const leader =
@@ -156,6 +190,7 @@ export class UserService {
         hasImage: Boolean(leader.image),
         updatedAt: leader.updatedAt ?? null,
       };
+      const participants = participantsByGroupOrder.get(go.id) ?? [];
       return {
         id: go.id as GroupOrderId,
         name: go.name,
@@ -169,6 +204,7 @@ export class UserService {
           name: leader.name,
           image: buildAvatarUrl(leaderForUrl),
         },
+        participants,
       };
     });
   }

@@ -1,20 +1,19 @@
 import { addHours, format, setHours, setMinutes } from 'date-fns';
-import { ArrowUpRight, Calendar, Package, Truck } from 'lucide-react';
+import { Calendar, Package, Truck } from 'lucide-react';
 import { Suspense, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Await,
   Form,
-  Link,
   type LoaderFunctionArgs,
   redirect,
   useActionData,
   useLoaderData,
   useNavigation,
 } from 'react-router';
-import { StatBubble } from '@/components/orders';
+import { OrderListItem, StatBubble } from '@/components/orders';
 import { OrdersSkeleton } from '@/components/skeletons';
-import { Alert, Button, DateTimePicker, Input, Label, StatusBadge } from '@/components/ui';
+import { Alert, Button, DateTimePicker, Input, Label } from '@/components/ui';
 import { useDateFormat } from '@/hooks/useDateFormat';
 import { OrdersApi, UserApi } from '@/lib/api';
 import { routes } from '@/lib/routes';
@@ -108,14 +107,8 @@ export const ordersAction = createActionHandler({
 
 function OrdersContent({ groupOrders }: Readonly<{ groupOrders: LoaderData['groupOrders'] }>) {
   const { t } = useTranslation();
-  const {
-    formatDateTime,
-    formatDate,
-    formatDateOnly,
-    formatDayName,
-    formatTime12Hour,
-    formatDateTimeWithYear,
-  } = useDateFormat();
+  const { formatDateTime, formatDate, formatDateOnly, formatDayName, formatTime12Hour } =
+    useDateFormat();
   const actionData = useActionData<ActionData | undefined>();
   const navigation = useNavigation();
   const isSubmitting = navigation.state === 'submitting';
@@ -308,45 +301,14 @@ function OrdersContent({ groupOrders }: Readonly<{ groupOrders: LoaderData['grou
               </div>
             ) : (
               groupOrders.map((order) => (
-                <article
+                <OrderListItem
                   key={order.id}
-                  className="flex items-center justify-between gap-6 rounded-2xl border border-white/10 bg-slate-900/70 p-5 shadow-[0_20px_60px_rgba(8,47,73,0.25)] hover:border-brand-400/30"
-                >
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-3">
-                      <span className="rounded-full bg-brand-500/15 px-3 py-1 font-semibold text-brand-200 text-xs uppercase tracking-[0.3em]">
-                        {order.name ?? t('orders.common.unnamedDrop')}
-                      </span>
-                      <span className="text-slate-400 text-xs">
-                        {t('orders.common.labels.shortId', { id: order.id.slice(0, 8) })}
-                      </span>
-                    </div>
-                    <p className="text-slate-200 text-sm">
-                      {formatDateTime(order.startDate)} → {formatDateTime(order.endDate)}
-                    </p>
-                    <p className="text-slate-400 text-xs">
-                      {t('orders.list.queue.createdMeta', {
-                        name: order.leader?.name ?? t('orders.list.queue.unknownLeader'),
-                        date: formatDateTimeWithYear(order.createdAt),
-                      })}
-                    </p>
-                  </div>
-
-                  <div className="flex items-center gap-4">
-                    <StatusBadge
-                      status={order.status}
-                      label={t(`common.status.${order.status}`)}
-                      className="text-xs"
-                    />
-                    <Link
-                      to={routes.root.orderDetail({ orderId: order.id })}
-                      className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-brand-400/40 bg-brand-500/15 px-4 py-2 font-semibold text-brand-100 text-sm hover:border-brand-400/70"
-                    >
-                      {t('common.open')}
-                      <ArrowUpRight size={16} />
-                    </Link>
-                  </div>
-                </article>
+                  order={order}
+                  formatDateTimeRange={(start, end) =>
+                    `${formatDateTime(start)} → ${formatDateTime(end)}`
+                  }
+                  unnamedOrderText={t('orders.common.unnamedDrop')}
+                />
               ))
             )}
           </div>

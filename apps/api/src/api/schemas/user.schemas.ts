@@ -79,6 +79,12 @@ const UserGroupOrderSchema = z.object({
     name: z.string().nullable(),
     image: z.string().nullable().optional(),
   }),
+  participants: z.array(
+    z.object({
+      id: z.string(),
+      name: z.string().nullable(),
+    })
+  ),
 });
 
 const PreviousOrderSchema = z.object({

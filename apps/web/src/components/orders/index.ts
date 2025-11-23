@@ -24,3 +24,6 @@ export { TacoCard } from './TacoCard';
 export { TacoHashSearch } from './TacoHashSearch';
 export { TacoSizeSelector } from './TacoSizeSelector';
 export { TimeSlotSelector } from './TimeSlotSelector';
+export { UserBadge } from './UserBadge';
+export { OrderListItem } from './OrderListItem';
+export { StackedAvatars } from './StackedAvatars';

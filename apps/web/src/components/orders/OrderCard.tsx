@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { useFetcher } from 'react-router';
-import { Avatar, Badge, Card, CardContent, CardHeader } from '@/components/ui';
+import { Avatar, Card, CardContent, CardHeader } from '@/components/ui';
 import { useOrderPrice } from '@/hooks/useOrderPrice';
 import type { StockResponse } from '@/lib/api';
 import { OrdersApi } from '@/lib/api';
@@ -11,6 +11,7 @@ import { convertOrderToUpsertBody } from '@/utils/order-converter';
 import { extractOrderItems } from '@/utils/order-item-extractors';
 import { OrderCardActions } from './OrderCardActions';
 import { OrderTags } from './OrderTags';
+import { UserBadge } from './UserBadge';
 
 /**
  * OrderCard - A presentational component for displaying a single order card
@@ -72,6 +73,7 @@ export function OrderCard({
   };
 
   const tacoConfig = taco ? TACO_SIZE_CONFIG[taco.size] : undefined;
+  const userName = order.name ?? t('orders.detail.list.unknownUser');
 
   return (
     <Card
@@ -100,16 +102,14 @@ export function OrderCard({
           <div className="min-w-0 flex-1">
             <div className="mb-1.5 flex flex-wrap items-center gap-1.5">
               {isMyOrder ? (
-                <Badge
-                  tone="brand"
-                  className="shrink-0 border border-brand-400/50 bg-brand-400/30 px-1.5 py-0.5 font-bold text-[9px]"
-                >
-                  {t('orders.detail.list.myOrderBadge')}
-                </Badge>
+                <UserBadge
+                  userId={order.userId}
+                  name={t('orders.detail.list.myOrderBadge')}
+                  variant="highlighted"
+                  size="sm"
+                />
               ) : (
-                <Badge tone="brand" className="shrink-0 px-2 py-0.5 font-semibold text-[10px]">
-                  {order.name ?? t('orders.detail.list.unknownUser')}
-                </Badge>
+                <UserBadge userId={order.userId} name={userName} size="sm" />
               )}
             </div>
             <p className="font-bold text-sm text-white leading-tight">

@@ -3,7 +3,7 @@ import { Suspense } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 import type { LoaderFunctionArgs } from 'react-router';
 import { Await, Link, useLoaderData } from 'react-router';
-import { StatBubble } from '@/components/orders';
+import { OrderListItem, StatBubble } from '@/components/orders';
 import { DashboardSkeleton } from '@/components/skeletons';
 import {
   Badge,
@@ -141,41 +141,16 @@ function DashboardContent({ data }: Readonly<{ data: DashboardLoaderData }>) {
                 </Link>
               </div>
             ) : (
-              groupOrders.slice(0, 5).map((order) => (
-                <article
-                  key={order.id}
-                  className="flex items-center justify-between gap-6 rounded-2xl border border-white/10 bg-slate-900/70 p-5 shadow-[0_20px_60px_rgba(8,47,73,0.25)] hover:border-brand-400/30"
-                >
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-3">
-                      <span className="rounded-full bg-brand-500/15 px-3 py-1 font-semibold text-brand-200 text-xs uppercase tracking-[0.3em]">
-                        {order.name ?? t('dashboard.recentGroupOrders.untitledOrder')}
-                      </span>
-                      <span className="text-slate-400 text-xs">
-                        {t('orders.common.labels.shortId', { id: order.id.slice(0, 8) })}
-                      </span>
-                    </div>
-                    <p className="text-slate-200 text-sm">
-                      {formatDateTimeRange(order.startDate, order.endDate)}
-                    </p>
-                  </div>
-
-                  <div className="flex items-center gap-4">
-                    <StatusBadge
-                      status={order.status}
-                      label={t(`common.status.${order.status}`)}
-                      className="text-xs"
-                    />
-                    <Link
-                      to={routes.root.orderDetail({ orderId: order.id })}
-                      className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-brand-400/40 bg-brand-500/15 px-4 py-2 font-semibold text-brand-100 text-sm hover:border-brand-400/70"
-                    >
-                      {t('common.open')}
-                      <ArrowUpRight size={16} />
-                    </Link>
-                  </div>
-                </article>
-              ))
+              groupOrders
+                .slice(0, 5)
+                .map((order) => (
+                  <OrderListItem
+                    key={order.id}
+                    order={order}
+                    formatDateTimeRange={formatDateTimeRange}
+                    unnamedOrderText={t('dashboard.recentGroupOrders.untitledOrder')}
+                  />
+                ))
             )}
           </CardContent>
         </Card>

@@ -114,6 +114,7 @@ export function Avatar({
           src={src ?? undefined}
           alt={alt}
           className={cn('h-full w-full object-cover', radiusClass)}
+          style={{ display: 'block' }}
           loading="lazy"
           onError={() => setHasImageError(true)}
         />

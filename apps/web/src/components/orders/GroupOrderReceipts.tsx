@@ -269,12 +269,13 @@ export function GroupOrderReceipts({
         </div>
       </CardHeader>
       <CardContent className="space-y-6">
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 xl:grid-cols-3">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
           {ticketEntries.map(
             ({ key, model, userId, orders, participantPaid, reimbursementComplete }) => (
               <ReceiptTicket
                 key={key}
                 ticket={model}
+                userId={userId}
                 timestamp={{ date: ticketDate, time: ticketTime }}
                 feePerPerson={feePerPerson}
                 feeInfo={{ total: totalFee, participants: participantCount }}

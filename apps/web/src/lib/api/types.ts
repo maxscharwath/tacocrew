@@ -64,6 +64,10 @@ export interface UserGroupOrder {
   endDate: string;
   createdAt: string;
   leader: GroupLeader;
+  participants: Array<{
+    id: string;
+    name: string | null;
+  }>;
 }
 
 export interface UserOrderHistoryEntry {

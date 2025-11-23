@@ -1,10 +1,10 @@
 import type { LucideIcon } from 'lucide-react';
 import { Clock3, RefreshCcw, ShieldCheck, Undo2, Wallet } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { Badge, Button } from '@/components/ui';
+import { Avatar, Badge, Button } from '@/components/ui';
 import { useLocaleFormatter } from '@/hooks/useLocaleFormatter';
-
-type StatusTone = 'success' | 'warning' | 'danger';
+import { getAvatarUrl } from '@/lib/api/user';
+import { getUserInitials } from './user-utils';
 
 export type ReceiptStatusVariant =
   | 'leader'
@@ -19,20 +19,20 @@ const STATUS_ICONS: Record<ReceiptStatusVariant, LucideIcon> = {
   awaitingConfirmation: RefreshCcw,
 };
 
-const STATUS_TONES: Record<ReceiptStatusVariant, StatusTone> = {
+const STATUS_TONES: Record<ReceiptStatusVariant, 'success' | 'warning' | 'neutral'> = {
   leader: 'success',
   settled: 'success',
-  awaitingParticipant: 'danger',
+  awaitingParticipant: 'warning',
   awaitingConfirmation: 'warning',
 };
 
 const BADGE_BASE_CLASS =
   'inline-flex max-w-max border px-2 py-1 text-[9px] uppercase tracking-wide';
 
-const STATUS_BADGE_CLASS: Record<StatusTone, string> = {
+const STATUS_BADGE_CLASS: Record<'success' | 'warning' | 'neutral', string> = {
   success: `${BADGE_BASE_CLASS} border-emerald-400/60 bg-emerald-400/90 text-emerald-950`,
   warning: `${BADGE_BASE_CLASS} border-amber-400/60 bg-amber-400/90 text-amber-950`,
-  danger: `${BADGE_BASE_CLASS} border-rose-500/70 bg-rose-500/90 text-rose-950`,
+  neutral: `${BADGE_BASE_CLASS} border-slate-400/60 bg-slate-400/90 text-slate-950`,
 };
 
 const ACTION_BUTTON_CLASS =
@@ -58,6 +58,7 @@ export type ReceiptTicketModel = {
 
 type ReceiptTicketProps = {
   ticket: ReceiptTicketModel;
+  userId: string;
   timestamp: { date: string; time: string };
   feePerPerson: number;
   feeInfo: {
@@ -72,6 +73,7 @@ type ReceiptTicketProps = {
 
 export function ReceiptTicket({
   ticket,
+  userId,
   timestamp,
   feePerPerson,
   feeInfo,
@@ -84,6 +86,8 @@ export function ReceiptTicket({
   const { formatCurrency } = useLocaleFormatter(currency);
   const participantName =
     ticket.participantName ?? t('orders.detail.receipts.unknownGuest').toUpperCase();
+  const userInitials = getUserInitials(participantName);
+  const avatarUrl = getAvatarUrl(userId, { size: 48 });
   const total = ticket.subtotal + feePerPerson;
   const feeExplanation = t('orders.detail.receipts.feeExplanation', {
     total: formatCurrency(feeInfo.total),
@@ -111,11 +115,16 @@ export function ReceiptTicket({
         </div>
 
         <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <p className="text-[10px] text-gray-500 uppercase tracking-[0.3em]">
-              {t('orders.detail.receipts.guest')}
-            </p>
-            <p className="font-black text-xl">{participantName}</p>
+          <div className="flex items-center gap-3">
+            <Avatar color="brandHero" size="md" variant="elevated" src={avatarUrl}>
+              {userInitials}
+            </Avatar>
+            <div>
+              <p className="text-[10px] text-gray-500 uppercase tracking-[0.3em]">
+                {t('orders.detail.receipts.guest')}
+              </p>
+              <p className="font-black text-xl">{participantName}</p>
+            </div>
           </div>
           <ReceiptStatusBadge
             variant={ticket.statusVariant}

@@ -104,6 +104,7 @@ function buildAvatarEtagKey(width?: number, height?: number, size?: number, dpr?
 
 /**
  * Resize an image buffer to specified dimensions
+ * Never upscales beyond original size to prevent bandwidth attacks
  */
 export async function resizeImage(
   imageBuffer: Buffer,
@@ -118,10 +119,23 @@ export async function resizeImage(
     return imageBuffer;
   }
 
+  // Get original image dimensions to prevent upscaling
+  const metadata = await sharp(imageBuffer).metadata();
+  const originalWidth = metadata.width ?? 0;
+  const originalHeight = metadata.height ?? 0;
+
+  // Cap dimensions to original size (prevent bandwidth attacks)
+  const cappedWidth = targetWidth ? Math.min(targetWidth, originalWidth) : undefined;
+  const cappedHeight = targetHeight ? Math.min(targetHeight, originalHeight) : undefined;
+
+  if (!cappedWidth && !cappedHeight) {
+    return imageBuffer;
+  }
+
   return await sharp(imageBuffer)
-    .resize(targetWidth, targetHeight, {
+    .resize(cappedWidth, cappedHeight, {
       fit: 'cover',
-      withoutEnlargement: false,
+      withoutEnlargement: true,
     })
     .webp({ quality: QUALITY })
     .toBuffer();
