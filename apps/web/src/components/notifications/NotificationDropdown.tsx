@@ -14,7 +14,7 @@ import {
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
-import { Button, SegmentedControl } from '@/components/ui';
+import { Button, EmptyState, SegmentedControl } from '@/components/ui';
 import { useRelativeTime } from '@/hooks';
 import {
   archiveAllNotifications,
@@ -125,33 +125,17 @@ function NotificationItem({
       </button>
 
       {canArchive && (
-        <button
-          type="button"
+        <Button
+          variant="ghost"
+          size="sm"
           onClick={handleArchive}
           disabled={isArchiving}
-          className="shrink-0 rounded-lg p-2 text-slate-500 opacity-0 transition-all duration-200 hover:bg-slate-700/50 hover:text-slate-300 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-brand-500/50 group-hover:opacity-100"
+          className="h-8 w-8 shrink-0 p-0 text-slate-500 opacity-0 transition-all duration-200 hover:text-slate-300 focus:opacity-100 group-hover:opacity-100"
           title={archiveLabel}
         >
           <Archive size={14} />
-        </button>
+        </Button>
       )}
-    </div>
-  );
-}
-
-function EmptyState({ isArchive }: { isArchive: boolean }) {
-  const { t } = useTranslation();
-  const Icon = isArchive ? Archive : Sparkles;
-  const title = t(isArchive ? 'notifications.emptyArchive' : 'notifications.empty');
-  const hint = t(isArchive ? 'notifications.emptyArchiveHint' : 'notifications.emptyHint');
-
-  return (
-    <div className="flex flex-col items-center justify-center px-4 py-12">
-      <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-slate-800/50 ring-1 ring-white/10">
-        <Icon size={28} className="text-slate-500" />
-      </div>
-      <p className="font-medium text-slate-300 text-sm">{title}</p>
-      <p className="mt-1 text-center text-slate-500 text-xs">{hint}</p>
     </div>
   );
 }
@@ -367,7 +351,14 @@ export function NotificationDropdown({ onClose, onMarkAsRead }: NotificationDrop
             <NotificationSkeleton />
           </div>
         ) : notifications.length === 0 ? (
-          <EmptyState isArchive={isArchiveTab} />
+          <EmptyState
+            icon={isArchiveTab ? Archive : Sparkles}
+            title={t(isArchiveTab ? 'notifications.emptyArchive' : 'notifications.empty')}
+            description={t(
+              isArchiveTab ? 'notifications.emptyArchiveHint' : 'notifications.emptyHint'
+            )}
+            className="border-0 bg-transparent"
+          />
         ) : (
           <div className="divide-y divide-white/5">
             {notifications.map((n) => (
