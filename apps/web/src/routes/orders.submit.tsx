@@ -1,4 +1,4 @@
-import { ArrowLeft, Globe, Hash, Lock, MapPin, Phone, Send, Tag, Truck, User } from 'lucide-react';
+import { ArrowLeft, Globe, Hash, Lock, MapPin, Send, Tag, Truck, User } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -37,6 +37,7 @@ import {
   InputGroupAddon,
   InputGroupInput,
   Label,
+  PhoneInput,
 } from '@/components/ui';
 import {
   DEFAULT_CANTON_CODE,
@@ -467,20 +468,14 @@ export function OrderSubmitRoute() {
                       <Label htmlFor="customerPhone" required>
                         {t('orders.submit.form.fields.customerPhone')}
                       </Label>
-                      <InputGroup>
-                        <InputGroupAddon>
-                          <Phone className="size-4" />
-                        </InputGroupAddon>
-                        <InputGroupInput
-                          id="customerPhone"
-                          name="customerPhone"
-                          type="tel"
-                          required
-                          disabled={isSubmitting}
-                          value={customerPhone}
-                          onChange={(event) => setCustomerPhone(event.target.value)}
-                        />
-                      </InputGroup>
+                      <PhoneInput
+                        id="customerPhone"
+                        name="customerPhone"
+                        required
+                        disabled={isSubmitting}
+                        value={customerPhone}
+                        onChange={setCustomerPhone}
+                      />
                     </div>
                   </div>
 

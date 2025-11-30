@@ -18,6 +18,7 @@ import {
   InputGroupAddon,
   InputGroupInput,
   Label,
+  PhoneInput,
 } from '@/components/ui';
 import {
   getSwissCantons,
@@ -241,17 +242,12 @@ export function DeliveryProfilesManager({ profiles }: DeliveryProfilesManagerPro
             </div>
             <div className="grid gap-1">
               <Label htmlFor="phoneField">{t('orders.submit.form.fields.customerPhone')}</Label>
-              <InputGroup>
-                <InputGroupAddon>
-                  <Phone className="size-4" />
-                </InputGroupAddon>
-                <InputGroupInput
-                  id="phoneField"
-                  value={form.phone}
-                  disabled={busy}
-                  onChange={(event) => setField('phone', event.target.value)}
-                />
-              </InputGroup>
+              <PhoneInput
+                id="phoneField"
+                value={form.phone}
+                disabled={busy}
+                onChange={(value) => setField('phone', value)}
+              />
             </div>
             <div className="sm:col-span-2">
               <DeliveryTypeSelector
