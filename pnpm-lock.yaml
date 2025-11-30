@@ -360,6 +360,9 @@ importers:
       react-dom:
         specifier: ^19.2.0
         version: 19.2.0(react@19.2.0)
+      react-i18next:
+        specifier: ^16.3.5
+        version: 16.3.5(i18next@25.6.3(typescript@5.9.3))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(typescript@5.9.3)
       tailwind-merge:
         specifier: ^3.3.1
         version: 3.4.0
