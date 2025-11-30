@@ -69,6 +69,16 @@ export function OrdersList({
                 isLeader
               );
 
+              console.log('Order permissions:', {
+                orderId: order.id,
+                userId: order.userId,
+                currentUserId,
+                isLeader,
+                canEdit,
+                canDelete,
+                isMyOrder
+              });
+
               return (
                 <OrderCard
                   key={order.id}

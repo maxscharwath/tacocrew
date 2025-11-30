@@ -97,6 +97,13 @@ export async function orderCreateLoader({
     if (prefillOrderId) {
       try {
         const orderDetail = await OrdersApi.getUserOrder(groupOrderId, prefillOrderId);
+        console.log('Permission check:', {
+          orderId,
+          isLeader,
+          orderDetailUserId: orderDetail.userId,
+          currentUserId: userId,
+          condition: orderId && !isLeader && orderDetail.userId !== userId
+        });
         if (orderId && !isLeader && orderDetail.userId !== userId) {
           throw new Response('Unauthorized', { status: 403 });
         }
