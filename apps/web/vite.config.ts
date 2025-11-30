@@ -37,51 +37,33 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: (id) => {
-          // Vendor chunks
+          // Define chunk mappings in a maintainable way
+          const chunkMappings = {
+            // Vendor chunks by library type
+            'react-vendor': ['react', 'react-dom', 'react-router'],
+            'ui-vendor': ['@radix-ui', 'lucide-react'],
+            'form-vendor': ['zod', 'libphonenumber-js'],
+            'utils-vendor': ['date-fns', 'clsx', 'tailwind-merge'],
+            'i18n-vendor': ['react-i18next', 'i18next'],
+            'http-vendor': ['axios', 'better-auth'],
+
+            // Application chunks by feature
+            'app-order-forms': ['/routes/orders.create.tsx', '/routes/orders.submit.tsx'],
+            'app-profile': ['/routes/profile', '/components/profile/'],
+            'app-orders': ['/components/orders/'],
+            'app-utils': ['/lib/api/', '/utils/'],
+          };
+
+          // Check vendor chunks (exact package matches)
+          for (const [chunkName, patterns] of Object.entries(chunkMappings)) {
+            if (patterns.some(pattern => id.includes(pattern))) {
+              return chunkName;
+            }
+          }
+
+          // Default vendor chunk for any other node_modules
           if (id.includes('node_modules')) {
-            // React ecosystem
-            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) {
-              return 'react-vendor';
-            }
-            // UI libraries
-            if (id.includes('@radix-ui') || id.includes('@headlessui') || id.includes('lucide-react')) {
-              return 'ui-vendor';
-            }
-            // Form and validation
-            if (id.includes('react-hook-form') || id.includes('zod') || id.includes('libphonenumber-js')) {
-              return 'form-vendor';
-            }
-            // Utilities
-            if (id.includes('date-fns') || id.includes('clsx') || id.includes('tailwind-merge')) {
-              return 'utils-vendor';
-            }
-            // I18n
-            if (id.includes('react-i18next') || id.includes('i18next')) {
-              return 'i18n-vendor';
-            }
-            // HTTP and auth
-            if (id.includes('axios') || id.includes('better-auth')) {
-              return 'http-vendor';
-            }
-            // Large libraries
-            if (id.includes('sharp') || id.includes('prisma') || id.includes('winston')) {
-              return 'heavy-vendor';
-            }
-            // Other libraries
             return 'vendor';
-          }
-          // Application chunks
-          if (id.includes('/routes/orders.create.tsx') || id.includes('/routes/orders.submit.tsx')) {
-            return 'app-order-forms';
-          }
-          if (id.includes('/routes/profile') || id.includes('/components/profile/')) {
-            return 'app-profile';
-          }
-          if (id.includes('/components/orders/')) {
-            return 'app-orders';
-          }
-          if (id.includes('/lib/api/') || id.includes('/utils/')) {
-            return 'app-utils';
           }
         },
       },
