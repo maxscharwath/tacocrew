@@ -13,22 +13,52 @@ import {
 } from '@/components/skeletons';
 import { DashboardRoute, dashboardLoader } from '@/routes/dashboard';
 import { authenticationLoader, LoginRoute } from '@/routes/login';
-import { OrderCreateRoute, orderCreateAction, orderCreateLoader } from '@/routes/orders.create';
+import { orderCreateAction, orderCreateLoader } from '@/routes/orders.create';
 import { orderDetailAction, orderDetailLoader } from '@/routes/orders.detail';
 import { OrdersRoute, ordersAction, ordersLoader } from '@/routes/orders.list';
-import { OrderSubmitRoute, orderSubmitAction, orderSubmitLoader } from '@/routes/orders.submit';
-import { ProfileRoute, profileLoader } from '@/routes/profile';
-import { AccountRoute, accountLoader } from '@/routes/profile.account';
-import { ProfileDeliveryRoute, profileDeliveryLoader } from '@/routes/profile.delivery';
+import { orderSubmitAction, orderSubmitLoader } from '@/routes/orders.submit';
+import { profileLoader } from '@/routes/profile';
+import { accountLoader } from '@/routes/profile.account';
+import { profileDeliveryLoader } from '@/routes/profile.delivery';
 import { RootErrorBoundary, RootLayout } from '@/routes/root';
 import { rootAction, rootLoader } from '@/routes/root.loader';
 import { StockRoute, stockLoader } from '@/routes/stock';
 import { defineRoutes } from './routes/core';
 
-// Lazy load the order detail route to prevent hydration issues
+// Lazy load heavy routes to reduce initial bundle size
 const LazyOrderDetailRoute = lazy(() =>
   import('@/routes/orders.detail').then((module) => ({
     default: module.OrderDetailRoute,
+  }))
+);
+
+const LazyOrderCreateRoute = lazy(() =>
+  import('@/routes/orders.create').then((module) => ({
+    default: module.OrderCreateRoute,
+  }))
+);
+
+const LazyOrderSubmitRoute = lazy(() =>
+  import('@/routes/orders.submit').then((module) => ({
+    default: module.OrderSubmitRoute,
+  }))
+);
+
+const LazyProfileRoute = lazy(() =>
+  import('@/routes/profile').then((module) => ({
+    default: module.ProfileRoute,
+  }))
+);
+
+const LazyAccountRoute = lazy(() =>
+  import('@/routes/profile.account').then((module) => ({
+    default: module.AccountRoute,
+  }))
+);
+
+const LazyProfileDeliveryRoute = lazy(() =>
+  import('@/routes/profile.delivery').then((module) => ({
+    default: module.ProfileDeliveryRoute,
   }))
 );
 
@@ -94,7 +124,11 @@ export const { routes, routerConfig } = defineRoutes({
         path: 'orders/:orderId/create',
         params: orderParams,
         search: orderCreateSearch,
-        element: React.createElement(OrderCreateRoute),
+        element: React.createElement(
+          React.Suspense,
+          { fallback: React.createElement(OrderCreateSkeleton) },
+          React.createElement(LazyOrderCreateRoute)
+        ),
         loader: orderCreateLoader,
         action: orderCreateAction,
         hydrateFallback: React.createElement(OrderCreateSkeleton),
@@ -102,7 +136,11 @@ export const { routes, routerConfig } = defineRoutes({
       orderSubmit: {
         path: 'orders/:orderId/submit',
         params: orderParams,
-        element: React.createElement(OrderSubmitRoute),
+        element: React.createElement(
+          React.Suspense,
+          { fallback: React.createElement(OrderDetailSkeleton) },
+          React.createElement(LazyOrderSubmitRoute)
+        ),
         loader: orderSubmitLoader,
         action: orderSubmitAction,
         hydrateFallback: React.createElement(OrderDetailSkeleton),
@@ -115,19 +153,31 @@ export const { routes, routerConfig } = defineRoutes({
       },
       profile: {
         path: 'profile',
-        element: React.createElement(ProfileRoute),
+        element: React.createElement(
+          React.Suspense,
+          { fallback: React.createElement(ProfileSkeleton) },
+          React.createElement(LazyProfileRoute)
+        ),
         loader: profileLoader,
         hydrateFallback: React.createElement(ProfileSkeleton),
       },
       profileDelivery: {
         path: 'profile/delivery',
-        element: React.createElement(ProfileDeliveryRoute),
+        element: React.createElement(
+          React.Suspense,
+          { fallback: React.createElement(ProfileSkeleton) },
+          React.createElement(LazyProfileDeliveryRoute)
+        ),
         loader: profileDeliveryLoader,
         hydrateFallback: React.createElement(ProfileSkeleton),
       },
       profileAccount: {
         path: 'profile/account',
-        element: React.createElement(AccountRoute),
+        element: React.createElement(
+          React.Suspense,
+          { fallback: React.createElement(ProfileSkeleton) },
+          React.createElement(LazyAccountRoute)
+        ),
         loader: accountLoader,
         hydrateFallback: React.createElement(ProfileSkeleton),
       },
