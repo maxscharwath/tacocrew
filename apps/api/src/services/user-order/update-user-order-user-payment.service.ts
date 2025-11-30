@@ -14,14 +14,14 @@ import type { UserId } from '../../schemas/user.schema';
 import type { UserOrder, UserOrderId } from '../../schemas/user-order.schema';
 import { NotFoundError, ValidationError } from '../../shared/utils/errors.utils';
 import { inject } from '../../shared/utils/inject.utils';
-import { PushNotificationService } from '../push-notification/push-notification.service';
+import { NotificationService } from '../notification/notification.service';
 
 @injectable()
 export class UpdateUserOrderUserPaymentStatusUseCase {
   private readonly groupOrderRepository = inject(GroupOrderRepository);
   private readonly userOrderRepository = inject(UserOrderRepository);
   private readonly userRepository = inject(UserRepository);
-  private readonly pushNotificationService = inject(PushNotificationService);
+  private readonly notificationService = inject(NotificationService);
 
   async execute(
     groupOrderId: GroupOrderId,
@@ -63,8 +63,9 @@ export class UpdateUserOrderUserPaymentStatusUseCase {
       // Get leader's language preference for localized notification
       const leaderLanguage = await this.userRepository.getUserLanguage(groupOrder.leaderId);
 
-      this.pushNotificationService
+      this.notificationService
         .sendToUser(groupOrder.leaderId, {
+          type: 'payment_update',
           title: t('notifications.paymentUpdate.title', { lng: leaderLanguage }),
           body: t('notifications.paymentUpdate.body', { lng: leaderLanguage, userName }),
           tag: `payment-${groupOrderId}-${userOrderId}`,
@@ -72,7 +73,6 @@ export class UpdateUserOrderUserPaymentStatusUseCase {
           data: {
             groupOrderId,
             userOrderId,
-            type: 'payment',
           },
         })
         .catch(() => {

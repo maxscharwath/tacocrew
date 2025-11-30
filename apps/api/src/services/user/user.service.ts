@@ -194,7 +194,8 @@ export class UserService {
     return dbGroupOrders.map((go) => {
       const groupOrder = createGroupOrderFromDb(go);
       const leader =
-        go.leader ?? ({ id: go.leaderId, name: null, phone: null, image: null, updatedAt: null } as const);
+        go.leader ??
+        ({ id: go.leaderId, name: null, phone: null, image: null, updatedAt: null } as const);
       const leaderForUrl = {
         id: leader.id as UserId,
         hasImage: Boolean(leader.image),

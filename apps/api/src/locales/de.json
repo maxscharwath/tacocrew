@@ -14,9 +14,23 @@
         "bodyReimbursed": "Ihre Bestellung wurde als zurückerstattet markiert",
         "bodyUpdated": "Der Rückerstattungsstatus Ihrer Bestellung wurde aktualisiert"
       },
+      "paymentReminder": {
+        "title": "Zahlungserinnerung",
+        "body": "{{leaderName}} erinnert dich, für \"{{orderName}}\" zu bezahlen",
+        "defaultOrderName": "die Gruppenbestellung"
+      },
       "test": {
         "title": "Test-Benachrichtigung",
         "body": "Dies ist eine Test-Benachrichtigung von TacoBot!"
+      }
+    },
+    "errors": {
+      "notifications": {
+        "paymentReminder": {
+          "leaderOnly": "Nur der Gruppenleiter kann Zahlungserinnerungen senden",
+          "cannotRemindSelf": "Du kannst dir keine Zahlungserinnerung senden",
+          "alreadyPaid": "Dieser Benutzer hat seine Bestellung bereits als bezahlt markiert"
+        }
       }
     }
   }

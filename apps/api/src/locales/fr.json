@@ -14,9 +14,23 @@
         "bodyReimbursed": "Votre commande a été marquée comme remboursée",
         "bodyUpdated": "Le statut de remboursement de votre commande a été mis à jour"
       },
+      "paymentReminder": {
+        "title": "Rappel de paiement",
+        "body": "{{leaderName}} vous rappelle de payer pour \"{{orderName}}\"",
+        "defaultOrderName": "la commande groupée"
+      },
       "test": {
         "title": "Notification de test",
         "body": "Ceci est une notification de test de TacoBot !"
+      }
+    },
+    "errors": {
+      "notifications": {
+        "paymentReminder": {
+          "leaderOnly": "Seul le responsable du groupe peut envoyer des rappels de paiement",
+          "cannotRemindSelf": "Vous ne pouvez pas vous envoyer un rappel de paiement",
+          "alreadyPaid": "Cet utilisateur a déjà marqué sa commande comme payée"
+        }
       }
     }
   }

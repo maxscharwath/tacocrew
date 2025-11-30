@@ -24,10 +24,10 @@ export async function imageUrlToFile(
     throw new Error(`Failed to fetch image: ${response.statusText}`);
   }
   const blob = await response.blob();
-  
+
   // Determine MIME type from URL or Content-Type header, with fallbacks
   let mimeType = blob.type;
-  
+
   // If blob type is missing or invalid, try to infer from URL
   if (!mimeType || mimeType === 'application/octet-stream' || mimeType.includes('undefined')) {
     if (imageUrl.includes('.webp') || imageUrl.includes('format=webp')) {
@@ -43,6 +43,6 @@ export async function imageUrlToFile(
       mimeType = 'image/webp';
     }
   }
-  
+
   return new File([blob], filename, { type: mimeType });
 }

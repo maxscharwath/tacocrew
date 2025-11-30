@@ -14,9 +14,23 @@
         "bodyReimbursed": "Your order has been marked as reimbursed",
         "bodyUpdated": "Your order reimbursement status has been updated"
       },
+      "paymentReminder": {
+        "title": "Payment Reminder",
+        "body": "{{leaderName}} is reminding you to pay for \"{{orderName}}\"",
+        "defaultOrderName": "the group order"
+      },
       "test": {
         "title": "Test Notification",
         "body": "This is a test notification from TacoBot!"
+      }
+    },
+    "errors": {
+      "notifications": {
+        "paymentReminder": {
+          "leaderOnly": "Only the group leader can send payment reminders",
+          "cannotRemindSelf": "You cannot send a payment reminder to yourself",
+          "alreadyPaid": "This user has already marked their order as paid"
+        }
       }
     }
   }

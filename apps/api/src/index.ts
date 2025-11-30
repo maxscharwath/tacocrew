@@ -7,6 +7,7 @@ import { wrapBetterAuthErrors } from './api/middleware/better-auth-error-wrapper
 import { errorHandler } from './api/middleware/error-handler.middleware';
 import { groupOrderRoutes } from './api/routes/group-order.routes';
 import { healthRoutes } from './api/routes/health.routes';
+import { notificationRoutes } from './api/routes/notification.routes';
 import pushNotificationRoutes from './api/routes/push-notification.routes';
 import { resourceRoutes } from './api/routes/resource.routes';
 import { tacoRoutes } from './api/routes/taco.routes';
@@ -125,7 +126,8 @@ app.route(
     userRoutes,
     groupOrderRoutes,
     userOrderRoutes,
-    pushNotificationRoutes
+    pushNotificationRoutes,
+    notificationRoutes
   )
 );
 

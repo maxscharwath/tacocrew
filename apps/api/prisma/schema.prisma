@@ -68,6 +68,7 @@ model User {
   markedPayments   UserOrder[]           @relation("UserOrderPaidBy")
   deliveryProfiles UserDeliveryProfile[]
   pushSubscriptions PushSubscription[]
+  notifications    Notification[]
 
   passkeys Passkey[]
 
@@ -279,4 +280,27 @@ model PushSubscription {
 
   @@index([userId])
   @@map("push_subscriptions")
+}
+
+model Notification {
+  id         String    @id @default(uuid())
+  userId     String
+  type       String    // payment_reminder, payment_update, reimbursement, order_submitted, etc.
+  title      String
+  body       String
+  url        String?
+  data       Json?     // Additional context (groupOrderId, userOrderId, etc.)
+  read       Boolean   @default(false)
+  readAt     DateTime?
+  archived   Boolean   @default(false)
+  archivedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, read])
+  @@index([userId, archived])
+  @@index([createdAt])
+  @@map("notifications")
 }

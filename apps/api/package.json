@@ -21,12 +21,7 @@
     "test:watch": "vitest",
     "test:ui": "vitest --ui"
   },
-  "keywords": [
-    "tacos",
-    "api",
-    "typescript",
-    "rest-api"
-  ],
+  "keywords": ["tacos", "api", "typescript", "rest-api"],
   "author": "",
   "license": "MIT",
   "dependencies": {

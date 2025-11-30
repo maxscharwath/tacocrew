@@ -18,8 +18,8 @@ import { inject } from '../../shared/utils/inject.utils';
 import { logger } from '../../shared/utils/logger.utils';
 import { calculateTotalPriceFromUserOrders } from '../../shared/utils/order-price.utils';
 import { validateItemAvailability } from '../../shared/utils/order-validation.utils';
+import { NotificationService } from '../notification/notification.service';
 import { BackendOrderSubmissionService } from '../order/backend-order-submission.service';
-import { PushNotificationService } from '../push-notification/push-notification.service';
 import { ResourceService } from '../resource/resource.service';
 
 type SubmissionResult = {
@@ -46,7 +46,7 @@ export class SubmitGroupOrderUseCase {
   private readonly userRepository = inject(UserRepository);
   private readonly resourceService = inject(ResourceService);
   private readonly backendOrderSubmissionService = inject(BackendOrderSubmissionService);
-  private readonly pushNotificationService = inject(PushNotificationService);
+  private readonly notificationService = inject(NotificationService);
 
   async execute(
     groupOrderId: GroupOrderId,
@@ -111,7 +111,7 @@ export class SubmitGroupOrderUseCase {
         const title = t('notifications.orderSubmitted.title', { lng: userLanguage });
         const body = t('notifications.orderSubmitted.body', { lng: userLanguage, orderName });
 
-        await this.pushNotificationService.sendToUser(participantId, {
+        await this.notificationService.sendToUser(participantId, {
           title,
           body,
           tag: `submitted-${groupOrderId}${dryRun ? '-dryrun' : ''}`,

@@ -11,6 +11,7 @@ import {
   useLoaderData,
   useRouteError,
 } from 'react-router';
+import { NotificationBell } from '@/components/notifications/NotificationBell';
 import { Alert, Avatar, Button, Card } from '@/components/ui';
 import { useDeveloperMode } from '@/hooks/useDeveloperMode';
 import { resolveImageUrl } from '@/lib/api';
@@ -109,6 +110,7 @@ export function RootLayout() {
 
             {/* User Actions Section */}
             <div className="flex shrink-0 items-center gap-3">
+              <NotificationBell />
               <Button
                 type="button"
                 variant={isDeveloperMode ? 'primary' : 'ghost'}

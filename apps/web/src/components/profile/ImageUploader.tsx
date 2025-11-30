@@ -12,10 +12,11 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   Button,
+  toast,
 } from '@/components/ui';
-import { ENV } from '@/lib/env';
 import { deleteAvatar, uploadAvatar } from '@/lib/api/user';
 import { imageUrlToFile, PREDEFINED_AVATARS } from '@/lib/avatars';
+import { ENV } from '@/lib/env';
 import { cn } from '@/lib/utils';
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
@@ -90,7 +91,8 @@ export function ImageUploader({ currentImage, onImageUpdate }: ImageUploaderProp
     if (currentImage && typeof currentImage === 'string' && currentImage.trim()) {
       // If it's a relative URL, resolve it to absolute using API base URL or current origin
       if (currentImage.startsWith('/')) {
-        const baseUrl = ENV.apiBaseUrl || (typeof window !== 'undefined' ? window.location.origin : '');
+        const baseUrl =
+          ENV.apiBaseUrl || (typeof window !== 'undefined' ? window.location.origin : '');
         return baseUrl + currentImage;
       }
       return currentImage;
@@ -119,7 +121,8 @@ export function ImageUploader({ currentImage, onImageUpdate }: ImageUploaderProp
         // Resolve relative URLs to absolute using API base URL or current origin
         let resolvedUrl = currentImage;
         if (currentImage.startsWith('/')) {
-          const baseUrl = ENV.apiBaseUrl || (typeof window !== 'undefined' ? window.location.origin : '');
+          const baseUrl =
+            ENV.apiBaseUrl || (typeof window !== 'undefined' ? window.location.origin : '');
           resolvedUrl = baseUrl + currentImage;
         }
         setPreview(resolvedUrl);
@@ -198,6 +201,7 @@ export function ImageUploader({ currentImage, onImageUpdate }: ImageUploaderProp
       setPendingFile(null);
       setPendingAvatarUrl(null);
       setSuccess(true);
+      toast.success(t('account.avatar.uploadSuccess') || 'Profile image uploaded successfully!');
       onImageUpdate?.(endpointUrl);
 
       globalThis.dispatchEvent(
@@ -557,19 +561,16 @@ export function ImageUploader({ currentImage, onImageUpdate }: ImageUploaderProp
             <AlertDialogCancel disabled={isUploading}>
               {t('common.cancel') || 'Cancel'}
             </AlertDialogCancel>
-            <AlertDialogAction variant="destructive" onClick={handleConfirmDelete} disabled={isUploading}>
+            <AlertDialogAction
+              variant="destructive"
+              onClick={handleConfirmDelete}
+              disabled={isUploading}
+            >
               {t('account.avatar.delete') || 'Delete'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-
-      {/* Success Message */}
-      {success && !hasPendingSelection && (
-        <Alert tone="success" className="animate-[fadeIn_0.3s_ease-out]">
-          <span>{t('account.avatar.uploadSuccess') || 'Profile image uploaded successfully!'}</span>
-        </Alert>
-      )}
 
       {/* Error Message */}
       {error && (

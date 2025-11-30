@@ -198,7 +198,8 @@ export function createLazyRoute<Module>(
     });
 
     // Create a component that wraps the lazy component with Suspense
-    element = () => React.createElement(React.Suspense, { fallback }, React.createElement(LazyComponent));
+    element = () =>
+      React.createElement(React.Suspense, { fallback }, React.createElement(LazyComponent));
   }
 
   return {
@@ -291,10 +292,7 @@ export function createRouteBuilders<const T extends Record<string, AnyRouteDef>>
 }
 
 // Create a lazy wrapper that returns a React element
-const createLazyElement = (
-  lazyImport: LazyImport,
-  fallback?: React.ComponentType<unknown>
-) => {
+const createLazyElement = (lazyImport: LazyImport, fallback?: React.ComponentType<unknown>) => {
   const LazyComponent = lazy(lazyImport);
   return React.createElement(
     React.Suspense,
@@ -308,7 +306,12 @@ const createElementFromRouteElement = (element: RouteElement): React.ReactNode =
   if (React.isValidElement(element)) return element;
 
   // Check if this is a lazy route element
-  if (typeof element === 'object' && element !== null && 'type' in element && element.type === 'lazy') {
+  if (
+    typeof element === 'object' &&
+    element !== null &&
+    'type' in element &&
+    element.type === 'lazy'
+  ) {
     const lazyElement = element as LazyRouteElement;
     return createLazyElement(lazyElement.importFn, lazyElement.fallback || lazyFallback);
   }

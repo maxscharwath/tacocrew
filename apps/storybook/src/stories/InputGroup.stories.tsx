@@ -1,23 +1,36 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { useState } from 'react';
-import { Eye, EyeOff, Search, Mail, CreditCard, Copy, Check, DollarSign, User, Lock, Key, Settings, Trash2, RefreshCw } from 'lucide-react';
-import { useCopyFeedback } from '../../../web/src/hooks/useCopyFeedback';
 import {
+  Button,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
   InputGroup,
   InputGroupAddon,
   InputGroupButton,
   InputGroupInput,
   InputGroupText,
   InputGroupTextarea,
-  Button,
 } from '@tacobot/ui-kit';
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@tacobot/ui-kit';
+  Check,
+  Copy,
+  CreditCard,
+  DollarSign,
+  Eye,
+  EyeOff,
+  Key,
+  Lock,
+  Mail,
+  RefreshCw,
+  Search,
+  Settings,
+  Trash2,
+  User,
+} from 'lucide-react';
+import { useState } from 'react';
+import { useCopyFeedback } from '../../../web/src/hooks/useCopyFeedback';
 
 const meta = {
   title: 'UI Kit/Input Group',
@@ -26,7 +39,8 @@ const meta = {
   parameters: {
     docs: {
       description: {
-        component: 'Input groups combine inputs with addons like icons, buttons, and text for enhanced UX.',
+        component:
+          'Input groups combine inputs with addons like icons, buttons, and text for enhanced UX.',
       },
     },
   },
@@ -157,7 +171,9 @@ export const LoadSecretPattern: Story = {
               <InputGroupButton
                 size="icon-xs"
                 variant="ghost"
-                onClick={() => clientIdCopy.copyToClipboard('cl-AbCdEfGhIjKlMnOpQrStUvWxYz1234567890abcdef')}
+                onClick={() =>
+                  clientIdCopy.copyToClipboard('cl-AbCdEfGhIjKlMnOpQrStUvWxYz1234567890abcdef')
+                }
                 title="Copy client ID"
               >
                 {clientIdCopy.isCopied ? (
@@ -223,12 +239,7 @@ export const LoadSecretPattern: Story = {
         <div className="flex justify-end">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-9 w-9 p-0"
-                title="More options"
-              >
+              <Button variant="ghost" size="sm" className="h-9 w-9 p-0" title="More options">
                 <Settings size={18} />
               </Button>
             </DropdownMenuTrigger>
@@ -245,7 +256,6 @@ export const LoadSecretPattern: Story = {
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-
       </div>
     );
   },
@@ -307,16 +317,9 @@ export const WithCopyButton: Story = {
     return (
       <div className="w-full max-w-sm space-y-4">
         <InputGroup>
-          <InputGroupInput
-            value="https://tacobot.com/oauth/client-123"
-            readOnly
-          />
+          <InputGroupInput value="https://tacobot.com/oauth/client-123" readOnly />
           <InputGroupAddon>
-            <InputGroupButton
-              size="icon-xs"
-              variant="ghost"
-              onClick={handleCopy}
-            >
+            <InputGroupButton size="icon-xs" variant="ghost" onClick={handleCopy}>
               {copied ? <Check className="size-4 text-green-500" /> : <Copy className="size-4" />}
             </InputGroupButton>
           </InputGroupAddon>
@@ -330,10 +333,7 @@ export const TextareaWithButtons: Story = {
   render: () => (
     <div className="w-full max-w-md space-y-4">
       <InputGroup>
-        <InputGroupTextarea
-          placeholder="Ask a question about tacos..."
-          className="min-h-[80px]"
-        />
+        <InputGroupTextarea placeholder="Ask a question about tacos..." className="min-h-[80px]" />
         <InputGroupAddon align="block-end">
           <InputGroupButton variant="secondary" size="sm">
             Send
@@ -356,7 +356,7 @@ export const MultipleAddons: Story = {
           <InputGroupText>USD</InputGroupText>
         </InputGroupAddon>
         <InputGroupAddon>
-              <InputGroupButton size="icon-xs">
+          <InputGroupButton size="icon-xs">
             <Check className="size-4 text-green-500" />
           </InputGroupButton>
         </InputGroupAddon>

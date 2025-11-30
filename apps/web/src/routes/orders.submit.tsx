@@ -837,10 +837,12 @@ export function OrderSubmitRoute() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={profileLoading}>
-              {t('common.cancel')}
-            </AlertDialogCancel>
-            <AlertDialogAction variant="destructive" onClick={handleConfirmDeleteProfile} disabled={profileLoading}>
+            <AlertDialogCancel disabled={profileLoading}>{t('common.cancel')}</AlertDialogCancel>
+            <AlertDialogAction
+              variant="destructive"
+              onClick={handleConfirmDeleteProfile}
+              disabled={profileLoading}
+            >
               {t('orders.submit.saved.delete')}
             </AlertDialogAction>
           </AlertDialogFooter>

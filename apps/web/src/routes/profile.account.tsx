@@ -38,6 +38,7 @@ import {
   EmptyState,
   Input,
   PhoneInput,
+  toast,
 } from '@/components/ui';
 import { usePushNotifications } from '@/hooks';
 import {
@@ -46,9 +47,9 @@ import {
   type PushSubscriptionInfo,
   sendTestNotification,
 } from '@/lib/api/push-notifications';
-import { authClient, useSession } from '@/lib/auth-client';
-import { getProfile, updateUserPhone } from '@/lib/api/user';
 import type { UserProfile } from '@/lib/api/types';
+import { getProfile, updateUserPhone } from '@/lib/api/user';
+import { authClient, useSession } from '@/lib/auth-client';
 import { ENV } from '@/lib/env';
 import { routes } from '@/lib/routes';
 import { formatPhoneNumber } from '@/utils/phone-formatter';
@@ -371,15 +372,15 @@ export function AccountRoute() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [passkeys, setPasskeys] = useState<Passkey[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
   const [isRegistering, setIsRegistering] = useState(false);
   const [isTestingNotification, setIsTestingNotification] = useState(false);
   const [pushSubscriptions, setPushSubscriptions] = useState<PushSubscriptionInfo[]>([]);
   const [isLoadingSubscriptions, setIsLoadingSubscriptions] = useState(false);
   const isLoadingRef = useRef(false);
   const [showDeletePasskeyDialog, setShowDeletePasskeyDialog] = useState<string | null>(null);
-  const [showDeleteSubscriptionDialog, setShowDeleteSubscriptionDialog] = useState<string | null>(null);
+  const [showDeleteSubscriptionDialog, setShowDeleteSubscriptionDialog] = useState<string | null>(
+    null
+  );
 
   const {
     isSupported: isPushSupported,
@@ -412,7 +413,7 @@ export function AccountRoute() {
         setPasskeys(passkeysResult.data as unknown as Passkey[]);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : t('account.loadFailed'));
+      toast.error(err instanceof Error ? err.message : t('account.loadFailed'));
     } finally {
       setIsLoading(false);
       isLoadingRef.current = false;
@@ -448,8 +449,6 @@ export function AccountRoute() {
   const handleRegisterPasskey = async () => {
     try {
       setIsRegistering(true);
-      setError(null);
-      setSuccess(null);
 
       const deviceName = `${t('account.passkeys.deviceNamePrefix')} ${new Date().toLocaleDateString()}`;
 
@@ -459,12 +458,12 @@ export function AccountRoute() {
       });
 
       if (result?.error) {
-        setError(result.error.message || t('account.passkeys.registerFailed'));
+        toast.error(result.error.message || t('account.passkeys.registerFailed'));
         setIsRegistering(false);
         return;
       }
 
-      setSuccess(t('account.passkeys.registerSuccess'));
+      toast.success(t('account.passkeys.registerSuccess'));
 
       // Only reload passkeys, not the entire session
       try {
@@ -477,7 +476,7 @@ export function AccountRoute() {
         await loadData();
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : t('account.passkeys.registerFailed'));
+      toast.error(err instanceof Error ? err.message : t('account.passkeys.registerFailed'));
     } finally {
       setIsRegistering(false);
     }
@@ -492,8 +491,6 @@ export function AccountRoute() {
     if (!passkeyId) return;
 
     setShowDeletePasskeyDialog(null);
-    setError(null);
-    setSuccess(null);
 
     // Better Auth doesn't expose delete/update as client methods, use fetch with Better Auth's fetchOptions pattern
     try {
@@ -511,24 +508,24 @@ export function AccountRoute() {
       // Check for explicit errors first
       if (!response.ok) {
         const errorMessage = result?.error?.message || t('account.passkeys.deleteFailed');
-        setError(errorMessage);
+        toast.error(errorMessage);
         return;
       }
 
       // If response is OK but has an error object, treat as failure
       if (result && typeof result === 'object' && result.error) {
         const errorMessage = result.error.message || t('account.passkeys.deleteFailed');
-        setError(errorMessage);
+        toast.error(errorMessage);
         return;
       }
 
       // If response is OK and result is null or success is true, treat as success
       // Better Auth returns null on successful deletion
       if (response.ok && (result === null || result.success !== false)) {
-        setSuccess(t('account.passkeys.deleteSuccess'));
+        toast.success(t('account.passkeys.deleteSuccess'));
       } else {
         // Fallback: if we get here, something unexpected happened
-        setError(t('account.passkeys.deleteFailed'));
+        toast.error(t('account.passkeys.deleteFailed'));
         return;
       }
 
@@ -538,7 +535,7 @@ export function AccountRoute() {
         setPasskeys(passkeysResult.data as unknown as Passkey[]);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : t('account.passkeys.deleteFailed'));
+      toast.error(err instanceof Error ? err.message : t('account.passkeys.deleteFailed'));
     }
   };
 
@@ -548,26 +545,19 @@ export function AccountRoute() {
 
     setShowDeleteSubscriptionDialog(null);
     try {
-      setError(null);
-      setSuccess(null);
       await deletePushSubscription(subscriptionId);
-      setSuccess(t('account.pushNotifications.devices.deleteSuccess'));
+      toast.success(t('account.pushNotifications.devices.deleteSuccess'));
       await loadPushSubscriptions();
       // If this was the current device, refresh subscription status
       await refreshPushStatus();
     } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : t('account.pushNotifications.devices.deleteFailed')
+      toast.error(
+        err instanceof Error ? err.message : t('account.pushNotifications.devices.deleteFailed')
       );
     }
   };
 
   const handleUpdatePasskeyName = async (passkeyId: string, newName: string) => {
-    setError(null);
-    setSuccess(null);
-
     // Better Auth doesn't expose delete/update as client methods, use fetch with Better Auth's fetchOptions pattern
     try {
       const response = await fetch(`${ENV.apiBaseUrl}/api/auth/passkey/update-passkey`, {
@@ -582,16 +572,16 @@ export function AccountRoute() {
       const result = await response.json();
 
       if (!response.ok || result.error) {
-        setError(result.error?.message || t('account.passkeys.updateFailed'));
+        toast.error(result.error?.message || t('account.passkeys.updateFailed'));
         return;
       }
 
-      setSuccess(t('account.passkeys.updateSuccess'));
+      toast.success(t('account.passkeys.updateSuccess'));
 
       // Update the passkey in the local state
       setPasskeys((prev) => prev.map((p) => (p.id === passkeyId ? { ...p, name: newName } : p)));
     } catch (err) {
-      setError(err instanceof Error ? err.message : t('account.passkeys.updateFailed'));
+      toast.error(err instanceof Error ? err.message : t('account.passkeys.updateFailed'));
     }
   };
 
@@ -645,10 +635,6 @@ export function AccountRoute() {
         <p className="mt-2 text-slate-400 text-sm">{t('account.subtitle')}</p>
       </div>
 
-      {error && <Alert tone="error">{error}</Alert>}
-
-      {success && <Alert tone="success">{success}</Alert>}
-
       {/* Profile Image */}
       <div className="rounded-2xl border border-white/10 bg-linear-to-br from-slate-950/70 via-slate-900/60 to-slate-900/40 p-5 shadow-xl">
         <div className="flex flex-col gap-2 text-white">
@@ -681,21 +667,19 @@ export function AccountRoute() {
               currentName={session.user.name}
               onUpdate={async (newName) => {
                 try {
-                  setError(null);
-                  setSuccess(null);
                   const result = await authClient.updateUser({
                     name: newName,
                   });
                   if (result.error) {
-                    setError(result.error.message || t('account.nameUpdate.failed'));
+                    toast.error(result.error.message || t('account.nameUpdate.failed'));
                     return;
                   }
-                  setSuccess(t('account.nameUpdate.success'));
+                  toast.success(t('account.nameUpdate.success'));
                   await loadData(); // Reload to get updated session
                   // Trigger a custom event to notify other components
                   globalThis.dispatchEvent(new CustomEvent('userNameUpdated'));
                 } catch (err) {
-                  setError(err instanceof Error ? err.message : t('account.nameUpdate.failed'));
+                  toast.error(err instanceof Error ? err.message : t('account.nameUpdate.failed'));
                 }
               }}
             />
@@ -723,13 +707,11 @@ export function AccountRoute() {
               currentPhone={profile?.phone}
               onUpdate={async (newPhone) => {
                 try {
-                  setError(null);
-                  setSuccess(null);
                   await updateUserPhone(newPhone);
-                  setSuccess(t('account.phoneUpdate.success'));
+                  toast.success(t('account.phoneUpdate.success'));
                   await loadData();
                 } catch (err) {
-                  setError(err instanceof Error ? err.message : t('account.phoneUpdate.failed'));
+                  toast.error(err instanceof Error ? err.message : t('account.phoneUpdate.failed'));
                 }
               }}
             />
@@ -866,14 +848,12 @@ export function AccountRoute() {
                         <Button
                           onClick={async () => {
                             try {
-                              setError(null);
-                              setSuccess(null);
                               await pushUnsubscribe();
-                              setSuccess(t('account.pushNotifications.unsubscribeSuccess'));
+                              toast.success(t('account.pushNotifications.unsubscribeSuccess'));
                               await refreshPushStatus();
                               await loadPushSubscriptions();
                             } catch (err) {
-                              setError(
+                              toast.error(
                                 err instanceof Error
                                   ? err.message
                                   : t('account.pushNotifications.unsubscribeFailed')
@@ -891,14 +871,12 @@ export function AccountRoute() {
                         <Button
                           onClick={async () => {
                             try {
-                              setError(null);
-                              setSuccess(null);
                               await pushSubscribe();
-                              setSuccess(t('account.pushNotifications.subscribeSuccess'));
+                              toast.success(t('account.pushNotifications.subscribeSuccess'));
                               await refreshPushStatus();
                               await loadPushSubscriptions();
                             } catch (err) {
-                              setError(
+                              toast.error(
                                 err instanceof Error
                                   ? err.message
                                   : t('account.pushNotifications.subscribeFailed')
@@ -935,16 +913,14 @@ export function AccountRoute() {
                         onClick={async () => {
                           try {
                             setIsTestingNotification(true);
-                            setError(null);
-                            setSuccess(null);
                             const result = await sendTestNotification();
                             if (result.success) {
-                              setSuccess(t('account.pushNotifications.test.success'));
+                              toast.success(t('account.pushNotifications.test.success'));
                             } else {
-                              setError(t('account.pushNotifications.test.failed'));
+                              toast.error(t('account.pushNotifications.test.failed'));
                             }
                           } catch (err) {
-                            setError(
+                            toast.error(
                               err instanceof Error
                                 ? err.message
                                 : t('account.pushNotifications.test.failed')
@@ -1071,13 +1047,14 @@ export function AccountRoute() {
       </Card>
 
       {/* Delete Passkey Confirmation Dialog */}
-      <AlertDialog open={showDeletePasskeyDialog !== null} onOpenChange={(open) => !open && setShowDeletePasskeyDialog(null)}>
+      <AlertDialog
+        open={showDeletePasskeyDialog !== null}
+        onOpenChange={(open) => !open && setShowDeletePasskeyDialog(null)}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>{t('account.passkeys.delete')}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {t('account.passkeys.deleteConfirm')}
-            </AlertDialogDescription>
+            <AlertDialogDescription>{t('account.passkeys.deleteConfirm')}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
@@ -1089,7 +1066,10 @@ export function AccountRoute() {
       </AlertDialog>
 
       {/* Delete Subscription Confirmation Dialog */}
-      <AlertDialog open={showDeleteSubscriptionDialog !== null} onOpenChange={(open) => !open && setShowDeleteSubscriptionDialog(null)}>
+      <AlertDialog
+        open={showDeleteSubscriptionDialog !== null}
+        onOpenChange={(open) => !open && setShowDeleteSubscriptionDialog(null)}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>{t('account.pushNotifications.devices.delete')}</AlertDialogTitle>

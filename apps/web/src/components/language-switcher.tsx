@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
-import { SegmentedControl, type SegmentedControlOption, CountryFlag } from '@/components/ui';
+import { CountryFlag, SegmentedControl, type SegmentedControlOption } from '@/components/ui';
 import { updateUserLanguage } from '@/lib/api/user';
-import { languages, type LanguageConfig } from '@/lib/locale.config';
+import { type LanguageConfig, languages } from '@/lib/locale.config';
 
 type LanguageCode = (typeof languages)[number]['code'];
 

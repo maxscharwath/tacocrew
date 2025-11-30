@@ -13,14 +13,14 @@ import type { UserId } from '../../schemas/user.schema';
 import type { UserOrder, UserOrderId } from '../../schemas/user-order.schema';
 import { NotFoundError, ValidationError } from '../../shared/utils/errors.utils';
 import { inject } from '../../shared/utils/inject.utils';
-import { PushNotificationService } from '../push-notification/push-notification.service';
+import { NotificationService } from '../notification/notification.service';
 
 @injectable()
 export class UpdateUserOrderReimbursementStatusUseCase {
   private readonly groupOrderRepository = inject(GroupOrderRepository);
   private readonly userOrderRepository = inject(UserOrderRepository);
   private readonly userRepository = inject(UserRepository);
-  private readonly pushNotificationService = inject(PushNotificationService);
+  private readonly notificationService = inject(NotificationService);
 
   async execute(
     groupOrderId: GroupOrderId,
@@ -54,8 +54,9 @@ export class UpdateUserOrderReimbursementStatusUseCase {
       // Get user's language preference for localized notification
       const userLanguage = await this.userRepository.getUserLanguage(userOrder.userId);
 
-      this.pushNotificationService
+      this.notificationService
         .sendToUser(userOrder.userId, {
+          type: 'reimbursement_update',
           title: t('notifications.reimbursementUpdate.title', { lng: userLanguage }),
           body: reimbursed
             ? t('notifications.reimbursementUpdate.bodyReimbursed', { lng: userLanguage })
@@ -65,7 +66,6 @@ export class UpdateUserOrderReimbursementStatusUseCase {
           data: {
             groupOrderId,
             userOrderId,
-            type: 'reimbursement',
             reimbursed,
           },
         })

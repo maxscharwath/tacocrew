@@ -696,7 +696,12 @@
           "markSelfPaid": "I paid",
           "unmarkSelfPaid": "Undo paid",
           "confirmReceipt": "Confirm",
-          "reopenReceipt": "Undo confirm"
+          "reopenReceipt": "Undo confirm",
+          "sendReminder": "Send Reminder"
+        },
+        "toast": {
+          "reminderSent": "Payment reminder sent!",
+          "reminderFailed": "Failed to send reminder. Please try again."
         },
         "summaryBadge": "Group summary",
         "summaryTitle": "Reimbursement overview",
@@ -949,6 +954,27 @@
       "expired": "This order has closed",
       "notStarted": "This order hasn't started yet",
       "closed": "This order is closed"
+    }
+  },
+  "notifications": {
+    "title": "Notifications",
+    "empty": "All caught up!",
+    "emptyHint": "New notifications will appear here",
+    "emptyArchive": "No archived notifications",
+    "emptyArchiveHint": "Archived notifications will appear here",
+    "markAllRead": "Mark all read",
+    "archive": "Archive",
+    "archiveAll": "Archive all",
+    "close": "Close",
+    "tabs": {
+      "inbox": "Inbox",
+      "archive": "Archive"
+    },
+    "timeAgo": {
+      "justNow": "Just now",
+      "minutes": "{{count}}m ago",
+      "hours": "{{count}}h ago",
+      "days": "{{count}}d ago"
     }
   }
 }

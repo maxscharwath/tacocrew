@@ -14,8 +14,8 @@ import {
   processAvatarImage,
   processProfileImage,
 } from '../../shared/utils/image.utils';
-import { logger } from '../../shared/utils/logger.utils';
 import { inject } from '../../shared/utils/inject.utils';
+import { logger } from '../../shared/utils/logger.utils';
 import { jsonContent, UserSchemas } from '../schemas/user.schemas';
 import { authSecurity, createAuthenticatedRouteApp, requireUserId } from '../utils/route.utils';
 
@@ -404,10 +404,7 @@ app.openapi(
         fileType: typeof file,
         hasArrayBuffer: file && typeof file === 'object' ? 'arrayBuffer' in file : false,
       });
-      return c.json(
-        buildErrorResponse('USER_AVATAR_INVALID', 'Image file is required'),
-        400
-      );
+      return c.json(buildErrorResponse('USER_AVATAR_INVALID', 'Image file is required'), 400);
     }
 
     try {

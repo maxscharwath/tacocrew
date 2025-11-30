@@ -45,7 +45,11 @@ export function useDateFormat() {
   /**
    * Format a date range (start → end)
    */
-  const formatDateTimeRange = (start: DateInput, end: DateInput, separator: string = ' → '): string => {
+  const formatDateTimeRange = (
+    start: DateInput,
+    end: DateInput,
+    separator: string = ' → '
+  ): string => {
     return `${formatDateTime(start)}${separator}${formatDateTime(end)}`;
   };
 

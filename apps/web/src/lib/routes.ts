@@ -23,7 +23,6 @@ import { rootAction, rootLoader } from '@/routes/root.loader';
 import { StockRoute, stockLoader } from '@/routes/stock';
 import { defineRoutes } from './routes/core';
 
-
 const orderParams = z.object({ orderId: z.string().min(1) });
 const loginSearch = z.object({ redirect: z.string().optional() });
 const orderCreateSearch = z.object({
@@ -74,9 +73,10 @@ export const { routes, routerConfig } = defineRoutes({
         params: orderParams,
         element: {
           type: 'lazy',
-          importFn: () => import('@/routes/orders.detail').then((module) => ({
-            default: module.OrderDetailRoute,
-          })),
+          importFn: () =>
+            import('@/routes/orders.detail').then((module) => ({
+              default: module.OrderDetailRoute,
+            })),
           fallback: OrderDetailSkeleton,
         },
         loader: orderDetailLoader,
@@ -90,9 +90,10 @@ export const { routes, routerConfig } = defineRoutes({
         search: orderCreateSearch,
         element: {
           type: 'lazy',
-          importFn: () => import('@/routes/orders.create').then((module) => ({
-            default: module.OrderCreateRoute,
-          })),
+          importFn: () =>
+            import('@/routes/orders.create').then((module) => ({
+              default: module.OrderCreateRoute,
+            })),
           fallback: OrderCreateSkeleton,
         },
         loader: orderCreateLoader,
@@ -104,9 +105,10 @@ export const { routes, routerConfig } = defineRoutes({
         params: orderParams,
         element: {
           type: 'lazy',
-          importFn: () => import('@/routes/orders.submit').then((module) => ({
-            default: module.OrderSubmitRoute,
-          })),
+          importFn: () =>
+            import('@/routes/orders.submit').then((module) => ({
+              default: module.OrderSubmitRoute,
+            })),
           fallback: OrderDetailSkeleton,
         },
         loader: orderSubmitLoader,
@@ -123,9 +125,10 @@ export const { routes, routerConfig } = defineRoutes({
         path: 'profile',
         element: {
           type: 'lazy',
-          importFn: () => import('@/routes/profile').then((module) => ({
-            default: module.ProfileRoute,
-          })),
+          importFn: () =>
+            import('@/routes/profile').then((module) => ({
+              default: module.ProfileRoute,
+            })),
           fallback: ProfileSkeleton,
         },
         loader: profileLoader,
@@ -135,9 +138,10 @@ export const { routes, routerConfig } = defineRoutes({
         path: 'profile/delivery',
         element: {
           type: 'lazy',
-          importFn: () => import('@/routes/profile.delivery').then((module) => ({
-            default: module.ProfileDeliveryRoute,
-          })),
+          importFn: () =>
+            import('@/routes/profile.delivery').then((module) => ({
+              default: module.ProfileDeliveryRoute,
+            })),
           fallback: ProfileSkeleton,
         },
         loader: profileDeliveryLoader,
@@ -147,9 +151,10 @@ export const { routes, routerConfig } = defineRoutes({
         path: 'profile/account',
         element: {
           type: 'lazy',
-          importFn: () => import('@/routes/profile.account').then((module) => ({
-            default: module.AccountRoute,
-          })),
+          importFn: () =>
+            import('@/routes/profile.account').then((module) => ({
+              default: module.AccountRoute,
+            })),
           fallback: ProfileSkeleton,
         },
         loader: accountLoader,

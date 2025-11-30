@@ -22,11 +22,7 @@ type StackedAvatarsProps = {
  * Stacked avatar component for displaying multiple participants
  * Shows overlapping avatars with a count badge if there are more than maxVisible
  */
-export function StackedAvatars({
-  participants,
-  maxVisible = 5,
-  size = 'sm',
-}: StackedAvatarsProps) {
+export function StackedAvatars({ participants, maxVisible = 5, size = 'sm' }: StackedAvatarsProps) {
   if (participants.length === 0) {
     return null;
   }

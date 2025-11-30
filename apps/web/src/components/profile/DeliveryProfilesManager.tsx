@@ -20,11 +20,7 @@ import {
   Label,
   PhoneInput,
 } from '@/components/ui';
-import {
-  getSwissCantons,
-  getSwitzerlandName,
-  SWITZERLAND_COUNTRY,
-} from '@/constants/location';
+import { getSwissCantons, getSwitzerlandName, SWITZERLAND_COUNTRY } from '@/constants/location';
 import { UserApi } from '@/lib/api';
 import type { DeliveryProfile, DeliveryProfilePayload } from '@/lib/api/types';
 import { getInitialDeliveryFormState, profileToForm } from '@/utils/delivery-profile-helpers';
@@ -424,14 +420,10 @@ export function DeliveryProfilesManager({ profiles }: DeliveryProfilesManagerPro
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>{tt('delete')}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {tt('confirmDelete')}
-            </AlertDialogDescription>
+            <AlertDialogDescription>{tt('confirmDelete')}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={busy}>
-              {t('common.cancel')}
-            </AlertDialogCancel>
+            <AlertDialogCancel disabled={busy}>{t('common.cancel')}</AlertDialogCancel>
             <AlertDialogAction variant="destructive" onClick={handleConfirmDelete} disabled={busy}>
               {tt('delete')}
             </AlertDialogAction>

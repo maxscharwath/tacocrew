@@ -21,7 +21,11 @@ export function useLocaleFormatter(defaultCurrency?: string) {
   const formatDateTimeValue = (value: DateInput, options?: Intl.DateTimeFormatOptions) =>
     safeFormat(() => new Intl.DateTimeFormat(i18n.language, options).format(toDate(value)));
 
-  const formatCurrencyValue = (amount: number, currency = defaultCurrency ?? 'CHF', options?: Intl.NumberFormatOptions) =>
+  const formatCurrencyValue = (
+    amount: number,
+    currency = defaultCurrency ?? 'CHF',
+    options?: Intl.NumberFormatOptions
+  ) =>
     new Intl.NumberFormat(i18n.language, {
       style: 'currency',
       currency,

@@ -20,7 +20,7 @@ function ensureValidFile(file: UploadableFile): void {
   if (!file.size || file.size > MAX_FILE_SIZE) {
     throw new Error(`File size exceeds ${(MAX_FILE_SIZE / (1024 * 1024)).toFixed(1)}MB limit`);
   }
-  
+
   // Normalize file type - handle cases where type might be undefined or invalid
   const fileType = file.type?.toLowerCase().trim();
   if (!fileType || fileType === 'undefined' || !VALID_TYPES.has(fileType)) {

@@ -9,6 +9,7 @@ import { GroupOrderIdSchema } from '../../schemas/group-order.schema';
 import type { UserOrder } from '../../schemas/user-order.schema';
 import { UserOrderIdSchema } from '../../schemas/user-order.schema';
 import { SubmitGroupOrderUseCase } from '../../services/group-order/submit-group-order.service';
+import { SendPaymentReminderService } from '../../services/notification/send-payment-reminder.service';
 import { CreateUserOrderUseCase } from '../../services/user-order/create-user-order.service';
 import { DeleteUserOrderUseCase } from '../../services/user-order/delete-user-order.service';
 import { GetUserOrderUseCase } from '../../services/user-order/get-user-order.service';
@@ -275,6 +276,36 @@ app.openapi(
     );
 
     return c.json(serializeUserOrderResponse(userOrder), 200);
+  }
+);
+
+// POST /orders/{id}/items/{itemId}/reimbursement/reminder - Send payment reminder
+app.openapi(
+  createRoute({
+    method: 'post',
+    path: '/orders/{id}/items/{itemId}/reimbursement/reminder',
+    tags: ['Orders'],
+    security: authSecurity,
+    request: {
+      params: z.object({
+        id: GroupOrderIdSchema,
+        itemId: z.string(),
+      }),
+    },
+    responses: {
+      200: {
+        description: 'Payment reminder sent',
+        content: jsonContent(z.object({ success: z.boolean() })),
+      },
+    },
+  }),
+  async (c) => {
+    const requesterId = requireUserId(c);
+    const { id: groupOrderId, itemId } = c.req.valid('param');
+    const userOrderId = UserOrderIdSchema.parse(itemId);
+    const sendReminderService = inject(SendPaymentReminderService);
+    const result = await sendReminderService.execute(groupOrderId, userOrderId, requesterId);
+    return c.json(result, 200);
   }
 );
 

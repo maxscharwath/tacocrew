@@ -679,7 +679,12 @@
           "markSelfPaid": "Ich habe bezahlt",
           "unmarkSelfPaid": "Ich habe nicht bezahlt",
           "confirmReceipt": "Bestätigen",
-          "reopenReceipt": "Bestätigung zurücknehmen"
+          "reopenReceipt": "Bestätigung zurücknehmen",
+          "sendReminder": "Erinnerung senden"
+        },
+        "toast": {
+          "reminderSent": "Zahlungserinnerung gesendet!",
+          "reminderFailed": "Erinnerung konnte nicht gesendet werden. Bitte erneut versuchen."
         },
         "summaryBadge": "Gruppenübersicht",
         "summaryTitle": "Rückzahlungsübersicht",
@@ -936,6 +941,27 @@
       "expired": "Diese Bestellung ist geschlossen",
       "notStarted": "Diese Bestellung hat noch nicht begonnen",
       "closed": "Diese Bestellung ist geschlossen"
+    }
+  },
+  "notifications": {
+    "title": "Benachrichtigungen",
+    "empty": "Alles erledigt!",
+    "emptyHint": "Neue Benachrichtigungen erscheinen hier",
+    "emptyArchive": "Keine archivierten Benachrichtigungen",
+    "emptyArchiveHint": "Archivierte Benachrichtigungen erscheinen hier",
+    "markAllRead": "Alle als gelesen markieren",
+    "archive": "Archivieren",
+    "archiveAll": "Alle archivieren",
+    "close": "Schließen",
+    "tabs": {
+      "inbox": "Posteingang",
+      "archive": "Archiv"
+    },
+    "timeAgo": {
+      "justNow": "Gerade eben",
+      "minutes": "Vor {{count}}m",
+      "hours": "Vor {{count}}h",
+      "days": "Vor {{count}}T"
     }
   }
 }

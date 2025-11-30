@@ -689,7 +689,12 @@
           "markSelfPaid": "J'ai payé",
           "unmarkSelfPaid": "J'ai pas payé",
           "confirmReceipt": "Confirmer",
-          "reopenReceipt": "Annuler"
+          "reopenReceipt": "Annuler",
+          "sendReminder": "Envoyer un rappel"
+        },
+        "toast": {
+          "reminderSent": "Rappel de paiement envoyé !",
+          "reminderFailed": "Échec de l'envoi du rappel. Réessayez."
         },
         "summaryBadge": "Récapitulatif",
         "summaryTitle": "Vue d'ensemble des remboursements",
@@ -942,6 +947,27 @@
       "expired": "Cette commande est fermée",
       "notStarted": "Cette commande n'a pas encore commencé",
       "closed": "Cette commande est fermée"
+    }
+  },
+  "notifications": {
+    "title": "Notifications",
+    "empty": "Vous êtes à jour !",
+    "emptyHint": "Les nouvelles notifications apparaîtront ici",
+    "emptyArchive": "Aucune notification archivée",
+    "emptyArchiveHint": "Les notifications archivées apparaîtront ici",
+    "markAllRead": "Tout marquer lu",
+    "archive": "Archiver",
+    "archiveAll": "Tout archiver",
+    "close": "Fermer",
+    "tabs": {
+      "inbox": "Boîte de réception",
+      "archive": "Archives"
+    },
+    "timeAgo": {
+      "justNow": "À l'instant",
+      "minutes": "Il y a {{count}}m",
+      "hours": "Il y a {{count}}h",
+      "days": "Il y a {{count}}j"
     }
   }
 }

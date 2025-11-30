@@ -2,11 +2,13 @@ import { Phone, ScrollText } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useRevalidator } from 'react-router';
+import { toast } from 'sonner';
 import { Avatar, Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui';
 import { useLocaleFormatter } from '@/hooks/useLocaleFormatter';
 import { calculateOrderPrice } from '@/hooks/useOrderPrice';
 import type { StockResponse } from '@/lib/api';
 import { OrdersApi } from '@/lib/api';
+import { sendPaymentReminder } from '@/lib/api/notifications';
 import type { GroupOrder, UserOrderSummary } from '@/lib/api/types';
 import { formatPhoneNumber } from '@/utils/phone-formatter';
 import {
@@ -29,11 +31,12 @@ type ReceiptViewModel = {
   reimbursementComplete: boolean;
   participantPaid: boolean;
   isLeaderReceipt: boolean;
+  canSendReminder: boolean;
 };
 
 type ProcessingState = {
   userId: string;
-  action: 'reimburse' | 'paid';
+  action: 'reimburse' | 'paid' | 'reminder';
 } | null;
 
 function formatTacoDetails(order: UserOrderSummary['items']['tacos'][number]) {
@@ -164,6 +167,9 @@ export function GroupOrderReceipts({
           ? true
           : group.orders.every((order) => order.participantPayment.paid);
 
+        // Leader can send reminder when order hasn't been confirmed yet (participant might have lied about paying)
+        const canSendReminder = isLeader && !isLeaderReceipt && !reimbursementComplete;
+
         return {
           group,
           items,
@@ -171,6 +177,7 @@ export function GroupOrderReceipts({
           reimbursementComplete,
           participantPaid,
           isLeaderReceipt,
+          canSendReminder,
         } satisfies ReceiptViewModel;
       })
     : [];
@@ -229,6 +236,23 @@ export function GroupOrderReceipts({
     }
   };
 
+  const handleSendReminder = async (userId: string, orders: UserOrderSummary[]) => {
+    setProcessing({ userId, action: 'reminder' });
+    try {
+      // Send reminder for the first order
+      const order = orders[0];
+      if (order) {
+        await sendPaymentReminder(groupOrder.id, order.id);
+        toast.success(t('orders.detail.receipts.toast.reminderSent'));
+      }
+    } catch (error) {
+      console.error('Failed to send payment reminder', error);
+      toast.error(t('orders.detail.receipts.toast.reminderFailed'));
+    } finally {
+      setProcessing(null);
+    }
+  };
+
   // Build ticket entries (React Compiler will memoize automatically)
   const ticketEntries = canRender
     ? receipts.map((receipt, index) => ({
@@ -243,11 +267,13 @@ export function GroupOrderReceipts({
           reimbursementComplete: receipt.reimbursementComplete,
           canShowParticipantAction: receipt.group.userId === currentUserId && !isLeader,
           canShowReimbursementAction: isLeader && !receipt.isLeaderReceipt,
+          canShowSendReminder: receipt.canSendReminder,
         } satisfies ReceiptTicketModel,
         userId: receipt.group.userId,
         orders: receipt.group.orders,
         participantPaid: receipt.participantPaid,
         reimbursementComplete: receipt.reimbursementComplete,
+        canSendReminder: receipt.canSendReminder,
       }))
     : [];
 
@@ -299,7 +325,15 @@ export function GroupOrderReceipts({
 
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
           {ticketEntries.map(
-            ({ key, model, userId, orders, participantPaid, reimbursementComplete }) => (
+            ({
+              key,
+              model,
+              userId,
+              orders,
+              participantPaid,
+              reimbursementComplete,
+              canSendReminder,
+            }) => (
               <ReceiptTicket
                 key={key}
                 ticket={model}
@@ -308,12 +342,18 @@ export function GroupOrderReceipts({
                 feePerPerson={feePerPerson}
                 feeInfo={{ total: totalFee, participants: participantCount }}
                 currency={currency}
-                isBusy={processing?.userId === userId}
+                isBusy={processing?.userId === userId && processing.action !== 'reminder'}
+                isSendingReminder={
+                  processing?.userId === userId && processing.action === 'reminder'
+                }
                 onParticipantToggle={() =>
                   toggleParticipantPayment(userId, orders, !participantPaid)
                 }
                 onReimbursementToggle={() =>
                   toggleReimbursement(userId, orders, !reimbursementComplete)
+                }
+                onSendReminder={
+                  canSendReminder ? () => handleSendReminder(userId, orders) : undefined
                 }
               />
             )

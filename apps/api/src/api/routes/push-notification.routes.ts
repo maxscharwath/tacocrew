@@ -8,7 +8,7 @@ import { z } from 'zod';
 import { PushSubscriptionRepository } from '../../infrastructure/repositories/push-subscription.repository';
 import { UserRepository } from '../../infrastructure/repositories/user.repository';
 import { t } from '../../lib/i18n';
-import { PushNotificationService } from '../../services/push-notification/push-notification.service';
+import { NotificationService } from '../../services/notification/notification.service';
 import { inject } from '../../shared/utils/inject.utils';
 import { logger } from '../../shared/utils/logger.utils';
 import { jsonContent } from '../schemas/shared.schemas';
@@ -117,8 +117,8 @@ app.openapi(
     },
   }),
   (c) => {
-    const pushNotificationService = inject(PushNotificationService);
-    const publicKey = pushNotificationService.getPublicKey();
+    const notificationService = inject(NotificationService);
+    const publicKey = notificationService.getVapidPublicKey();
 
     return c.json({ publicKey }, 200);
   }
@@ -235,7 +235,7 @@ app.openapi(
   }),
   async (c) => {
     const userId = requireUserId(c);
-    const pushNotificationService = inject(PushNotificationService);
+    const notificationService = inject(NotificationService);
     const userRepository = inject(UserRepository);
 
     const userLanguage = await userRepository.getUserLanguage(userId);
@@ -245,16 +245,20 @@ app.openapi(
     const body = t('notifications.test.body', { lng: userLanguage });
     logger.debug('Notification content', { userLanguage, title, body });
 
-    await pushNotificationService.sendToUser(userId, {
-      title,
-      body,
-      tag: 'test-notification',
-      icon: '/icon.png',
-      data: {
+    await notificationService.sendToUser(
+      userId,
+      {
         type: 'test',
-        timestamp: new Date().toISOString(),
+        title,
+        body,
+        tag: 'test-notification',
+        icon: '/icon.png',
+        data: {
+          timestamp: new Date().toISOString(),
+        },
       },
-    });
+      { skipPersist: true } // Don't store test notifications in DB
+    );
 
     return c.json(
       {

@@ -1,4 +1,4 @@
-import { parsePhoneNumberFromString, type CountryCode } from 'libphonenumber-js';
+import { type CountryCode, parsePhoneNumberFromString } from 'libphonenumber-js';
 
 /**
  * Format a phone number for display
@@ -6,7 +6,10 @@ import { parsePhoneNumberFromString, type CountryCode } from 'libphonenumber-js'
  * @param defaultCountry - Default country code if phone number doesn't have country code
  * @returns Formatted phone number (e.g., +41 79 123 45 67) or original if invalid
  */
-export function formatPhoneNumber(phoneNumber: string | null | undefined, defaultCountry: CountryCode = 'CH'): string {
+export function formatPhoneNumber(
+  phoneNumber: string | null | undefined,
+  defaultCountry: CountryCode = 'CH'
+): string {
   if (!phoneNumber) {
     return '';
   }
@@ -21,4 +24,3 @@ export function formatPhoneNumber(phoneNumber: string | null | undefined, defaul
     return phoneNumber;
   }
 }
-

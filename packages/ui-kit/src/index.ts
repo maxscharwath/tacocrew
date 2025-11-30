@@ -32,5 +32,6 @@ export * from './segmented-control';
 export * from './skeleton';
 export * from './status-badge';
 export * from './textarea';
+export * from './toast';
 export * from './tokens';
 export * from './variants';

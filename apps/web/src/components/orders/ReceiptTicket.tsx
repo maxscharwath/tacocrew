@@ -1,5 +1,5 @@
 import type { LucideIcon } from 'lucide-react';
-import { Clock3, RefreshCcw, ShieldCheck, Undo2, Wallet } from 'lucide-react';
+import { Bell, Clock3, RefreshCcw, ShieldCheck, Undo2, Wallet } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Avatar, Badge, Button } from '@/components/ui';
 import { useLocaleFormatter } from '@/hooks/useLocaleFormatter';
@@ -54,6 +54,7 @@ export type ReceiptTicketModel = {
   reimbursementComplete: boolean;
   canShowParticipantAction: boolean;
   canShowReimbursementAction: boolean;
+  canShowSendReminder: boolean;
 };
 
 type ReceiptTicketProps = {
@@ -67,8 +68,10 @@ type ReceiptTicketProps = {
   };
   currency: string;
   isBusy: boolean;
+  isSendingReminder?: boolean;
   onParticipantToggle: () => void;
   onReimbursementToggle: () => void;
+  onSendReminder?: () => void;
 };
 
 export function ReceiptTicket({
@@ -79,8 +82,10 @@ export function ReceiptTicket({
   feeInfo,
   currency,
   isBusy,
+  isSendingReminder,
   onParticipantToggle,
   onReimbursementToggle,
+  onSendReminder,
 }: ReceiptTicketProps) {
   const { t } = useTranslation();
   const { formatCurrency } = useLocaleFormatter(currency);
@@ -156,15 +161,19 @@ export function ReceiptTicket({
           reimbursementComplete={ticket.reimbursementComplete}
           canShowParticipantAction={ticket.canShowParticipantAction}
           canShowReimbursementAction={ticket.canShowReimbursementAction}
+          canShowSendReminder={ticket.canShowSendReminder}
           isBusy={isBusy}
+          isSendingReminder={isSendingReminder}
           labels={{
             markSelfPaid: t('orders.detail.receipts.actions.markSelfPaid'),
             unmarkSelfPaid: t('orders.detail.receipts.actions.unmarkSelfPaid'),
             confirmReceipt: t('orders.detail.receipts.actions.confirmReceipt'),
             reopenReceipt: t('orders.detail.receipts.actions.reopenReceipt'),
+            sendReminder: t('orders.detail.receipts.actions.sendReminder'),
           }}
           onParticipantToggle={onParticipantToggle}
           onReimbursementToggle={onReimbursementToggle}
+          onSendReminder={onSendReminder}
         />
       </div>
     </div>
@@ -239,15 +248,19 @@ type ReceiptActionsProps = {
   reimbursementComplete: boolean;
   canShowParticipantAction: boolean;
   canShowReimbursementAction: boolean;
+  canShowSendReminder: boolean;
   isBusy: boolean;
+  isSendingReminder?: boolean;
   labels: {
     markSelfPaid: string;
     unmarkSelfPaid: string;
     confirmReceipt: string;
     reopenReceipt: string;
+    sendReminder: string;
   };
   onParticipantToggle: () => void;
   onReimbursementToggle: () => void;
+  onSendReminder?: () => void;
 };
 
 function ReceiptActions({
@@ -255,12 +268,15 @@ function ReceiptActions({
   reimbursementComplete,
   canShowParticipantAction,
   canShowReimbursementAction,
+  canShowSendReminder,
   isBusy,
+  isSendingReminder,
   labels,
   onParticipantToggle,
   onReimbursementToggle,
+  onSendReminder,
 }: ReceiptActionsProps) {
-  if (!canShowParticipantAction && !canShowReimbursementAction) {
+  if (!canShowParticipantAction && !canShowReimbursementAction && !canShowSendReminder) {
     return null;
   }
 
@@ -299,6 +315,20 @@ function ReceiptActions({
               <ShieldCheck className="h-3.5 w-3.5" />
             )}
             <span>{reimbursementComplete ? labels.reopenReceipt : labels.confirmReceipt}</span>
+          </div>
+        </Button>
+      )}
+      {canShowSendReminder && onSendReminder && (
+        <Button
+          size="sm"
+          variant="ghost"
+          disabled={isBusy || isSendingReminder}
+          onClick={onSendReminder}
+          className={`${ACTION_BUTTON_CLASS} border-amber-400/50 text-amber-100`}
+        >
+          <div className="flex items-center gap-2">
+            <Bell className="h-3.5 w-3.5" />
+            <span>{labels.sendReminder}</span>
           </div>
         </Button>
       )}

@@ -1,3 +1,4 @@
+import { Toaster } from '@tacobot/ui-kit';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { RouterProvider } from 'react-router';
@@ -15,5 +16,6 @@ if (!root) {
 ReactDOM.createRoot(root).render(
   <React.StrictMode>
     <RouterProvider router={router} />
+    <Toaster position="bottom-right" />
   </React.StrictMode>
 );
