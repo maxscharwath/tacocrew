@@ -8,7 +8,7 @@ type LanguageCode = (typeof languages)[number]['code'];
 const options: SegmentedControlOption<LanguageCode>[] = languages.map((language) => {
   const lang = language as LanguageConfig & { countryCode: string };
   return {
-    value: lang.code as LanguageCode,
+    value: lang.code,
     label: (
       <>
         <CountryFlag countryCode={lang.countryCode} size="sm" />

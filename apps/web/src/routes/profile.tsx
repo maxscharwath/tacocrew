@@ -1,9 +1,8 @@
-import { Award, Settings, Truck } from 'lucide-react';
+import { Settings, Truck } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link, type LoaderFunctionArgs, useLoaderData } from 'react-router';
 import { TacoCard } from '@/components/orders/TacoCard';
 import {
-  Avatar,
   Badge,
   Button,
   Card,

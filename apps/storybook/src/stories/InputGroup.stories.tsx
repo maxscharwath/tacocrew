@@ -17,7 +17,6 @@ import {
   Check,
   Copy,
   CreditCard,
-  DollarSign,
   Eye,
   EyeOff,
   Key,

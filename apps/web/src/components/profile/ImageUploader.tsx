@@ -41,8 +41,8 @@ const PRESET_COLORS = [
 ] as const;
 
 interface ImageUploaderProps {
-  currentImage?: string | null;
-  onImageUpdate?: (image: string | null) => void;
+  readonly currentImage?: string | null;
+  readonly onImageUpdate?: (image: string | null) => void;
 }
 
 /**
@@ -59,9 +59,9 @@ function getIconColorForBackground(backgroundColor: string): string {
   }
 
   // Parse hex to RGB
-  const r = parseInt(hex.length === 3 ? hex[0] + hex[0] : hex.substring(0, 2), 16);
-  const g = parseInt(hex.length === 3 ? hex[1] + hex[1] : hex.substring(2, 4), 16);
-  const b = parseInt(hex.length === 3 ? hex[2] + hex[2] : hex.substring(4, 6), 16);
+  const r = Number.parseInt(hex.length === 3 ? hex[0] + hex[0] : hex.substring(0, 2), 16);
+  const g = Number.parseInt(hex.length === 3 ? hex[1] + hex[1] : hex.substring(2, 4), 16);
+  const b = Number.parseInt(hex.length === 3 ? hex[2] + hex[2] : hex.substring(4, 6), 16);
 
   // Calculate relative luminance
   const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
@@ -92,7 +92,7 @@ export function ImageUploader({ currentImage, onImageUpdate }: ImageUploaderProp
       // If it's a relative URL, resolve it to absolute using API base URL or current origin
       if (currentImage.startsWith('/')) {
         const baseUrl =
-          ENV.apiBaseUrl || (typeof window !== 'undefined' ? window.location.origin : '');
+          ENV.apiBaseUrl || (typeof globalThis.window !== 'undefined' ? globalThis.location.origin : '');
         return baseUrl + currentImage;
       }
       return currentImage;
@@ -122,7 +122,7 @@ export function ImageUploader({ currentImage, onImageUpdate }: ImageUploaderProp
         let resolvedUrl = currentImage;
         if (currentImage.startsWith('/')) {
           const baseUrl =
-            ENV.apiBaseUrl || (typeof window !== 'undefined' ? window.location.origin : '');
+            ENV.apiBaseUrl || (typeof globalThis.window !== 'undefined' ? globalThis.location.origin : '');
           resolvedUrl = baseUrl + currentImage;
         }
         setPreview(resolvedUrl);

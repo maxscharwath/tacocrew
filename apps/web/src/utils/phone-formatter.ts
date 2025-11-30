@@ -16,7 +16,7 @@ export function formatPhoneNumber(
 
   try {
     const phoneNumberObj = parsePhoneNumberFromString(phoneNumber, defaultCountry);
-    if (!phoneNumberObj || !phoneNumberObj.isValid()) {
+    if (!phoneNumberObj?.isValid()) {
       return phoneNumber;
     }
     return phoneNumberObj.formatInternational();

@@ -3,7 +3,6 @@ import {
   DEFAULT_CANTON_CODE,
   SWISS_CANTON_CODES,
   SWITZERLAND_COUNTRY,
-  SwissCanton,
 } from '@/constants/location';
 import type { DeliveryProfile, DeliveryProfilePayload } from '@/lib/api/types';
 

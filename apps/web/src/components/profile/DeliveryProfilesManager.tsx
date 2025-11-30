@@ -1,4 +1,4 @@
-import { Globe, Hash, MapPin, Phone, Tag, Trash2, User } from 'lucide-react';
+import { Globe, Hash, MapPin, Tag, Trash2, User } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { DeliveryTypeSelector } from '@/components/orders/DeliveryTypeSelector';
@@ -13,14 +13,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   Button,
-  Input,
   InputGroup,
   InputGroupAddon,
   InputGroupInput,
   Label,
   PhoneInput,
 } from '@/components/ui';
-import { getSwissCantons, getSwitzerlandName, SWITZERLAND_COUNTRY } from '@/constants/location';
+import { getSwissCantons, getSwitzerlandName } from '@/constants/location';
 import { UserApi } from '@/lib/api';
 import type { DeliveryProfile, DeliveryProfilePayload } from '@/lib/api/types';
 import { getInitialDeliveryFormState, profileToForm } from '@/utils/delivery-profile-helpers';

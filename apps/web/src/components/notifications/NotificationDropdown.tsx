@@ -27,8 +27,8 @@ import {
 import { cn } from '@/lib/utils';
 
 interface NotificationDropdownProps {
-  onClose: () => void;
-  onMarkAsRead: () => void;
+  readonly onClose: () => void;
+  readonly onMarkAsRead: () => void;
 }
 
 type TabValue = 'inbox' | 'archive';
@@ -63,14 +63,14 @@ function NotificationItem({
   canArchive,
   formatRelativeTime,
   archiveLabel,
-}: {
+}: Readonly<{
   notification: Notification;
   onArchive: (id: string) => void;
   onClick: (notification: Notification) => void;
   canArchive: boolean;
   formatRelativeTime: (date: string) => string;
   archiveLabel: string;
-}) {
+}>) {
   const [isArchiving, setIsArchiving] = useState(false);
   const { icon: Icon, color } = NOTIFICATION_ICONS[notification.type] ?? DEFAULT_ICON;
 
@@ -140,7 +140,7 @@ function NotificationItem({
   );
 }
 
-function CountBadge({ count, variant }: { count: number; variant: 'unread' | 'muted' }) {
+function CountBadge({ count, variant }: Readonly<{ count: number; variant: 'unread' | 'muted' }>) {
   if (count === 0) return null;
 
   const styles =

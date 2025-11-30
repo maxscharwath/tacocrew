@@ -63,7 +63,7 @@ export function processPageResults<T extends { id: string }>(
 ): { pageItems: T[]; hasMore: boolean; nextCursor: string | null } {
   const hasMore = items.length > limit;
   const pageItems = hasMore ? items.slice(0, -1) : items;
-  const lastItem = pageItems[pageItems.length - 1];
+  const lastItem = pageItems.at(-1);
   const nextCursor = hasMore && lastItem ? lastItem.id : null;
 
   return { pageItems, hasMore, nextCursor };
@@ -95,7 +95,7 @@ export function parsePaginationParams(query: {
 }): PaginationOptions {
   const limit =
     typeof query.limit === 'string'
-      ? normalizeLimit(parseInt(query.limit, 10))
+      ? normalizeLimit(Number.parseInt(query.limit, 10))
       : normalizeLimit(query.limit);
 
   return {

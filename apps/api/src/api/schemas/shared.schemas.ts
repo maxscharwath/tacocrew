@@ -26,7 +26,7 @@ export const CursorPaginationQuerySchema = z.object({
   limit: z
     .string()
     .optional()
-    .transform((v) => (v ? Math.min(Math.max(parseInt(v, 10), 1), 100) : 20))
+    .transform((v) => (v ? Math.min(Math.max(Number.parseInt(v, 10), 1), 100) : 20))
     .describe('Number of items per page (1-100, default: 20)'),
   cursor: z.string().optional().describe('Cursor for the next page'),
 });

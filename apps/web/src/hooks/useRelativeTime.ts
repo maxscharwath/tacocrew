@@ -1,5 +1,26 @@
 import { useTranslation } from 'react-i18next';
 
+function getTimeDiff(dateInput: string | Date) {
+  const date = typeof dateInput === 'string' ? new Date(dateInput) : dateInput;
+
+  if (Number.isNaN(date.getTime())) {
+    return null;
+  }
+
+  const now = new Date();
+  const diffMs = date.getTime() - now.getTime();
+
+  return {
+    seconds: Math.round(diffMs / 1000),
+    minutes: Math.round(diffMs / 60000),
+    hours: Math.round(diffMs / 3600000),
+    days: Math.round(diffMs / 86400000),
+    weeks: Math.round(diffMs / 604800000),
+    months: Math.round(diffMs / 2592000000),
+    years: Math.round(diffMs / 31536000000),
+  };
+}
+
 /**
  * Hook for formatting relative time using the native Intl.RelativeTimeFormat API
  * Automatically uses the current i18n language for localization
@@ -23,31 +44,10 @@ export function useRelativeTime() {
     style: 'short',
   });
 
-  function getTimeDiff(dateInput: string | Date) {
-    const date = typeof dateInput === 'string' ? new Date(dateInput) : dateInput;
-
-    if (Number.isNaN(date.getTime())) {
-      return null;
-    }
-
-    const now = new Date();
-    const diffMs = date.getTime() - now.getTime();
-
-    return {
-      seconds: Math.round(diffMs / 1000),
-      minutes: Math.round(diffMs / 60000),
-      hours: Math.round(diffMs / 3600000),
-      days: Math.round(diffMs / 86400000),
-      weeks: Math.round(diffMs / 604800000),
-      months: Math.round(diffMs / 2592000000),
-      years: Math.round(diffMs / 31536000000),
-    };
-  }
-
   /**
    * Format a date as relative time (e.g., "il y a 2 minutes", "yesterday")
    */
-  function formatRelativeTime(dateInput: string | Date): string {
+  const formatRelativeTime = (dateInput: string | Date): string => {
     const diff = getTimeDiff(dateInput);
     if (!diff) return '—';
 
@@ -60,12 +60,12 @@ export function useRelativeTime() {
     if (Math.abs(weeks) < 4) return formatter.format(weeks, 'week');
     if (Math.abs(months) < 12) return formatter.format(months, 'month');
     return formatter.format(years, 'year');
-  }
+  };
 
   /**
    * Format a date as relative time with short style (e.g., "il y a 2 min")
    */
-  function formatRelativeTimeShort(dateInput: string | Date): string {
+  const formatRelativeTimeShort = (dateInput: string | Date): string => {
     const diff = getTimeDiff(dateInput);
     if (!diff) return '—';
 
@@ -78,7 +78,7 @@ export function useRelativeTime() {
     if (Math.abs(weeks) < 4) return shortFormatter.format(weeks, 'week');
     if (Math.abs(months) < 12) return shortFormatter.format(months, 'month');
     return shortFormatter.format(years, 'year');
-  }
+  };
 
   return {
     formatRelativeTime,

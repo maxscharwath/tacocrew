@@ -32,6 +32,11 @@ const NotificationSchema = z.object({
 
 const NotificationPageSchema = createPageSchema(NotificationSchema);
 
+// Shared response schemas to reduce duplication
+const ErrorResponseSchema = z.object({ error: z.string() });
+const SuccessCountResponseSchema = z.object({ success: z.boolean(), count: z.number() });
+const NotificationIdParamSchema = z.object({ id: z.string() });
+
 /** Transform NotificationRecord to JSON response */
 function toNotificationJson(n: {
   id: string;
@@ -138,9 +143,7 @@ app.openapi(
     tags: ['Notifications'],
     security: authSecurity,
     request: {
-      params: z.object({
-        id: z.string(),
-      }),
+      params: NotificationIdParamSchema,
     },
     responses: {
       200: {
@@ -149,11 +152,7 @@ app.openapi(
       },
       404: {
         description: 'Notification not found',
-        content: jsonContent(
-          z.object({
-            error: z.string(),
-          })
-        ),
+        content: jsonContent(ErrorResponseSchema),
       },
     },
   }),
@@ -182,12 +181,7 @@ app.openapi(
     responses: {
       200: {
         description: 'All notifications marked as read',
-        content: jsonContent(
-          z.object({
-            success: z.boolean(),
-            count: z.number(),
-          })
-        ),
+        content: jsonContent(SuccessCountResponseSchema),
       },
     },
   }),
@@ -209,9 +203,7 @@ app.openapi(
     tags: ['Notifications'],
     security: authSecurity,
     request: {
-      params: z.object({
-        id: z.string(),
-      }),
+      params: NotificationIdParamSchema,
     },
     responses: {
       200: {
@@ -220,7 +212,7 @@ app.openapi(
       },
       404: {
         description: 'Notification not found',
-        content: jsonContent(z.object({ error: z.string() })),
+        content: jsonContent(ErrorResponseSchema),
       },
     },
   }),
@@ -249,12 +241,7 @@ app.openapi(
     responses: {
       200: {
         description: 'All notifications archived',
-        content: jsonContent(
-          z.object({
-            success: z.boolean(),
-            count: z.number(),
-          })
-        ),
+        content: jsonContent(SuccessCountResponseSchema),
       },
     },
   }),

@@ -475,19 +475,19 @@ app.openapi(
         w: z
           .string()
           .optional()
-          .transform((val) => (val ? parseInt(val, 10) : undefined)),
+          .transform((val) => (val ? Number.parseInt(val, 10) : undefined)),
         h: z
           .string()
           .optional()
-          .transform((val) => (val ? parseInt(val, 10) : undefined)),
+          .transform((val) => (val ? Number.parseInt(val, 10) : undefined)),
         size: z
           .string()
           .optional()
-          .transform((val) => (val ? parseInt(val, 10) : undefined)),
+          .transform((val) => (val ? Number.parseInt(val, 10) : undefined)),
         dpr: z
           .string()
           .optional()
-          .transform((val) => (val ? parseFloat(val) : undefined)),
+          .transform((val) => (val ? Number.parseFloat(val) : undefined)),
         v: z.string().optional(), // Version parameter for cache busting (ignored but allowed)
       }),
     },

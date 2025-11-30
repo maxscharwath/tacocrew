@@ -24,7 +24,7 @@ export function resolveImageUrl(
   // Handle both absolute and relative URLs
   const baseUrl = imageUrl.startsWith('http')
     ? undefined
-    : (ENV.apiBaseUrl ?? window.location.origin);
+    : (ENV.apiBaseUrl ?? globalThis.location.origin);
   const url = baseUrl ? new URL(imageUrl, baseUrl) : new URL(imageUrl);
 
   // Clear size/dpr params

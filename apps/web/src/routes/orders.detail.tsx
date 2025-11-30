@@ -199,10 +199,6 @@ function OrderDetailContent({
   const canAddOrders = groupOrder.canAcceptOrders;
   const canSubmit = isLeader && groupOrder.canSubmitGroupOrder;
   const isSubmitted = groupOrder.status === 'submitted' || groupOrder.status === 'completed';
-  const canManageStatus =
-    isLeader &&
-    ((groupOrder.status !== 'submitted' && groupOrder.status !== 'completed') ||
-      (isDeveloperMode && isSubmitted));
   const isClosedManually = groupOrder.status === 'closed';
   const statusIntent =
     isClosedManually || (isDeveloperMode && isSubmitted)
@@ -223,7 +219,6 @@ function OrderDetailContent({
         canAddOrders={canAddOrders}
         canSubmit={canSubmit}
         orderId={params.orderId ?? ''}
-        canManageStatus={canManageStatus}
         statusIntent={statusIntent}
         isClosedManually={isClosedManually}
         isSubmitting={isSubmitting}

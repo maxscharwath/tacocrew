@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import { cn } from '../utils';
 
-type CountryFlagProps = {
+type CountryFlagProps = Readonly<{
   countryCode: string;
   size?: 'sm' | 'md';
   className?: string;
-};
+}>;
 
 export function CountryFlag({ countryCode, size = 'md', className }: CountryFlagProps) {
   const [FlagComponent, setFlagComponent] = useState<React.ComponentType<{ title?: string; className?: string }> | null>(null);

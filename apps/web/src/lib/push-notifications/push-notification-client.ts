@@ -48,14 +48,14 @@ export class PushNotificationClient {
    * Check if push notifications are supported in this browser
    */
   static isSupported(): boolean {
-    return 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
+    return 'serviceWorker' in navigator && 'PushManager' in globalThis && 'Notification' in globalThis;
   }
 
   /**
    * Check if notification permission is granted
    */
   static getPermission(): NotificationPermission {
-    if (!('Notification' in window)) {
+    if (!('Notification' in globalThis)) {
       return 'denied';
     }
     return Notification.permission;
@@ -65,7 +65,7 @@ export class PushNotificationClient {
    * Request notification permission
    */
   static async requestPermission(): Promise<NotificationPermission> {
-    if (!('Notification' in window)) {
+    if (!('Notification' in globalThis)) {
       throw new PushNotificationError('Notifications are not supported');
     }
 
@@ -268,13 +268,13 @@ export class PushNotificationClient {
    */
   private urlBase64ToUint8Array(base64String: string): Uint8Array {
     const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
-    const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+    const base64 = (base64String + padding).replaceAll('-', '+').replaceAll('_', '/');
 
-    const rawData = window.atob(base64);
+    const rawData = globalThis.atob(base64);
     const outputArray = new Uint8Array(rawData.length);
 
     for (let i = 0; i < rawData.length; ++i) {
-      outputArray[i] = rawData.charCodeAt(i);
+      outputArray[i] = rawData.codePointAt(i) ?? 0;
     }
     return outputArray;
   }
@@ -286,9 +286,9 @@ export class PushNotificationClient {
     const bytes = new Uint8Array(buffer);
     let binary = '';
     for (let i = 0; i < bytes.byteLength; i++) {
-      binary += String.fromCharCode(bytes[i]);
+      binary += String.fromCodePoint(bytes[i]);
     }
-    return window.btoa(binary);
+    return globalThis.btoa(binary);
   }
 }
 
@@ -299,8 +299,6 @@ let clientInstance: PushNotificationClient | null = null;
  * Get or create the push notification client instance
  */
 export function getPushNotificationClient(): PushNotificationClient {
-  if (!clientInstance) {
-    clientInstance = new PushNotificationClient();
-  }
+  clientInstance ??= new PushNotificationClient();
   return clientInstance;
 }

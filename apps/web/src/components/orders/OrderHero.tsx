@@ -41,7 +41,6 @@ type OrderHeroProps = {
   readonly canAddOrders: boolean;
   readonly canSubmit: boolean;
   readonly orderId: string;
-  readonly canManageStatus?: boolean;
   readonly statusIntent?: 'close-group-order' | 'reopen-group-order';
   readonly isClosedManually?: boolean;
   readonly isSubmitting?: boolean;

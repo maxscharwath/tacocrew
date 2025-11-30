@@ -5,7 +5,8 @@
  */
 
 import { CheckCircle2, Info, Loader2, OctagonX, TriangleAlert } from 'lucide-react';
-import { Toaster as Sonner, toast, type ToasterProps, type ExternalToast } from 'sonner';
+import { Toaster as Sonner, type ToasterProps } from 'sonner';
+export { toast, type ToasterProps, type ExternalToast } from 'sonner';
 
 const Toaster = ({ ...props }: ToasterProps) => {
   return (
@@ -46,5 +47,5 @@ const Toaster = ({ ...props }: ToasterProps) => {
   );
 };
 
-export { Toaster, toast, type ToasterProps, type ExternalToast };
+export { Toaster };
 

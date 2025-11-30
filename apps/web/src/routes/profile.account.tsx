@@ -12,7 +12,7 @@ import {
   User,
   X,
 } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { type LoaderFunctionArgs, redirect } from 'react-router';
 import { LanguageSwitcher } from '@/components/language-switcher';
@@ -54,6 +54,92 @@ import { ENV } from '@/lib/env';
 import { routes } from '@/lib/routes';
 import { formatPhoneNumber } from '@/utils/phone-formatter';
 
+// Reusable hook for editable field logic
+function useEditableField<T extends string | null | undefined>(
+  currentValue: T,
+  onUpdate: (value: T) => Promise<void>,
+  defaultValue: string = ''
+) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [value, setValue] = useState(currentValue ?? defaultValue);
+  const [isSaving, setIsSaving] = useState(false);
+
+  useEffect(() => {
+    setValue((currentValue ?? defaultValue) as string);
+  }, [currentValue, defaultValue]);
+
+  const handleSave = useCallback(async (transformedValue?: T) => {
+    setIsSaving(true);
+    try {
+      await onUpdate(transformedValue ?? value as T);
+      setIsEditing(false);
+    } finally {
+      setIsSaving(false);
+    }
+  }, [onUpdate, value]);
+
+  const handleCancel = useCallback(() => {
+    setValue((currentValue ?? defaultValue) as string);
+    setIsEditing(false);
+  }, [currentValue, defaultValue]);
+
+  const startEditing = useCallback(() => setIsEditing(true), []);
+
+  return {
+    isEditing,
+    isSaving,
+    value,
+    setValue,
+    handleSave,
+    handleCancel,
+    startEditing,
+  };
+}
+
+// Reusable edit action buttons
+function EditActionButtons({
+  isSaving,
+  onSave,
+  onCancel,
+  saveDisabled,
+  size = 'sm',
+}: Readonly<{
+  isSaving: boolean;
+  onSave: () => void;
+  onCancel: () => void;
+  saveDisabled?: boolean;
+  size?: 'sm' | 'xs';
+}>) {
+  const { t } = useTranslation();
+  const buttonClass = size === 'sm' ? 'h-11 w-11 p-0' : 'h-9 w-9 p-0';
+  const iconSize = size === 'sm' ? 16 : 14;
+
+  return (
+    <>
+      <Button
+        onClick={onSave}
+        disabled={isSaving || saveDisabled}
+        variant="primary"
+        size="sm"
+        className={buttonClass}
+        title={isSaving ? t('account.saving') : t('account.save')}
+      >
+        {isSaving ? <RefreshCw size={iconSize} className="animate-spin" /> : <Check size={iconSize} />}
+      </Button>
+      <Button
+        onClick={onCancel}
+        disabled={isSaving}
+        variant="outline"
+        size="sm"
+        className={buttonClass}
+        title={t('account.cancel')}
+      >
+        <X size={iconSize} />
+      </Button>
+    </>
+  );
+}
+
 function PhoneEditor({
   currentPhone,
   onUpdate,
@@ -62,28 +148,17 @@ function PhoneEditor({
   onUpdate: (phone: string | null) => Promise<void>;
 }>) {
   const { t } = useTranslation();
-  const [isEditing, setIsEditing] = useState(false);
-  const [phone, setPhone] = useState(currentPhone ?? '');
-  const [isSaving, setIsSaving] = useState(false);
-
-  useEffect(() => {
-    setPhone(currentPhone ?? '');
-  }, [currentPhone]);
-
-  const handleSave = async () => {
-    setIsSaving(true);
-    try {
-      await onUpdate(phone.trim() || null);
-      setIsEditing(false);
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  const handleCancel = () => {
-    setPhone(currentPhone ?? '');
-    setIsEditing(false);
-  };
+  const {
+    isEditing,
+    isSaving,
+    value: phone,
+    setValue: setPhone,
+    handleSave,
+    handleCancel,
+    startEditing,
+  } = useEditableField(currentPhone, async () => {
+    await onUpdate(phone.trim() || null);
+  });
 
   if (isEditing) {
     return (
@@ -97,7 +172,7 @@ function PhoneEditor({
         <div className="flex items-center gap-2">
           <PhoneInput
             value={phone}
-            onChange={(value) => setPhone(value)}
+            onChange={setPhone}
             defaultCountry="CH"
             onKeyDown={(e) => {
               if (e.key === 'Enter') {
@@ -109,26 +184,11 @@ function PhoneEditor({
             disabled={isSaving}
             className="flex-1"
           />
-          <Button
-            onClick={handleSave}
-            disabled={isSaving}
-            variant="primary"
-            size="sm"
-            className="h-11 w-11 p-0"
-            title={isSaving ? t('account.saving') : t('account.save')}
-          >
-            {isSaving ? <RefreshCw size={16} className="animate-spin" /> : <Check size={16} />}
-          </Button>
-          <Button
-            onClick={handleCancel}
-            disabled={isSaving}
-            variant="outline"
-            size="sm"
-            className="h-11 w-11 p-0"
-            title={t('account.cancel')}
-          >
-            <X size={16} />
-          </Button>
+          <EditActionButtons
+            isSaving={isSaving}
+            onSave={() => void handleSave()}
+            onCancel={handleCancel}
+          />
         </div>
       </div>
     );
@@ -146,7 +206,7 @@ function PhoneEditor({
         <div className="flex-1 text-white">
           {currentPhone ? formatPhoneNumber(currentPhone) : t('account.profile.phoneNotSet')}
         </div>
-        <Button onClick={() => setIsEditing(true)} variant="outline" size="sm" className="gap-2">
+        <Button onClick={startEditing} variant="outline" size="sm" className="gap-2">
           <Edit size={14} />
           {t('account.edit')}
         </Button>
@@ -163,31 +223,19 @@ function NameEditor({
   onUpdate: (name: string) => Promise<void>;
 }>) {
   const { t } = useTranslation();
-  const [isEditing, setIsEditing] = useState(false);
-  const [name, setName] = useState(currentName);
-  const [isSaving, setIsSaving] = useState(false);
-
-  useEffect(() => {
-    setName(currentName);
-  }, [currentName]);
-
-  const handleSave = async () => {
-    if (!name.trim()) {
-      return;
-    }
-    setIsSaving(true);
-    try {
+  const {
+    isEditing,
+    isSaving,
+    value: name,
+    setValue: setName,
+    handleSave,
+    handleCancel,
+    startEditing,
+  } = useEditableField(currentName, async () => {
+    if (name.trim()) {
       await onUpdate(name.trim());
-      setIsEditing(false);
-    } finally {
-      setIsSaving(false);
     }
-  };
-
-  const handleCancel = () => {
-    setName(currentName);
-    setIsEditing(false);
-  };
+  });
 
   if (isEditing) {
     return (
@@ -214,26 +262,12 @@ function NameEditor({
             disabled={isSaving}
             className="flex-1"
           />
-          <Button
-            onClick={handleSave}
-            disabled={isSaving || !name.trim()}
-            variant="primary"
-            size="sm"
-            className="h-11 w-11 p-0"
-            title={isSaving ? t('account.saving') : t('account.save')}
-          >
-            {isSaving ? <RefreshCw size={16} className="animate-spin" /> : <Check size={16} />}
-          </Button>
-          <Button
-            onClick={handleCancel}
-            disabled={isSaving}
-            variant="outline"
-            size="sm"
-            className="h-11 w-11 p-0"
-            title={t('account.cancel')}
-          >
-            <X size={16} />
-          </Button>
+          <EditActionButtons
+            isSaving={isSaving}
+            onSave={() => void handleSave()}
+            onCancel={handleCancel}
+            saveDisabled={!name.trim()}
+          />
         </div>
       </div>
     );
@@ -249,7 +283,7 @@ function NameEditor({
       </label>
       <div className="flex items-center gap-2">
         <div className="flex-1 text-white">{currentName}</div>
-        <Button onClick={() => setIsEditing(true)} variant="outline" size="sm" className="gap-2">
+        <Button onClick={startEditing} variant="outline" size="sm" className="gap-2">
           <Edit size={14} />
           {t('account.edit')}
         </Button>
@@ -268,28 +302,17 @@ function PasskeyNameEditor({
   placeholder: string;
 }>) {
   const { t } = useTranslation();
-  const [isEditing, setIsEditing] = useState(false);
-  const [name, setName] = useState(currentName || '');
-  const [isSaving, setIsSaving] = useState(false);
-
-  useEffect(() => {
-    setName(currentName || '');
-  }, [currentName]);
-
-  const handleSave = async () => {
-    setIsSaving(true);
-    try {
-      await onUpdate(name.trim() || placeholder);
-      setIsEditing(false);
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  const handleCancel = () => {
-    setName(currentName || '');
-    setIsEditing(false);
-  };
+  const {
+    isEditing,
+    isSaving,
+    value: name,
+    setValue: setName,
+    handleSave,
+    handleCancel,
+    startEditing,
+  } = useEditableField(currentName, async () => {
+    await onUpdate(name.trim() || placeholder);
+  });
 
   if (isEditing) {
     return (
@@ -310,26 +333,12 @@ function PasskeyNameEditor({
           placeholder={placeholder}
           className="flex-1 text-sm"
         />
-        <Button
-          onClick={handleSave}
-          disabled={isSaving}
-          variant="primary"
-          size="sm"
-          className="h-9 w-9 p-0"
-          title={isSaving ? t('account.saving') : t('account.save')}
-        >
-          {isSaving ? <RefreshCw size={14} className="animate-spin" /> : <Check size={14} />}
-        </Button>
-        <Button
-          onClick={handleCancel}
-          disabled={isSaving}
-          variant="outline"
-          size="sm"
-          className="h-9 w-9 p-0"
-          title={t('account.cancel')}
-        >
-          <X size={14} />
-        </Button>
+        <EditActionButtons
+          isSaving={isSaving}
+          onSave={() => void handleSave()}
+          onCancel={handleCancel}
+          size="xs"
+        />
       </div>
     );
   }
@@ -338,7 +347,7 @@ function PasskeyNameEditor({
     <div className="flex items-center gap-2">
       <span className="font-semibold text-white">{currentName || placeholder}</span>
       <Button
-        onClick={() => setIsEditing(true)}
+        onClick={startEditing}
         variant="ghost"
         size="sm"
         className="h-7 w-7 p-0"

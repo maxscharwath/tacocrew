@@ -25,7 +25,7 @@ export class PushNotificationChannel implements NotificationChannel {
   private readonly vapidPublicKey: string;
   private readonly vapidPrivateKey: string;
   private readonly vapidSubject: string;
-  private initialized = false;
+  private readonly initialized: boolean;
 
   constructor() {
     this.vapidPublicKey = process.env['VAPID_PUBLIC_KEY'] || '';
@@ -38,6 +38,7 @@ export class PushNotificationChannel implements NotificationChannel {
       this.initialized = true;
     } else {
       logger.warn('VAPID keys not configured. Push notifications will not work.');
+      this.initialized = false;
     }
   }
 
