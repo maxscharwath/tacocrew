@@ -11,7 +11,7 @@ import {
   Sparkles,
   Wallet,
 } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 import { Button, SegmentedControl } from '@/components/ui';
@@ -20,6 +20,7 @@ import {
   archiveAllNotifications,
   archiveNotification,
   getNotifications,
+  getUnreadCount,
   markAsRead,
   type Notification,
 } from '@/lib/api/notifications';
@@ -32,24 +33,20 @@ interface NotificationDropdownProps {
 
 type TabValue = 'inbox' | 'archive';
 
-// Notification type configuration with icons and colors
-const notificationConfig: Record<string, { icon: LucideIcon; color: string }> = {
+// Notification type icons and colors
+const NOTIFICATION_ICONS: Record<string, { icon: LucideIcon; color: string }> = {
   payment_reminder: { icon: Wallet, color: 'text-amber-400' },
   payment_update: { icon: CircleDollarSign, color: 'text-emerald-400' },
   reimbursement_update: { icon: Receipt, color: 'text-sky-400' },
   order_submitted: { icon: Package, color: 'text-violet-400' },
-  default: { icon: Bell, color: 'text-slate-400' },
 };
 
-function getNotificationConfig(type: string) {
-  return notificationConfig[type] || notificationConfig.default;
-}
+const DEFAULT_ICON = { icon: Bell, color: 'text-slate-400' };
 
-// Skeleton loader for notifications
 function NotificationSkeleton() {
   return (
     <div className="flex animate-pulse items-start gap-3 px-4 py-3">
-      <div className="mt-0.5 h-5 w-5 rounded-full bg-slate-700/50" />
+      <div className="mt-0.5 h-8 w-8 rounded-full bg-slate-700/50" />
       <div className="flex-1 space-y-2">
         <div className="h-4 w-3/4 rounded bg-slate-700/50" />
         <div className="h-3 w-full rounded bg-slate-700/30" />
@@ -59,38 +56,35 @@ function NotificationSkeleton() {
   );
 }
 
-// Individual notification item with animations
 function NotificationItem({
   notification,
   onArchive,
   onClick,
-  showArchiveButton,
+  canArchive,
   formatRelativeTime,
   archiveLabel,
 }: {
   notification: Notification;
-  onArchive: (e: React.MouseEvent, id: string) => void;
+  onArchive: (id: string) => void;
   onClick: (notification: Notification) => void;
-  showArchiveButton: boolean;
+  canArchive: boolean;
   formatRelativeTime: (date: string) => string;
   archiveLabel: string;
 }) {
   const [isArchiving, setIsArchiving] = useState(false);
-  const config = getNotificationConfig(notification.type);
-  const Icon = config.icon;
+  const { icon: Icon, color } = NOTIFICATION_ICONS[notification.type] ?? DEFAULT_ICON;
 
   const handleArchive = async (e: React.MouseEvent) => {
+    e.stopPropagation();
     setIsArchiving(true);
-    // Small delay for animation
-    await new Promise((resolve) => setTimeout(resolve, 200));
-    onArchive(e, notification.id);
+    await new Promise((r) => setTimeout(r, 200)); // Animation delay
+    onArchive(notification.id);
   };
 
   return (
     <div
       className={cn(
-        'group flex w-full items-start gap-3 px-4 py-3 text-left transition-all duration-200',
-        'hover:bg-white/5',
+        'group flex w-full items-start gap-3 px-4 py-3 text-left transition-all duration-200 hover:bg-white/5',
         !notification.read && 'bg-gradient-to-r from-brand-500/10 via-brand-500/5 to-transparent',
         isArchiving && 'translate-x-full opacity-0'
       )}
@@ -100,22 +94,15 @@ function NotificationItem({
         onClick={() => onClick(notification)}
         className="flex min-w-0 flex-1 items-start gap-3"
       >
-        {/* Icon with type-specific color */}
-        <div
-          className={cn(
-            'mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full',
-            'bg-slate-800/80 ring-1 ring-white/10',
-            'transition-transform duration-200 group-hover:scale-110'
-          )}
-        >
-          <Icon size={16} className={config.color} />
+        <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-800/80 ring-1 ring-white/10 transition-transform duration-200 group-hover:scale-110">
+          <Icon size={16} className={color} />
         </div>
 
         <div className="min-w-0 flex-1 text-left">
           <div className="flex items-start justify-between gap-2">
             <p
               className={cn(
-                'text-left text-sm transition-colors',
+                'text-sm',
                 notification.read ? 'text-slate-300' : 'font-semibold text-white'
               )}
             >
@@ -128,28 +115,21 @@ function NotificationItem({
               </span>
             )}
           </div>
-          <p className="mt-1 line-clamp-2 text-left text-slate-400 text-xs leading-relaxed">
+          <p className="mt-1 line-clamp-2 text-slate-400 text-xs leading-relaxed">
             {notification.body}
           </p>
-          <p className="mt-1.5 text-left text-[11px] text-slate-500 uppercase tracking-wide">
+          <p className="mt-1.5 text-[11px] text-slate-500 uppercase tracking-wide">
             {formatRelativeTime(notification.createdAt)}
           </p>
         </div>
       </button>
 
-      {/* Archive button with improved hover state */}
-      {showArchiveButton && (
+      {canArchive && (
         <button
           type="button"
           onClick={handleArchive}
           disabled={isArchiving}
-          className={cn(
-            'shrink-0 rounded-lg p-2 text-slate-500',
-            'opacity-0 transition-all duration-200',
-            'hover:bg-slate-700/50 hover:text-slate-300',
-            'group-hover:opacity-100',
-            'focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-brand-500/50'
-          )}
+          className="shrink-0 rounded-lg p-2 text-slate-500 opacity-0 transition-all duration-200 hover:bg-slate-700/50 hover:text-slate-300 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-brand-500/50 group-hover:opacity-100"
           title={archiveLabel}
         >
           <Archive size={14} />
@@ -159,101 +139,143 @@ function NotificationItem({
   );
 }
 
+function EmptyState({ isArchive }: { isArchive: boolean }) {
+  const { t } = useTranslation();
+  const Icon = isArchive ? Archive : Sparkles;
+  const title = t(isArchive ? 'notifications.emptyArchive' : 'notifications.empty');
+  const hint = t(isArchive ? 'notifications.emptyArchiveHint' : 'notifications.emptyHint');
+
+  return (
+    <div className="flex flex-col items-center justify-center px-4 py-12">
+      <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-slate-800/50 ring-1 ring-white/10">
+        <Icon size={28} className="text-slate-500" />
+      </div>
+      <p className="font-medium text-slate-300 text-sm">{title}</p>
+      <p className="mt-1 text-center text-slate-500 text-xs">{hint}</p>
+    </div>
+  );
+}
+
+function CountBadge({ count, variant }: { count: number; variant: 'unread' | 'muted' }) {
+  if (count === 0) return null;
+
+  const styles =
+    variant === 'unread'
+      ? 'bg-rose-500 text-white font-semibold'
+      : 'bg-slate-600 text-slate-300 font-medium';
+
+  return (
+    <span
+      className={cn(
+        'flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-[10px] tabular-nums',
+        styles
+      )}
+    >
+      {count > 99 ? '99+' : count}
+    </span>
+  );
+}
+
 export function NotificationDropdown({ onClose, onMarkAsRead }: NotificationDropdownProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { formatRelativeTime } = useRelativeTime();
+  const loadMoreRef = useRef<HTMLDivElement>(null);
 
   const [activeTab, setActiveTab] = useState<TabValue>('inbox');
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [total, setTotal] = useState(0);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [archivedCount, setArchivedCount] = useState(0);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const [hasMore, setHasMore] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [isArchivingAll, setIsArchivingAll] = useState(false);
-  const [nextCursor, setNextCursor] = useState<string | null>(null);
-  const [hasMore, setHasMore] = useState(false);
 
-  const loadMoreRef = useRef<HTMLDivElement>(null);
+  const isArchiveTab = activeTab === 'archive';
 
-  const fetchNotifications = async (cursor?: string) => {
-    const isFirstLoad = !cursor;
-    if (isFirstLoad) {
-      setIsLoading(true);
-    } else {
-      setIsLoadingMore(true);
-    }
+  // Fetch notifications for current tab
+  const fetchNotifications = useCallback(
+    async (cursor?: string) => {
+      cursor ? setIsLoadingMore(true) : setIsLoading(true);
 
-    try {
-      const data = await getNotifications({
-        limit: 15,
-        cursor,
-        archived: activeTab === 'archive',
-      });
-
-      const items = isFirstLoad ? data.items : [...notifications, ...data.items];
-      setNotifications(items);
-      setTotal(data.total);
-      setNextCursor(data.nextCursor);
-      setHasMore(data.hasMore);
-
-      // Update unread count for inbox tab badge
-      if (activeTab === 'inbox') {
-        setUnreadCount(items.filter((n) => !n.read).length);
+      try {
+        const data = await getNotifications({ limit: 15, cursor, archived: isArchiveTab });
+        setNotifications((prev) => (cursor ? [...prev, ...data.items] : data.items));
+        setNextCursor(data.nextCursor);
+        setHasMore(data.hasMore);
+      } catch {
+        // Silently fail
+      } finally {
+        setIsLoading(false);
+        setIsLoadingMore(false);
       }
+    },
+    [isArchiveTab]
+  );
+
+  // Fetch counts (unread + archived) - only once on mount
+  const fetchCounts = useCallback(async () => {
+    try {
+      const [unread, archived] = await Promise.all([
+        getUnreadCount(),
+        getNotifications({ limit: 1, archived: true }),
+      ]);
+      setUnreadCount(unread.count);
+      setArchivedCount(archived.total);
     } catch {
       // Silently fail
-    } finally {
-      setIsLoading(false);
-      setIsLoadingMore(false);
     }
-  };
+  }, []);
 
-  // Fetch notifications when tab changes
+  // Initial load: fetch notifications + counts
   useEffect(() => {
     setNotifications([]);
     setNextCursor(null);
     fetchNotifications();
-  }, [activeTab]);
+  }, [fetchNotifications]);
 
-  // Intersection observer for infinite scroll
   useEffect(() => {
-    const element = loadMoreRef.current;
-    if (!element || !hasMore || isLoadingMore) return;
+    fetchCounts();
+  }, [fetchCounts]);
+
+  // Infinite scroll observer
+  useEffect(() => {
+    const el = loadMoreRef.current;
+    if (!el || !hasMore || isLoadingMore) return;
 
     const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0]?.isIntersecting && hasMore && nextCursor && !isLoadingMore) {
-          fetchNotifications(nextCursor);
-        }
+      ([entry]) => {
+        if (entry?.isIntersecting && nextCursor) fetchNotifications(nextCursor);
       },
       { threshold: 0.1 }
     );
 
-    observer.observe(element);
+    observer.observe(el);
     return () => observer.disconnect();
-  }, [hasMore, nextCursor, isLoadingMore]);
+  }, [hasMore, nextCursor, isLoadingMore, fetchNotifications]);
 
-  const handleNotificationClick = async (notification: Notification) => {
+  const refreshAfterAction = () => {
+    onMarkAsRead();
+    fetchCounts();
+    globalThis.dispatchEvent(new CustomEvent('notificationUpdated'));
+  };
+
+  const handleClick = async (notification: Notification) => {
     if (!notification.read) {
-      // Optimistic update
       setNotifications((prev) =>
-        prev.map((n) =>
-          n.id === notification.id ? { ...n, read: true, readAt: new Date().toISOString() } : n
-        )
+        prev.map((n) => (n.id === notification.id ? { ...n, read: true } : n))
       );
-      setUnreadCount((prev) => Math.max(0, prev - 1));
+      setUnreadCount((c) => Math.max(0, c - 1));
 
       try {
         await markAsRead(notification.id);
-        onMarkAsRead();
-        globalThis.dispatchEvent(new CustomEvent('notificationUpdated'));
+        refreshAfterAction();
       } catch {
-        // Revert on failure
         setNotifications((prev) =>
-          prev.map((n) => (n.id === notification.id ? { ...n, read: false, readAt: null } : n))
+          prev.map((n) => (n.id === notification.id ? { ...n, read: false } : n))
         );
-        setUnreadCount((prev) => prev + 1);
+        setUnreadCount((c) => c + 1);
       }
     }
 
@@ -263,161 +285,102 @@ export function NotificationDropdown({ onClose, onMarkAsRead }: NotificationDrop
     }
   };
 
-  const handleArchive = async (e: React.MouseEvent, notificationId: string) => {
-    e.stopPropagation();
-    const notification = notifications.find((n) => n.id === notificationId);
+  const handleArchive = async (id: string) => {
+    const notification = notifications.find((n) => n.id === id);
+    if (!notification) return;
 
-    // Optimistic update
-    setNotifications((prev) => prev.filter((n) => n.id !== notificationId));
-    setTotal((prev) => prev - 1);
-    if (notification && !notification.read) {
-      setUnreadCount((prev) => Math.max(0, prev - 1));
-    }
+    setNotifications((prev) => prev.filter((n) => n.id !== id));
+    if (!notification.read) setUnreadCount((c) => Math.max(0, c - 1));
+    setArchivedCount((c) => c + 1);
 
     try {
-      await archiveNotification(notificationId);
-      onMarkAsRead();
-      globalThis.dispatchEvent(new CustomEvent('notificationUpdated'));
+      await archiveNotification(id);
+      refreshAfterAction();
     } catch {
-      // Revert on failure
-      if (notification) {
-        setNotifications((prev) =>
-          [...prev, notification].sort(
-            (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-          )
-        );
-        setTotal((prev) => prev + 1);
-        if (!notification.read) {
-          setUnreadCount((prev) => prev + 1);
-        }
-      }
+      setNotifications((prev) =>
+        [...prev, notification].sort(
+          (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        )
+      );
+      if (!notification.read) setUnreadCount((c) => c + 1);
+      setArchivedCount((c) => Math.max(0, c - 1));
     }
   };
 
   const handleArchiveAll = async () => {
-    // Optimistic update
-    const previousNotifications = [...notifications];
-    const previousTotal = total;
+    const prev = { notifications: [...notifications], unread: unreadCount };
     setNotifications([]);
-    setTotal(0);
     setUnreadCount(0);
+    setIsArchivingAll(true);
 
     try {
-      setIsArchivingAll(true);
       await archiveAllNotifications();
-      onMarkAsRead();
-      globalThis.dispatchEvent(new CustomEvent('notificationUpdated'));
+      setArchivedCount((c) => c + prev.notifications.length);
+      refreshAfterAction();
     } catch {
-      // Revert on failure
-      setNotifications(previousNotifications);
-      setTotal(previousTotal);
-      setUnreadCount(previousNotifications.filter((n) => !n.read).length);
+      setNotifications(prev.notifications);
+      setUnreadCount(prev.unread);
     } finally {
       setIsArchivingAll(false);
     }
   };
 
-  const hasNotifications = notifications.length > 0;
-
-  // Get counts for each tab
-  const [archivedCount, setArchivedCount] = useState(0);
-
-  // Fetch archived count when on inbox tab (for badge)
-  useEffect(() => {
-    if (activeTab === 'inbox') {
-      getNotifications({ limit: 1, archived: true })
-        .then((data) => setArchivedCount(data.total))
-        .catch(() => {
-          // Silently fail - archived count is not critical
-        });
-    }
-  }, [activeTab, notifications.length]);
+  const tabOptions = [
+    {
+      value: 'inbox' as const,
+      label: (
+        <span className="flex items-center gap-2">
+          <Inbox size={14} className="shrink-0" />
+          <span>{t('notifications.tabs.inbox')}</span>
+          <CountBadge count={unreadCount} variant="unread" />
+        </span>
+      ),
+    },
+    {
+      value: 'archive' as const,
+      label: (
+        <span className="flex items-center gap-2">
+          <Archive size={14} className="shrink-0" />
+          <span>{t('notifications.tabs.archive')}</span>
+          <CountBadge count={archivedCount} variant="muted" />
+        </span>
+      ),
+    },
+  ];
 
   return (
     <>
-      {/* Tabs as Header */}
       <div className="border-white/10 border-b px-3 py-3">
         <SegmentedControl
           value={activeTab}
           onValueChange={setActiveTab}
-          options={[
-            {
-              value: 'inbox' as const,
-              label: (
-                <span className="flex items-center gap-2">
-                  <Inbox size={14} className="shrink-0" />
-                  <span>{t('notifications.tabs.inbox')}</span>
-                  {unreadCount > 0 && (
-                    <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-brand-500 px-1.5 font-semibold text-[10px] text-white tabular-nums">
-                      {unreadCount > 99 ? '99+' : unreadCount}
-                    </span>
-                  )}
-                </span>
-              ),
-            },
-            {
-              value: 'archive' as const,
-              label: (
-                <span className="flex items-center gap-2">
-                  <Archive size={14} className="shrink-0" />
-                  <span>{t('notifications.tabs.archive')}</span>
-                  {archivedCount > 0 && (
-                    <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-slate-700 px-1.5 font-medium text-[10px] text-slate-300 tabular-nums">
-                      {archivedCount}
-                    </span>
-                  )}
-                </span>
-              ),
-            },
-          ]}
+          options={tabOptions}
           className="w-full"
         />
       </div>
 
-      {/* Notification List */}
       <div className="max-h-[50vh] min-h-[200px] overflow-y-auto overscroll-contain">
         {isLoading ? (
-          // Skeleton loading
           <div className="divide-y divide-white/5">
             <NotificationSkeleton />
             <NotificationSkeleton />
             <NotificationSkeleton />
           </div>
         ) : notifications.length === 0 ? (
-          // Empty state
-          <div className="flex flex-col items-center justify-center px-4 py-12">
-            <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-slate-800/50 ring-1 ring-white/10">
-              {activeTab === 'archive' ? (
-                <Archive size={28} className="text-slate-500" />
-              ) : (
-                <Sparkles size={28} className="text-slate-500" />
-              )}
-            </div>
-            <p className="font-medium text-slate-300 text-sm">
-              {activeTab === 'archive' ? t('notifications.emptyArchive') : t('notifications.empty')}
-            </p>
-            <p className="mt-1 text-center text-slate-500 text-xs">
-              {activeTab === 'archive'
-                ? t('notifications.emptyArchiveHint')
-                : t('notifications.emptyHint')}
-            </p>
-          </div>
+          <EmptyState isArchive={isArchiveTab} />
         ) : (
-          // Notification list
           <div className="divide-y divide-white/5">
-            {notifications.map((notification) => (
+            {notifications.map((n) => (
               <NotificationItem
-                key={notification.id}
-                notification={notification}
+                key={n.id}
+                notification={n}
                 onArchive={handleArchive}
-                onClick={handleNotificationClick}
-                showArchiveButton={activeTab === 'inbox'}
+                onClick={handleClick}
+                canArchive={!isArchiveTab}
                 formatRelativeTime={formatRelativeTime}
                 archiveLabel={t('notifications.archive')}
               />
             ))}
-
-            {/* Load more trigger */}
             {hasMore && (
               <div ref={loadMoreRef} className="flex items-center justify-center py-4">
                 {isLoadingMore && <Loader2 size={16} className="animate-spin text-slate-400" />}
@@ -427,11 +390,9 @@ export function NotificationDropdown({ onClose, onMarkAsRead }: NotificationDrop
         )}
       </div>
 
-      {/* Footer with Archive All button */}
-      {activeTab === 'inbox' && hasNotifications && (
+      {!isArchiveTab && notifications.length > 0 && (
         <div className="border-white/10 border-t bg-slate-900/50 px-3 py-2">
           <Button
-            type="button"
             variant="ghost"
             size="sm"
             onClick={handleArchiveAll}
