@@ -25,7 +25,6 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': resolve(__dirname, './src'),
-      '@tacobot/ui-kit': resolve(__dirname, '../../packages/ui-kit/src'),
     },
     dedupe: ['react', 'react-dom', 'react-router'],
   },
