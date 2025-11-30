@@ -11,6 +11,21 @@ import { z } from 'zod';
 
 type ZodLike = z.ZodTypeAny;
 
+export type LazyImport = () => Promise<{ default: React.ComponentType<unknown> }>;
+
+export type LazyRouteElement = {
+  type: 'lazy';
+  importFn: LazyImport;
+  fallback?: React.ComponentType<unknown>;
+};
+
+export type RouteElement =
+  | React.ComponentType<unknown>
+  | React.ReactElement
+  | React.ReactNode
+  | LazyRouteElement
+  | null;
+
 export interface RouteDef<
   TParamsSchema extends ZodLike | undefined = undefined,
   TSearchSchema extends ZodLike | undefined = undefined,
@@ -22,9 +37,9 @@ export interface RouteDef<
   search?: TSearchSchema;
   loader?: (args: LoaderFunctionArgs) => unknown | Promise<unknown>;
   action?: (args: ActionFunctionArgs) => unknown | Promise<unknown>;
-  element?: React.ReactNode;
-  errorElement?: React.ReactNode;
-  hydrateFallback?: React.ReactNode;
+  element?: RouteElement;
+  errorElement?: RouteElement;
+  hydrateFallback?: RouteElement;
   children?: TChildren;
 }
 export type AnyRouteDef = RouteDef<
@@ -142,7 +157,7 @@ export type AsyncLoader = (args: LoaderFunctionArgs) => Promise<unknown>;
 export type AsyncAction = (args: ActionFunctionArgs) => Promise<unknown>;
 
 export type LazyRouteHandles = {
-  element?: React.ReactElement;
+  element?: React.ComponentType<unknown>;
   loader?: AsyncLoader;
   action?: AsyncAction;
 };
@@ -175,13 +190,15 @@ export function createLazyRoute<Module>(
       }
     : undefined;
 
-  let element: React.ReactElement | undefined;
+  let element: React.ComponentType<unknown> | undefined;
   if (component) {
     const LazyComponent = lazy(async () => {
       const mod = await loadModule();
       return { default: component(mod) };
     });
-    element = React.createElement(React.Suspense, { fallback }, React.createElement(LazyComponent));
+
+    // Create a component that wraps the lazy component with Suspense
+    element = () => React.createElement(React.Suspense, { fallback }, React.createElement(LazyComponent));
   }
 
   return {
@@ -273,18 +290,50 @@ export function createRouteBuilders<const T extends Record<string, AnyRouteDef>>
   return out;
 }
 
+// Create a lazy wrapper that returns a React element
+const createLazyElement = (
+  lazyImport: LazyImport,
+  fallback?: React.ComponentType<unknown>
+) => {
+  const LazyComponent = lazy(lazyImport);
+  return React.createElement(
+    React.Suspense,
+    { fallback: fallback ? React.createElement(fallback) : null },
+    React.createElement(LazyComponent)
+  );
+};
+
+const createElementFromRouteElement = (element: RouteElement): React.ReactNode => {
+  if (element === null || element === undefined) return element;
+  if (React.isValidElement(element)) return element;
+
+  // Check if this is a lazy route element
+  if (typeof element === 'object' && element !== null && 'type' in element && element.type === 'lazy') {
+    const lazyElement = element as LazyRouteElement;
+    return createLazyElement(lazyElement.importFn, lazyElement.fallback || lazyFallback);
+  }
+
+  if (typeof element === 'function') {
+    // This is a component constructor
+    // Create a React element without instantiating the component
+    return React.createElement(element);
+  }
+
+  return element;
+};
+
 const toRouteObject = (def: AnyRouteDef): RouteObject => {
   const node: RouteObject & { hydrateFallback?: React.ReactNode } = {
     index: def.index,
     path: def.index ? undefined : def.path,
     loader: def.loader,
     action: def.action,
-    element: def.element,
-    errorElement: def.errorElement,
+    element: createElementFromRouteElement(def.element),
+    errorElement: createElementFromRouteElement(def.errorElement),
   };
   if (def.hydrateFallback) {
     (node as RouteObject & { hydrateFallback: React.ReactNode }).hydrateFallback =
-      def.hydrateFallback;
+      createElementFromRouteElement(def.hydrateFallback);
   }
   if (def.children) node.children = Object.values(def.children).map(toRouteObject);
   return node as RouteObject;
