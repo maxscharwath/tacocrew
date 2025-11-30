@@ -1,4 +1,4 @@
-import { ScrollText } from 'lucide-react';
+import { Phone, ScrollText } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useRevalidator } from 'react-router';
@@ -8,6 +8,7 @@ import { calculateOrderPrice } from '@/hooks/useOrderPrice';
 import type { StockResponse } from '@/lib/api';
 import { OrdersApi } from '@/lib/api';
 import type { GroupOrder, UserOrderSummary } from '@/lib/api/types';
+import { formatPhoneNumber } from '@/utils/phone-formatter';
 import {
   type ReceiptItem,
   type ReceiptStatusVariant,
@@ -269,6 +270,33 @@ export function GroupOrderReceipts({
         </div>
       </CardHeader>
       <CardContent className="space-y-6">
+        {/* Leader Phone Number for Reimbursement */}
+        {groupOrder.leader.phone && (
+          <div className="rounded-xl border border-brand-400/30 bg-brand-500/10 p-4">
+            <div className="flex items-center gap-3">
+              <Avatar color="brandHero" size="sm" variant="elevated">
+                <Phone />
+              </Avatar>
+              <div className="flex-1">
+                <p className="font-semibold text-brand-100 text-sm">
+                  {t('orders.detail.receipts.leaderPhone.title')}
+                </p>
+                <p className="mt-1 text-brand-200 text-xs">
+                  {t('orders.detail.receipts.leaderPhone.description')}
+                </p>
+              </div>
+              <div className="text-right">
+                <p className="font-bold text-brand-50 text-lg">
+                  {formatPhoneNumber(groupOrder.leader.phone)}
+                </p>
+                <p className="mt-0.5 text-brand-300 text-xs">
+                  {t('orders.detail.receipts.leaderPhone.twint')}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
           {ticketEntries.map(
             ({ key, model, userId, orders, participantPaid, reimbursementComplete }) => (

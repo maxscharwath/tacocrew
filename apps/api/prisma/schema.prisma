@@ -48,6 +48,7 @@ model User {
   email           String
   emailVerified   Boolean  @default(false)
   image           String?
+  phone           String? // Phone number for reimbursement (Twint in Switzerland)
   username        String?  @unique // Better Auth username plugin field
   displayUsername String?  @unique // Better Auth username plugin field
   slackId         String? // Slack user ID for future Slack integration

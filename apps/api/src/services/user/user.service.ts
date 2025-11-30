@@ -94,6 +94,15 @@ export class UserService {
     return updatedUser;
   }
 
+  async updateUserPhone(userId: UserId, phone: string | null): Promise<User> {
+    const updatedUser = await this.userRepository.updatePhone(userId, phone);
+    if (!updatedUser) {
+      throw new Error(`User not found: ${userId}`);
+    }
+
+    return updatedUser;
+  }
+
   getUserOrderHistory(userId: UserId): Promise<
     Array<{
       id: OrderId;
@@ -143,6 +152,7 @@ export class UserService {
           select: {
             id: true,
             name: true,
+            phone: true,
             image: true,
             updatedAt: true,
           },
@@ -184,7 +194,7 @@ export class UserService {
     return dbGroupOrders.map((go) => {
       const groupOrder = createGroupOrderFromDb(go);
       const leader =
-        go.leader ?? ({ id: go.leaderId, name: null, image: null, updatedAt: null } as const);
+        go.leader ?? ({ id: go.leaderId, name: null, phone: null, image: null, updatedAt: null } as const);
       const leaderForUrl = {
         id: leader.id as UserId,
         hasImage: Boolean(leader.image),
@@ -202,6 +212,7 @@ export class UserService {
         leader: {
           id: leader.id as UserId,
           name: leader.name,
+          phone: leader.phone ?? null,
           image: buildAvatarUrl(leaderForUrl),
         },
         participants,

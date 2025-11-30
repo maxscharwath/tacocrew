@@ -1,6 +1,6 @@
 import { AlarmClock, Calendar } from 'lucide-react';
 import { cn } from './utils';
-import { Input } from './input';
+import { InputGroup, InputGroupAddon, InputGroupInput } from './input-group';
 import { Label } from './label';
 
 type DateTimePickerProps = {
@@ -38,8 +38,11 @@ export function DateTimePicker({
       </Label>
       <div className="grid gap-2 sm:grid-cols-2">
         {/* Date Picker with improved styling */}
-        <div className="relative">
-          <Input
+        <InputGroup>
+          <InputGroupAddon>
+            <Calendar className="size-4" />
+          </InputGroupAddon>
+          <InputGroupInput
             type="date"
             value={dateValue}
             onChange={(e) => onDateChange(e.target.value)}
@@ -47,30 +50,24 @@ export function DateTimePicker({
             required={required}
             min={minDate}
             max={maxDate}
-            error={error}
-            className="pr-10"
+            aria-invalid={error}
           />
-          <div className="-translate-y-1/2 pointer-events-none absolute top-1/2 right-3">
-            <Calendar size={18} className="text-slate-500" />
-          </div>
-        </div>
+        </InputGroup>
 
         {/* Time Picker */}
-        <div className="relative">
-          <AlarmClock
-            size={18}
-            className="-translate-y-1/2 pointer-events-none absolute top-1/2 left-3 z-10 text-slate-500"
-          />
-          <Input
+        <InputGroup>
+          <InputGroupAddon>
+            <AlarmClock className="size-4" />
+          </InputGroupAddon>
+          <InputGroupInput
             type="time"
             value={timeValue}
             onChange={(e) => onTimeChange(e.target.value)}
             disabled={disabled}
             required={required}
-            error={error}
-            className="pl-10"
+            aria-invalid={error}
           />
-        </div>
+        </InputGroup>
       </div>
     </div>
   );

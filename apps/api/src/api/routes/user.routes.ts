@@ -14,6 +14,7 @@ import {
   processAvatarImage,
   processProfileImage,
 } from '../../shared/utils/image.utils';
+import { logger } from '../../shared/utils/logger.utils';
 import { inject } from '../../shared/utils/inject.utils';
 import { jsonContent, UserSchemas } from '../schemas/user.schemas';
 import { authSecurity, createAuthenticatedRouteApp, requireUserId } from '../utils/route.utils';
@@ -25,6 +26,7 @@ function serializeUserResponse(user: User) {
     id: user.id,
     username: user.username,
     name: user.name,
+    phone: user.phone ?? null,
     slackId: user.slackId ?? undefined,
     language: user.language ?? null,
     image: buildAvatarUrl(user),
@@ -138,6 +140,39 @@ app.openapi(
     const userService = inject(UserService);
 
     const updatedUser = await userService.updateUserLanguage(userId, language);
+
+    return c.json(serializeUserResponse(updatedUser), 200);
+  }
+);
+
+app.openapi(
+  createRoute({
+    method: 'patch',
+    path: '/users/me/phone',
+    tags: ['User'],
+    security: authSecurity,
+    request: {
+      body: {
+        content: jsonContent(UserSchemas.UpdateUserPhoneRequestSchema),
+      },
+    },
+    responses: {
+      200: {
+        description: 'User phone updated',
+        content: jsonContent(UserSchemas.UserResponseSchema),
+      },
+      400: {
+        description: 'Invalid phone',
+        content: jsonContent(UserSchemas.ErrorResponseSchema),
+      },
+    },
+  }),
+  async (c) => {
+    const userId = requireUserId(c);
+    const { phone } = c.req.valid('json');
+    const userService = inject(UserService);
+
+    const updatedUser = await userService.updateUserPhone(userId, phone);
 
     return c.json(serializeUserResponse(updatedUser), 200);
   }
@@ -361,8 +396,18 @@ app.openapi(
     const formData = await c.req.formData();
     const file = formData.get('image');
 
-    if (!(file instanceof Blob)) {
-      return c.json(buildErrorResponse('USER_AVATAR_INVALID', 'Image file is required'), 400);
+    // Check if file exists and is a Blob-like object (File extends Blob)
+    // In Node.js FormData, files are typically File objects which extend Blob
+    if (!file || typeof file !== 'object' || !('arrayBuffer' in file)) {
+      logger.warn('Avatar upload: invalid file', {
+        userId,
+        fileType: typeof file,
+        hasArrayBuffer: file && typeof file === 'object' ? 'arrayBuffer' in file : false,
+      });
+      return c.json(
+        buildErrorResponse('USER_AVATAR_INVALID', 'Image file is required'),
+        400
+      );
     }
 
     try {
@@ -372,7 +417,7 @@ app.openapi(
         backgroundColor && typeof backgroundColor === 'string' ? backgroundColor : undefined;
 
       // Process and compress the image with optional background color
-      const processedImage = await processProfileImage(file, bgColor);
+      const processedImage = await processProfileImage(file as Blob, bgColor);
 
       // Update user image
       const userService = inject(UserService);
@@ -381,6 +426,11 @@ app.openapi(
       return c.json(serializeUserResponse(updatedUser), 200);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to upload avatar';
+      logger.error('Avatar upload failed', {
+        error: errorMessage,
+        userId,
+        errorStack: error instanceof Error ? error.stack : undefined,
+      });
       return c.json(buildErrorResponse('USER_AVATAR_UPLOAD_FAILED', errorMessage), 400);
     }
   }
@@ -441,6 +491,7 @@ app.openapi(
           .string()
           .optional()
           .transform((val) => (val ? parseFloat(val) : undefined)),
+        v: z.string().optional(), // Version parameter for cache busting (ignored but allowed)
       }),
     },
     responses: {
@@ -467,6 +518,12 @@ app.openapi(
       const avatar = await userService.getUserAvatar(userId as UserId);
 
       if (!avatar) {
+        logger.debug('Avatar not found for user', { userId });
+        return c.json(buildErrorResponse('USER_AVATAR_NOT_FOUND', 'Avatar not found'), 404);
+      }
+
+      if (!avatar.image || avatar.image.length === 0) {
+        logger.warn('Avatar image is empty for user', { userId });
         return c.json(buildErrorResponse('USER_AVATAR_NOT_FOUND', 'Avatar not found'), 404);
       }
 
@@ -494,7 +551,12 @@ app.openapi(
       c.header('Content-Length', imageBuffer.length.toString());
 
       return c.body(new Uint8Array(imageBuffer), 200);
-    } catch (_error) {
+    } catch (error) {
+      logger.error('Error serving avatar', {
+        userId,
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+      });
       return c.json(buildErrorResponse('USER_AVATAR_NOT_FOUND', 'Avatar not found'), 404);
     }
   }

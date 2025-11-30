@@ -20,8 +20,18 @@ function ensureValidFile(file: UploadableFile): void {
   if (!file.size || file.size > MAX_FILE_SIZE) {
     throw new Error(`File size exceeds ${(MAX_FILE_SIZE / (1024 * 1024)).toFixed(1)}MB limit`);
   }
-  if (!file.type || !VALID_TYPES.has(file.type)) {
-    throw new Error('Invalid file type. Only JPEG, PNG, WebP, and GIF images are allowed.');
+  
+  // Normalize file type - handle cases where type might be undefined or invalid
+  const fileType = file.type?.toLowerCase().trim();
+  if (!fileType || fileType === 'undefined' || !VALID_TYPES.has(fileType)) {
+    logger.warn('Invalid or missing file type', {
+      providedType: file.type,
+      normalizedType: fileType,
+      fileSize: file.size,
+    });
+    throw new Error(
+      `Invalid file type "${file.type || 'unknown'}". Only JPEG, PNG, WebP, and GIF images are allowed.`
+    );
   }
 }
 

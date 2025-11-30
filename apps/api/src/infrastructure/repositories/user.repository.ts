@@ -23,6 +23,7 @@ export class UserRepository {
         id: true,
         username: true,
         name: true,
+        phone: true,
         slackId: true,
         language: true,
         image: true,
@@ -58,6 +59,7 @@ export class UserRepository {
           id: true,
           username: true,
           name: true,
+          phone: true,
           slackId: true,
           language: true,
           image: true,
@@ -76,6 +78,34 @@ export class UserRepository {
     }
   }
 
+  async updatePhone(userId: string, phone: string | null): Promise<User | null> {
+    try {
+      const dbUser = await this.prisma.client.user.update({
+        where: { id: userId },
+        data: { phone },
+        select: {
+          id: true,
+          username: true,
+          name: true,
+          phone: true,
+          slackId: true,
+          language: true,
+          image: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      });
+      return createUserFromDb(dbUser);
+    } catch (error) {
+      // Prisma error P2025 = Record not found
+      if (error && typeof error === 'object' && 'code' in error && error.code === 'P2025') {
+        return null;
+      }
+      logger.error('Failed to update user phone', { userId, error });
+      return null;
+    }
+  }
+
   async findByUsername(username: string): Promise<User | null> {
     const dbUser = await this.prisma.client.user.findUnique({
       where: { username },
@@ -83,6 +113,7 @@ export class UserRepository {
         id: true,
         username: true,
         name: true,
+        phone: true,
         slackId: true,
         language: true,
         image: true,
@@ -101,6 +132,7 @@ export class UserRepository {
         id: true,
         username: true,
         name: true,
+        phone: true,
         slackId: true,
         language: true,
         image: true,
@@ -182,6 +214,7 @@ export class UserRepository {
           id: true,
           username: true,
           name: true,
+          phone: true,
           slackId: true,
           language: true,
           image: true,

@@ -1,4 +1,4 @@
-import { Lock } from 'lucide-react';
+import { Eye, EyeOff, Lock, Mail, User } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { type LoaderFunctionArgs, redirect, useLocation, useNavigate } from 'react-router';
@@ -13,6 +13,10 @@ import {
   CardTitle,
   Divider,
   Input,
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupInput,
   Label,
   SegmentedControl,
 } from '@/components/ui';
@@ -56,6 +60,7 @@ export function LoginRoute() {
   const isSignUp = location.pathname === routes.signup();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -289,45 +294,71 @@ export function LoginRoute() {
                 {isSignUp && (
                   <div className="space-y-2">
                     <Label htmlFor="name">{t('login.name.label')}</Label>
-                    <Input
-                      id="name"
-                      type="text"
-                      value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      placeholder={t('login.name.placeholder')}
-                      disabled={isLoading}
-                      autoComplete="name"
-                    />
+                    <InputGroup>
+                      <InputGroupAddon>
+                        <User className="size-4" />
+                      </InputGroupAddon>
+                      <InputGroupInput
+                        id="name"
+                        type="text"
+                        value={formData.name}
+                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                        placeholder={t('login.name.placeholder')}
+                        disabled={isLoading}
+                        autoComplete="name"
+                      />
+                    </InputGroup>
                   </div>
                 )}
 
                 <div className="space-y-2">
                   <Label htmlFor="email">{t('login.email.label')}</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    placeholder={t('login.email.placeholder')}
-                    required
-                    disabled={isLoading}
-                    autoComplete="email"
-                  />
+                  <InputGroup>
+                    <InputGroupAddon>
+                      <Mail className="size-4" />
+                    </InputGroupAddon>
+                    <InputGroupInput
+                      id="email"
+                      type="email"
+                      value={formData.email}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      placeholder={t('login.email.placeholder')}
+                      required
+                      disabled={isLoading}
+                      autoComplete="email"
+                    />
+                  </InputGroup>
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="password">{t('login.password.label')}</Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    value={formData.password}
-                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                    placeholder={t('login.password.placeholder')}
-                    required
-                    disabled={isLoading}
-                    minLength={8}
-                    autoComplete={isSignUp ? 'new-password' : 'current-password'}
-                  />
+                  <InputGroup>
+                    <InputGroupAddon>
+                      <Lock className="size-4" />
+                    </InputGroupAddon>
+                    <InputGroupInput
+                      id="password"
+                      type={showPassword ? 'text' : 'password'}
+                      value={formData.password}
+                      onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                      placeholder={t('login.password.placeholder')}
+                      required
+                      disabled={isLoading}
+                      minLength={8}
+                      autoComplete={isSignUp ? 'new-password' : 'current-password'}
+                    />
+                    <InputGroupAddon align="inline-end">
+                      <InputGroupButton
+                        type="button"
+                        size="icon-xs"
+                        variant="ghost"
+                        onClick={() => setShowPassword(!showPassword)}
+                        aria-label={showPassword ? 'Hide password' : 'Show password'}
+                      >
+                        {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                      </InputGroupButton>
+                    </InputGroupAddon>
+                  </InputGroup>
                 </div>
 
                 {error && <Alert tone="error">{error}</Alert>}

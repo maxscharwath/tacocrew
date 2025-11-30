@@ -1,12 +1,23 @@
 import { Camera, Check, Palette, Plus, RotateCcw, Trash2, X } from 'lucide-react';
-import { useCallback, useEffect, useId, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Alert, Button } from '@/components/ui';
+import {
+  Alert,
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  Button,
+} from '@/components/ui';
+import { ENV } from '@/lib/env';
 import { deleteAvatar, uploadAvatar } from '@/lib/api/user';
 import { imageUrlToFile, PREDEFINED_AVATARS } from '@/lib/avatars';
 import { cn } from '@/lib/utils';
 
-const AVATAR_BG_COLOR_KEY = 'avatarBackgroundColor';
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const VALID_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
 const SUCCESS_MESSAGE_DURATION = 3000;
@@ -74,7 +85,20 @@ export function ImageUploader({ currentImage, onImageUpdate }: ImageUploaderProp
   const fileInputRef = useRef<HTMLInputElement>(null);
   const successTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const [preview, setPreview] = useState<string | null>(currentImage || null);
+  // Initialize preview with currentImage immediately - resolve URL if needed
+  const getInitialPreview = (): string | null => {
+    if (currentImage && typeof currentImage === 'string' && currentImage.trim()) {
+      // If it's a relative URL, resolve it to absolute using API base URL or current origin
+      if (currentImage.startsWith('/')) {
+        const baseUrl = ENV.apiBaseUrl || (typeof window !== 'undefined' ? window.location.origin : '');
+        return baseUrl + currentImage;
+      }
+      return currentImage;
+    }
+    return null;
+  };
+
+  const [preview, setPreview] = useState<string | null>(() => getInitialPreview());
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [pendingAvatarUrl, setPendingAvatarUrl] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -82,22 +106,26 @@ export function ImageUploader({ currentImage, onImageUpdate }: ImageUploaderProp
   const [success, setSuccess] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [showColorPicker, setShowColorPicker] = useState(false);
-  const [backgroundColor, setBackgroundColor] = useState<string>(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem(AVATAR_BG_COLOR_KEY) || PRESET_COLORS[0].value;
-    }
-    return PRESET_COLORS[0].value;
-  });
+  const [backgroundColor, setBackgroundColor] = useState<string>(PRESET_COLORS[0].value);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const hasPendingSelection = Boolean(pendingFile || pendingAvatarUrl);
   const showDeleteButton = Boolean(preview && !hasPendingSelection && !isUploading);
 
   // Sync preview with currentImage when no pending changes
   useEffect(() => {
-    if (!hasPendingSelection && currentImage && !currentImage.startsWith('data:')) {
-      setPreview(currentImage);
-    } else if (!hasPendingSelection && !currentImage) {
-      setPreview(null);
+    if (!hasPendingSelection) {
+      if (currentImage && typeof currentImage === 'string' && currentImage.trim()) {
+        // Resolve relative URLs to absolute using API base URL or current origin
+        let resolvedUrl = currentImage;
+        if (currentImage.startsWith('/')) {
+          const baseUrl = ENV.apiBaseUrl || (typeof window !== 'undefined' ? window.location.origin : '');
+          resolvedUrl = baseUrl + currentImage;
+        }
+        setPreview(resolvedUrl);
+      } else {
+        setPreview(null);
+      }
     }
   }, [currentImage, hasPendingSelection]);
 
@@ -113,52 +141,46 @@ export function ImageUploader({ currentImage, onImageUpdate }: ImageUploaderProp
     }
   }, [success]);
 
-  const handleBackgroundColorChange = useCallback((color: string) => {
+  const handleBackgroundColorChange = (color: string) => {
     setBackgroundColor(color);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem(AVATAR_BG_COLOR_KEY, color);
+  };
+
+  const handleFileSelect = (file: File | null) => {
+    if (!file) return;
+
+    if (!VALID_IMAGE_TYPES.includes(file.type)) {
+      setError(t('account.avatar.invalidType') || 'Invalid file type. Only images are allowed.');
+      return;
     }
-  }, []);
 
-  const handleFileSelect = useCallback(
-    (file: File | null) => {
-      if (!file) return;
+    if (file.size > MAX_FILE_SIZE) {
+      setError(t('account.avatar.fileTooLarge') || 'File is too large. Maximum size is 5MB.');
+      return;
+    }
 
-      if (!VALID_IMAGE_TYPES.includes(file.type)) {
-        setError(t('account.avatar.invalidType') || 'Invalid file type. Only images are allowed.');
-        return;
-      }
+    setError(null);
+    setSuccess(false);
+    setPendingFile(file);
+    setPendingAvatarUrl(null);
 
-      if (file.size > MAX_FILE_SIZE) {
-        setError(t('account.avatar.fileTooLarge') || 'File is too large. Maximum size is 5MB.');
-        return;
-      }
+    // Show preview
+    const reader = new FileReader();
+    reader.onloadend = () => setPreview(reader.result as string);
+    reader.readAsDataURL(file);
+  };
 
-      setError(null);
-      setSuccess(false);
-      setPendingFile(file);
-      setPendingAvatarUrl(null);
-
-      // Show preview
-      const reader = new FileReader();
-      reader.onloadend = () => setPreview(reader.result as string);
-      reader.readAsDataURL(file);
-    },
-    [t]
-  );
-
-  const handlePredefinedAvatarSelect = useCallback((avatarUrl: string) => {
+  const handlePredefinedAvatarSelect = (avatarUrl: string) => {
     setError(null);
     setSuccess(false);
     setPendingAvatarUrl(avatarUrl);
     setPendingFile(null);
     setPreview(avatarUrl);
-  }, []);
+  };
 
-  const handleConfirmUpload = useCallback(async () => {
+  const handleConfirmUpload = async () => {
     const fileToUpload =
       pendingFile ||
-      (pendingAvatarUrl ? await imageUrlToFile(pendingAvatarUrl, 'avatar.png') : null);
+      (pendingAvatarUrl ? await imageUrlToFile(pendingAvatarUrl, 'avatar.webp') : null);
     if (!fileToUpload) return;
 
     setIsUploading(true);
@@ -197,9 +219,9 @@ export function ImageUploader({ currentImage, onImageUpdate }: ImageUploaderProp
     } finally {
       setIsUploading(false);
     }
-  }, [pendingFile, pendingAvatarUrl, backgroundColor, currentImage, onImageUpdate, t]);
+  };
 
-  const handleCancelPreview = useCallback(() => {
+  const handleCancelPreview = () => {
     if (currentImage && !currentImage.startsWith('data:')) {
       setPreview(currentImage);
     } else {
@@ -212,17 +234,14 @@ export function ImageUploader({ currentImage, onImageUpdate }: ImageUploaderProp
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
-  }, [currentImage]);
+  };
 
-  const handleDelete = useCallback(async () => {
-    if (
-      !confirm(
-        t('account.avatar.deleteConfirm') || 'Are you sure you want to delete your profile image?'
-      )
-    ) {
-      return;
-    }
+  const handleDelete = () => {
+    setShowDeleteDialog(true);
+  };
 
+  const handleConfirmDelete = async () => {
+    setShowDeleteDialog(false);
     setIsUploading(true);
     setError(null);
     setSuccess(false);
@@ -244,41 +263,35 @@ export function ImageUploader({ currentImage, onImageUpdate }: ImageUploaderProp
     } finally {
       setIsUploading(false);
     }
-  }, [onImageUpdate, t]);
+  };
 
-  const handleDragOver = useCallback((e: React.DragEvent) => {
+  const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
     setIsDragging(true);
-  }, []);
+  };
 
-  const handleDragLeave = useCallback((e: React.DragEvent) => {
+  const handleDragLeave = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
     setIsDragging(false);
-  }, []);
+  };
 
-  const handleDrop = useCallback(
-    (e: React.DragEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-      setIsDragging(false);
-      const file = e.dataTransfer.files[0];
-      if (file) handleFileSelect(file);
-    },
-    [handleFileSelect]
-  );
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    const file = e.dataTransfer.files[0];
+    if (file) handleFileSelect(file);
+  };
 
-  const handleFileInputChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const file = e.target.files?.[0] || null;
-      if (file) handleFileSelect(file);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
-    },
-    [handleFileSelect]
-  );
+  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    if (file) handleFileSelect(file);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
 
   const getBackgroundStyle = () => {
     if (backgroundColor === 'transparent') {
@@ -316,7 +329,19 @@ export function ImageUploader({ currentImage, onImageUpdate }: ImageUploaderProp
               style={getBackgroundStyle()}
             >
               {preview ? (
-                <img src={preview} alt="Profile" className="h-full w-full object-cover" />
+                <img
+                  key={preview}
+                  src={preview}
+                  alt="Profile"
+                  className="h-full w-full object-cover"
+                  onError={() => {
+                    // Image failed to load (404 or other error) - backend returns 404 if no avatar
+                    setPreview(null);
+                  }}
+                  onLoad={() => {
+                    // Image loaded successfully - no action needed
+                  }}
+                />
               ) : (
                 <div className="flex h-full w-full items-center justify-center">
                   <Camera
@@ -515,6 +540,29 @@ export function ImageUploader({ currentImage, onImageUpdate }: ImageUploaderProp
           )
         )}
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {t('account.avatar.delete') || 'Delete Profile Image'}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('account.avatar.deleteConfirm') ||
+                'Are you sure you want to delete your profile image? This action cannot be undone.'}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isUploading}>
+              {t('common.cancel') || 'Cancel'}
+            </AlertDialogCancel>
+            <AlertDialogAction variant="destructive" onClick={handleConfirmDelete} disabled={isUploading}>
+              {t('account.avatar.delete') || 'Delete'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Success Message */}
       {success && !hasPendingSelection && (

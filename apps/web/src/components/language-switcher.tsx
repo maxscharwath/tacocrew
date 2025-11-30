@@ -1,38 +1,31 @@
 import { useTranslation } from 'react-i18next';
-import { SegmentedControl, type SegmentedControlOption } from '@/components/ui';
+import { SegmentedControl, type SegmentedControlOption, CountryFlag } from '@/components/ui';
 import { updateUserLanguage } from '@/lib/api/user';
-import { languages } from '@/lib/locale.config';
+import { languages, type LanguageConfig } from '@/lib/locale.config';
 
 type LanguageCode = (typeof languages)[number]['code'];
+
+const options: SegmentedControlOption<LanguageCode>[] = languages.map((language) => {
+  const lang = language as LanguageConfig & { countryCode: string };
+  return {
+    value: lang.code as LanguageCode,
+    label: (
+      <>
+        <CountryFlag countryCode={lang.countryCode} size="sm" />
+        <span>{lang.code.toUpperCase()}</span>
+      </>
+    ),
+  };
+});
 
 export function LanguageSwitcher() {
   const { i18n } = useTranslation();
 
-  const currentLanguageCode = i18n.language.split('-')[0];
-  const languageList = languages.map((language) => ({
-    code: language.code,
-    icon: language.icon,
-    label: language.name,
-    shortLabel: language.short,
-    name: language.name,
-  }));
-
+  const currentLanguageCode = i18n.language;
   const fallbackCode = languages[0].code;
-  const normalizedLanguage = (
-    languageList.some((language) => language.code === currentLanguageCode)
-      ? currentLanguageCode
-      : fallbackCode
-  ) as LanguageCode;
-
-  const options: SegmentedControlOption<LanguageCode>[] = languageList.map((language) => ({
-    value: language.code,
-    label: (
-      <>
-        <span aria-hidden>{language.icon}</span>
-        <span>{language.shortLabel}</span>
-      </>
-    ),
-  }));
+  const normalizedLanguage = languages.some((language) => language.code === currentLanguageCode)
+    ? (currentLanguageCode as LanguageCode)
+    : (fallbackCode as LanguageCode);
 
   return (
     <SegmentedControl
@@ -43,7 +36,7 @@ export function LanguageSwitcher() {
         i18n.changeLanguage(languageCode);
 
         // Sync to backend (fire and forget - don't block UI)
-        updateUserLanguage(languageCode).catch((error) => {
+        updateUserLanguage(languageCode as 'en' | 'fr' | 'de').catch((error) => {
           console.error('Failed to update user language preference', error);
         });
       }}

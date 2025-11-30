@@ -1,12 +1,33 @@
-import { Trash2 } from 'lucide-react';
+import { Globe, Hash, MapPin, Phone, Tag, Trash2, User } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { DeliveryTypeSelector } from '@/components/orders/DeliveryTypeSelector';
-import { Alert, Button, Input, Label } from '@/components/ui';
-import { SWISS_CANTONS, SWITZERLAND_COUNTRY } from '@/constants/location';
+import {
+  Alert,
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  Button,
+  Input,
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+  Label,
+} from '@/components/ui';
+import {
+  getSwissCantons,
+  getSwitzerlandName,
+  SWITZERLAND_COUNTRY,
+} from '@/constants/location';
 import { UserApi } from '@/lib/api';
 import type { DeliveryProfile, DeliveryProfilePayload } from '@/lib/api/types';
 import { getInitialDeliveryFormState, profileToForm } from '@/utils/delivery-profile-helpers';
+import { formatPhoneNumber } from '@/utils/phone-formatter';
 
 interface DeliveryProfilesManagerProps {
   readonly profiles: DeliveryProfile[];
@@ -24,6 +45,7 @@ export function DeliveryProfilesManager({ profiles }: DeliveryProfilesManagerPro
   const [feedback, setFeedback] = useState<{ tone: 'success' | 'error'; text: string } | null>(
     null
   );
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const selectProfile = (profileId: string) => {
     setSelectedId(profileId);
@@ -110,12 +132,18 @@ export function DeliveryProfilesManager({ profiles }: DeliveryProfilesManagerPro
     }
   };
 
-  const handleDelete = async () => {
+  const handleDelete = () => {
     if (!selectedId) {
       setFeedback({ tone: 'error', text: tt('messages.selectProfile') });
       return;
     }
-    if (!globalThis.window.confirm(tt('confirmDelete'))) return;
+    setShowDeleteDialog(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!selectedId) return;
+
+    setShowDeleteDialog(false);
     setBusy(true);
     setFeedback(null);
     try {
@@ -153,7 +181,7 @@ export function DeliveryProfilesManager({ profiles }: DeliveryProfilesManagerPro
         </span>
       </div>
       <p className="text-slate-400 text-xs">
-        {profile.contactName} • {profile.phone}
+        {profile.contactName} • {formatPhoneNumber(profile.phone)}
       </p>
       <p className="text-slate-500 text-xs">
         {profile.address.road}
@@ -185,30 +213,45 @@ export function DeliveryProfilesManager({ profiles }: DeliveryProfilesManagerPro
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="grid gap-1 sm:col-span-2">
               <Label htmlFor="profileLabel">{tt('inputPlaceholder')}</Label>
-              <Input
-                id="profileLabel"
-                value={form.label}
-                disabled={busy}
-                onChange={(event) => setField('label', event.target.value)}
-              />
+              <InputGroup>
+                <InputGroupAddon>
+                  <Tag className="size-4" />
+                </InputGroupAddon>
+                <InputGroupInput
+                  id="profileLabel"
+                  value={form.label}
+                  disabled={busy}
+                  onChange={(event) => setField('label', event.target.value)}
+                />
+              </InputGroup>
             </div>
             <div className="grid gap-1">
               <Label htmlFor="contactName">{t('orders.submit.form.fields.customerName')}</Label>
-              <Input
-                id="contactName"
-                value={form.contactName}
-                disabled={busy}
-                onChange={(event) => setField('contactName', event.target.value)}
-              />
+              <InputGroup>
+                <InputGroupAddon>
+                  <User className="size-4" />
+                </InputGroupAddon>
+                <InputGroupInput
+                  id="contactName"
+                  value={form.contactName}
+                  disabled={busy}
+                  onChange={(event) => setField('contactName', event.target.value)}
+                />
+              </InputGroup>
             </div>
             <div className="grid gap-1">
               <Label htmlFor="phoneField">{t('orders.submit.form.fields.customerPhone')}</Label>
-              <Input
-                id="phoneField"
-                value={form.phone}
-                disabled={busy}
-                onChange={(event) => setField('phone', event.target.value)}
-              />
+              <InputGroup>
+                <InputGroupAddon>
+                  <Phone className="size-4" />
+                </InputGroupAddon>
+                <InputGroupInput
+                  id="phoneField"
+                  value={form.phone}
+                  disabled={busy}
+                  onChange={(event) => setField('phone', event.target.value)}
+                />
+              </InputGroup>
             </div>
             <div className="sm:col-span-2">
               <DeliveryTypeSelector
@@ -223,42 +266,62 @@ export function DeliveryProfilesManager({ profiles }: DeliveryProfilesManagerPro
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="grid gap-1">
               <Label htmlFor="streetField">{t('orders.submit.form.fields.street')}</Label>
-              <Input
-                id="streetField"
-                value={form.address.road}
-                disabled={busy}
-                onChange={(event) => setAddressField('road', event.target.value)}
-              />
+              <InputGroup>
+                <InputGroupAddon>
+                  <MapPin className="size-4" />
+                </InputGroupAddon>
+                <InputGroupInput
+                  id="streetField"
+                  value={form.address.road}
+                  disabled={busy}
+                  onChange={(event) => setAddressField('road', event.target.value)}
+                />
+              </InputGroup>
             </div>
             <div className="grid gap-1">
               <Label htmlFor="houseNumberField">{t('orders.submit.form.fields.houseNumber')}</Label>
-              <Input
-                id="houseNumberField"
-                value={form.address.houseNumber ?? ''}
-                disabled={busy}
-                onChange={(event) => setAddressField('houseNumber', event.target.value)}
-              />
+              <InputGroup>
+                <InputGroupAddon>
+                  <Hash className="size-4" />
+                </InputGroupAddon>
+                <InputGroupInput
+                  id="houseNumberField"
+                  value={form.address.houseNumber ?? ''}
+                  disabled={busy}
+                  onChange={(event) => setAddressField('houseNumber', event.target.value)}
+                />
+              </InputGroup>
             </div>
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="grid gap-1">
               <Label htmlFor="postcodeField">{t('orders.submit.form.fields.postcode')}</Label>
-              <Input
-                id="postcodeField"
-                value={form.address.postcode}
-                disabled={busy}
-                onChange={(event) => setAddressField('postcode', event.target.value)}
-              />
+              <InputGroup>
+                <InputGroupAddon>
+                  <Hash className="size-4" />
+                </InputGroupAddon>
+                <InputGroupInput
+                  id="postcodeField"
+                  value={form.address.postcode}
+                  disabled={busy}
+                  onChange={(event) => setAddressField('postcode', event.target.value)}
+                />
+              </InputGroup>
             </div>
             <div className="grid gap-1">
               <Label htmlFor="cityField">{t('orders.submit.form.fields.city')}</Label>
-              <Input
-                id="cityField"
-                value={form.address.city}
-                disabled={busy}
-                onChange={(event) => setAddressField('city', event.target.value)}
-              />
+              <InputGroup>
+                <InputGroupAddon>
+                  <MapPin className="size-4" />
+                </InputGroupAddon>
+                <InputGroupInput
+                  id="cityField"
+                  value={form.address.city}
+                  disabled={busy}
+                  onChange={(event) => setAddressField('city', event.target.value)}
+                />
+              </InputGroup>
             </div>
           </div>
 
@@ -272,7 +335,7 @@ export function DeliveryProfilesManager({ profiles }: DeliveryProfilesManagerPro
                 disabled={busy}
                 onChange={(event) => setAddressField('state', event.target.value)}
               >
-                {SWISS_CANTONS.map((canton) => (
+                {getSwissCantons(t).map((canton) => (
                   <option key={canton.code} value={canton.code}>
                     {canton.label}
                   </option>
@@ -281,7 +344,17 @@ export function DeliveryProfilesManager({ profiles }: DeliveryProfilesManagerPro
             </div>
             <div className="grid gap-1">
               <Label htmlFor="countryField">{t('orders.submit.form.fields.country')}</Label>
-              <Input id="countryField" value={SWITZERLAND_COUNTRY} disabled readOnly />
+              <InputGroup>
+                <InputGroupAddon>
+                  <Globe className="size-4" />
+                </InputGroupAddon>
+                <InputGroupInput
+                  id="countryField"
+                  value={getSwitzerlandName(t)}
+                  disabled
+                  readOnly
+                />
+              </InputGroup>
             </div>
           </div>
         </section>
@@ -349,6 +422,26 @@ export function DeliveryProfilesManager({ profiles }: DeliveryProfilesManagerPro
           )}
         </div>
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{tt('delete')}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {tt('confirmDelete')}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={busy}>
+              {t('common.cancel')}
+            </AlertDialogCancel>
+            <AlertDialogAction variant="destructive" onClick={handleConfirmDelete} disabled={busy}>
+              {tt('delete')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

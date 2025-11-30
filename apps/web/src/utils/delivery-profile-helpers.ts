@@ -1,5 +1,10 @@
 import type { DeliveryType } from '@/components/orders/DeliveryTypeSelector';
-import { SWISS_CANTONS, SWITZERLAND_COUNTRY } from '@/constants/location';
+import {
+  DEFAULT_CANTON_CODE,
+  SWISS_CANTON_CODES,
+  SWITZERLAND_COUNTRY,
+  SwissCanton,
+} from '@/constants/location';
 import type { DeliveryProfile, DeliveryProfilePayload } from '@/lib/api/types';
 
 const initialFormState = (): DeliveryProfilePayload => ({
@@ -12,7 +17,7 @@ const initialFormState = (): DeliveryProfilePayload => ({
     houseNumber: '',
     postcode: '',
     city: '',
-    state: SWISS_CANTONS[0]?.code ?? '',
+    state: DEFAULT_CANTON_CODE,
     country: SWITZERLAND_COUNTRY,
   },
 });
@@ -36,9 +41,7 @@ export function profileToForm(profile: DeliveryProfile | null | undefined): Deli
       postcode: profile.address.postcode,
       city: profile.address.city,
       state:
-        SWISS_CANTONS.find((canton) => canton.code === profile.address.state)?.code ??
-        SWISS_CANTONS[0]?.code ??
-        '',
+        SWISS_CANTON_CODES.find((code) => code === profile.address.state) ?? DEFAULT_CANTON_CODE,
       country: SWITZERLAND_COUNTRY,
     },
   };

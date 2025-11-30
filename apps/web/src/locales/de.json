@@ -46,6 +46,37 @@
     "currency": {
       "chf": "CHF"
     },
+    "country": {
+      "switzerland": "Schweiz"
+    },
+    "cantons": {
+      "AG": "Aargau",
+      "AI": "Appenzell Innerrhoden",
+      "AR": "Appenzell Ausserrhoden",
+      "BE": "Bern",
+      "BL": "Basel-Landschaft",
+      "BS": "Basel-Stadt",
+      "FR": "Freiburg",
+      "GE": "Genf",
+      "GL": "Glarus",
+      "GR": "Graubünden",
+      "JU": "Jura",
+      "LU": "Luzern",
+      "NE": "Neuenburg",
+      "NW": "Nidwalden",
+      "OW": "Obwalden",
+      "SG": "St. Gallen",
+      "SH": "Schaffhausen",
+      "SO": "Solothurn",
+      "SZ": "Schwyz",
+      "TG": "Thurgau",
+      "TI": "Tessin",
+      "UR": "Uri",
+      "VD": "Waadt",
+      "VS": "Wallis",
+      "ZG": "Zug",
+      "ZH": "Zürich"
+    },
     "dateShortcuts": {
       "quickSelect": "Schnellauswahl",
       "today": "Heute",
@@ -101,6 +132,9 @@
       "description": "Deine Kontodaten",
       "name": "Name",
       "email": "E-Mail",
+      "phone": "Telefonnummer",
+      "phonePlaceholder": "+41 XX XXX XX XX",
+      "phoneNotSet": "Nicht festgelegt",
       "language": "Sprache",
       "verified": "Verifiziert",
       "unverified": "Nicht verifiziert"
@@ -135,6 +169,10 @@
     "nameUpdate": {
       "success": "Name erfolgreich aktualisiert",
       "failed": "Name konnte nicht aktualisiert werden"
+    },
+    "phoneUpdate": {
+      "success": "Telefonnummer erfolgreich aktualisiert",
+      "failed": "Telefonnummer konnte nicht aktualisiert werden"
     },
     "pushNotifications": {
       "title": "Push-Benachrichtigungen",
@@ -649,7 +687,12 @@
         "summaryFood": "Summe Essen",
         "summaryFee": "Lieferkosten",
         "summaryPerPerson": "Pro Person ({{count}})",
-        "summaryTotal": "Gesamtbetrag"
+        "summaryTotal": "Gesamtbetrag",
+        "leaderPhone": {
+          "title": "Via Twint zurückzahlen",
+          "description": "Sende deine Zahlung an den Teamleiter",
+          "twint": "Twint"
+        }
       }
     },
     "submit": {

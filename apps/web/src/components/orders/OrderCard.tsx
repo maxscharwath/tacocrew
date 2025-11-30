@@ -104,7 +104,8 @@ export function OrderCard({
               {isMyOrder ? (
                 <UserBadge
                   userId={order.userId}
-                  name={t('orders.detail.list.myOrderBadge')}
+                  name={userName}
+                  displayName={t('orders.detail.list.myOrderBadge')}
                   variant="highlighted"
                   size="sm"
                 />

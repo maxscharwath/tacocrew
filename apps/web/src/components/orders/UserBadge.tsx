@@ -4,7 +4,8 @@ import { getAvatarSizeClass, getAvatarSizePixels, getUserInitials } from './user
 
 type UserBadgeProps = {
   readonly userId: string;
-  readonly name: string;
+  readonly name: string; // User's actual name (used for avatar initials)
+  readonly displayName?: string; // Optional display name (e.g., "My Order"). Defaults to name if not provided
   readonly variant?: 'default' | 'highlighted';
   readonly size?: 'sm' | 'md';
   readonly className?: string;
@@ -23,6 +24,7 @@ const BADGE_CLASSES = {
 export function UserBadge({
   userId,
   name,
+  displayName,
   variant = 'default',
   size = 'sm',
   className,
@@ -30,6 +32,7 @@ export function UserBadge({
   const avatarSize = getAvatarSizePixels(size);
   const avatarUrl = getAvatarUrl(userId, { size: avatarSize });
   const avatarSizeClass = getAvatarSizeClass(size, 'badge');
+  const badgeText = displayName ?? name;
 
   return (
     <Badge tone="brand" className={`${BADGE_CLASSES[variant]} ${className ?? ''}`}>
@@ -42,7 +45,7 @@ export function UserBadge({
       >
         {getUserInitials(name)}
       </Avatar>
-      {name}
+      {badgeText}
     </Badge>
   );
 }

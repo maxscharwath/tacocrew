@@ -1,30 +1,65 @@
+import type { TFunction } from 'i18next';
+
+// Country code/identifier (used in forms and API)
 export const SWITZERLAND_COUNTRY = 'Switzerland';
 
-export const SWISS_CANTONS: Array<{ code: string; label: string }> = [
-  { code: 'AG', label: 'Aargau' },
-  { code: 'AI', label: 'Appenzell Innerrhoden' },
-  { code: 'AR', label: 'Appenzell Ausserrhoden' },
-  { code: 'BE', label: 'Bern' },
-  { code: 'BL', label: 'Basel-Landschaft' },
-  { code: 'BS', label: 'Basel-Stadt' },
-  { code: 'FR', label: 'Fribourg' },
-  { code: 'GE', label: 'Genève' },
-  { code: 'GL', label: 'Glarus' },
-  { code: 'GR', label: 'Graubünden' },
-  { code: 'JU', label: 'Jura' },
-  { code: 'LU', label: 'Luzern' },
-  { code: 'NE', label: 'Neuchâtel' },
-  { code: 'NW', label: 'Nidwalden' },
-  { code: 'OW', label: 'Obwalden' },
-  { code: 'SG', label: 'St. Gallen' },
-  { code: 'SH', label: 'Schaffhausen' },
-  { code: 'SO', label: 'Solothurn' },
-  { code: 'SZ', label: 'Schwyz' },
-  { code: 'TG', label: 'Thurgau' },
-  { code: 'TI', label: 'Ticino' },
-  { code: 'UR', label: 'Uri' },
-  { code: 'VD', label: 'Vaud' },
-  { code: 'VS', label: 'Valais' },
-  { code: 'ZG', label: 'Zug' },
-  { code: 'ZH', label: 'Zürich' },
-];
+/**
+ * Get translated country name for Switzerland
+ * @param t - Translation function from useTranslation hook
+ * @returns Translated country name
+ */
+export function getSwitzerlandName(t: TFunction): string {
+  return t('common.country.switzerland');
+}
+
+/**
+ * Swiss canton codes enum
+ */
+export enum SwissCanton {
+  AG = 'AG',
+  AI = 'AI',
+  AR = 'AR',
+  BE = 'BE',
+  BL = 'BL',
+  BS = 'BS',
+  FR = 'FR',
+  GE = 'GE',
+  GL = 'GL',
+  GR = 'GR',
+  JU = 'JU',
+  LU = 'LU',
+  NE = 'NE',
+  NW = 'NW',
+  OW = 'OW',
+  SG = 'SG',
+  SH = 'SH',
+  SO = 'SO',
+  SZ = 'SZ',
+  TG = 'TG',
+  TI = 'TI',
+  UR = 'UR',
+  VD = 'VD',
+  VS = 'VS',
+  ZG = 'ZG',
+  ZH = 'ZH',
+}
+
+// Default canton code
+export const DEFAULT_CANTON_CODE = SwissCanton.VD;
+
+/**
+ * Get all Swiss canton codes in order
+ */
+export const SWISS_CANTON_CODES: SwissCanton[] = Object.values(SwissCanton) as SwissCanton[];
+
+/**
+ * Get Swiss cantons with translated labels using i18n
+ * @param t - Translation function from useTranslation hook
+ * @returns Array of canton objects with code and translated label
+ */
+export function getSwissCantons(t: TFunction): Array<{ code: string; label: string }> {
+  return SWISS_CANTON_CODES.map((code) => ({
+    code,
+    label: t(`common.cantons.${code}`),
+  }));
+}

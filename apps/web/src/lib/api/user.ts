@@ -47,6 +47,12 @@ export function updateUserLanguage(language: 'en' | 'fr' | 'de') {
   });
 }
 
+export function updateUserPhone(phone: string | null) {
+  return apiClient.patch<UserProfile>('/api/v1/users/me/phone', {
+    body: { phone },
+  });
+}
+
 export function uploadAvatar(imageFile: File, backgroundColor?: string | null) {
   const formData = new FormData();
   formData.append('image', imageFile);

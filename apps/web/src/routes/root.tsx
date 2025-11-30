@@ -26,12 +26,13 @@ export function RootLayout() {
   // Use Better Auth's useSession hook for reactive, cached session data
   const { data: session, refetch } = useSession();
 
-  // Sync user's language preference from profile to i18n
+  // Sync user's language preference from profile to i18n (only on initial load)
   useEffect(() => {
-    if (profile?.language && profile.language !== i18n.language.split('-')[0]) {
+    if (profile?.language && profile.language !== i18n.language) {
       i18n.changeLanguage(profile.language);
     }
-  }, [profile?.language, i18n]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [profile?.language]);
 
   // Compute user name and initials from session or fallback to profile
   const userName = session?.user?.name || profile?.username || 'User';

@@ -20,6 +20,7 @@ export interface UserProfile {
   id: string;
   username: string | null;
   name: string | null;
+  phone?: string | null;
   slackId?: string;
   language?: string | null;
   image?: string | null;
@@ -119,6 +120,7 @@ export interface StockResponse {
 export interface GroupLeader {
   id: string;
   name: string | null;
+  phone?: string | null;
   image?: string | null;
 }
 

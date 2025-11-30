@@ -24,6 +24,7 @@ export const UserSchema = z.object({
   id: zId<UserId>(),
   username: z.string().nullable(),
   name: z.string().nullable(),
+  phone: z.string().nullable(),
   slackId: z.string().nullish(),
   language: z.string().nullable(),
   hasImage: z.boolean().optional(),
@@ -45,6 +46,7 @@ export const UserFromDbSchema = z.object({
   id: z.string(), // UUID from DB as string
   username: z.string().nullable(),
   name: z.string().nullable(),
+  phone: z.string().nullable(),
   slackId: z.string().nullish(),
   language: z.string().nullable(),
   image: DbImageSchema,

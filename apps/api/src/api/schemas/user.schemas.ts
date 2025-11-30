@@ -8,6 +8,7 @@ const UserResponseSchema = z.object({
   id: z.string(),
   username: z.string().nullable(),
   name: z.string().nullable(),
+  phone: z.string().nullable().optional(),
   slackId: z.string().optional(),
   language: z.string().nullable(),
   image: z.string().nullable().optional(),
@@ -17,6 +18,10 @@ const UserResponseSchema = z.object({
 
 const UpdateUserLanguageRequestSchema = z.object({
   language: z.enum(['en', 'fr', 'de']),
+});
+
+const UpdateUserPhoneRequestSchema = z.object({
+  phone: z.string().min(1).nullable(),
 });
 
 const CreateUserRequestSchema = z.object({
@@ -100,6 +105,7 @@ export const UserSchemas = {
   CreateUserRequestSchema,
   CreateUserResponseSchema,
   UpdateUserLanguageRequestSchema,
+  UpdateUserPhoneRequestSchema,
   UserOrderHistoryEntrySchema,
   UserGroupOrderSchema,
   PreviousOrderSchema,

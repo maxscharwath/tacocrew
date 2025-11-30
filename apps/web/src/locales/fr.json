@@ -46,6 +46,37 @@
     "currency": {
       "chf": "CHF"
     },
+    "country": {
+      "switzerland": "Suisse"
+    },
+    "cantons": {
+      "AG": "Argovie",
+      "AI": "Appenzell Rhodes-Intérieures",
+      "AR": "Appenzell Rhodes-Extérieures",
+      "BE": "Berne",
+      "BL": "Bâle-Campagne",
+      "BS": "Bâle-Ville",
+      "FR": "Fribourg",
+      "GE": "Genève",
+      "GL": "Glaris",
+      "GR": "Grisons",
+      "JU": "Jura",
+      "LU": "Lucerne",
+      "NE": "Neuchâtel",
+      "NW": "Nidwald",
+      "OW": "Obwald",
+      "SG": "Saint-Gall",
+      "SH": "Schaffhouse",
+      "SO": "Soleure",
+      "SZ": "Schwyz",
+      "TG": "Thurgovie",
+      "TI": "Tessin",
+      "UR": "Uri",
+      "VD": "Vaud",
+      "VS": "Valais",
+      "ZG": "Zoug",
+      "ZH": "Zurich"
+    },
     "dateShortcuts": {
       "quickSelect": "Raccourcis",
       "today": "Aujourd'hui",
@@ -101,6 +132,9 @@
       "description": "Vos détails de compte",
       "name": "Nom",
       "email": "E-mail",
+      "phone": "Numéro de téléphone",
+      "phonePlaceholder": "+41 XX XXX XX XX",
+      "phoneNotSet": "Non défini",
       "language": "Langue",
       "verified": "Vérifié",
       "unverified": "Non vérifié"
@@ -135,6 +169,10 @@
     "nameUpdate": {
       "success": "Nom mis à jour avec succès",
       "failed": "Échec de la mise à jour du nom"
+    },
+    "phoneUpdate": {
+      "success": "Numéro de téléphone mis à jour avec succès",
+      "failed": "Échec de la mise à jour du numéro de téléphone"
     },
     "pushNotifications": {
       "title": "Notifications Push",
@@ -659,7 +697,12 @@
         "summaryFood": "Total des tacos",
         "summaryFee": "Frais de livraison",
         "summaryPerPerson": "Par personne ({{count}})",
-        "summaryTotal": "Total général"
+        "summaryTotal": "Total général",
+        "leaderPhone": {
+          "title": "Rembourser via Twint",
+          "description": "Envoyez votre paiement au chef d'équipe",
+          "twint": "Twint"
+        }
       }
     },
     "submit": {

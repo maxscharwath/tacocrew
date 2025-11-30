@@ -1,4 +1,3 @@
-import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { type DateInput, toDate } from '@/lib/utils/date';
 
@@ -13,34 +12,22 @@ function safeFormat(formatter: () => string, fallback: string = '—'): string {
 export function useLocaleFormatter(defaultCurrency?: string) {
   const { i18n } = useTranslation();
 
-  const formatDateValue = useCallback(
-    (value: DateInput, options?: Intl.DateTimeFormatOptions) =>
-      safeFormat(() => new Intl.DateTimeFormat(i18n.language, options).format(toDate(value))),
-    [i18n.language]
-  );
+  const formatDateValue = (value: DateInput, options?: Intl.DateTimeFormatOptions) =>
+    safeFormat(() => new Intl.DateTimeFormat(i18n.language, options).format(toDate(value)));
 
-  const formatTimeValue = useCallback(
-    (value: DateInput, options?: Intl.DateTimeFormatOptions) =>
-      safeFormat(() => new Intl.DateTimeFormat(i18n.language, options).format(toDate(value))),
-    [i18n.language]
-  );
+  const formatTimeValue = (value: DateInput, options?: Intl.DateTimeFormatOptions) =>
+    safeFormat(() => new Intl.DateTimeFormat(i18n.language, options).format(toDate(value)));
 
-  const formatDateTimeValue = useCallback(
-    (value: DateInput, options?: Intl.DateTimeFormatOptions) =>
-      safeFormat(() => new Intl.DateTimeFormat(i18n.language, options).format(toDate(value))),
-    [i18n.language]
-  );
+  const formatDateTimeValue = (value: DateInput, options?: Intl.DateTimeFormatOptions) =>
+    safeFormat(() => new Intl.DateTimeFormat(i18n.language, options).format(toDate(value)));
 
-  const formatCurrencyValue = useCallback(
-    (amount: number, currency = defaultCurrency ?? 'CHF', options?: Intl.NumberFormatOptions) =>
-      new Intl.NumberFormat(i18n.language, {
-        style: 'currency',
-        currency,
-        minimumFractionDigits: 2,
-        ...options,
-      }).format(amount),
-    [i18n.language, defaultCurrency]
-  );
+  const formatCurrencyValue = (amount: number, currency = defaultCurrency ?? 'CHF', options?: Intl.NumberFormatOptions) =>
+    new Intl.NumberFormat(i18n.language, {
+      style: 'currency',
+      currency,
+      minimumFractionDigits: 2,
+      ...options,
+    }).format(amount);
 
   return {
     formatCurrency: formatCurrencyValue,

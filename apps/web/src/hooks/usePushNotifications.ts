@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   getPushNotificationClient,
   PushNotificationClient,
@@ -77,7 +77,7 @@ export function usePushNotifications(): UsePushNotificationsReturn {
     checkSubscriptionStatus();
   }, []);
 
-  const checkSubscriptionStatus = useCallback(async () => {
+  const checkSubscriptionStatus = async () => {
     if (!clientRef.current) {
       return;
     }
@@ -94,9 +94,9 @@ export function usePushNotifications(): UsePushNotificationsReturn {
       // Silently fail - subscription check shouldn't block the UI
       console.warn('Failed to check subscription status:', error);
     }
-  }, []);
+  };
 
-  const subscribe = useCallback(async () => {
+  const subscribe = async () => {
     if (!clientRef.current) {
       setState((prev) => ({
         ...prev,
@@ -151,9 +151,9 @@ export function usePushNotifications(): UsePushNotificationsReturn {
         errorCode,
       }));
     }
-  }, []);
+  };
 
-  const unsubscribe = useCallback(async () => {
+  const unsubscribe = async () => {
     if (!clientRef.current) {
       return;
     }
@@ -188,13 +188,13 @@ export function usePushNotifications(): UsePushNotificationsReturn {
         errorCode,
       }));
     }
-  }, []);
+  };
 
-  const refresh = useCallback(async () => {
+  const refresh = async () => {
     await checkSubscriptionStatus();
     const permission = PushNotificationClient.getPermission();
     setState((prev) => ({ ...prev, permission }));
-  }, [checkSubscriptionStatus]);
+  };
 
   return {
     ...state,

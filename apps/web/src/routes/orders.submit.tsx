@@ -1,4 +1,4 @@
-import { ArrowLeft, Lock, Send, Truck } from 'lucide-react';
+import { ArrowLeft, Globe, Hash, Lock, MapPin, Phone, Send, Tag, Truck, User } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -18,6 +18,14 @@ import { PaymentMethodSelector } from '@/components/orders/PaymentMethodSelector
 import { TimeSlotSelector } from '@/components/orders/TimeSlotSelector';
 import {
   Alert,
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
   Button,
   Card,
   CardContent,
@@ -25,10 +33,19 @@ import {
   CardHeader,
   CardTitle,
   Checkbox,
-  Input,
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
   Label,
 } from '@/components/ui';
-import { SWISS_CANTONS, SWITZERLAND_COUNTRY } from '@/constants/location';
+import {
+  DEFAULT_CANTON_CODE,
+  getSwissCantons,
+  getSwitzerlandName,
+  SWISS_CANTON_CODES,
+  SWITZERLAND_COUNTRY,
+  SwissCanton,
+} from '@/constants/location';
 import { useDeveloperMode } from '@/hooks/useDeveloperMode';
 import { OrdersApi, UserApi } from '@/lib/api';
 import { ApiError } from '@/lib/api/http';
@@ -38,6 +55,7 @@ import { routes } from '@/lib/routes';
 import type { DeliveryFormData } from '@/lib/types/form-data';
 import { createActionHandler } from '@/lib/utils/action-handler';
 import { parseFormData } from '@/lib/utils/form-data';
+import { formatPhoneNumber } from '@/utils/phone-formatter';
 
 type LoaderData = {
   groupOrder: Awaited<ReturnType<typeof OrdersApi.getGroupOrderWithOrders>>['groupOrder'];
@@ -184,13 +202,14 @@ export function OrderSubmitRoute() {
   const [houseNumber, setHouseNumber] = useState('');
   const [postcode, setPostcode] = useState('');
   const [city, setCity] = useState('');
-  const [stateRegion, setStateRegion] = useState(SWISS_CANTONS[0]?.code ?? '');
+  const [stateRegion, setStateRegion] = useState<SwissCanton>(DEFAULT_CANTON_CODE);
   const [profileLabel, setProfileLabel] = useState('');
   const [profileMessage, setProfileMessage] = useState<{
     type: 'success' | 'error';
     text: string;
   } | null>(null);
   const [profileLoading, setProfileLoading] = useState(false);
+  const [showDeleteProfileDialog, setShowDeleteProfileDialog] = useState(false);
   const participantText =
     userOrders.length === 0
       ? t('orders.submit.hero.participants.none')
@@ -208,9 +227,7 @@ export function OrderSubmitRoute() {
     setPostcode(profile.address.postcode);
     setCity(profile.address.city);
     setStateRegion(
-      SWISS_CANTONS.find((canton) => canton.code === profile.address.state)?.code ??
-        SWISS_CANTONS[0]?.code ??
-        ''
+      SWISS_CANTON_CODES.find((code) => code === profile.address.state) ?? DEFAULT_CANTON_CODE
     );
     setProfileLabel(profile.label ?? '');
     setProfileMessage(null);
@@ -333,14 +350,18 @@ export function OrderSubmitRoute() {
     }
   };
 
-  const handleDeleteProfile = async () => {
+  const handleDeleteProfile = () => {
     if (!selectedProfileId) {
       setProfileMessage({ type: 'error', text: t('orders.submit.saved.messages.selectProfile') });
       return;
     }
-    if (!globalThis.window.confirm(t('orders.submit.saved.confirmDelete'))) {
-      return;
-    }
+    setShowDeleteProfileDialog(true);
+  };
+
+  const handleConfirmDeleteProfile = async () => {
+    if (!selectedProfileId) return;
+
+    setShowDeleteProfileDialog(false);
     setProfileLoading(true);
     setProfileMessage(null);
     try {
@@ -427,29 +448,39 @@ export function OrderSubmitRoute() {
                       <Label htmlFor="customerName" required>
                         {t('orders.submit.form.fields.customerName')}
                       </Label>
-                      <Input
-                        id="customerName"
-                        name="customerName"
-                        type="text"
-                        required
-                        disabled={isSubmitting}
-                        value={customerName}
-                        onChange={(event) => setCustomerName(event.target.value)}
-                      />
+                      <InputGroup>
+                        <InputGroupAddon>
+                          <User className="size-4" />
+                        </InputGroupAddon>
+                        <InputGroupInput
+                          id="customerName"
+                          name="customerName"
+                          type="text"
+                          required
+                          disabled={isSubmitting}
+                          value={customerName}
+                          onChange={(event) => setCustomerName(event.target.value)}
+                        />
+                      </InputGroup>
                     </div>
                     <div className="grid gap-2">
                       <Label htmlFor="customerPhone" required>
                         {t('orders.submit.form.fields.customerPhone')}
                       </Label>
-                      <Input
-                        id="customerPhone"
-                        name="customerPhone"
-                        type="tel"
-                        required
-                        disabled={isSubmitting}
-                        value={customerPhone}
-                        onChange={(event) => setCustomerPhone(event.target.value)}
-                      />
+                      <InputGroup>
+                        <InputGroupAddon>
+                          <Phone className="size-4" />
+                        </InputGroupAddon>
+                        <InputGroupInput
+                          id="customerPhone"
+                          name="customerPhone"
+                          type="tel"
+                          required
+                          disabled={isSubmitting}
+                          value={customerPhone}
+                          onChange={(event) => setCustomerPhone(event.target.value)}
+                        />
+                      </InputGroup>
                     </div>
                   </div>
 
@@ -465,28 +496,38 @@ export function OrderSubmitRoute() {
                       <Label htmlFor="road" required>
                         {t('orders.submit.form.fields.street')}
                       </Label>
-                      <Input
-                        id="road"
-                        name="road"
-                        type="text"
-                        required
-                        disabled={isSubmitting}
-                        value={road}
-                        onChange={(event) => setRoad(event.target.value)}
-                      />
+                      <InputGroup>
+                        <InputGroupAddon>
+                          <MapPin className="size-4" />
+                        </InputGroupAddon>
+                        <InputGroupInput
+                          id="road"
+                          name="road"
+                          type="text"
+                          required
+                          disabled={isSubmitting}
+                          value={road}
+                          onChange={(event) => setRoad(event.target.value)}
+                        />
+                      </InputGroup>
                     </div>
                     <div className="grid gap-2">
                       <Label htmlFor="houseNumber">
                         {t('orders.submit.form.fields.houseNumber')}
                       </Label>
-                      <Input
-                        id="houseNumber"
-                        name="houseNumber"
-                        type="text"
-                        disabled={isSubmitting}
-                        value={houseNumber}
-                        onChange={(event) => setHouseNumber(event.target.value)}
-                      />
+                      <InputGroup>
+                        <InputGroupAddon>
+                          <Hash className="size-4" />
+                        </InputGroupAddon>
+                        <InputGroupInput
+                          id="houseNumber"
+                          name="houseNumber"
+                          type="text"
+                          disabled={isSubmitting}
+                          value={houseNumber}
+                          onChange={(event) => setHouseNumber(event.target.value)}
+                        />
+                      </InputGroup>
                     </div>
                   </div>
 
@@ -495,29 +536,39 @@ export function OrderSubmitRoute() {
                       <Label htmlFor="postcode" required>
                         {t('orders.submit.form.fields.postcode')}
                       </Label>
-                      <Input
-                        id="postcode"
-                        name="postcode"
-                        type="text"
-                        required
-                        disabled={isSubmitting}
-                        value={postcode}
-                        onChange={(event) => setPostcode(event.target.value)}
-                      />
+                      <InputGroup>
+                        <InputGroupAddon>
+                          <Hash className="size-4" />
+                        </InputGroupAddon>
+                        <InputGroupInput
+                          id="postcode"
+                          name="postcode"
+                          type="text"
+                          required
+                          disabled={isSubmitting}
+                          value={postcode}
+                          onChange={(event) => setPostcode(event.target.value)}
+                        />
+                      </InputGroup>
                     </div>
                     <div className="grid gap-2">
                       <Label htmlFor="city" required>
                         {t('orders.submit.form.fields.city')}
                       </Label>
-                      <Input
-                        id="city"
-                        name="city"
-                        type="text"
-                        required
-                        disabled={isSubmitting}
-                        value={city}
-                        onChange={(event) => setCity(event.target.value)}
-                      />
+                      <InputGroup>
+                        <InputGroupAddon>
+                          <MapPin className="size-4" />
+                        </InputGroupAddon>
+                        <InputGroupInput
+                          id="city"
+                          name="city"
+                          type="text"
+                          required
+                          disabled={isSubmitting}
+                          value={city}
+                          onChange={(event) => setCity(event.target.value)}
+                        />
+                      </InputGroup>
                     </div>
                   </div>
 
@@ -529,10 +580,10 @@ export function OrderSubmitRoute() {
                         name="state"
                         className="rounded-xl border border-white/10 bg-slate-900/70 px-3 py-2 text-sm text-white focus:border-brand-400 focus:outline-none disabled:opacity-60"
                         value={stateRegion}
-                        onChange={(event) => setStateRegion(event.target.value)}
+                        onChange={(event) => setStateRegion(event.target.value as SwissCanton)}
                         disabled={isSubmitting}
                       >
-                        {SWISS_CANTONS.map((canton) => (
+                        {getSwissCantons(t).map((canton) => (
                           <option key={canton.code} value={canton.code}>
                             {canton.label}
                           </option>
@@ -541,15 +592,19 @@ export function OrderSubmitRoute() {
                     </div>
                     <div className="grid gap-2">
                       <Label htmlFor="country">{t('orders.submit.form.fields.country')}</Label>
-                      <Input
-                        id="country"
-                        name="country"
-                        type="text"
-                        value={SWITZERLAND_COUNTRY}
-                        readOnly
-                        disabled
-                        className="text-white"
-                      />
+                      <InputGroup>
+                        <InputGroupAddon>
+                          <Globe className="size-4" />
+                        </InputGroupAddon>
+                        <InputGroupInput
+                          id="country"
+                          name="country"
+                          type="text"
+                          value={getSwitzerlandName(t)}
+                          readOnly
+                          disabled
+                        />
+                      </InputGroup>
                     </div>
                   </div>
                 </section>
@@ -597,7 +652,7 @@ export function OrderSubmitRoute() {
                           </span>
                         </div>
                         <p className="text-slate-400 text-xs">
-                          {profile.contactName} • {profile.phone}
+                          {profile.contactName} • {formatPhoneNumber(profile.phone)}
                         </p>
                         <p className="text-slate-500 text-xs">
                           {profile.address.road}
@@ -620,13 +675,18 @@ export function OrderSubmitRoute() {
                       <Label htmlFor="profileLabelMain">
                         {t('orders.submit.saved.labelField')}
                       </Label>
-                      <Input
-                        id="profileLabelMain"
-                        placeholder={t('orders.submit.saved.inputPlaceholder')}
-                        value={profileLabel}
-                        onChange={(event) => setProfileLabel(event.target.value)}
-                        disabled={profileLoading}
-                      />
+                      <InputGroup>
+                        <InputGroupAddon>
+                          <Tag className="size-4" />
+                        </InputGroupAddon>
+                        <InputGroupInput
+                          id="profileLabelMain"
+                          placeholder={t('orders.submit.saved.inputPlaceholder')}
+                          value={profileLabel}
+                          onChange={(event) => setProfileLabel(event.target.value)}
+                          disabled={profileLoading}
+                        />
+                      </InputGroup>
                     </div>
                     <div className="flex flex-wrap gap-2">
                       <Button
@@ -771,6 +831,26 @@ export function OrderSubmitRoute() {
       </Card>
 
       <OrderConfirmationModal isOpen={showConfirmation} onClose={handleCloseConfirmation} />
+
+      {/* Delete Profile Confirmation Dialog */}
+      <AlertDialog open={showDeleteProfileDialog} onOpenChange={setShowDeleteProfileDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('orders.submit.saved.delete')}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('orders.submit.saved.confirmDelete')}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={profileLoading}>
+              {t('common.cancel')}
+            </AlertDialogCancel>
+            <AlertDialogAction variant="destructive" onClick={handleConfirmDeleteProfile} disabled={profileLoading}>
+              {t('orders.submit.saved.delete')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import { addHours, format, setHours, setMinutes } from 'date-fns';
-import { Calendar, Package, Truck } from 'lucide-react';
+import { Calendar, Package, Tag, Truck } from 'lucide-react';
 import { Suspense, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -13,7 +13,16 @@ import {
 } from 'react-router';
 import { OrderListItem, StatBubble } from '@/components/orders';
 import { OrdersSkeleton } from '@/components/skeletons';
-import { Alert, Button, DateTimePicker, Input, Label } from '@/components/ui';
+import {
+  Alert,
+  Button,
+  DateTimePicker,
+  Input,
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+  Label,
+} from '@/components/ui';
 import { useDateFormat } from '@/hooks/useDateFormat';
 import { OrdersApi, UserApi } from '@/lib/api';
 import { routes } from '@/lib/routes';
@@ -327,14 +336,19 @@ function OrdersContent({ groupOrders }: Readonly<{ groupOrders: LoaderData['grou
 
             <div className="grid gap-2">
               <Label htmlFor="name">{t('common.labels.dropName')}</Label>
-              <Input
-                id="name"
-                name="name"
-                type="text"
-                placeholder={t('common.placeholders.dropName')}
-                defaultValue={defaultOrderName}
-                disabled={isSubmitting}
-              />
+              <InputGroup>
+                <InputGroupAddon>
+                  <Tag className="size-4" />
+                </InputGroupAddon>
+                <InputGroupInput
+                  id="name"
+                  name="name"
+                  type="text"
+                  placeholder={t('common.placeholders.dropName')}
+                  defaultValue={defaultOrderName}
+                  disabled={isSubmitting}
+                />
+              </InputGroup>
             </div>
 
             <div className="space-y-4 rounded-2xl border border-white/10 bg-slate-950/60 p-4">

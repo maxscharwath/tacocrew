@@ -12,13 +12,21 @@ import {
   User,
   X,
 } from 'lucide-react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { type LoaderFunctionArgs, redirect } from 'react-router';
 import { LanguageSwitcher } from '@/components/language-switcher';
 import { ImageUploader } from '@/components/profile/ImageUploader';
 import {
   Alert,
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
   Avatar,
   Badge,
   Button,
@@ -29,6 +37,7 @@ import {
   CardTitle,
   EmptyState,
   Input,
+  PhoneInput,
 } from '@/components/ui';
 import { usePushNotifications } from '@/hooks';
 import {
@@ -38,8 +47,112 @@ import {
   sendTestNotification,
 } from '@/lib/api/push-notifications';
 import { authClient, useSession } from '@/lib/auth-client';
+import { getProfile, updateUserPhone } from '@/lib/api/user';
+import type { UserProfile } from '@/lib/api/types';
 import { ENV } from '@/lib/env';
 import { routes } from '@/lib/routes';
+import { formatPhoneNumber } from '@/utils/phone-formatter';
+
+function PhoneEditor({
+  currentPhone,
+  onUpdate,
+}: Readonly<{
+  currentPhone: string | null | undefined;
+  onUpdate: (phone: string | null) => Promise<void>;
+}>) {
+  const { t } = useTranslation();
+  const [isEditing, setIsEditing] = useState(false);
+  const [phone, setPhone] = useState(currentPhone ?? '');
+  const [isSaving, setIsSaving] = useState(false);
+
+  useEffect(() => {
+    setPhone(currentPhone ?? '');
+  }, [currentPhone]);
+
+  const handleSave = async () => {
+    setIsSaving(true);
+    try {
+      await onUpdate(phone.trim() || null);
+      setIsEditing(false);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleCancel = () => {
+    setPhone(currentPhone ?? '');
+    setIsEditing(false);
+  };
+
+  if (isEditing) {
+    return (
+      <div className="space-y-2">
+        <label className="flex items-center gap-2 font-medium text-slate-200 text-sm">
+          <Avatar color="emerald" size="sm">
+            <Phone />
+          </Avatar>
+          {t('account.profile.phone')}
+        </label>
+        <div className="flex items-center gap-2">
+          <PhoneInput
+            value={phone}
+            onChange={(value) => setPhone(value)}
+            defaultCountry="CH"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                void handleSave();
+              } else if (e.key === 'Escape') {
+                handleCancel();
+              }
+            }}
+            disabled={isSaving}
+            className="flex-1"
+          />
+          <Button
+            onClick={handleSave}
+            disabled={isSaving}
+            variant="primary"
+            size="sm"
+            className="h-11 w-11 p-0"
+            title={isSaving ? t('account.saving') : t('account.save')}
+          >
+            {isSaving ? <RefreshCw size={16} className="animate-spin" /> : <Check size={16} />}
+          </Button>
+          <Button
+            onClick={handleCancel}
+            disabled={isSaving}
+            variant="outline"
+            size="sm"
+            className="h-11 w-11 p-0"
+            title={t('account.cancel')}
+          >
+            <X size={16} />
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-2">
+      <label className="flex items-center gap-2 font-medium text-slate-200 text-sm">
+        <Avatar color="emerald" size="sm">
+          <Phone />
+        </Avatar>
+        {t('account.profile.phone')}
+      </label>
+      <div className="flex items-center gap-2">
+        <div className="flex-1 text-white">
+          {currentPhone ? formatPhoneNumber(currentPhone) : t('account.profile.phoneNotSet')}
+        </div>
+        <Button onClick={() => setIsEditing(true)} variant="outline" size="sm" className="gap-2">
+          <Edit size={14} />
+          {t('account.edit')}
+        </Button>
+      </div>
+    </div>
+  );
+}
 
 function NameEditor({
   currentName,
@@ -255,6 +368,7 @@ export async function accountLoader(_: LoaderFunctionArgs) {
 export function AccountRoute() {
   const { t } = useTranslation();
   const { data: session } = useSession();
+  const [profile, setProfile] = useState<UserProfile | null>(null);
   const [passkeys, setPasskeys] = useState<Passkey[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -264,6 +378,8 @@ export function AccountRoute() {
   const [pushSubscriptions, setPushSubscriptions] = useState<PushSubscriptionInfo[]>([]);
   const [isLoadingSubscriptions, setIsLoadingSubscriptions] = useState(false);
   const isLoadingRef = useRef(false);
+  const [showDeletePasskeyDialog, setShowDeletePasskeyDialog] = useState<string | null>(null);
+  const [showDeleteSubscriptionDialog, setShowDeleteSubscriptionDialog] = useState<string | null>(null);
 
   const {
     isSupported: isPushSupported,
@@ -276,7 +392,7 @@ export function AccountRoute() {
     refresh: refreshPushStatus,
   } = usePushNotifications();
 
-  const loadData = useCallback(async () => {
+  const loadData = async () => {
     // Prevent concurrent calls
     if (isLoadingRef.current) {
       return;
@@ -285,6 +401,10 @@ export function AccountRoute() {
     try {
       isLoadingRef.current = true;
       setIsLoading(true);
+
+      // Fetch user profile to get image URL
+      const userProfile = await getProfile();
+      setProfile(userProfile);
 
       // Fetch passkeys
       const passkeysResult = await authClient.passkey.listUserPasskeys();
@@ -297,10 +417,9 @@ export function AccountRoute() {
       setIsLoading(false);
       isLoadingRef.current = false;
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Don't depend on t to avoid recreating the function
+  };
 
-  const loadPushSubscriptions = useCallback(async () => {
+  const loadPushSubscriptions = async () => {
     if (!isPushSubscribed) {
       setPushSubscriptions([]);
       return;
@@ -315,7 +434,7 @@ export function AccountRoute() {
     } finally {
       setIsLoadingSubscriptions(false);
     }
-  }, [isPushSubscribed]);
+  };
 
   useEffect(() => {
     void loadData();
@@ -324,7 +443,7 @@ export function AccountRoute() {
 
   useEffect(() => {
     void loadPushSubscriptions();
-  }, [loadPushSubscriptions]);
+  }, [isPushSubscribed]);
 
   const handleRegisterPasskey = async () => {
     try {
@@ -364,11 +483,15 @@ export function AccountRoute() {
     }
   };
 
-  const handleDeletePasskey = async (passkeyId: string) => {
-    if (!confirm(t('account.passkeys.deleteConfirm'))) {
-      return;
-    }
+  const handleDeletePasskey = (passkeyId: string) => {
+    setShowDeletePasskeyDialog(passkeyId);
+  };
 
+  const handleConfirmDeletePasskey = async () => {
+    const passkeyId = showDeletePasskeyDialog;
+    if (!passkeyId) return;
+
+    setShowDeletePasskeyDialog(null);
     setError(null);
     setSuccess(null);
 
@@ -416,6 +539,28 @@ export function AccountRoute() {
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : t('account.passkeys.deleteFailed'));
+    }
+  };
+
+  const handleConfirmDeleteSubscription = async () => {
+    const subscriptionId = showDeleteSubscriptionDialog;
+    if (!subscriptionId) return;
+
+    setShowDeleteSubscriptionDialog(null);
+    try {
+      setError(null);
+      setSuccess(null);
+      await deletePushSubscription(subscriptionId);
+      setSuccess(t('account.pushNotifications.devices.deleteSuccess'));
+      await loadPushSubscriptions();
+      // If this was the current device, refresh subscription status
+      await refreshPushStatus();
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : t('account.pushNotifications.devices.deleteFailed')
+      );
     }
   };
 
@@ -515,9 +660,9 @@ export function AccountRoute() {
         </div>
         <div className="mt-3">
           <ImageUploader
-            currentImage={session.user.image || null}
+            currentImage={profile?.image || null}
             onImageUpdate={async (image) => {
-              await loadData(); // Reload to get updated session
+              await loadData(); // Reload to get updated profile
             }}
             size="xl"
           />
@@ -574,6 +719,20 @@ export function AccountRoute() {
                 )}
               </div>
             </div>
+            <PhoneEditor
+              currentPhone={profile?.phone}
+              onUpdate={async (newPhone) => {
+                try {
+                  setError(null);
+                  setSuccess(null);
+                  await updateUserPhone(newPhone);
+                  setSuccess(t('account.phoneUpdate.success'));
+                  await loadData();
+                } catch (err) {
+                  setError(err instanceof Error ? err.message : t('account.phoneUpdate.failed'));
+                }
+              }}
+            />
             <div className="space-y-2 border-white/10 border-t pt-4">
               <label className="flex items-center gap-2 font-medium text-slate-200 text-sm">
                 <Avatar color="indigo" size="sm">
@@ -880,31 +1039,8 @@ export function AccountRoute() {
                                 </div>
                                 <div className="flex items-center gap-2">
                                   <Button
-                                    onClick={async () => {
-                                      if (
-                                        !confirm(
-                                          t('account.pushNotifications.devices.deleteConfirm')
-                                        )
-                                      ) {
-                                        return;
-                                      }
-                                      try {
-                                        setError(null);
-                                        setSuccess(null);
-                                        await deletePushSubscription(subscription.id);
-                                        setSuccess(
-                                          t('account.pushNotifications.devices.deleteSuccess')
-                                        );
-                                        await loadPushSubscriptions();
-                                        // If this was the current device, refresh subscription status
-                                        await refreshPushStatus();
-                                      } catch (err) {
-                                        setError(
-                                          err instanceof Error
-                                            ? err.message
-                                            : t('account.pushNotifications.devices.deleteFailed')
-                                        );
-                                      }
+                                    onClick={() => {
+                                      setShowDeleteSubscriptionDialog(subscription.id);
                                     }}
                                     variant="danger"
                                     size="sm"
@@ -933,6 +1069,42 @@ export function AccountRoute() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Delete Passkey Confirmation Dialog */}
+      <AlertDialog open={showDeletePasskeyDialog !== null} onOpenChange={(open) => !open && setShowDeletePasskeyDialog(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('account.passkeys.delete')}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('account.passkeys.deleteConfirm')}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
+            <AlertDialogAction variant="destructive" onClick={handleConfirmDeletePasskey}>
+              {t('account.passkeys.delete')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete Subscription Confirmation Dialog */}
+      <AlertDialog open={showDeleteSubscriptionDialog !== null} onOpenChange={(open) => !open && setShowDeleteSubscriptionDialog(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('account.pushNotifications.devices.delete')}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('account.pushNotifications.devices.deleteConfirm')}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
+            <AlertDialogAction variant="destructive" onClick={handleConfirmDeleteSubscription}>
+              {t('account.pushNotifications.devices.delete')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

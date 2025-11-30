@@ -102,9 +102,9 @@ const AlertDialogAction = forwardRef<
   <AlertDialogPrimitive.Action
     ref={ref}
     className={cn(
-      'inline-flex h-11 items-center justify-center gap-2 rounded-xl px-6 font-semibold text-sm transition-all',
+      'inline-flex h-11 items-center justify-center gap-2 rounded-xl px-6 font-semibold text-sm transition-all cursor-pointer',
       'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950',
-      'disabled:pointer-events-none disabled:opacity-50',
+      'disabled:pointer-events-none disabled:opacity-50 disabled:cursor-not-allowed',
       variant === 'destructive'
         ? 'border border-rose-400/50 bg-gradient-to-r from-rose-500 to-rose-600 text-white shadow-[0_20px_50px_rgba(244,114,182,0.35)] hover:border-rose-300 hover:from-rose-600 hover:to-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-500/50'
         : 'border border-brand-400/50 bg-gradient-to-r from-brand-500 to-brand-600 text-white shadow-[0_20px_50px_rgba(99,102,241,0.35)] hover:border-brand-300 hover:from-brand-600 hover:to-brand-700 focus:outline-none focus:ring-2 focus:ring-brand-500/50',
@@ -122,10 +122,10 @@ const AlertDialogCancel = forwardRef<
   <AlertDialogPrimitive.Cancel
     ref={ref}
     className={cn(
-      'inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-white/20 px-6 font-semibold text-slate-100 text-sm transition-all',
+      'inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-white/20 px-6 font-semibold text-slate-100 text-sm transition-all cursor-pointer',
       'hover:border-brand-400/60 hover:text-brand-50',
       'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950',
-      'disabled:pointer-events-none disabled:opacity-50',
+      'disabled:pointer-events-none disabled:opacity-50 disabled:cursor-not-allowed',
       className
     )}
     {...props}

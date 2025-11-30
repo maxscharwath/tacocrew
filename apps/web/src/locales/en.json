@@ -46,6 +46,37 @@
     "currency": {
       "chf": "CHF"
     },
+    "country": {
+      "switzerland": "Switzerland"
+    },
+    "cantons": {
+      "AG": "Aargau",
+      "AI": "Appenzell Innerrhoden",
+      "AR": "Appenzell Ausserrhoden",
+      "BE": "Bern",
+      "BL": "Basel-Landschaft",
+      "BS": "Basel-Stadt",
+      "FR": "Fribourg",
+      "GE": "Genève",
+      "GL": "Glarus",
+      "GR": "Graubünden",
+      "JU": "Jura",
+      "LU": "Luzern",
+      "NE": "Neuchâtel",
+      "NW": "Nidwalden",
+      "OW": "Obwalden",
+      "SG": "St. Gallen",
+      "SH": "Schaffhausen",
+      "SO": "Solothurn",
+      "SZ": "Schwyz",
+      "TG": "Thurgau",
+      "TI": "Ticino",
+      "UR": "Uri",
+      "VD": "Vaud",
+      "VS": "Valais",
+      "ZG": "Zug",
+      "ZH": "Zürich"
+    },
     "dateShortcuts": {
       "quickSelect": "Quick select",
       "today": "Today",
@@ -101,6 +132,9 @@
       "description": "Your account details",
       "name": "Name",
       "email": "Email",
+      "phone": "Phone Number",
+      "phonePlaceholder": "+41 XX XXX XX XX",
+      "phoneNotSet": "Not set",
       "language": "Language",
       "verified": "Verified",
       "unverified": "Unverified"
@@ -135,6 +169,10 @@
     "nameUpdate": {
       "success": "Name updated successfully",
       "failed": "Failed to update name"
+    },
+    "phoneUpdate": {
+      "success": "Phone number updated successfully",
+      "failed": "Failed to update phone number"
     },
     "pushNotifications": {
       "title": "Push Notifications",
@@ -666,7 +704,12 @@
         "summaryFood": "Food total",
         "summaryFee": "Delivery fees",
         "summaryPerPerson": "Per person ({{count}})",
-        "summaryTotal": "Grand total"
+        "summaryTotal": "Grand total",
+        "leaderPhone": {
+          "title": "Reimburse via Twint",
+          "description": "Send your payment to the team leader",
+          "twint": "Twint"
+        }
       }
     },
     "submit": {

@@ -1,5 +1,4 @@
 import { format, formatDistanceToNow, isValid } from 'date-fns';
-import { useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getDateFnsLocale, languages } from '@/lib/locale.config';
 import { type DateInput, toDate as toDateUtil } from '@/lib/utils/date';
@@ -17,148 +16,115 @@ import { type DateInput, toDate as toDateUtil } from '@/lib/utils/date';
 export function useDateFormat() {
   const { i18n } = useTranslation();
 
-  // Get current language config and memoize locale
-  const currentLanguage = useMemo(
-    () => languages.find((lang) => lang.code === i18n.language),
-    [i18n.language]
-  );
-  const locale = useMemo(
-    () => currentLanguage?.locale || getDateFnsLocale(i18n.language),
-    [currentLanguage, i18n.language]
-  );
+  // Get current language config and locale
+  const currentLanguage = languages.find((lang) => lang.code === i18n.language);
+  const locale = currentLanguage?.locale || getDateFnsLocale(i18n.language);
 
   /**
    * Format a date with time
    */
-  const formatDateTime = useCallback(
-    (value: DateInput): string => {
-      const date = toDateUtil(value);
-      if (!isValid(date)) {
-        return '—';
-      }
-      return format(date, 'MMM d, HH:mm', { locale });
-    },
-    [locale]
-  );
+  const formatDateTime = (value: DateInput): string => {
+    const date = toDateUtil(value);
+    if (!isValid(date)) {
+      return '—';
+    }
+    return format(date, 'MMM d, HH:mm', { locale });
+  };
 
   /**
    * Format a date with time and year
    */
-  const formatDateTimeWithYear = useCallback(
-    (value: DateInput): string => {
-      const date = toDateUtil(value);
-      if (!isValid(date)) {
-        return '—';
-      }
-      return format(date, 'MMM d, yyyy HH:mm', { locale });
-    },
-    [locale]
-  );
+  const formatDateTimeWithYear = (value: DateInput): string => {
+    const date = toDateUtil(value);
+    if (!isValid(date)) {
+      return '—';
+    }
+    return format(date, 'MMM d, yyyy HH:mm', { locale });
+  };
 
   /**
    * Format a date range (start → end)
    */
-  const formatDateTimeRange = useCallback(
-    (start: DateInput, end: DateInput, separator: string = ' → '): string => {
-      return `${formatDateTime(start)}${separator}${formatDateTime(end)}`;
-    },
-    [formatDateTime]
-  );
+  const formatDateTimeRange = (start: DateInput, end: DateInput, separator: string = ' → '): string => {
+    return `${formatDateTime(start)}${separator}${formatDateTime(end)}`;
+  };
 
   /**
    * Format time only
    */
-  const formatTime = useCallback(
-    (value: DateInput): string => {
-      const date = toDateUtil(value);
-      if (!isValid(date)) {
-        return '—';
-      }
-      return format(date, 'HH:mm', { locale });
-    },
-    [locale]
-  );
+  const formatTime = (value: DateInput): string => {
+    const date = toDateUtil(value);
+    if (!isValid(date)) {
+      return '—';
+    }
+    return format(date, 'HH:mm', { locale });
+  };
 
   /**
    * Format time with 12-hour format and AM/PM using Intl.DateTimeFormat
    * Uses 12-hour format only for English (USA), 24-hour format for other languages
    * Uses the selected language from i18n, not the browser's locale
    */
-  const formatTime12Hour = useCallback(
-    (value: DateInput): string => {
-      const date = toDateUtil(value);
-      if (!isValid(date)) {
-        return '—';
-      }
-      // Use time format config from locale.config
-      const lang = currentLanguage || languages.find((l) => l.code === i18n.language.split('-')[0]);
-      const intlLocale = lang?.intlLocale || 'en-US';
-      const use12Hour = lang?.timeFormat === '12h';
-      const formatter = new Intl.DateTimeFormat(intlLocale, {
-        hour: 'numeric',
-        minute: '2-digit',
-        hour12: use12Hour,
-      });
-      return formatter.format(date);
-    },
-    [currentLanguage, i18n.language]
-  );
+  const formatTime12Hour = (value: DateInput): string => {
+    const date = toDateUtil(value);
+    if (!isValid(date)) {
+      return '—';
+    }
+    // Use time format config from locale.config
+    const lang = currentLanguage || languages.find((l) => l.code === i18n.language);
+    const intlLocale = lang?.intlLocale || 'en-US';
+    const use12Hour = lang?.timeFormat === '12h';
+    const formatter = new Intl.DateTimeFormat(intlLocale, {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: use12Hour,
+    });
+    return formatter.format(date);
+  };
 
   /**
    * Format date with weekday and time
    */
-  const formatDate = useCallback(
-    (value: DateInput): string => {
-      const date = toDateUtil(value);
-      if (!isValid(date)) {
-        return '—';
-      }
-      return format(date, 'EEE, HH:mm', { locale });
-    },
-    [locale]
-  );
+  const formatDate = (value: DateInput): string => {
+    const date = toDateUtil(value);
+    if (!isValid(date)) {
+      return '—';
+    }
+    return format(date, 'EEE, HH:mm', { locale });
+  };
 
   /**
    * Format date only (no time)
    */
-  const formatDateOnly = useCallback(
-    (value: DateInput, pattern: string = 'MMM d'): string => {
-      const date = toDateUtil(value);
-      if (!isValid(date)) {
-        return '—';
-      }
-      return format(date, pattern, { locale });
-    },
-    [locale]
-  );
+  const formatDateOnly = (value: DateInput, pattern: string = 'MMM d'): string => {
+    const date = toDateUtil(value);
+    if (!isValid(date)) {
+      return '—';
+    }
+    return format(date, pattern, { locale });
+  };
 
   /**
    * Format relative time (e.g., "2 hours ago", "in 3 days")
    */
-  const formatRelativeTime = useCallback(
-    (value: DateInput): string => {
-      const date = toDateUtil(value);
-      if (!isValid(date)) {
-        return '—';
-      }
-      return formatDistanceToNow(date, { addSuffix: true, locale });
-    },
-    [locale]
-  );
+  const formatRelativeTime = (value: DateInput): string => {
+    const date = toDateUtil(value);
+    if (!isValid(date)) {
+      return '—';
+    }
+    return formatDistanceToNow(date, { addSuffix: true, locale });
+  };
 
   /**
    * Format day name (e.g., "Monday", "lundi")
    */
-  const formatDayName = useCallback(
-    (value: DateInput = new Date()): string => {
-      const date = toDateUtil(value);
-      if (!isValid(date)) {
-        return '—';
-      }
-      return format(date, 'EEEE', { locale });
-    },
-    [locale]
-  );
+  const formatDayName = (value: DateInput = new Date()): string => {
+    const date = toDateUtil(value);
+    if (!isValid(date)) {
+      return '—';
+    }
+    return format(date, 'EEEE', { locale });
+  };
 
   return {
     formatDateTime,

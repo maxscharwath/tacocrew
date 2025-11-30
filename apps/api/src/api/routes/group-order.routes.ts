@@ -111,6 +111,7 @@ async function serializeGroupOrderResponse(groupOrder: GroupOrder) {
     leader: {
       id: leader.id,
       name: leader.name,
+      phone: leader.phone ?? null,
       image: buildAvatarUrl(leader),
     },
     name: groupOrder.name ?? null,

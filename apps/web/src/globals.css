@@ -1,6 +1,7 @@
 @import "tailwindcss" source("..");
 @source "../../../packages/ui-kit/src";
 @import "./theme.css";
+@import "country-flag-icons/3x2/flags.css";
 
 @plugin "tailwindcss-animate";
 @plugin "tailwindcss-react-aria-components";
