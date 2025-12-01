@@ -12,10 +12,7 @@ import { Suspense, useState } from 'react';
 import Markdown from 'react-markdown';
 import { useTranslation } from 'react-i18next';
 import { Await, Link, type LoaderFunctionArgs, useLoaderData } from 'react-router';
-import { github } from '@build/git';
 import { repository } from '@build/package';
-
-const GITHUB_URL = github ?? repository.url;
 import {
   Badge,
   Button,
@@ -55,7 +52,7 @@ type GitHubRelease = {
 
 async function fetchGitHubReleases(): Promise<GitHubRelease[]> {
   try {
-    const response = await fetch(`${GITHUB_URL.replace('github.com', 'api.github.com/repos')}/releases`, {
+    const response = await fetch(`${repository.url.replace('github.com', 'api.github.com/repos')}/releases`, {
       headers: {
         Accept: 'application/vnd.github.v3+json',
       },

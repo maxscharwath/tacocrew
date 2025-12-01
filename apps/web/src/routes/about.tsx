@@ -12,11 +12,9 @@ import {
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
-import { abbreviatedSha, branch, github, isClean, lastTag, tag } from '@build/git';
+import { abbreviatedSha, branch, isClean, lastTag, tag } from '@build/git';
 import { author, contributors, repository, version } from '@build/package';
 import buildTime from '@build/time';
-
-const GITHUB_URL = github ?? repository.url;
 import { Badge, Button, Card, CardContent, CardHeader, CardTitle } from '@/components/ui';
 import { useDateFormat } from '@/hooks/useDateFormat';
 import { routes } from '@/lib/routes';
@@ -227,7 +225,7 @@ export function AboutRoute() {
               </div>
 
               <div className="flex flex-wrap items-center justify-center gap-3 sm:justify-start">
-                <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer">
+                <a href={repository.url} target="_blank" rel="noopener noreferrer">
                     <Button variant="outline" size="md" className="gap-2">
                       <SiGithub size={16} />
                       GitHub
