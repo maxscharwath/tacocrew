@@ -12,11 +12,11 @@ import {
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
-import * as git from '@build/git';
-import * as pkg from '@build/package';
+import { abbreviatedSha, branch, github, isClean, lastTag, tag } from '@build/git';
+import { author, contributors, repository, version } from '@build/package';
 import buildTime from '@build/time';
 
-const GITHUB_URL = git.github ?? (typeof pkg.repository === 'string' ? pkg.repository : pkg.repository?.url);
+const GITHUB_URL = github ?? (typeof repository === 'string' ? repository : repository.url);
 import { Badge, Button, Card, CardContent, CardHeader, CardTitle } from '@/components/ui';
 import { useDateFormat } from '@/hooks/useDateFormat';
 import { routes } from '@/lib/routes';
@@ -175,12 +175,12 @@ export function AboutRoute() {
   const { t } = useTranslation();
   const { formatDateTimeWithYear } = useDateFormat();
 
-  const contributors = (pkg.contributors || []).map(parseContributor);
-  const author = pkg.author ? parseContributor(pkg.author) : null;
+  const allContributorsList = (contributors || []).map(parseContributor);
+  const authorInfo = author ? parseContributor(author) : null;
 
-  const allContributors = author
-    ? [author, ...contributors.filter((c) => c.name !== author.name)]
-    : contributors;
+  const allContributors = authorInfo
+    ? [authorInfo, ...allContributorsList.filter((c) => c.name !== authorInfo.name)]
+    : allContributorsList;
 
   return (
     <div className="space-y-8">
@@ -208,17 +208,17 @@ export function AboutRoute() {
                     TacoCrew
                   </h1>
                   <Badge tone="brand" pill>
-                    v{pkg.version}
+                    v{version}
                   </Badge>
                 </div>
                 <div className="mt-2 flex flex-wrap items-center justify-center gap-2 sm:justify-start">
-                  {git.tag && (
+                  {tag && (
                     <Badge tone="neutral" pill className="gap-1 text-xs">
                       <TagIcon size={10} />
-                      {git.tag}
+                      {tag}
                     </Badge>
                   )}
-                  {git.isClean && (
+                  {isClean && (
                     <Badge tone="success" pill className="text-xs">
                       ✓ Clean
                     </Badge>
@@ -259,12 +259,12 @@ export function AboutRoute() {
             label={t('about.buildDate')}
             value={formatDateTimeWithYear(buildTime)}
           />
-          <BuildInfoItem icon={GitBranchIcon} label={t('about.branch')} value={git.branch} />
-          <BuildInfoItem icon={Hash} label={t('about.commit')} value={git.abbreviatedSha} mono />
+          <BuildInfoItem icon={GitBranchIcon} label={t('about.branch')} value={branch} />
+          <BuildInfoItem icon={Hash} label={t('about.commit')} value={abbreviatedSha} mono />
           <BuildInfoItem
             icon={TagIcon}
             label={t('about.latestTag')}
-            value={git.lastTag || git.tag}
+            value={lastTag || tag}
           />
         </CardContent>
       </Card>
