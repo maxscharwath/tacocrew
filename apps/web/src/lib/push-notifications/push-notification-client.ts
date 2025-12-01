@@ -48,7 +48,9 @@ export class PushNotificationClient {
    * Check if push notifications are supported in this browser
    */
   static isSupported(): boolean {
-    return 'serviceWorker' in navigator && 'PushManager' in globalThis && 'Notification' in globalThis;
+    return (
+      'serviceWorker' in navigator && 'PushManager' in globalThis && 'Notification' in globalThis
+    );
   }
 
   /**
@@ -165,7 +167,7 @@ export class PushNotificationClient {
       // Subscribe to push notifications
       this.subscription = await this.serviceWorkerRegistration!.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey,
+        applicationServerKey: applicationServerKey as BufferSource,
       });
 
       // Serialize subscription

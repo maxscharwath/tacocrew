@@ -313,7 +313,7 @@ const createElementFromRouteElement = (element: RouteElement): React.ReactNode =
     element.type === 'lazy'
   ) {
     const lazyElement = element as LazyRouteElement;
-    return createLazyElement(lazyElement.importFn, lazyElement.fallback || lazyFallback);
+    return createLazyElement(lazyElement.importFn, lazyElement.fallback);
   }
 
   if (typeof element === 'function') {

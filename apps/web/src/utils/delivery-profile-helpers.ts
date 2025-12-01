@@ -1,9 +1,5 @@
 import type { DeliveryType } from '@/components/orders/DeliveryTypeSelector';
-import {
-  DEFAULT_CANTON_CODE,
-  SWISS_CANTON_CODES,
-  SWITZERLAND_COUNTRY,
-} from '@/constants/location';
+import { DEFAULT_CANTON_CODE, SWISS_CANTON_CODES, SWITZERLAND_COUNTRY } from '@/constants/location';
 import type { DeliveryProfile, DeliveryProfilePayload } from '@/lib/api/types';
 
 const initialFormState = (): DeliveryProfilePayload => ({

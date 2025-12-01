@@ -95,4 +95,3 @@ declare module '@build/package' {
     url: string;
   };
 }
-

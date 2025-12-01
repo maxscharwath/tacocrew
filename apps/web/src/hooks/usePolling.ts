@@ -31,7 +31,7 @@ export function usePolling(callback: () => void | Promise<void>, options: UsePol
   const { interval = 30000, enabled = true, onlyWhenVisible = true, hiddenInterval } = options;
 
   const savedCallback = useRef(callback);
-  const intervalRef = useRef<ReturnType<typeof setInterval>>();
+  const intervalRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
 
   // Update ref when callback changes
   useEffect(() => {

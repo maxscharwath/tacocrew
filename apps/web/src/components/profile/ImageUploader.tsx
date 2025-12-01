@@ -92,7 +92,8 @@ export function ImageUploader({ currentImage, onImageUpdate }: ImageUploaderProp
       // If it's a relative URL, resolve it to absolute using API base URL or current origin
       if (currentImage.startsWith('/')) {
         const baseUrl =
-          ENV.apiBaseUrl || (typeof globalThis.window !== 'undefined' ? globalThis.location.origin : '');
+          ENV.apiBaseUrl ||
+          (typeof globalThis.window !== 'undefined' ? globalThis.location.origin : '');
         return baseUrl + currentImage;
       }
       return currentImage;
@@ -122,7 +123,8 @@ export function ImageUploader({ currentImage, onImageUpdate }: ImageUploaderProp
         let resolvedUrl = currentImage;
         if (currentImage.startsWith('/')) {
           const baseUrl =
-            ENV.apiBaseUrl || (typeof globalThis.window !== 'undefined' ? globalThis.location.origin : '');
+            ENV.apiBaseUrl ||
+            (typeof globalThis.window !== 'undefined' ? globalThis.location.origin : '');
           resolvedUrl = baseUrl + currentImage;
         }
         setPreview(resolvedUrl);

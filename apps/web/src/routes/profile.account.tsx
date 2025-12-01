@@ -68,15 +68,18 @@ function useEditableField<T extends string | null | undefined>(
     setValue((currentValue ?? defaultValue) as string);
   }, [currentValue, defaultValue]);
 
-  const handleSave = useCallback(async (transformedValue?: T) => {
-    setIsSaving(true);
-    try {
-      await onUpdate(transformedValue ?? value as T);
-      setIsEditing(false);
-    } finally {
-      setIsSaving(false);
-    }
-  }, [onUpdate, value]);
+  const handleSave = useCallback(
+    async (transformedValue?: T) => {
+      setIsSaving(true);
+      try {
+        await onUpdate(transformedValue ?? (value as T));
+        setIsEditing(false);
+      } finally {
+        setIsSaving(false);
+      }
+    },
+    [onUpdate, value]
+  );
 
   const handleCancel = useCallback(() => {
     setValue((currentValue ?? defaultValue) as string);
@@ -124,7 +127,11 @@ function EditActionButtons({
         className={buttonClass}
         title={isSaving ? t('account.saving') : t('account.save')}
       >
-        {isSaving ? <RefreshCw size={iconSize} className="animate-spin" /> : <Check size={iconSize} />}
+        {isSaving ? (
+          <RefreshCw size={iconSize} className="animate-spin" />
+        ) : (
+          <Check size={iconSize} />
+        )}
       </Button>
       <Button
         onClick={onCancel}
@@ -656,10 +663,9 @@ export function AccountRoute() {
         <div className="mt-3">
           <ImageUploader
             currentImage={profile?.image || null}
-            onImageUpdate={async (image) => {
+            onImageUpdate={async () => {
               await loadData(); // Reload to get updated profile
             }}
-            size="xl"
           />
         </div>
       </div>

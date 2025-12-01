@@ -136,7 +136,7 @@ export function usePushNotifications(): UsePushNotificationsReturn {
     } catch (error) {
       const pushError = error instanceof PushNotificationError ? error : null;
       const errorMessage =
-        pushError?.message || error instanceof Error ? error.message : 'Failed to subscribe';
+        pushError?.message || (error instanceof Error ? error.message : 'Failed to subscribe');
       const errorCode = pushError?.code || 'UNKNOWN_ERROR';
 
       // Update permission status in case it changed
@@ -178,7 +178,7 @@ export function usePushNotifications(): UsePushNotificationsReturn {
     } catch (error) {
       const pushError = error instanceof PushNotificationError ? error : null;
       const errorMessage =
-        pushError?.message || error instanceof Error ? error.message : 'Failed to unsubscribe';
+        pushError?.message || (error instanceof Error ? error.message : 'Failed to unsubscribe');
       const errorCode = pushError?.code || 'UNKNOWN_ERROR';
 
       setState((prev) => ({

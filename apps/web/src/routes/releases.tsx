@@ -1,3 +1,4 @@
+import * as pkg from '@build/package';
 import {
   ArrowLeft,
   Calendar,
@@ -9,10 +10,9 @@ import {
   Tag,
 } from 'lucide-react';
 import { Suspense, useState } from 'react';
-import Markdown from 'react-markdown';
 import { useTranslation } from 'react-i18next';
+import Markdown from 'react-markdown';
 import { Await, Link, type LoaderFunctionArgs, useLoaderData } from 'react-router';
-import * as pkg from '@build/package';
 import {
   Badge,
   Button,
@@ -52,11 +52,14 @@ type GitHubRelease = {
 
 async function fetchGitHubReleases(): Promise<GitHubRelease[]> {
   try {
-    const response = await fetch(`${pkg.repository.url.replace('github.com', 'api.github.com/repos')}/releases`, {
-      headers: {
-        Accept: 'application/vnd.github.v3+json',
-      },
-    });
+    const response = await fetch(
+      `${pkg.repository.url.replace('github.com', 'api.github.com/repos')}/releases`,
+      {
+        headers: {
+          Accept: 'application/vnd.github.v3+json',
+        },
+      }
+    );
 
     if (!response.ok) {
       console.error('Failed to fetch releases:', response.statusText);
@@ -70,7 +73,7 @@ async function fetchGitHubReleases(): Promise<GitHubRelease[]> {
   }
 }
 
-export async function releasesLoader(_: LoaderFunctionArgs) {
+export function releasesLoader(_: LoaderFunctionArgs) {
   return defer({
     releases: fetchGitHubReleases(),
   });
@@ -103,11 +106,7 @@ function ReleaseCard({ release, isLatest }: { release: GitHubRelease; isLatest: 
       >
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="flex flex-wrap items-center gap-2">
-            <Badge
-              tone={isLatest ? 'brand' : 'neutral'}
-              pill
-              className="gap-1"
-            >
+            <Badge tone={isLatest ? 'brand' : 'neutral'} pill className="gap-1">
               <Tag size={10} />
               {release.tag_name}
             </Badge>
@@ -128,9 +127,7 @@ function ReleaseCard({ release, isLatest }: { release: GitHubRelease; isLatest: 
             {formatDateOnly(release.published_at, 'MMM d, yyyy')}
           </div>
         </div>
-        <CardTitle className="mt-2 text-white">
-          {release.name || release.tag_name}
-        </CardTitle>
+        <CardTitle className="mt-2 text-white">{release.name || release.tag_name}</CardTitle>
         {!isExpanded && release.body && (
           <CardDescription className="line-clamp-2">
             {release.body.replace(/[#*`]/g, '').slice(0, 200)}...
@@ -152,7 +149,7 @@ function ReleaseCard({ release, isLatest }: { release: GitHubRelease; isLatest: 
                 href={release.author.html_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="font-medium text-white text-sm hover:text-brand-300"
+                className="font-medium text-sm text-white hover:text-brand-300"
               >
                 {release.author.login}
               </a>
@@ -166,7 +163,7 @@ function ReleaseCard({ release, isLatest }: { release: GitHubRelease; isLatest: 
               <Markdown
                 components={{
                   h1: ({ children }) => (
-                    <h1 className="mt-4 mb-2 border-white/10 border-b pb-2 font-bold text-xl text-white">
+                    <h1 className="mt-4 mb-2 border-white/10 border-b pb-2 font-bold text-white text-xl">
                       {children}
                     </h1>
                   ),
@@ -174,16 +171,12 @@ function ReleaseCard({ release, isLatest }: { release: GitHubRelease; isLatest: 
                     <h2 className="mt-4 mb-2 font-bold text-lg text-white">{children}</h2>
                   ),
                   h3: ({ children }) => (
-                    <h3 className="mt-3 mb-1 font-semibold text-base text-white">
-                      {children}
-                    </h3>
+                    <h3 className="mt-3 mb-1 font-semibold text-base text-white">{children}</h3>
                   ),
                   p: ({ children }) => (
                     <p className="my-2 text-slate-300 leading-relaxed">{children}</p>
                   ),
-                  ul: ({ children }) => (
-                    <ul className="my-2 space-y-1 pl-4">{children}</ul>
-                  ),
+                  ul: ({ children }) => <ul className="my-2 space-y-1 pl-4">{children}</ul>,
                   li: ({ children }) => (
                     <li className="text-slate-300 before:mr-2 before:text-brand-400 before:content-['•']">
                       {children}
@@ -256,7 +249,7 @@ function ReleaseCard({ release, isLatest }: { release: GitHubRelease; isLatest: 
                   >
                     <Download size={16} className="shrink-0 text-brand-400" />
                     <div className="min-w-0 flex-1">
-                      <p className="truncate font-medium text-white text-sm">{asset.name}</p>
+                      <p className="truncate font-medium text-sm text-white">{asset.name}</p>
                       <p className="text-slate-400 text-xs">
                         {formatBytes(asset.size)} • {asset.download_count} {t('releases.downloads')}
                       </p>
@@ -372,4 +365,3 @@ export function ReleasesRoute() {
     </div>
   );
 }
-

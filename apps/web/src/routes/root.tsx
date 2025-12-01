@@ -1,4 +1,13 @@
-import { Activity, ClipboardCheck, Info, LogOut, Package, Settings, Terminal, Users } from 'lucide-react';
+import {
+  Activity,
+  ClipboardCheck,
+  Info,
+  LogOut,
+  Package,
+  Settings,
+  Terminal,
+  Users,
+} from 'lucide-react';
 import type { ComponentType } from 'react';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';

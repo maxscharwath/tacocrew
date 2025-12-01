@@ -1,3 +1,6 @@
+import * as git from '@build/git';
+import * as pkg from '@build/package';
+import buildTime from '@build/time';
 import { SiBluesky, SiGithub } from '@icons-pack/react-simple-icons';
 import {
   AtSignIcon,
@@ -12,9 +15,6 @@ import {
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
-import * as git from '@build/git';
-import * as pkg from '@build/package';
-import buildTime from '@build/time';
 import { Badge, Button, Card, CardContent, CardHeader, CardTitle } from '@/components/ui';
 import { useDateFormat } from '@/hooks/useDateFormat';
 import { routes } from '@/lib/routes';
@@ -226,11 +226,11 @@ export function AboutRoute() {
 
               <div className="flex flex-wrap items-center justify-center gap-3 sm:justify-start">
                 <a href={pkg.repository.url} target="_blank" rel="noopener noreferrer">
-                    <Button variant="outline" size="md" className="gap-2">
-                      <SiGithub size={16} />
-                      GitHub
-                    </Button>
-                  </a>
+                  <Button variant="outline" size="md" className="gap-2">
+                    <SiGithub size={16} />
+                    GitHub
+                  </Button>
+                </a>
                 <Link to={routes.root.releases()}>
                   <Button variant="ghost" size="md" className="gap-2">
                     <Package size={16} />
@@ -285,7 +285,6 @@ export function AboutRoute() {
           </CardContent>
         </Card>
       )}
-
     </div>
   );
 }
