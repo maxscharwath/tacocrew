@@ -13,8 +13,9 @@ import Markdown from 'react-markdown';
 import { useTranslation } from 'react-i18next';
 import { Await, Link, type LoaderFunctionArgs, useLoaderData } from 'react-router';
 import * as git from '@build/git';
+import * as pkg from '@build/package';
 
-const GITHUB_URL = git.github ?? 'https://github.com/maxscharwath/tacobot';
+const GITHUB_URL = git.github ?? (typeof pkg.repository === 'string' ? pkg.repository : pkg.repository?.url);
 import {
   Badge,
   Button,

@@ -88,10 +88,13 @@ declare module '@build/package' {
         bluesky?: string;
       }
   >;
-}
 
-declare module '@build/meta' {
-  /** GitHub repository URL */
-  export const github: string;
+  /** Package repository */
+  export const repository:
+    | string
+    | {
+        type: string;
+        url: string;
+      };
 }
 

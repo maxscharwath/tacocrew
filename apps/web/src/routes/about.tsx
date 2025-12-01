@@ -16,7 +16,7 @@ import * as git from '@build/git';
 import * as pkg from '@build/package';
 import buildTime from '@build/time';
 
-const GITHUB_URL = git.github ?? 'https://github.com/maxscharwath/tacobot';
+const GITHUB_URL = git.github ?? (typeof pkg.repository === 'string' ? pkg.repository : pkg.repository?.url);
 import { Badge, Button, Card, CardContent, CardHeader, CardTitle } from '@/components/ui';
 import { useDateFormat } from '@/hooks/useDateFormat';
 import { routes } from '@/lib/routes';
