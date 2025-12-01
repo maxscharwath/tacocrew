@@ -26,6 +26,7 @@ export default defineConfig({
       prefix: '@build',
       package: {
         contributors: true,
+        repository: true,
       },
     }),
   ],
