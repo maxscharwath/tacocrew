@@ -90,11 +90,9 @@ declare module '@build/package' {
   >;
 
   /** Package repository */
-  export const repository:
-    | string
-    | {
-        type: string;
-        url: string;
-      };
+  export const repository: {
+    type: string;
+    url: string;
+  };
 }
 

@@ -16,7 +16,7 @@ import { abbreviatedSha, branch, github, isClean, lastTag, tag } from '@build/gi
 import { author, contributors, repository, version } from '@build/package';
 import buildTime from '@build/time';
 
-const GITHUB_URL = github ?? (typeof repository === 'string' ? repository : repository.url);
+const GITHUB_URL = github ?? repository.url;
 import { Badge, Button, Card, CardContent, CardHeader, CardTitle } from '@/components/ui';
 import { useDateFormat } from '@/hooks/useDateFormat';
 import { routes } from '@/lib/routes';

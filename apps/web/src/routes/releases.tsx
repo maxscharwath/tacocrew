@@ -15,7 +15,7 @@ import { Await, Link, type LoaderFunctionArgs, useLoaderData } from 'react-route
 import { github } from '@build/git';
 import { repository } from '@build/package';
 
-const GITHUB_URL = github ?? (typeof repository === 'string' ? repository : repository.url);
+const GITHUB_URL = github ?? repository.url;
 import {
   Badge,
   Button,
