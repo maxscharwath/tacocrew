@@ -97,7 +97,7 @@ export function OrderCard({
       <CardHeader className="pr-20">
         <div className="flex items-start gap-3">
           <Avatar color="brandHero" size="md" variant="elevated">
-            <span className="text-xl">{tacoConfig?.emoji || '🌮'}</span>
+            <span className="text-xl">{tacoConfig?.emoji}</span>
           </Avatar>
           <div className="min-w-0 flex-1">
             <div className="mb-1.5 flex flex-wrap items-center gap-1.5">

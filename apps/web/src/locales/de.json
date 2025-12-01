@@ -670,7 +670,7 @@
         "deliveryFeeShare": "Lieferkosten-Anteil",
         "feeExplanation": "Aufteilung: {{total}} ÷ {{count}} = {{share}} pro Person.",
         "total": "Gesamt",
-        "footer": "Danke! 🌮",
+        "footer": "Danke!",
         "status": {
           "awaitingParticipant": "Nicht bezahlt",
           "awaitingConfirmation": "Zahlung ausstehend",
@@ -788,7 +788,8 @@
           "selectProfile": "Wähle zuerst eine gespeicherte Adresse.",
           "genericError": "Adresse konnte nicht gespeichert werden. Bitte versuche es erneut."
         },
-        "confirmDelete": "Diese gespeicherte Adresse löschen?"
+        "confirmDelete": "Diese gespeicherte Adresse löschen?",
+        "delete": "Löschen"
       },
       "reminder": {
         "title": "Letzter Schritt",

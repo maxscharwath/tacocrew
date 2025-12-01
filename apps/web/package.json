@@ -56,7 +56,6 @@
     "tailwindcss": "^4.1.17",
     "tailwindcss-animate": "^1.0.7",
     "tailwindcss-react-aria-components": "^2.0.1",
-    "workbox-precaching": "^7.4.0",
     "zod": "^4.1.13"
   },
   "devDependencies": {

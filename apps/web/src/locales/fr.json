@@ -680,7 +680,7 @@
         "deliveryFeeShare": "Part des frais de livraison",
         "feeExplanation": "Répartition : {{total}} ÷ {{count}} = {{share}} par personne.",
         "total": "Total",
-        "footer": "Merci ! 🌮",
+        "footer": "Merci !",
         "status": {
           "awaitingParticipant": "Non payé",
           "awaitingConfirmation": "Paiement en attente",
@@ -799,7 +799,8 @@
           "selectProfile": "Sélectionnez d'abord une adresse enregistrée.",
           "genericError": "Impossible d'enregistrer l'adresse. Réessayez."
         },
-        "confirmDelete": "Supprimer cette adresse enregistrée ?"
+        "confirmDelete": "Supprimer cette adresse enregistrée ?",
+        "delete": "Supprimer"
       },
       "reminder": {
         "title": "Dernière étape",

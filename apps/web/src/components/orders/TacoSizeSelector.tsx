@@ -38,7 +38,7 @@ export function TacoSizeSelector({ sizes, selected, onSelect, currency }: TacoSi
         <div className="grid gap-2 sm:grid-cols-2 sm:gap-3 lg:grid-cols-3">
           {sizes.map((tacoSize) => {
             const config = TACO_SIZE_CONFIG[tacoSize.code];
-            const emoji = config?.emoji || '🌮';
+            const emoji = config?.emoji;
             const isSelected = selected === tacoSize.code;
 
             return (

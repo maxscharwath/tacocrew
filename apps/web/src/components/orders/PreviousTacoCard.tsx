@@ -36,7 +36,7 @@ export function PreviousTacoCard({ order, stock, disabled, onSelect }: PreviousT
       <div className="flex flex-1 flex-col space-y-2 sm:space-y-3">
         <div className="flex items-start gap-2 sm:gap-3">
           <div className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-brand-400/50 bg-linear-to-br from-brand-500/30 via-brand-500/20 to-sky-500/25 shadow-brand-500/20 shadow-md sm:h-12 sm:w-12">
-            <span className="text-lg sm:text-xl">{tacoConfig?.emoji || '🌮'}</span>
+            <span className="text-lg sm:text-xl">{tacoConfig.emoji}</span>
           </div>
           <div className="min-w-0 flex-1">
             <div className="mb-1 flex flex-wrap items-center gap-1 sm:mb-1.5 sm:gap-1.5">

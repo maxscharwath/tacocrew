@@ -109,3 +109,12 @@ input[type="search"]::-webkit-search-cancel-button {
         transform: translateY(0);
     }
 }
+
+/* Prevent image dragging */
+img {
+    -webkit-user-drag: none;
+    user-select: none;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+}

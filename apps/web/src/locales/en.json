@@ -687,7 +687,7 @@
         "deliveryFeeShare": "Delivery fee share",
         "feeExplanation": "Fee split: {{total}} ÷ {{count}} = {{share}} each.",
         "total": "Total",
-        "footer": "Merci! 🌮",
+        "footer": "Merci!",
         "status": {
           "awaitingParticipant": "Not paid",
           "awaitingConfirmation": "Payment pending",
@@ -806,7 +806,8 @@
           "selectProfile": "Select a saved delivery info first.",
           "genericError": "Unable to save delivery info. Please try again."
         },
-        "confirmDelete": "Delete this saved delivery info?"
+        "confirmDelete": "Delete this saved delivery info?",
+        "delete": "Delete"
       },
       "reminder": {
         "title": "Final step",

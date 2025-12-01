@@ -3,7 +3,7 @@
  * @module gigatacos-client/http-client
  */
 
-import axios, { AxiosInstance, AxiosResponse, AxiosError } from 'axios';
+import axios, { AxiosInstance, AxiosResponse, AxiosError, type AxiosRequestConfig } from 'axios';
 import { wrapper } from 'axios-cookiejar-support';
 import { CookieJar } from 'tough-cookie';
 import type { HttpClientConfig, Logger, ProxyConfig } from './types';
@@ -39,6 +39,7 @@ export class HttpClient {
     this.cookieJar = new CookieJar();
 
     // Create axios instance with cookie jar support
+    // jar property is added by axios-cookiejar-support
     const instance = axios.create({
       baseURL: this.getAxiosBaseUrl(),
       headers: {
@@ -49,7 +50,7 @@ export class HttpClient {
       withCredentials: true,
       timeout: 30000, // 30 second timeout
       maxRedirects: 5,
-    } as any);
+    } as AxiosRequestConfig & { jar: CookieJar });
 
     this.axiosInstance = wrapper(instance);
     this.setupErrorInterceptor();

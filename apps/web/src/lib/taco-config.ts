@@ -20,7 +20,7 @@ export interface TacoSizeConfig extends BaseTacoSizeConfig {
  * Extends the base configuration from gigatacos-client
  */
 export const TACO_SIZE_CONFIG: Record<TacoSize, TacoSizeConfig> = {
-  [TacoSize.L]: { ...BASE_TACO_SIZE_CONFIG[TacoSize.L], emoji: '🌮' },
+  [TacoSize.L]: { ...BASE_TACO_SIZE_CONFIG[TacoSize.L], emoji: '' },
   [TacoSize.BOWL]: { ...BASE_TACO_SIZE_CONFIG[TacoSize.BOWL], emoji: '🥗' },
   [TacoSize.L_MIXTE]: { ...BASE_TACO_SIZE_CONFIG[TacoSize.L_MIXTE], emoji: '🌯' },
   [TacoSize.XL]: { ...BASE_TACO_SIZE_CONFIG[TacoSize.XL], emoji: '🌯' },

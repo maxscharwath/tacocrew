@@ -89,9 +89,13 @@ export function RootLayout() {
               to={routes.root.dashboard()}
               className="group -mx-2 -my-1.5 flex min-w-0 items-center gap-3 rounded-lg px-2 py-1.5 transition-all hover:bg-brand-500/10 hover:text-brand-100 active:bg-brand-500/15"
             >
-              <Avatar color="brandHero" size="md" variant="elevated" className="shrink-0">
-                <span className="text-base">🌮</span>
-              </Avatar>
+              <Avatar
+                color="brandHero"
+                size="md"
+                variant="elevated"
+                className="shrink-0"
+                src="/icon.png"
+              />
               <h1 className="hidden min-w-0 truncate font-semibold text-white text-xl tracking-tight sm:block">
                 {t('root.tacobot')}
               </h1>

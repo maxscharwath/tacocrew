@@ -3,6 +3,12 @@
  * @module gigatacos-client/parsers/shared
  */
 
+import { load } from 'cheerio';
+
+// Infer Cheerio selection type from actual usage
+const _$ = load('<div></div>');
+type CheerioSelection = ReturnType<typeof _$>;
+
 export function nameToSlug(name: string): string {
   return name
     .normalize('NFD')
@@ -45,20 +51,19 @@ export function findIdByName(
   return null;
 }
 
-// biome-ignore lint/suspicious/noExplicitAny: Cheerio type is complex
-export function findLabeledParagraph($scope: any, labels: string[]): any {
+export function findLabeledParagraph($scope: CheerioSelection, labels: string[]): CheerioSelection {
   let $p = $scope.find(labels.map((l) => `p:has(strong:contains("${l}"))`).join(', ')).first();
   if ($p.length) return $p;
   $p = $scope.find(labels.map((l) => `p:contains("${l}")`).join(', ')).first();
-    const el = $p.get(0) as { tagName?: string } | undefined;
-    if (el?.tagName && el.tagName !== 'p') {
-      $p = $p.closest('p');
-    }
-    return $p;
+  const el = $p.get(0) as { tagName?: string } | undefined;
+  if (el?.tagName && el.tagName !== 'p') {
+    const $closest = $p.closest('p');
+    return $closest as unknown as CheerioSelection;
   }
+  return $p;
+}
 
-// biome-ignore lint/suspicious/noExplicitAny: Cheerio type is complex
-export function extractValueAfterColonFromParagraph($p: any): string | null {
+export function extractValueAfterColonFromParagraph($p: CheerioSelection): string | null {
   if (!$p.length) return null;
   const text = $p.text().replaceAll(/\s+/g, ' ').trim();
   const idx = text.indexOf(':');
@@ -67,8 +72,7 @@ export function extractValueAfterColonFromParagraph($p: any): string | null {
   return after || null;
 }
 
-// biome-ignore lint/suspicious/noExplicitAny: Cheerio type is complex
-export function parseListFromLabeledParagraph($scope: any, labels: string[]): string[] {
+export function parseListFromLabeledParagraph($scope: CheerioSelection, labels: string[]): string[] {
   const $p = findLabeledParagraph($scope, labels);
   const val = extractValueAfterColonFromParagraph($p);
   if (!val) return [];

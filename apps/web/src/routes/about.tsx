@@ -193,8 +193,8 @@ export function AboutRoute() {
           <div className="flex flex-col items-center gap-6 text-center sm:flex-row sm:text-left">
             {/* Logo */}
             <div className="shrink-0">
-              <div className="grid h-28 w-28 place-items-center rounded-3xl border border-white/10 bg-linear-to-br from-slate-800 to-slate-900 shadow-2xl sm:h-32 sm:w-32">
-                <span className="text-6xl sm:text-7xl">🌮</span>
+              <div className="relative h-28 w-28 overflow-hidden rounded-3xl border border-white/10 bg-linear-to-br from-slate-800 to-slate-900 shadow-2xl sm:h-32 sm:w-32">
+                <img src="/icon.png" alt="TacoCrew" className="h-full w-full object-cover" />
               </div>
             </div>
 

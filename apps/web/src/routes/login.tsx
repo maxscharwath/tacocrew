@@ -241,9 +241,7 @@ export function LoginRoute() {
           <Card className="relative overflow-hidden border-white/10 bg-slate-900/60 shadow-[0_40px_120px_rgba(8,47,73,0.35)] backdrop-blur">
             <CardHeader className="text-center">
               <div className="mx-auto mb-4">
-                <Avatar color="brandHero" size="xl" variant="elevated">
-                  <span className="text-3xl">🌮</span>
-                </Avatar>
+                <Avatar color="brandHero" size="xl" variant="elevated" src="/icon.png" />
               </div>
               <CardTitle className="text-3xl">
                 {isSignUp ? t('login.signUp.title') : t('login.title')}

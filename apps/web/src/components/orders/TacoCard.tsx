@@ -63,7 +63,7 @@ export function TacoCard({ taco, badge, footer, showTacoID = false, className }:
       <CardHeader>
         <div className="flex items-start gap-3">
           <Avatar color="brandHero" size="md" variant="elevated">
-            <span className="text-xl">{tacoConfig?.emoji || '🌮'}</span>
+            <span className="text-xl">{tacoConfig.emoji}</span>
           </Avatar>
           <div className="min-w-0 flex-1">
             {badge && <div className="mb-1.5 flex flex-wrap items-center gap-1.5">{badge}</div>}

@@ -10,9 +10,13 @@ export function OrderCreateHero() {
       <div className="-bottom-16 pointer-events-none absolute left-12 h-60 w-60 rounded-full bg-purple-500/25 blur-3xl" />
       <div className="relative space-y-4 sm:space-y-6">
         <div className="flex items-center gap-2 sm:gap-3">
-          <Avatar color="brandHero" size="lg" variant="elevated" className="sm:size-xl">
-            <span className="text-2xl sm:text-3xl">🌮</span>
-          </Avatar>
+          <Avatar
+            color="brandHero"
+            size="lg"
+            variant="elevated"
+            className="sm:size-xl"
+            src="/icon.png"
+          />
           <div className="flex-1">
             <h1 className="font-semibold text-2xl text-white tracking-tight sm:text-3xl lg:text-4xl">
               {t('orders.create.hero.title')}

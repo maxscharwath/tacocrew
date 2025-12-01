@@ -98,11 +98,9 @@ export class PushNotificationClient {
       throw new PushNotificationError('Push notifications are not supported');
     }
 
-    // Register service worker
+    // Get service worker registration (auto-registered by vite-plugin-pwa)
     try {
-      this.serviceWorkerRegistration = await navigator.serviceWorker.register('/sw.js');
-      // Wait for service worker to be ready
-      await navigator.serviceWorker.ready;
+      this.serviceWorkerRegistration = await navigator.serviceWorker.ready;
     } catch (error) {
       throw new PushNotificationError(
         'Failed to register service worker',
@@ -266,21 +264,14 @@ export class PushNotificationClient {
   }
 
   /**
-   * Convert base64url to Uint8Array with explicit ArrayBuffer
+   * Convert base64url to Uint8Array
    */
-  private urlBase64ToUint8Array(base64String: string): Uint8Array<ArrayBuffer> {
-    const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
-    const base64 = (base64String + padding).replaceAll('-', '+').replaceAll('_', '/');
-
-    const rawData = globalThis.atob(base64);
-    // Create ArrayBuffer explicitly to ensure proper typing
-    const buffer = new ArrayBuffer(rawData.length);
-    const outputArray = new Uint8Array(buffer);
-
-    for (let i = 0; i < rawData.length; ++i) {
-      outputArray[i] = rawData.codePointAt(i) ?? 0;
-    }
-    return outputArray;
+  private urlBase64ToUint8Array(base64url: string): Uint8Array<ArrayBuffer> {
+    const binary = atob(base64url.replace(/-/g, '+').replace(/_/g, '/'));
+    const buffer = new ArrayBuffer(binary.length);
+    const bytes = new Uint8Array(buffer);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    return bytes;
   }
 
   /**

@@ -977,15 +977,6 @@ export function AccountRoute() {
                             {t('account.pushNotifications.devices.description')}
                           </p>
                         </div>
-                        <Button
-                          onClick={loadPushSubscriptions}
-                          disabled={isLoadingSubscriptions}
-                          variant="ghost"
-                          size="sm"
-                          loading={isLoadingSubscriptions}
-                        >
-                          <RefreshCw size={16} />
-                        </Button>
                       </div>
 
                       {isLoadingSubscriptions ? (

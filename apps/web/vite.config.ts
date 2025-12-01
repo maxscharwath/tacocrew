@@ -34,9 +34,25 @@ export default defineConfig({
       strategies: 'injectManifest',
       srcDir: 'src',
       filename: 'sw.ts',
-      registerType: 'prompt',
-      injectRegister: false,
-      manifest: false,
+      injectRegister: 'script-defer',
+      manifest: {
+        name: 'TacoCrew',
+        short_name: 'TacoCrew',
+        description: 'TacoCrew - Order your favorite tacos',
+        theme_color: '#6366f1',
+        background_color: '#0f172a',
+        display: 'standalone',
+        orientation: 'portrait',
+        start_url: '/',
+        icons: [
+          {
+            src: '/icon.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'any maskable',
+          },
+        ],
+      },
       injectManifest: {
         injectionPoint: undefined,
       },
