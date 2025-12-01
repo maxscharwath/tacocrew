@@ -47,7 +47,8 @@ export function resolveImageUrl(
     url.searchParams.set('dpr', dpr.toString());
   }
 
-  return ENV.apiBaseUrl ? url.toString() : url.pathname + url.search;
+  // Always return full URL to ensure proper image loading
+  return url.toString();
 }
 
 /**

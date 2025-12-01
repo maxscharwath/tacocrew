@@ -1,4 +1,4 @@
-import { Camera, Check, Palette, Plus, RotateCcw, Trash2, X } from 'lucide-react';
+import { Camera, Check, Plus, RotateCcw, Trash2, X } from 'lucide-react';
 import { useEffect, useId, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -15,7 +15,7 @@ import {
   toast,
 } from '@/components/ui';
 import { deleteAvatar, uploadAvatar } from '@/lib/api/user';
-import { imageUrlToFile, PREDEFINED_AVATARS } from '@/lib/avatars';
+import { imageUrlToFile, PREDEFINED_AVATAR_THUMBNAILS, PREDEFINED_AVATARS } from '@/lib/avatars';
 import { ENV } from '@/lib/env';
 import { cn } from '@/lib/utils';
 
@@ -24,7 +24,6 @@ const VALID_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp',
 const SUCCESS_MESSAGE_DURATION = 3000;
 
 const PRESET_COLORS = [
-  { name: 'Transparent', value: 'transparent' },
   { name: 'White', value: '#ffffff' },
   { name: 'Slate', value: '#1e293b' },
   { name: 'Brand', value: '#6366f1' },
@@ -68,22 +67,11 @@ function getIconColorForBackground(backgroundColor: string): string {
   return luminance > 0.5 ? 'text-slate-700' : 'text-slate-300';
 }
 
-/**
- * Get checkerboard pattern for transparent background
- */
-function getTransparentPattern() {
-  return {
-    backgroundImage:
-      'linear-gradient(45deg, #1e293b 25%, transparent 25%), linear-gradient(-45deg, #1e293b 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #1e293b 75%), linear-gradient(-45deg, transparent 75%, #1e293b 75%)',
-    backgroundSize: '8px 8px',
-    backgroundPosition: '0 0, 0 4px, 4px -4px, -4px 0px',
-  };
-}
-
 export function ImageUploader({ currentImage, onImageUpdate }: ImageUploaderProps) {
   const { t } = useTranslation();
   const inputId = useId();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const colorInputRef = useRef<HTMLInputElement>(null);
   const successTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Initialize preview with currentImage immediately - resolve URL if needed
@@ -108,7 +96,6 @@ export function ImageUploader({ currentImage, onImageUpdate }: ImageUploaderProp
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
-  const [showColorPicker, setShowColorPicker] = useState(false);
   const [backgroundColor, setBackgroundColor] = useState<string>(PRESET_COLORS[0].value);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
@@ -193,10 +180,7 @@ export function ImageUploader({ currentImage, onImageUpdate }: ImageUploaderProp
     setSuccess(false);
 
     try {
-      const updatedProfile = await uploadAvatar(
-        fileToUpload,
-        backgroundColor !== 'transparent' ? backgroundColor : null
-      );
+      const updatedProfile = await uploadAvatar(fileToUpload, backgroundColor);
 
       const endpointUrl = updatedProfile.image || null;
       setPreview(endpointUrl);
@@ -360,19 +344,9 @@ export function ImageUploader({ currentImage, onImageUpdate }: ImageUploaderProp
 
           {/* Background Color Picker */}
           <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <label className="font-medium text-sm text-white">
-                {t('account.avatar.backgroundColor') || 'Background Color'}
-              </label>
-              <button
-                type="button"
-                onClick={() => setShowColorPicker(!showColorPicker)}
-                className="flex items-center gap-1.5 rounded-lg px-2 py-1 text-slate-400 text-xs transition-colors hover:text-white"
-              >
-                <Palette size={14} />
-                {showColorPicker ? 'Hide' : 'Custom'}
-              </button>
-            </div>
+            <label className="font-medium text-sm text-white">
+              {t('account.avatar.backgroundColor') || 'Background Color'}
+            </label>
 
             <div className="flex flex-wrap gap-2">
               {PRESET_COLORS.map((color) => {
@@ -385,53 +359,64 @@ export function ImageUploader({ currentImage, onImageUpdate }: ImageUploaderProp
                     disabled={isUploading}
                     className={cn(
                       'relative h-8 w-8 rounded-lg border-2 transition-all',
-                      color.value === 'transparent' && 'border-white/20 border-dashed',
                       isSelected
                         ? 'scale-110 ring-2 ring-brand-400 ring-offset-1 ring-offset-slate-900'
                         : 'border-white/10 hover:scale-105 hover:border-brand-400/50',
                       isUploading && 'pointer-events-none opacity-50'
                     )}
-                    style={
-                      color.value === 'transparent'
-                        ? getTransparentPattern()
-                        : { backgroundColor: color.value }
-                    }
+                    style={{ backgroundColor: color.value }}
                     title={color.name}
                   >
                     {isSelected && (
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <Check className="text-white drop-shadow-lg" size={14} />
+                      <div className="absolute top-1 right-1">
+                        <div className="flex h-5 w-5 items-center justify-center rounded-full border-2 border-white/60 bg-linear-to-br from-brand-500 via-brand-600 to-sky-600 shadow-lg">
+                          <Check className="text-white" size={12} strokeWidth={3} />
+                        </div>
                       </div>
                     )}
                   </button>
                 );
               })}
-            </div>
 
-            {showColorPicker && (
-              <div className="flex items-center gap-2 rounded-lg border border-white/10 bg-slate-900/40 p-2">
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => colorInputRef.current?.click()}
+                  disabled={isUploading}
+                  // biome-ignore lint/nursery/useSortedClasses: classes are functionally correct
+                  className={cn(
+                    'relative flex aspect-square h-8 w-8 items-center justify-center rounded-lg border-2 border-dashed transition-all',
+                    !PRESET_COLORS.some(c => c.value === backgroundColor)
+                      ? 'scale-110 ring-2 ring-brand-400 ring-offset-1 ring-offset-slate-900 border-white/10'
+                      : 'border-white/30 hover:scale-105 hover:border-brand-400 hover:bg-brand-500/10',
+                    isUploading && 'pointer-events-none opacity-50'
+                  )}
+                  style={{
+                    backgroundColor: !PRESET_COLORS.some(c => c.value === backgroundColor) ? backgroundColor : undefined
+                  }}
+                  title={t('account.avatar.customColor') || 'Custom color'}
+                >
+                  <Plus size={16} className="text-white drop-shadow-sm" />
+                  {!PRESET_COLORS.some(c => c.value === backgroundColor) && (
+                    <div className="absolute top-1 right-1">
+                      <div className="flex h-5 w-5 items-center justify-center rounded-full border-2 border-white/60 bg-linear-to-br from-brand-500 via-brand-600 to-sky-600 shadow-lg">
+                        <Check className="text-white" size={12} strokeWidth={3} />
+                      </div>
+                    </div>
+                  )}
+                </button>
+
                 <input
+                  ref={colorInputRef}
                   type="color"
-                  value={backgroundColor === 'transparent' ? '#ffffff' : backgroundColor}
+                  value={backgroundColor}
                   onChange={(e) => handleBackgroundColorChange(e.target.value)}
                   disabled={isUploading}
-                  className="h-8 w-16 cursor-pointer rounded border border-white/10 bg-transparent"
-                />
-                <input
-                  type="text"
-                  value={backgroundColor === 'transparent' ? '' : backgroundColor}
-                  onChange={(e) => {
-                    const value = e.target.value.trim();
-                    if (value === '' || /^#[0-9A-Fa-f]{0,6}$/.test(value)) {
-                      handleBackgroundColorChange(value || 'transparent');
-                    }
-                  }}
-                  placeholder="#000000"
-                  disabled={isUploading}
-                  className="flex-1 rounded-lg border border-white/10 bg-slate-950/60 px-3 py-1.5 text-sm text-white placeholder:text-slate-500 focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-400/40 disabled:opacity-50"
+                  className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
                 />
               </div>
-            )}
+            </div>
+
           </div>
         </div>
 
@@ -447,57 +432,64 @@ export function ImageUploader({ currentImage, onImageUpdate }: ImageUploaderProp
             disabled={isUploading}
           />
 
-          <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 2xl:grid-cols-8">
-            {PREDEFINED_AVATARS.map((avatarUrl, index) => {
-              const isSelected = pendingAvatarUrl === avatarUrl;
-              const isCurrent = currentImage === avatarUrl;
-              return (
-                <button
-                  key={index}
-                  type="button"
-                  onClick={() => handlePredefinedAvatarSelect(avatarUrl)}
-                  disabled={isUploading}
-                  className={cn(
-                    'relative aspect-square overflow-hidden rounded-lg border-2 transition-all',
-                    isSelected
-                      ? 'border-brand-400 ring-2 ring-brand-400/50 ring-offset-1 ring-offset-slate-900'
-                      : isCurrent
-                        ? 'border-emerald-400/50'
-                        : 'border-white/10 hover:border-brand-400/50',
-                    isUploading && 'pointer-events-none opacity-50'
-                  )}
-                >
-                  <img
-                    src={avatarUrl}
-                    alt={`Avatar ${index + 1}`}
-                    className="h-full w-full object-cover"
-                  />
-                  {isSelected && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-brand-500/30">
-                      <Check className="text-white" size={16} />
-                    </div>
-                  )}
-                  {isCurrent && !isSelected && (
-                    <div className="absolute top-0.5 right-0.5 flex h-3 w-3 items-center justify-center rounded-full bg-emerald-500">
-                      <Check className="text-white" size={8} />
-                    </div>
-                  )}
-                </button>
-              );
-            })}
 
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              disabled={isUploading}
-              className={cn(
-                'flex aspect-square items-center justify-center rounded-lg border-2 border-white/20 border-dashed bg-slate-900/40 transition-all hover:border-brand-400/50 hover:bg-slate-900/60',
-                isUploading && 'pointer-events-none opacity-50'
-              )}
-              title={t('account.avatar.select') || 'Upload custom image'}
-            >
-              <Plus size={20} className="text-slate-400" />
-            </button>
+          <div className="relative overflow-hidden rounded-xl border border-white/10 bg-linear-to-br from-slate-950/80 via-slate-900/60 to-slate-900/30 p-4 shadow-inner">
+            <div className="relative grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 2xl:grid-cols-8">
+              {PREDEFINED_AVATARS.map((avatarUrl, index) => {
+                const isSelected = pendingAvatarUrl === avatarUrl;
+                const isCurrent = currentImage === avatarUrl;
+                const thumbnailUrl = PREDEFINED_AVATAR_THUMBNAILS[index];
+                return (
+                  <button
+                    key={index}
+                    type="button"
+                    onClick={() => handlePredefinedAvatarSelect(avatarUrl)}
+                    disabled={isUploading}
+                    className={cn(
+                      'relative aspect-square overflow-hidden rounded-lg border-2 bg-linear-to-br from-brand-400 via-brand-500 to-sky-500 transition-all',
+                      isSelected
+                        ? 'ring-2 ring-brand-400 ring-offset-1 ring-offset-slate-900'
+                        : isCurrent
+                          ? 'border-emerald-400/50'
+                          : 'border-white/20 hover:scale-105 hover:border-brand-400/50 hover:bg-linear-to-br hover:from-brand-300 hover:via-brand-400 hover:to-sky-400',
+                      isUploading && 'pointer-events-none opacity-50'
+                    )}
+                  >
+                    <img
+                      src={thumbnailUrl || avatarUrl}
+                      alt={`Avatar ${index + 1}`}
+                      className="h-full w-full object-cover"
+                    />
+                    {isSelected && (
+                      <div className="absolute top-1 right-1">
+                        <div className="flex h-5 w-5 items-center justify-center rounded-full border-2 border-white/60 bg-linear-to-br from-brand-500 via-brand-600 to-sky-600 shadow-lg">
+                          <Check className="text-white" size={12} strokeWidth={3} />
+                        </div>
+                      </div>
+                    )}
+                    {isCurrent && !isSelected && (
+                      <div className="absolute top-0.5 right-0.5 flex h-3 w-3 items-center justify-center rounded-full bg-emerald-500">
+                        <Check className="text-white" size={8} />
+                      </div>
+                    )}
+                  </button>
+                );
+              })}
+
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isUploading}
+                // biome-ignore lint/nursery/useSortedClasses: classes are functionally correct
+                className={cn(
+                  'flex aspect-square items-center justify-center rounded-lg border-2 border-dashed border-white/30 bg-slate-800/20 transition-all hover:bg-brand-500/10 hover:border-brand-400 hover:scale-105',
+                  isUploading && 'pointer-events-none opacity-50'
+                )}
+                title={t('account.avatar.select') || 'Upload custom image'}
+              >
+                <Plus size={20} className="text-white drop-shadow-sm" />
+              </button>
+            </div>
           </div>
         </div>
       </div>

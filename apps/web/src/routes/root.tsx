@@ -18,13 +18,13 @@ import {
   NavLink,
   Outlet,
   useLoaderData,
+  useRevalidator,
   useRouteError,
 } from 'react-router';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
 import { Alert, Avatar, Button, Card } from '@/components/ui';
 import { useDeveloperMode } from '@/hooks/useDeveloperMode';
 import { resolveImageUrl } from '@/lib/api';
-import { useSession } from '@/lib/auth-client';
 import { routes } from '@/lib/routes';
 import type { RootLoaderData } from './root.loader';
 
@@ -32,9 +32,7 @@ export function RootLayout() {
   const { t, i18n } = useTranslation();
   const { profile } = useLoaderData<RootLoaderData>();
   const { isEnabled: isDeveloperMode, toggle: toggleDeveloperMode } = useDeveloperMode();
-
-  // Use Better Auth's useSession hook for reactive, cached session data
-  const { data: session, refetch } = useSession();
+  const revalidator = useRevalidator();
 
   // Sync user's language preference from profile to i18n (only on initial load)
   useEffect(() => {
@@ -44,43 +42,25 @@ export function RootLayout() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profile?.language]);
 
-  // Compute user name and initials from session or fallback to profile
-  const userName = session?.user?.name || profile?.username || 'User';
+  const userName = profile?.name || profile?.username || 'User';
   const userInitials = userName.slice(0, 2).toUpperCase();
-  const userImage = session?.user?.image || profile?.image || null;
 
-  // Listen for custom name update events to refetch session
+  // Revalidate route when profile data updates
   useEffect(() => {
-    const handleNameUpdate = () => {
-      refetch?.();
+    const handleUpdate = () => {
+      revalidator.revalidate();
     };
 
-    const handleImageUpdate = () => {
-      refetch?.();
-    };
-
-    globalThis.addEventListener('userNameUpdated', handleNameUpdate);
-    globalThis.addEventListener('userImageUpdated', handleImageUpdate);
+    globalThis.addEventListener('userNameUpdated', handleUpdate);
+    globalThis.addEventListener('userImageUpdated', handleUpdate);
 
     return () => {
-      globalThis.removeEventListener('userNameUpdated', handleNameUpdate);
-      globalThis.removeEventListener('userImageUpdated', handleImageUpdate);
+      globalThis.removeEventListener('userNameUpdated', handleUpdate);
+      globalThis.removeEventListener('userImageUpdated', handleUpdate);
     };
-  }, [refetch]);
+  }, [revalidator]);
 
-  // Register service worker for push notifications
-  useEffect(() => {
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker
-        .register('/sw.js')
-        .then(() => {
-          // Service Worker registered successfully
-        })
-        .catch(() => {
-          // Service Worker registration failed - silently fail
-        });
-    }
-  }, []);
+  // Service worker is auto-registered by vite-plugin-pwa
   type NavItem = {
     href: string;
     labelKey: string;
@@ -135,7 +115,7 @@ export function RootLayout() {
                   <Avatar
                     color="brandHero"
                     size="sm"
-                    src={resolveImageUrl(userImage, { size: 32 })}
+                    src={resolveImageUrl(profile?.image, { size: 32 }) || undefined}
                   >
                     {userInitials}
                   </Avatar>
