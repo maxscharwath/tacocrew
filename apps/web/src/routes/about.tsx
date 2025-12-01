@@ -15,7 +15,8 @@ import { Link } from 'react-router';
 import * as git from '@build/git';
 import * as pkg from '@build/package';
 import buildTime from '@build/time';
-import { GITHUB_REPO_URL } from '@/lib/constants';
+
+const GITHUB_URL = git.github ?? 'https://github.com/maxscharwath/tacobot';
 import { Badge, Button, Card, CardContent, CardHeader, CardTitle } from '@/components/ui';
 import { useDateFormat } from '@/hooks/useDateFormat';
 import { routes } from '@/lib/routes';
@@ -226,7 +227,7 @@ export function AboutRoute() {
               </div>
 
               <div className="flex flex-wrap items-center justify-center gap-3 sm:justify-start">
-                <a href={GITHUB_REPO_URL} target="_blank" rel="noopener noreferrer">
+                <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer">
                     <Button variant="outline" size="md" className="gap-2">
                       <SiGithub size={16} />
                       GitHub
