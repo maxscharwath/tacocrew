@@ -12,8 +12,8 @@ import {
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
-import { abbreviatedSha, branch, isClean, lastTag, tag } from '@build/git';
-import { author, contributors, repository, version } from '@build/package';
+import * as git from '@build/git';
+import * as pkg from '@build/package';
 import buildTime from '@build/time';
 import { Badge, Button, Card, CardContent, CardHeader, CardTitle } from '@/components/ui';
 import { useDateFormat } from '@/hooks/useDateFormat';
@@ -173,8 +173,8 @@ export function AboutRoute() {
   const { t } = useTranslation();
   const { formatDateTimeWithYear } = useDateFormat();
 
-  const allContributorsList = (contributors || []).map(parseContributor);
-  const authorInfo = author ? parseContributor(author) : null;
+  const allContributorsList = (pkg.contributors || []).map(parseContributor);
+  const authorInfo = pkg.author ? parseContributor(pkg.author) : null;
 
   const allContributors = authorInfo
     ? [authorInfo, ...allContributorsList.filter((c) => c.name !== authorInfo.name)]
@@ -206,17 +206,17 @@ export function AboutRoute() {
                     TacoCrew
                   </h1>
                   <Badge tone="brand" pill>
-                    v{version}
+                    v{pkg.version}
                   </Badge>
                 </div>
                 <div className="mt-2 flex flex-wrap items-center justify-center gap-2 sm:justify-start">
-                  {tag && (
+                  {git.tag && (
                     <Badge tone="neutral" pill className="gap-1 text-xs">
                       <TagIcon size={10} />
-                      {tag}
+                      {git.tag}
                     </Badge>
                   )}
-                  {isClean && (
+                  {git.isClean && (
                     <Badge tone="success" pill className="text-xs">
                       ✓ Clean
                     </Badge>
@@ -225,7 +225,7 @@ export function AboutRoute() {
               </div>
 
               <div className="flex flex-wrap items-center justify-center gap-3 sm:justify-start">
-                <a href={repository.url} target="_blank" rel="noopener noreferrer">
+                <a href={pkg.repository.url} target="_blank" rel="noopener noreferrer">
                     <Button variant="outline" size="md" className="gap-2">
                       <SiGithub size={16} />
                       GitHub
@@ -257,12 +257,12 @@ export function AboutRoute() {
             label={t('about.buildDate')}
             value={formatDateTimeWithYear(buildTime)}
           />
-          <BuildInfoItem icon={GitBranchIcon} label={t('about.branch')} value={branch} />
-          <BuildInfoItem icon={Hash} label={t('about.commit')} value={abbreviatedSha} mono />
+          <BuildInfoItem icon={GitBranchIcon} label={t('about.branch')} value={git.branch} />
+          <BuildInfoItem icon={Hash} label={t('about.commit')} value={git.abbreviatedSha} mono />
           <BuildInfoItem
             icon={TagIcon}
             label={t('about.latestTag')}
-            value={lastTag || tag}
+            value={git.lastTag || git.tag}
           />
         </CardContent>
       </Card>
