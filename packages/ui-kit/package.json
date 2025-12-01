@@ -1,6 +1,6 @@
 {
   "name": "@tacobot/ui-kit",
-  "version": "1.0.0",
+  "version": "0.2512.0",
   "description": "Shared UI component library for TacoBot",
   "type": "module",
   "main": "./src/index.ts",

@@ -1,6 +1,6 @@
 {
   "name": "@tacobot/gigatacos-client",
-  "version": "1.0.0",
+  "version": "0.2512.0",
   "description": "Client integration for www.gt-lausanne.ch backend API",
   "type": "module",
   "main": "./dist/index.js",

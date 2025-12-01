@@ -88,7 +88,9 @@
     "dashboard": "Dashboard",
     "orders": "Bestellungen",
     "stock": "Lager",
-    "profile": "Profil"
+    "profile": "Profil",
+    "settings": "Einstellungen",
+    "about": "Über"
   },
   "login": {
     "title": "TacoCrew",
@@ -963,5 +965,33 @@
       "hours": "Vor {{count}}h",
       "days": "Vor {{count}}T"
     }
+  },
+  "about": {
+    "version": "Version",
+    "releaseNotes": "Versionshinweise",
+    "buildInfo": "Build-Informationen",
+    "buildDate": "Build-Datum",
+    "branch": "Branch",
+    "commit": "Commit",
+    "latestTag": "Neuester Tag",
+    "latestCommit": "Neuester Commit",
+    "noCommitMessage": "Keine Commit-Nachricht verfügbar",
+    "contributors": "Mitwirkende",
+    "madeWith": "Gemacht mit",
+    "byTeam": "vom TacoCrew-Team"
+  },
+  "releases": {
+    "title": "Versionshinweise",
+    "description": "Bleiben Sie auf dem Laufenden über die neuesten Funktionen, Verbesserungen und Fehlerbehebungen.",
+    "changelog": "Änderungsprotokoll",
+    "latest": "Neueste",
+    "prerelease": "Vorabversion",
+    "noReleases": "Noch keine Versionen",
+    "noReleasesDescription": "Schauen Sie später für Versionshinweise und Updates vorbei.",
+    "releasedThis": "hat diese Version veröffentlicht",
+    "assets": "Dateien",
+    "downloads": "Downloads",
+    "viewOnGitHub": "Auf GitHub anzeigen",
+    "backToAbout": "Zurück zu Über"
   }
 }

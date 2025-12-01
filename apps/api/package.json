@@ -1,7 +1,7 @@
 {
   "name": "@tacobot/api",
   "private": true,
-  "version": "1.0.0",
+  "version": "0.2512.0",
   "type": "module",
   "description": "Modern TypeScript API wrapper for tacos ordering system with Web API integration",
   "main": "dist/index.js",

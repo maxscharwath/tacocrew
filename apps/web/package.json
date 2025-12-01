@@ -1,8 +1,26 @@
 {
   "name": "@tacobot/web",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.2512.0",
   "type": "module",
+  "description": "TacoCrew - Order French tacos together with your team",
+  "author": {
+    "name": "Maxime Scharwath",
+    "email": "maxime@scharwath.ch",
+    "github": "https://github.com/maxscharwath",
+    "bluesky": "https://bsky.app/profile/maxsch.dev",
+    "url": "https://maxime.scharwath.ch"
+  },
+  "contributors": [
+    {
+      "name": "Maxime Scharwath",
+      "email": "maxime@scharwath.ch",
+      "github": "https://github.com/maxscharwath",
+      "bluesky": "https://bsky.app/profile/maxsch.dev",
+      "url": "https://maxime.scharwath.ch"
+    }
+  ],
+  "license": "MIT",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -10,6 +28,7 @@
     "lint": "biome check ."
   },
   "dependencies": {
+    "@icons-pack/react-simple-icons": "^13.8.0",
     "@tacobot/gigatacos-client": "workspace:^",
     "@tacobot/ui-kit": "workspace:^",
     "@tailwindcss/vite": "^4.1.17",
@@ -27,6 +46,7 @@
     "react-confetti": "^6.4.0",
     "react-dom": "^19.2.0",
     "react-i18next": "^16.3.5",
+    "react-markdown": "^10.1.0",
     "react-router": "^7.9.6",
     "tailwind-merge": "^3.3.1",
     "tailwindcss": "^4.1.17",
@@ -42,6 +62,7 @@
     "@vitejs/plugin-react": "^5.1.1",
     "babel-plugin-react-compiler": "^1.0.0",
     "typescript": "~5.9.3",
+    "unplugin-info": "^1.2.4",
     "vite": "^7.2.4",
     "vite-imagetools": "^9.0.2"
   }

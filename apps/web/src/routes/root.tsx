@@ -1,4 +1,4 @@
-import { Activity, ClipboardCheck, LogOut, Package, Settings, Terminal, Users } from 'lucide-react';
+import { Activity, ClipboardCheck, Info, LogOut, Package, Settings, Terminal, Users } from 'lucide-react';
 import type { ComponentType } from 'react';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -139,13 +139,24 @@ export function RootLayout() {
                   {userName}
                 </Link>
                 <div className="flex items-center gap-0.5 border-white/10 border-l pl-2">
+                  <Link to={routes.root.about()} className="shrink-0">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 w-7 p-0"
+                      title={t('navigation.about')}
+                    >
+                      <Info size={14} />
+                    </Button>
+                  </Link>
                   <Link to={routes.root.profileAccount()} className="shrink-0">
                     <Button
                       type="button"
                       variant="ghost"
                       size="sm"
                       className="h-7 w-7 p-0"
-                      title={t('navigation.profile')}
+                      title={t('navigation.settings')}
                     >
                       <Settings size={14} />
                     </Button>

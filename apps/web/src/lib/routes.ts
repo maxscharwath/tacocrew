@@ -8,6 +8,7 @@ import {
   ProfileSkeleton,
   StockSkeleton,
 } from '@/components/skeletons';
+import { AboutRoute } from '@/routes/about';
 import { DashboardRoute, dashboardLoader } from '@/routes/dashboard';
 import { authenticationLoader, LoginRoute } from '@/routes/login';
 import { orderCreateAction, orderCreateLoader } from '@/routes/orders.create';
@@ -17,6 +18,7 @@ import { orderSubmitAction, orderSubmitLoader } from '@/routes/orders.submit';
 import { profileLoader } from '@/routes/profile';
 import { accountLoader } from '@/routes/profile.account';
 import { profileDeliveryLoader } from '@/routes/profile.delivery';
+import { releasesLoader } from '@/routes/releases';
 import { RootErrorBoundary, RootLayout } from '@/routes/root';
 import { rootAction, rootLoader } from '@/routes/root.loader';
 import { StockRoute, stockLoader } from '@/routes/stock';
@@ -158,6 +160,24 @@ export const { routes, routerConfig } = defineRoutes({
         },
         loader: accountLoader,
         hydrateFallback: ProfileSkeleton,
+      },
+      about: {
+        path: 'about',
+        element: AboutRoute,
+        hydrateFallback: HydrateFallback,
+      },
+      releases: {
+        path: 'releases',
+        element: {
+          type: 'lazy',
+          importFn: () =>
+            import('@/routes/releases').then((module) => ({
+              default: module.ReleasesRoute,
+            })),
+          fallback: HydrateFallback,
+        },
+        loader: releasesLoader,
+        hydrateFallback: HydrateFallback,
       },
     },
   },

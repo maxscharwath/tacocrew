@@ -1,6 +1,7 @@
 import { resolve } from 'node:path';
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
+import Info from 'unplugin-info/vite';
 import { defineConfig } from 'vite';
 import { imagetools } from 'vite-imagetools';
 
@@ -21,6 +22,12 @@ export default defineConfig({
     }),
     tailwindcss(),
     imagetools(),
+    Info({
+      prefix: '@build',
+      package: {
+        contributors: true,
+      },
+    }),
   ],
   resolve: {
     alias: {
