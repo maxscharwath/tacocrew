@@ -4,6 +4,7 @@ import react from '@vitejs/plugin-react';
 import Info from 'unplugin-info/vite';
 import { defineConfig } from 'vite';
 import { imagetools } from 'vite-imagetools';
+import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig({
   plugins: [
@@ -27,6 +28,21 @@ export default defineConfig({
       package: {
         contributors: true,
         repository: true,
+      },
+    }),
+    VitePWA({
+      strategies: 'injectManifest',
+      srcDir: 'src',
+      filename: 'sw.ts',
+      registerType: 'prompt',
+      injectRegister: false,
+      manifest: false,
+      injectManifest: {
+        injectionPoint: undefined,
+      },
+      devOptions: {
+        enabled: true,
+        type: 'module',
       },
     }),
   ],
