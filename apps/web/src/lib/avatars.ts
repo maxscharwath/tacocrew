@@ -4,10 +4,20 @@
  * Using Vite's glob import to automatically load all avatars
  */
 
+// Full-size avatars for preview
 export const PREDEFINED_AVATARS = Object.values(
   import.meta.glob<string>('@/avatars/avatar-*.png', {
     eager: true,
     query: '?format=webp',
+    import: 'default',
+  })
+);
+
+// Thumbnail avatars (200x200) for grid display
+export const PREDEFINED_AVATAR_THUMBNAILS = Object.values(
+  import.meta.glob<string>('@/avatars/avatar-*.png', {
+    eager: true,
+    query: '?w=200&h=200&format=webp',
     import: 'default',
   })
 );
