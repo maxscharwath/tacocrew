@@ -27,6 +27,10 @@ export default defineConfig({
       package: {
         contributors: true,
       },
+      meta: {
+        // Provide GitHub URL since git.github may not detect SSH remotes
+        github: 'https://github.com/maxscharwath/tacobot',
+      },
     }),
   ],
   resolve: {

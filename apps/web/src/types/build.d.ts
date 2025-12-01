@@ -90,3 +90,8 @@ declare module '@build/package' {
   >;
 }
 
+declare module '@build/meta' {
+  /** GitHub repository URL */
+  export const github: string;
+}
+

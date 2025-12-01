@@ -15,6 +15,7 @@ import { Link } from 'react-router';
 import * as git from '@build/git';
 import * as pkg from '@build/package';
 import buildTime from '@build/time';
+import { GITHUB_REPO_URL } from '@/lib/constants';
 import { Badge, Button, Card, CardContent, CardHeader, CardTitle } from '@/components/ui';
 import { useDateFormat } from '@/hooks/useDateFormat';
 import { routes } from '@/lib/routes';
@@ -225,14 +226,12 @@ export function AboutRoute() {
               </div>
 
               <div className="flex flex-wrap items-center justify-center gap-3 sm:justify-start">
-                {git.github && (
-                  <a href={git.github} target="_blank" rel="noopener noreferrer">
+                <a href={GITHUB_REPO_URL} target="_blank" rel="noopener noreferrer">
                     <Button variant="outline" size="md" className="gap-2">
                       <SiGithub size={16} />
                       GitHub
                     </Button>
                   </a>
-                )}
                 <Link to={routes.root.releases()}>
                   <Button variant="ghost" size="md" className="gap-2">
                     <Package size={16} />

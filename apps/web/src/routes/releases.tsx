@@ -12,7 +12,7 @@ import { Suspense, useState } from 'react';
 import Markdown from 'react-markdown';
 import { useTranslation } from 'react-i18next';
 import { Await, Link, type LoaderFunctionArgs, useLoaderData } from 'react-router';
-import * as git from '@build/git';
+import { GITHUB_API_URL } from '@/lib/constants';
 import {
   Badge,
   Button,
@@ -51,29 +51,12 @@ type GitHubRelease = {
 };
 
 async function fetchGitHubReleases(): Promise<GitHubRelease[]> {
-  // Extract owner/repo from github URL
-  const githubUrl = git.github;
-  if (!githubUrl) {
-    return [];
-  }
-
-  // Parse the GitHub URL to get owner and repo
-  const match = githubUrl.match(/github\.com[/:]([^/]+)\/([^/.]+)/);
-  if (!match) {
-    return [];
-  }
-
-  const [, owner, repo] = match;
-
   try {
-    const response = await fetch(
-      `https://api.github.com/repos/${owner}/${repo}/releases`,
-      {
-        headers: {
-          Accept: 'application/vnd.github.v3+json',
-        },
-      }
-    );
+    const response = await fetch(`${GITHUB_API_URL}/releases`, {
+      headers: {
+        Accept: 'application/vnd.github.v3+json',
+      },
+    });
 
     if (!response.ok) {
       console.error('Failed to fetch releases:', response.statusText);

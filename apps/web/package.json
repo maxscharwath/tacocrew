@@ -4,6 +4,10 @@
   "version": "0.2512.0",
   "type": "module",
   "description": "TacoCrew - Order French tacos together with your team",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/maxscharwath/tacobot"
+  },
   "author": {
     "name": "Maxime Scharwath",
     "email": "maxime@scharwath.ch",
