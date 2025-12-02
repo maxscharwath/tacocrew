@@ -227,7 +227,7 @@ function OrderDetailContent({
         isSubmitted={isSubmitted}
       />
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,400px)]">
+      <div className="grid gap-4 sm:gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,400px)]">
         <OrdersList
           userOrders={userOrders}
           groupOrder={groupOrder}

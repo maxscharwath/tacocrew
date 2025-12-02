@@ -334,7 +334,7 @@ export function NotificationDropdown({ onClose, onMarkAsRead }: NotificationDrop
 
   return (
     <>
-      <div className="border-white/10 border-b px-3 py-3">
+      <div className="shrink-0 border-white/10 border-b px-3 py-3">
         <SegmentedControl
           value={activeTab}
           onValueChange={setActiveTab}
@@ -343,7 +343,7 @@ export function NotificationDropdown({ onClose, onMarkAsRead }: NotificationDrop
         />
       </div>
 
-      <div className="max-h-[50vh] min-h-[200px] overflow-y-auto overscroll-contain">
+      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain sm:max-h-[50vh] sm:min-h-[200px]">
         {isLoading ? (
           <div className="divide-y divide-white/5">
             <NotificationSkeleton />
@@ -382,7 +382,7 @@ export function NotificationDropdown({ onClose, onMarkAsRead }: NotificationDrop
       </div>
 
       {!isArchiveTab && notifications.length > 0 && (
-        <div className="border-white/10 border-t bg-slate-900/50 px-3 py-2">
+        <div className="shrink-0 border-white/10 border-t bg-slate-900/50 px-3 py-2">
           <Button
             variant="ghost"
             size="sm"

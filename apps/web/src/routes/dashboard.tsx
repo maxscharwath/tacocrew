@@ -65,7 +65,7 @@ function DashboardContent({ data }: Readonly<{ data: DashboardLoaderData }>) {
         <div className="-top-24 absolute right-0 h-60 w-60 animate-pulse rounded-full bg-brand-400/30 blur-3xl" />
         <div className="-bottom-10 absolute left-10 h-48 w-48 rounded-full bg-purple-500/25 blur-3xl" />
         <div className="absolute inset-0 bg-linear-to-br from-transparent via-transparent to-brand-500/5" />
-        <div className="relative flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+        <div className="relative flex flex-col gap-4 sm:gap-6 lg:flex-row lg:items-start lg:justify-between">
           <div className="space-y-2">
             <Badge tone="brand" pill className="uppercase tracking-[0.3em]">
               {t('dashboard.kitchenPulse')}
@@ -111,7 +111,7 @@ function DashboardContent({ data }: Readonly<{ data: DashboardLoaderData }>) {
         </div>
       </section>
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)]">
+      <div className="grid gap-4 sm:gap-6 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)]">
         <Card className="shadow-[0_30px_80px_rgba(8,47,73,0.28)]">
           <CardHeader className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
             <div>
@@ -171,7 +171,7 @@ function DashboardContent({ data }: Readonly<{ data: DashboardLoaderData }>) {
               orderHistory.map((history) => (
                 <article
                   key={history.id}
-                  className="flex items-center justify-between gap-6 rounded-2xl border border-white/10 bg-slate-900/70 p-5 shadow-[0_20px_60px_rgba(8,47,73,0.25)] hover:border-brand-400/30"
+                  className="flex items-center justify-between gap-4 rounded-2xl border border-white/10 bg-slate-900/70 p-3 shadow-[0_20px_60px_rgba(8,47,73,0.25)] hover:border-brand-400/30 sm:gap-6 sm:p-5"
                 >
                   <div className="space-y-2">
                     <div className="flex items-center gap-3">

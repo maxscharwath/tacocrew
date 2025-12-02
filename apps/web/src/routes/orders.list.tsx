@@ -253,7 +253,7 @@ function OrdersContent({ groupOrders }: Readonly<{ groupOrders: LoaderData['grou
         <div className="-top-24 absolute right-0 h-60 w-60 animate-pulse rounded-full bg-brand-400/30 blur-3xl" />
         <div className="-bottom-10 absolute left-10 h-48 w-48 rounded-full bg-purple-500/25 blur-3xl" />
         <div className="absolute inset-0 bg-linear-to-br from-transparent via-transparent to-brand-500/5" />
-        <div className="relative flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+        <div className="relative flex flex-col gap-4 sm:gap-6 lg:flex-row lg:items-start lg:justify-between">
           <div className="space-y-2">
             <span className="inline-flex items-center gap-2 rounded-full border border-brand-400/50 bg-brand-500/10 px-3 py-1 font-semibold text-brand-100 text-xs uppercase tracking-[0.3em] shadow-[0_4px_12px_rgba(99,102,241,0.2)]">
               {t('orders.list.hero.badge')}
@@ -289,7 +289,7 @@ function OrdersContent({ groupOrders }: Readonly<{ groupOrders: LoaderData['grou
         </div>
       </section>
 
-      <div className="grid gap-8 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)]">
+      <div className="grid gap-4 sm:gap-6 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:gap-8">
         <section className="space-y-4">
           <header className="flex items-center justify-between">
             <div>
@@ -322,7 +322,7 @@ function OrdersContent({ groupOrders }: Readonly<{ groupOrders: LoaderData['grou
           </div>
         </section>
 
-        <section className="space-y-6 rounded-3xl border border-white/10 bg-slate-900/80 p-6 shadow-[0_30px_80px_rgba(8,47,73,0.28)] backdrop-blur-sm">
+        <section className="space-y-4 rounded-3xl border border-white/10 bg-slate-900/80 p-3 shadow-[0_30px_80px_rgba(8,47,73,0.28)] backdrop-blur-sm sm:space-y-6 sm:p-6">
           <header className="space-y-1">
             <h2 className="font-semibold text-lg text-white">{t('orders.list.form.title')}</h2>
             <p className="text-slate-300 text-sm">{t('orders.list.form.subtitle')}</p>

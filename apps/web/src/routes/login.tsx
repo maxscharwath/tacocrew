@@ -2,6 +2,7 @@ import { Eye, EyeOff, Lock, Mail, User } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { type LoaderFunctionArgs, redirect, useLocation, useNavigate } from 'react-router';
+import appIcon from '@/assets/icon.png?format=webp';
 import { LanguageSwitcher } from '@/components/language-switcher';
 import {
   Alert,
@@ -231,17 +232,17 @@ export function LoginRoute() {
       </div>
 
       {/* Language switcher */}
-      <div className="absolute top-6 right-6 z-10">
+      <div className="absolute top-3 right-3 z-10 sm:top-6 sm:right-6">
         <LanguageSwitcher />
       </div>
 
       {/* Login card */}
-      <div className="relative flex min-h-screen items-center justify-center px-6 py-12">
+      <div className="relative flex min-h-screen items-center justify-center px-3 py-6 sm:px-6 sm:py-12">
         <div className="w-full max-w-md">
           <Card className="relative overflow-hidden border-white/10 bg-slate-900/60 shadow-[0_40px_120px_rgba(8,47,73,0.35)] backdrop-blur">
             <CardHeader className="text-center">
               <div className="mx-auto mb-4">
-                <Avatar color="brandHero" size="xl" variant="elevated" src="/icon.png" />
+                <Avatar color="brandHero" size="xl" variant="elevated" src={appIcon} />
               </div>
               <CardTitle className="text-3xl">
                 {isSignUp ? t('login.signUp.title') : t('login.title')}
@@ -250,7 +251,7 @@ export function LoginRoute() {
                 {isSignUp ? t('login.signUp.subtitle') : t('login.subtitle')}
               </p>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className="space-y-4 sm:space-y-6">
               {/* Mode toggle */}
               <SegmentedControl
                 value={isSignUp ? 'signup' : 'signin'}

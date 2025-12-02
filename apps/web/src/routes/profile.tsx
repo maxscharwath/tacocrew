@@ -45,7 +45,7 @@ export function ProfileRoute() {
         <div className="-bottom-16 pointer-events-none absolute left-10 h-56 w-56 rounded-full bg-purple-500/15 blur-3xl" />
 
         <div className="relative">
-          <div className="grid gap-6 md:grid-cols-[minmax(180px,220px)_1fr] lg:grid-cols-[minmax(220px,260px)_1fr]">
+          <div className="grid gap-4 sm:gap-6 md:grid-cols-[minmax(180px,220px)_1fr] lg:grid-cols-[minmax(220px,260px)_1fr]">
             {/* Profile Image - stays on the left */}
             <div className="flex justify-center md:justify-start">
               <div className="relative w-full max-w-[240px]" style={{ aspectRatio: '1 / 1' }}>
@@ -69,7 +69,7 @@ export function ProfileRoute() {
 
             {/* User Info + Stats */}
             <div className="flex min-w-0 flex-col">
-              <div className="flex flex-1 flex-col gap-6 text-center md:text-left lg:flex-row lg:items-center lg:justify-between">
+              <div className="flex flex-1 flex-col gap-4 text-center sm:gap-6 md:text-left lg:flex-row lg:items-center lg:justify-between">
                 <div className="flex flex-1 flex-col items-center gap-2 md:items-start lg:pr-6">
                   <h1 className="font-bold text-5xl text-white tracking-tight lg:text-6xl">
                     {userName}
@@ -88,7 +88,7 @@ export function ProfileRoute() {
                 </div>
               </div>
 
-              <div className="flex flex-col gap-4 pt-6">
+              <div className="flex flex-col gap-4 pt-4 sm:pt-6">
                 <div className="border-white/10 border-t" />
                 <div className="flex flex-wrap items-center justify-center gap-3 md:justify-start">
                   <Link to={routes.root.profileDelivery()}>

@@ -1,3 +1,4 @@
+import appIcon from '@/assets/icon.png?format=webp';
 import { Card, CardContent, Skeleton } from './ui';
 
 export function HydrateFallback() {
@@ -14,7 +15,7 @@ export function HydrateFallback() {
             <div className="flex w-full flex-col gap-6 md:flex-row md:items-center md:justify-between">
               <div className="flex items-center gap-4">
                 <div className="relative h-12 w-12 overflow-hidden rounded-2xl bg-linear-to-br from-brand-400 via-brand-500 to-sky-500 font-semibold text-lg">
-                  <img src="/icon.png" alt="TacoCrew" className="h-full w-full object-cover" />
+                  <img src={appIcon} alt="TacoCrew" className="h-full w-full object-cover" />
                 </div>
                 <div className="space-y-2">
                   <Skeleton className="h-6 w-64" />

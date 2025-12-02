@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import appIcon from '@/assets/icon.png?format=webp';
 import { Avatar } from '@/components/ui';
 
 export function OrderCreateHero() {
@@ -15,7 +16,7 @@ export function OrderCreateHero() {
             size="lg"
             variant="elevated"
             className="sm:size-xl"
-            src="/icon.png"
+            src={appIcon}
           />
           <div className="flex-1">
             <h1 className="font-semibold text-2xl text-white tracking-tight sm:text-3xl lg:text-4xl">

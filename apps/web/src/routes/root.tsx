@@ -21,6 +21,7 @@ import {
   useRevalidator,
   useRouteError,
 } from 'react-router';
+import appIcon from '@/assets/icon.png?w=80&h=80&format=webp';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
 import { Alert, Avatar, Button, Card } from '@/components/ui';
 import { useDeveloperMode } from '@/hooks/useDeveloperMode';
@@ -80,10 +81,10 @@ export function RootLayout() {
         <div className="absolute bottom-0 left-1/2 h-72 w-72 rounded-full bg-purple-500/20 blur-3xl" />
       </div>
 
-      <div className="relative mx-auto flex min-h-screen w-full max-w-7xl flex-col px-3 pt-4 pb-20 sm:px-6 sm:pt-10">
+      <div className="relative mx-auto flex min-h-screen w-full max-w-7xl flex-col px-3 pt-3 pb-16 sm:px-6 sm:pt-10 sm:pb-20">
         <Card className="overflow-hidden border-white/10 bg-slate-900/60 shadow-[0_40px_120px_rgba(8,47,73,0.25)] backdrop-blur">
           {/* Top Section: Brand + User Actions */}
-          <div className="flex items-center justify-between gap-4 border-white/10 border-b px-4 py-4 sm:px-6 sm:py-4">
+          <div className="flex items-center justify-between gap-4 border-white/10 border-b px-3 py-3 sm:px-6 sm:py-4">
             {/* Brand Section */}
             <Link
               to={routes.root.dashboard()}
@@ -94,7 +95,7 @@ export function RootLayout() {
                 size="md"
                 variant="elevated"
                 className="shrink-0"
-                src="/icon.png"
+                src={appIcon}
               />
               <h1 className="hidden min-w-0 truncate font-semibold text-white text-xl tracking-tight sm:block">
                 {t('root.tacobot')}
@@ -172,7 +173,7 @@ export function RootLayout() {
           </div>
 
           {/* Navigation Section */}
-          <nav className="flex gap-2 overflow-x-auto px-4 py-4 sm:flex-wrap sm:gap-2 sm:px-6 sm:py-4">
+          <nav className="flex gap-2 overflow-x-auto px-3 py-3 sm:flex-wrap sm:gap-2 sm:px-6 sm:py-4">
             {navItems.map(({ href, labelKey, icon: Icon }) => (
               <NavLink
                 key={href}
@@ -194,7 +195,7 @@ export function RootLayout() {
           </nav>
         </Card>
 
-        <main className="mt-4 flex-1 sm:mt-10">
+        <main className="mt-3 flex-1 sm:mt-6">
           <Outlet />
         </main>
       </div>

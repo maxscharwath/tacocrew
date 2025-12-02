@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
+import appIcon from '@/assets/icon.png?format=webp';
 import { Badge, Button, Card, CardContent, CardHeader, CardTitle } from '@/components/ui';
 import { useDateFormat } from '@/hooks/useDateFormat';
 import { routes } from '@/lib/routes';
@@ -90,7 +91,7 @@ function ContributorCard({ contributor }: { contributor: Contributor }) {
   const avatarUrl = githubUsername ? `https://github.com/${githubUsername}.png` : null;
 
   return (
-    <div className="group relative overflow-hidden rounded-2xl border border-white/10 bg-linear-to-br from-slate-900/80 to-slate-950/80 p-5 transition-all duration-300 hover:border-brand-500/30 hover:shadow-brand-500/5 hover:shadow-lg">
+    <div className="group relative overflow-hidden rounded-2xl border border-white/10 bg-linear-to-br from-slate-900/80 to-slate-950/80 p-3 transition-all duration-300 hover:border-brand-500/30 hover:shadow-brand-500/5 hover:shadow-lg sm:p-5">
       {/* Hover glow */}
       <div className="pointer-events-none absolute inset-0 bg-linear-to-br from-brand-500/5 to-purple-500/5 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 
@@ -189,12 +190,12 @@ export function AboutRoute() {
         <div className="-top-20 -right-20 pointer-events-none absolute h-64 w-64 rounded-full bg-brand-500/20 blur-[80px]" />
         <div className="-bottom-20 -left-20 pointer-events-none absolute h-64 w-64 rounded-full bg-purple-500/15 blur-[80px]" />
 
-        <CardContent className="relative p-8 sm:p-10">
-          <div className="flex flex-col items-center gap-6 text-center sm:flex-row sm:text-left">
+        <CardContent className="relative p-4 sm:p-8 lg:p-10">
+          <div className="flex flex-col items-center gap-4 text-center sm:flex-row sm:gap-6 sm:text-left">
             {/* Logo */}
             <div className="shrink-0">
               <div className="relative h-28 w-28 overflow-hidden rounded-3xl border border-white/10 bg-linear-to-br from-slate-800 to-slate-900 shadow-2xl sm:h-32 sm:w-32">
-                <img src="/icon.png" alt="TacoCrew" className="h-full w-full object-cover" />
+                <img src={appIcon} alt="TacoCrew" className="h-full w-full object-cover" />
               </div>
             </div>
 

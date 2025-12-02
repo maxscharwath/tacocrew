@@ -645,14 +645,14 @@ export function AccountRoute() {
   }
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-4 p-3 sm:space-y-6 sm:p-6">
       <div>
         <h1 className="font-semibold text-2xl text-white">{t('account.title')}</h1>
         <p className="mt-2 text-slate-400 text-sm">{t('account.subtitle')}</p>
       </div>
 
       {/* Profile Image */}
-      <div className="rounded-2xl border border-white/10 bg-linear-to-br from-slate-950/70 via-slate-900/60 to-slate-900/40 p-5 shadow-xl">
+      <div className="rounded-2xl border border-white/10 bg-linear-to-br from-slate-950/70 via-slate-900/60 to-slate-900/40 p-3 shadow-xl sm:p-5">
         <div className="flex flex-col gap-2 text-white">
           <p className="font-semibold">{t('account.avatar.title') || 'Profile Picture'}</p>
           <p className="text-slate-400 text-sm">
@@ -748,7 +748,7 @@ export function AccountRoute() {
       {/* Passkeys */}
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <CardTitle>{t('account.passkeys.title')}</CardTitle>
               <CardDescription>{t('account.passkeys.description')}</CardDescription>
@@ -759,6 +759,7 @@ export function AccountRoute() {
               variant="primary"
               size="sm"
               loading={isRegistering}
+              className="w-full sm:w-auto"
             >
               {t('account.passkeys.addButton')}
             </Button>
@@ -780,13 +781,13 @@ export function AccountRoute() {
                 return (
                   <div
                     key={passkey.id}
-                    className="flex items-center justify-between rounded-xl border border-white/10 bg-slate-800/40 p-4"
+                    className="flex flex-col gap-3 rounded-xl border border-white/10 bg-slate-800/40 p-4 sm:flex-row sm:items-center sm:justify-between"
                   >
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-700/50">
+                    <div className="flex min-w-0 flex-1 items-center gap-3">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-slate-700/50">
                         <DeviceIcon className="h-5 w-5 text-slate-300" />
                       </div>
-                      <div className="flex-1">
+                      <div className="min-w-0 flex-1 overflow-hidden">
                         <PasskeyNameEditor
                           currentName={passkey.name}
                           onUpdate={async (newName) => {
@@ -794,17 +795,18 @@ export function AccountRoute() {
                           }}
                           placeholder={passkey.deviceType || t('account.passkeys.unnamed')}
                         />
-                        <div className="mt-1 text-slate-400 text-sm">
+                        <div className="mt-1 truncate text-slate-400 text-sm">
                           {passkey.deviceType} • {t('account.passkeys.registered')}{' '}
                           {new Date(passkey.createdAt).toLocaleDateString()}
                         </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex shrink-0 items-center gap-2 sm:ml-2">
                       <Button
                         onClick={() => handleDeletePasskey(passkey.id)}
                         variant="danger"
                         size="sm"
+                        className="w-full sm:w-auto"
                       >
                         {t('account.passkeys.delete')}
                       </Button>
@@ -837,12 +839,12 @@ export function AccountRoute() {
             ) : (
               <>
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between rounded-xl border border-white/10 bg-slate-800/40 p-4">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-700/50">
+                  <div className="flex flex-col gap-3 rounded-xl border border-white/10 bg-slate-800/40 p-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex min-w-0 flex-1 items-center gap-3">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-slate-700/50">
                         <Bell className="h-5 w-5 text-slate-300" />
                       </div>
-                      <div className="flex-1">
+                      <div className="min-w-0 flex-1 overflow-hidden">
                         <div className="font-medium text-white">
                           {t('account.pushNotifications.status')}
                         </div>
@@ -858,7 +860,7 @@ export function AccountRoute() {
                         </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex shrink-0 items-center gap-2 sm:ml-2">
                       {isPushSubscribed ? (
                         <Button
                           onClick={async () => {
@@ -879,6 +881,7 @@ export function AccountRoute() {
                           variant="danger"
                           size="sm"
                           loading={isPushSubscribing}
+                          className="w-full sm:w-auto"
                         >
                           {t('account.pushNotifications.disable')}
                         </Button>
@@ -902,6 +905,7 @@ export function AccountRoute() {
                           variant="primary"
                           size="sm"
                           loading={isPushSubscribing}
+                          className="w-full sm:w-auto"
                         >
                           {t('account.pushNotifications.enable')}
                         </Button>
@@ -910,12 +914,12 @@ export function AccountRoute() {
                   </div>
 
                   {isPushSubscribed && (
-                    <div className="flex items-center justify-between rounded-xl border border-white/10 bg-slate-800/40 p-4">
-                      <div className="flex items-center gap-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-700/50">
+                    <div className="flex flex-col gap-3 rounded-xl border border-white/10 bg-slate-800/40 p-4 sm:flex-row sm:items-center sm:justify-between">
+                      <div className="flex min-w-0 flex-1 items-center gap-3">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-slate-700/50">
                           <RefreshCw className="h-5 w-5 text-slate-300" />
                         </div>
-                        <div className="flex-1">
+                        <div className="min-w-0 flex-1 overflow-hidden">
                           <div className="font-medium text-white">
                             {t('account.pushNotifications.test.title')}
                           </div>
@@ -948,6 +952,7 @@ export function AccountRoute() {
                         variant="outline"
                         size="sm"
                         loading={isTestingNotification}
+                        className="w-full shrink-0 sm:ml-2 sm:w-auto"
                       >
                         {t('account.pushNotifications.test.button')}
                       </Button>
@@ -1000,32 +1005,35 @@ export function AccountRoute() {
                             return (
                               <div
                                 key={subscription.id}
-                                className="flex items-center justify-between rounded-xl border border-white/10 bg-slate-800/40 p-4"
+                                className="flex flex-col gap-3 rounded-xl border border-white/10 bg-slate-800/40 p-4 sm:flex-row sm:items-center sm:justify-between"
                               >
-                                <div className="flex items-center gap-3">
-                                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-700/50">
+                                <div className="flex min-w-0 flex-1 items-center gap-3">
+                                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-slate-700/50">
                                     <Laptop className="h-5 w-5 text-slate-300" />
                                   </div>
-                                  <div className="flex-1">
-                                    <div className="font-medium text-white">{deviceName}</div>
+                                  <div className="min-w-0 flex-1 overflow-hidden">
+                                    <div className="truncate font-medium text-white">
+                                      {deviceName}
+                                    </div>
                                     <div className="mt-1 text-slate-400 text-sm">
                                       {t('account.pushNotifications.devices.registered')}{' '}
                                       {new Date(subscription.createdAt).toLocaleDateString()}
                                     </div>
                                     {subscription.userAgent && (
-                                      <div className="mt-1 max-w-md truncate text-slate-500 text-xs">
+                                      <div className="mt-1 truncate text-slate-500 text-xs">
                                         {subscription.userAgent}
                                       </div>
                                     )}
                                   </div>
                                 </div>
-                                <div className="flex items-center gap-2">
+                                <div className="flex shrink-0 items-center gap-2 sm:ml-2">
                                   <Button
                                     onClick={() => {
                                       setShowDeleteSubscriptionDialog(subscription.id);
                                     }}
                                     variant="danger"
                                     size="sm"
+                                    className="w-full sm:w-auto"
                                   >
                                     {t('account.pushNotifications.devices.delete')}
                                   </Button>

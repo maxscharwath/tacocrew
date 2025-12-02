@@ -136,7 +136,7 @@ function ReleaseCard({ release, isLatest }: { release: GitHubRelease; isLatest: 
       </CardHeader>
 
       {isExpanded && (
-        <CardContent className="space-y-6 border-white/5 border-t pt-6">
+        <CardContent className="space-y-4 border-white/5 border-t pt-4 sm:space-y-6 sm:pt-6">
           {/* Author info */}
           <div className="flex items-center gap-3">
             <img

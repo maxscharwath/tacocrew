@@ -97,7 +97,7 @@ function StockContent({ stock }: Readonly<{ stock: LoaderData['stock'] }>) {
         <div className="-top-24 absolute right-0 h-60 w-60 animate-pulse rounded-full bg-brand-400/30 blur-3xl" />
         <div className="-bottom-10 absolute left-10 h-48 w-48 rounded-full bg-purple-500/25 blur-3xl" />
         <div className="absolute inset-0 bg-linear-to-br from-transparent via-transparent to-brand-500/5" />
-        <div className="relative flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+        <div className="relative flex flex-col gap-4 sm:gap-6 lg:flex-row lg:items-start lg:justify-between">
           <div className="space-y-2">
             <Badge tone="brand" pill className="uppercase tracking-[0.3em]">
               {t(`stock.badge`)}
@@ -147,7 +147,7 @@ function StockContent({ stock }: Readonly<{ stock: LoaderData['stock'] }>) {
             <CardDescription>{t(`stock.overview.description`)}</CardDescription>
           </div>
         </CardHeader>
-        <CardContent className="gap-6">
+        <CardContent className="gap-4 sm:gap-6">
           {sections.length === 0 ? (
             <div className="rounded-2xl border border-white/15 border-dashed bg-slate-900/50 p-10 text-center text-slate-300 text-sm">
               {t(`stock.list.empty`)}
@@ -182,7 +182,7 @@ function StockContent({ stock }: Readonly<{ stock: LoaderData['stock'] }>) {
               </div>
 
               {currentSection ? (
-                <div className="space-y-6">
+                <div className="space-y-4 sm:space-y-6">
                   <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                     <div>
                       <h2 className="font-semibold text-lg text-white">{currentSection.label}</h2>
@@ -208,7 +208,7 @@ function StockContent({ stock }: Readonly<{ stock: LoaderData['stock'] }>) {
                         <article
                           key={item.id}
                           className={cn(
-                            'relative space-y-5 rounded-2xl border bg-slate-900/70 p-5 shadow-[0_20px_60px_rgba(8,47,73,0.25)] transition hover:border-brand-400/40 hover:shadow-[0_20px_60px_rgba(99,102,241,0.35)]',
+                            'relative space-y-4 rounded-2xl border bg-slate-900/70 p-3 shadow-[0_20px_60px_rgba(8,47,73,0.25)] transition hover:border-brand-400/40 hover:shadow-[0_20px_60px_rgba(99,102,241,0.35)] sm:space-y-5 sm:p-5',
                             item.in_stock
                               ? 'border-white/10'
                               : 'border-rose-400/40 bg-rose-500/10 hover:border-rose-400/60'
