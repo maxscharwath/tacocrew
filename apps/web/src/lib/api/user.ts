@@ -1,5 +1,5 @@
-import { apiClient } from './http';
-import { resolveImageUrl } from './image-utils';
+import { apiClient } from '@/lib/api/http';
+import { resolveImageUrl } from '@/lib/api/image-utils';
 import type {
   DeliveryProfile,
   DeliveryProfilePayload,
@@ -7,7 +7,7 @@ import type {
   UserGroupOrder,
   UserOrderHistoryEntry,
   UserProfile,
-} from './types';
+} from '@/lib/api/types';
 
 export function getProfile() {
   return apiClient.get<UserProfile>('/api/v1/users/me');

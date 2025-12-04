@@ -20,5 +20,8 @@
     "db:setup": "pnpm --filter @tacobot/api db:setup",
     "test": "turbo run test",
     "check": "pnpm --filter @tacobot/api check"
+  },
+  "dependencies": {
+    "@radix-ui/react-tooltip": "^1.2.8"
   }
 }

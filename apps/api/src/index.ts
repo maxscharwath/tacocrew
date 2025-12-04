@@ -8,6 +8,7 @@ import { errorHandler } from './api/middleware/error-handler.middleware';
 import { groupOrderRoutes } from './api/routes/group-order.routes';
 import { healthRoutes } from './api/routes/health.routes';
 import { notificationRoutes } from './api/routes/notification.routes';
+import { organizationRoutes } from './api/routes/organization.routes';
 import pushNotificationRoutes from './api/routes/push-notification.routes';
 import { resourceRoutes } from './api/routes/resource.routes';
 import { tacoRoutes } from './api/routes/taco.routes';
@@ -127,7 +128,8 @@ app.route(
     groupOrderRoutes,
     userOrderRoutes,
     pushNotificationRoutes,
-    notificationRoutes
+    notificationRoutes,
+    organizationRoutes
   )
 );
 

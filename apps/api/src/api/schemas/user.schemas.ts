@@ -79,6 +79,13 @@ const UserGroupOrderSchema = z.object({
   startDate: IsoDateStringSchema,
   endDate: IsoDateStringSchema,
   createdAt: IsoDateStringSchema,
+  organization: z
+    .object({
+      id: z.string(),
+      name: z.string(),
+      image: z.string().nullable(),
+    })
+    .nullable(),
   leader: z.object({
     id: z.string(),
     name: z.string().nullable(),

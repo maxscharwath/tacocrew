@@ -1,4 +1,4 @@
-import { apiClient } from './http';
+import { apiClient } from '@/lib/api/http';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Pagination Types

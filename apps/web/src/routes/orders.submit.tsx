@@ -38,6 +38,11 @@ import {
   InputGroupInput,
   Label,
   PhoneInput,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from '@/components/ui';
 import {
   DEFAULT_CANTON_CODE,
@@ -570,20 +575,23 @@ export function OrderSubmitRoute() {
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div className="grid gap-2">
                       <Label htmlFor="state">{t('orders.submit.form.fields.state')}</Label>
-                      <select
-                        id="state"
-                        name="state"
-                        className="rounded-xl border border-white/10 bg-slate-900/70 px-3 py-2 text-sm text-white focus:border-brand-400 focus:outline-none disabled:opacity-60"
+                      <input type="hidden" name="state" value={stateRegion} />
+                      <Select
                         value={stateRegion}
-                        onChange={(event) => setStateRegion(event.target.value as SwissCanton)}
+                        onValueChange={(value) => setStateRegion(value as SwissCanton)}
                         disabled={isSubmitting}
                       >
-                        {getSwissCantons(t).map((canton) => (
-                          <option key={canton.code} value={canton.code}>
-                            {canton.label}
-                          </option>
-                        ))}
-                      </select>
+                        <SelectTrigger id="state" className="w-full">
+                          <SelectValue placeholder={t('orders.submit.form.fields.state')} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {getSwissCantons(t).map((canton) => (
+                            <SelectItem key={canton.code} value={canton.code}>
+                              {canton.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
                     <div className="grid gap-2">
                       <Label htmlFor="country">{t('orders.submit.form.fields.country')}</Label>

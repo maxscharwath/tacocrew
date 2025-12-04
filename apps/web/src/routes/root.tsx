@@ -27,7 +27,7 @@ import { Alert, Avatar, Button, Card } from '@/components/ui';
 import { useDeveloperMode } from '@/hooks/useDeveloperMode';
 import { resolveImageUrl } from '@/lib/api';
 import { routes } from '@/lib/routes';
-import type { RootLoaderData } from './root.loader';
+import type { RootLoaderData } from '@/routes/root.loader';
 
 export function RootLayout() {
   const { t, i18n } = useTranslation();

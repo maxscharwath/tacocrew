@@ -28,6 +28,50 @@ export interface UserProfile {
   updatedAt?: string;
 }
 
+export interface Organization {
+  id: string;
+  name: string;
+  image?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
+  role?: OrganizationRole;
+  status?: OrganizationMemberStatus;
+}
+
+export interface OrganizationPayload {
+  name: string;
+}
+
+export type OrganizationRole = 'ADMIN' | 'MEMBER';
+export type OrganizationMemberStatus = 'PENDING' | 'ACTIVE';
+
+export interface OrganizationMember {
+  userId: string;
+  role: OrganizationRole;
+  status: OrganizationMemberStatus;
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    image: string | null;
+    username: string | null;
+  };
+  createdAt: string;
+}
+
+export interface PendingRequest {
+  userId: string;
+  role: OrganizationRole;
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    image: string | null;
+    username: string | null;
+  };
+  createdAt: string;
+}
+
 export interface DeliveryAddress {
   road: string;
   houseNumber?: string;
@@ -64,6 +108,11 @@ export interface UserGroupOrder {
   startDate: string;
   endDate: string;
   createdAt: string;
+  organization: {
+    id: string;
+    name: string;
+    image: string | null;
+  } | null;
   leader: GroupLeader;
   participants: Array<{
     id: string;
@@ -243,6 +292,7 @@ export interface CreateGroupOrderBody {
   name?: string;
   startDate: string;
   endDate: string;
+  organizationId?: string;
 }
 
 export type PaymentMethod = 'especes' | 'carte' | 'twint';

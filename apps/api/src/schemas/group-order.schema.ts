@@ -31,6 +31,7 @@ export const GroupOrderSchema = z.object({
   name: z.string().nullish(),
   sessionId: z.string().nullish(), // Session ID for order verification
   fee: z.number().nullish(), // Difference between backend total price and computed price
+  organizationId: z.string().nullish(), // Organization ID for filtering
   createdAt: z.date().optional(),
   updatedAt: z.date().optional(),
 });
@@ -49,6 +50,7 @@ export const GroupOrderFromDbSchema = z.object({
   name: z.string().nullish(),
   sessionId: z.string().nullish(), // Session ID for order verification
   fee: z.number().nullish(), // Difference between backend total price and computed price
+  organizationId: z.string().nullish(), // Organization ID for filtering
   createdAt: z.date(),
   updatedAt: z.date(),
   leader: z
@@ -72,6 +74,7 @@ export function createGroupOrder(props: {
   status: GroupOrderStatus;
   name?: string;
   fee?: number;
+  organizationId?: string | null;
   createdAt?: Date;
   updatedAt?: Date;
 }): GroupOrder {
@@ -84,6 +87,7 @@ export function createGroupOrder(props: {
     status: props.status,
     name: props.name ?? undefined,
     fee: props.fee ?? undefined,
+    organizationId: props.organizationId ?? undefined,
     createdAt: props.createdAt,
     updatedAt: props.updatedAt,
   };
@@ -109,6 +113,7 @@ export function createGroupOrderFromDb(data: z.infer<typeof GroupOrderFromDbSche
     name: validated.name ?? undefined,
     sessionId: validated.sessionId ?? undefined,
     fee: validated.fee ?? undefined,
+    organizationId: validated.organizationId ?? undefined,
     createdAt: validated.createdAt,
     updatedAt: validated.updatedAt,
   };

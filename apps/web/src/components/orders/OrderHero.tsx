@@ -2,6 +2,7 @@ import { Edit, Lock, LockOpen, MoreVertical, Plus, Send, Trash2 } from 'lucide-r
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate, useRevalidator } from 'react-router';
+import { EditGroupOrderDialog } from '@/components/orders/EditGroupOrderDialog';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -27,7 +28,6 @@ import type { GroupOrder, UserOrderSummary } from '@/lib/api';
 import { OrdersApi, resolveImageUrl } from '@/lib/api';
 import { routes } from '@/lib/routes';
 import { toDate } from '@/lib/utils/date';
-import { EditGroupOrderDialog } from './EditGroupOrderDialog';
 
 /**
  * OrderHero - Hero section for order detail page

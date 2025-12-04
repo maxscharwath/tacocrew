@@ -25,9 +25,17 @@ BEGIN
   END IF;
 END $$;
 
-ALTER TABLE "user_orders"
-  ADD CONSTRAINT IF NOT EXISTS "user_orders_reimbursedById_fkey"
-  FOREIGN KEY ("reimbursedById") REFERENCES "users"("id") ON DELETE SET NULL;
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint
+    WHERE conname = 'user_orders_reimbursedById_fkey'
+  ) THEN
+    ALTER TABLE "user_orders"
+      ADD CONSTRAINT "user_orders_reimbursedById_fkey"
+      FOREIGN KEY ("reimbursedById") REFERENCES "users"("id") ON DELETE SET NULL;
+  END IF;
+END $$;
 
 DO $$
 BEGIN
@@ -39,6 +47,14 @@ BEGIN
   END IF;
 END $$;
 
-ALTER TABLE "user_orders"
-  ADD CONSTRAINT IF NOT EXISTS "user_orders_paidByUserId_fkey"
-  FOREIGN KEY ("paidByUserId") REFERENCES "users"("id") ON DELETE SET NULL;
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint
+    WHERE conname = 'user_orders_paidByUserId_fkey'
+  ) THEN
+    ALTER TABLE "user_orders"
+      ADD CONSTRAINT "user_orders_paidByUserId_fkey"
+      FOREIGN KEY ("paidByUserId") REFERENCES "users"("id") ON DELETE SET NULL;
+  END IF;
+END $$;

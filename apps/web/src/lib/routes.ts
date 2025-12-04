@@ -8,6 +8,7 @@ import {
   ProfileSkeleton,
   StockSkeleton,
 } from '@/components/skeletons';
+import { defineRoutes } from '@/lib/routes/core';
 import { AboutRoute } from '@/routes/about';
 import { DashboardRoute, dashboardLoader } from '@/routes/dashboard';
 import { authenticationLoader, LoginRoute } from '@/routes/login';
@@ -15,16 +16,18 @@ import { orderCreateAction, orderCreateLoader } from '@/routes/orders.create';
 import { orderDetailAction, orderDetailLoader } from '@/routes/orders.detail';
 import { OrdersRoute, ordersAction, ordersLoader } from '@/routes/orders.list';
 import { orderSubmitAction, orderSubmitLoader } from '@/routes/orders.submit';
+import { organizationJoinLoader } from '@/routes/organizations.join';
 import { profileLoader } from '@/routes/profile';
 import { accountLoader } from '@/routes/profile.account';
 import { profileDeliveryLoader } from '@/routes/profile.delivery';
+import { profileOrganizationsLoader } from '@/routes/profile.organizations';
 import { releasesLoader } from '@/routes/releases';
 import { RootErrorBoundary, RootLayout } from '@/routes/root';
 import { rootAction, rootLoader } from '@/routes/root.loader';
 import { StockRoute, stockLoader } from '@/routes/stock';
-import { defineRoutes } from './routes/core';
 
 const orderParams = z.object({ orderId: z.string().min(1) });
+const organizationParams = z.object({ id: z.string().uuid() });
 const loginSearch = z.object({ redirect: z.string().optional() });
 const orderCreateSearch = z.object({
   orderId: z.string().optional(),
@@ -45,6 +48,21 @@ export const { routes, routerConfig } = defineRoutes({
     search: loginSearch,
     loader: authenticationLoader,
     element: LoginRoute,
+    errorElement: RootErrorBoundary,
+    hydrateFallback: HydrateFallback,
+  },
+  organizationJoin: {
+    path: '/organizations/:id/join',
+    params: organizationParams,
+    element: {
+      type: 'lazy',
+      importFn: () =>
+        import('@/routes/organizations.join').then((module) => ({
+          default: module.OrganizationJoinRoute,
+        })),
+      fallback: HydrateFallback,
+    },
+    loader: organizationJoinLoader,
     errorElement: RootErrorBoundary,
     hydrateFallback: HydrateFallback,
   },
@@ -159,6 +177,19 @@ export const { routes, routerConfig } = defineRoutes({
           fallback: ProfileSkeleton,
         },
         loader: accountLoader,
+        hydrateFallback: ProfileSkeleton,
+      },
+      profileOrganizations: {
+        path: 'profile/organizations',
+        element: {
+          type: 'lazy',
+          importFn: () =>
+            import('@/routes/profile.organizations').then((module) => ({
+              default: module.ProfileOrganizationsRoute,
+            })),
+          fallback: ProfileSkeleton,
+        },
+        loader: profileOrganizationsLoader,
         hydrateFallback: ProfileSkeleton,
       },
       about: {

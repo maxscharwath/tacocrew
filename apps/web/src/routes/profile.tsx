@@ -1,4 +1,4 @@
-import { Settings, Truck } from 'lucide-react';
+import { Building2, Settings, Truck } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link, type LoaderFunctionArgs, useLoaderData } from 'react-router';
 import { TacoCard } from '@/components/orders/TacoCard';
@@ -101,6 +101,12 @@ export function ProfileRoute() {
                     <Button variant="outline" className="gap-2" size="md">
                       <Settings size={18} />
                       {t('account.title')}
+                    </Button>
+                  </Link>
+                  <Link to={routes.root.profileOrganizations()}>
+                    <Button variant="outline" className="gap-2" size="md">
+                      <Building2 size={18} />
+                      {t('organizations.title')}
                     </Button>
                   </Link>
                 </div>

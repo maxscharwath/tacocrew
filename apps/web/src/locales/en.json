@@ -16,6 +16,9 @@
     "edit": "Edit",
     "submit": "Submit",
     "back": "Back",
+    "accept": "Accept",
+    "reject": "Reject",
+    "you": "You",
     "outOfStock": "Out of stock",
     "labels": {
       "dropName": "Order name",
@@ -253,6 +256,121 @@
     "save": "Save",
     "cancel": "Cancel"
   },
+  "organizations": {
+    "title": "Organizations",
+    "description": "Manage your organizations and see which group orders belong to each organization",
+    "list": {
+      "title": "Organizations",
+      "add": "New"
+    },
+    "form": {
+      "name": {
+        "label": "Organization Name",
+        "placeholder": "Enter organization name"
+      },
+      "create": "Create Organization"
+    },
+    "details": {
+      "avatar": {
+        "title": "Organization Avatar",
+        "description": "Upload an avatar image for this organization",
+        "upload": "Upload Avatar",
+        "change": "Change Avatar",
+        "delete": "Delete Avatar",
+        "deleteTitle": "Delete Avatar",
+        "deleteDescription": "Are you sure you want to delete this organization's avatar?"
+      },
+      "created": "Created {{date}}"
+    },
+    "empty": {
+      "title": "No organizations",
+      "description": "You don't belong to any organizations yet. Create one to get started.",
+      "createButton": "Create Organization",
+      "select": "Select an organization",
+      "selectDescription": "Select an organization from the list to view and manage its details."
+    },
+    "messages": {
+      "creating": "Creating organization...",
+      "created": "Organization created successfully",
+      "createdWithName": "Organization \"{{name}}\" created successfully",
+      "createFailed": "Failed to create organization: {{error}}",
+      "deleted": "Organization deleted successfully",
+      "avatarUploaded": "Avatar uploaded successfully",
+      "uploadingAvatar": "Uploading avatar...",
+      "avatarUploadFailed": "Failed to upload avatar: {{error}}",
+      "avatarDeleted": "Avatar deleted successfully",
+      "deletingAvatar": "Deleting avatar...",
+      "avatarDeleteFailed": "Failed to delete avatar: {{error}}",
+      "missingName": "Organization name is required",
+      "missingEmail": "User email is required",
+      "userLookupNotImplemented": "User lookup by email is not yet implemented",
+      "genericError": "An error occurred. Please try again."
+    },
+    "roles": {
+      "admin": "Admin",
+      "member": "Member"
+    },
+    "join": {
+      "description": "Request to join this organization and collaborate with team members",
+      "infoTitle": "How it works",
+      "info": "Click the button below to send a join request. An admin will review your request and approve it. Once approved, you'll be able to see and participate in group orders.",
+      "button": "Request to Join",
+      "requesting": "Sending request...",
+      "success": "Join request sent successfully",
+      "error": "Failed to send join request",
+      "requestSent": "Join request sent successfully!",
+      "waitingApproval": "Waiting for admin approval. You'll be notified once your request is reviewed.",
+      "pendingInfo": "Your request is pending. An admin will review it shortly.",
+      "backToOrganizations": "Back to Organizations",
+      "copyLink": "Copy Join Link",
+      "linkCopied": "Link Copied!"
+    },
+    "members": {
+      "title": "Members",
+      "description": "Manage organization members and their roles",
+      "pendingRequests": "Pending Requests",
+      "pendingDescription": "Users who have requested to join this organization",
+      "notMember": "You are not a member of this organization",
+      "requestPending": "Your request to join is pending approval from an admin",
+      "requestToJoin": "Request to join this organization to see group orders and collaborate",
+      "requestJoin": "Request to Join",
+      "requestAccepted": "Join request accepted",
+      "requestAcceptedWithName": "{{name}}'s join request has been accepted",
+      "requestRejected": "Join request rejected",
+      "requestRejectedWithName": "{{name}}'s join request has been rejected",
+      "requestAcceptFailed": "Failed to accept join request: {{error}}",
+      "requestRejectFailed": "Failed to reject join request: {{error}}",
+      "roleUpdated": "Member role updated successfully",
+      "roleUpdatedWithDetails": "{{name}}'s role has been updated to {{role}}",
+      "roleUpdateFailed": "Failed to update role: {{error}}",
+      "memberRemoved": "Member removed from organization",
+      "memberRemovedWithName": "{{name}} has been removed from the organization",
+      "memberRemoveFailed": "Failed to remove member: {{error}}",
+      "confirmRemove": "Are you sure you want to remove this member from the organization?",
+      "confirmRemoveWithName": "Are you sure you want to remove {{name}} from the organization?",
+      "joinRequested": "Join request sent successfully",
+      "joinRequestFailed": "Failed to send join request: {{error}}",
+      "user": "User",
+      "empty": "No members",
+      "emptyDescription": "This organization has no members yet",
+      "viewOnly": "You have view-only access. Only admins can manage organization settings.",
+      "addUser": {
+        "title": "Add Member",
+        "description": "Add a user to this organization by email. They will be added immediately without confirmation.",
+        "emailLabel": "Email",
+        "emailPlaceholder": "user@example.com",
+        "roleLabel": "Role",
+        "emailRequired": "Email is required",
+        "button": "Add",
+        "success": "User {{email}} has been added to the organization",
+        "failed": "Failed to add user: {{error}}"
+      }
+    },
+    "delete": {
+      "title": "Delete Organization",
+      "description": "Are you sure you want to delete {{name}}? This action cannot be undone."
+    }
+  },
   "dashboard": {
     "kitchenPulse": "Your Orders",
     "hero": {
@@ -425,7 +543,14 @@
           "timeWindow": "Time window",
           "opens": "Opens",
           "closes": "Closes (deadline)",
-          "deadlineHint": "Orders must be submitted before this time"
+          "deadlineHint": "Orders must be submitted before this time",
+          "organization": "Organization"
+        },
+        "placeholders": {
+          "selectOrganization": "Select an organization"
+        },
+        "errors": {
+          "organizationRequired": "Please select an organization for this group order"
         },
         "quickDeadlines": {
           "morning": "10am",

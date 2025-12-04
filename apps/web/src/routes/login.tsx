@@ -29,7 +29,7 @@ import { routes } from '@/lib/routes';
  * Authentication loader for both signin and signup pages
  * Redirects to home if user is already authenticated with a valid session
  */
-export async function authenticationLoader(_: LoaderFunctionArgs) {
+export async function authenticationLoader({ request }: LoaderFunctionArgs) {
   // Check if user is already signed in with Better Auth
   // Only redirect if we have a valid session - don't redirect if session is invalid
   const session = await authClient.getSession();
@@ -40,9 +40,11 @@ export async function authenticationLoader(_: LoaderFunctionArgs) {
   // Verify the session is actually valid by checking the API
   try {
     await UserApi.getProfile();
-    // If we get here, session is valid, redirect to home
+    // If we get here, session is valid, redirect to redirect parameter or home
+    const url = new URL(request.url);
+    const redirectTo = url.searchParams.get('redirect') || routes.root();
     // Note: redirect() throws a Response, which is the standard React Router pattern
-    throw redirect(routes.root());
+    throw redirect(redirectTo);
   } catch (error) {
     // If API returns 401, session is invalid, stay on auth page
     if (error instanceof ApiError && error.status === 401) {
@@ -58,6 +60,8 @@ export function LoginRoute() {
   const navigate = useNavigate();
   const location = useLocation();
   const isSignUp = location.pathname === routes.signup();
+  const searchParams = new URLSearchParams(location.search);
+  const redirectTo = searchParams.get('redirect') || routes.root();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
@@ -73,9 +77,9 @@ export function LoginRoute() {
   // Redirect if already authenticated
   useEffect(() => {
     if (session) {
-      navigate(routes.root());
+      navigate(redirectTo);
     }
-  }, [session, navigate]);
+  }, [session, navigate, redirectTo]);
 
   const handleEmailPasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -102,8 +106,8 @@ export function LoginRoute() {
         }
       }
 
-      // Redirect on success
-      navigate(routes.root());
+      // Redirect on success - use redirect parameter if available
+      navigate(redirectTo);
     } catch (err) {
       setError(err instanceof Error ? err.message : t('login.unexpectedError'));
     } finally {
@@ -114,7 +118,7 @@ export function LoginRoute() {
   // Helper to handle successful passkey authentication
   const handlePasskeySuccess = () => {
     setIsLoading(false);
-    navigate(routes.root());
+    navigate(redirectTo);
   };
 
   // Helper to handle passkey authentication errors

@@ -12,6 +12,7 @@ import {
   useNavigation,
 } from 'react-router';
 import { OrderListItem, StatBubble } from '@/components/orders';
+import { OrganizationSelectItem } from '@/components/shared/OrganizationSelectItem';
 import { OrdersSkeleton } from '@/components/skeletons';
 import {
   Alert,
@@ -21,21 +22,34 @@ import {
   InputGroupAddon,
   InputGroupInput,
   Label,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from '@/components/ui';
 import { useDateFormat } from '@/hooks/useDateFormat';
-import { OrdersApi, UserApi } from '@/lib/api';
+import { OrdersApi, OrganizationApi, UserApi } from '@/lib/api';
+import type { Organization } from '@/lib/api/types';
 import { routes } from '@/lib/routes';
+import {
+  getActiveOrganizations,
+  shouldShowOrganizationSelector,
+} from '@/lib/utils/organization-helpers';
 import { toDate } from '@/lib/utils/date';
 import { defer } from '@/lib/utils/defer';
+import { extractErrorMessage, isMultipleOrganizationsError } from '@/lib/utils/error-helpers';
 import { createDeferredWithAuth, requireSession } from '@/lib/utils/loader-helpers';
 
 type LoaderData = {
   groupOrders: Awaited<ReturnType<typeof UserApi.getGroupOrders>>;
+  organizations: Awaited<ReturnType<typeof OrganizationApi.getMyOrganizations>>;
 };
 
 type ActionData = {
   errorKey?: string;
   errorMessage?: string;
+  requiresOrganization?: boolean;
 };
 
 export async function ordersLoader(_: LoaderFunctionArgs) {
@@ -43,6 +57,7 @@ export async function ordersLoader(_: LoaderFunctionArgs) {
 
   return defer({
     groupOrders: createDeferredWithAuth(() => UserApi.getGroupOrders()),
+    organizations: createDeferredWithAuth(() => OrganizationApi.getMyOrganizations()),
   });
 }
 
@@ -98,13 +113,30 @@ export const ordersAction = createActionHandler({
         );
       }
 
-      const created = await OrdersApi.createGroupOrder({
-        name: data.name,
-        startDate: startDate.toISOString(),
-        endDate: endDate.toISOString(),
-      });
+      try {
+        const created = await OrdersApi.createGroupOrder({
+          name: data.name,
+          startDate: startDate.toISOString(),
+          endDate: endDate.toISOString(),
+          organizationId: data.organizationId,
+        });
 
-      return redirect(routes.root.orderDetail({ orderId: created.id }));
+        return redirect(routes.root.orderDetail({ orderId: created.id }));
+      } catch (error) {
+        // Check if it's a validation error about multiple organizations
+        if (isMultipleOrganizationsError(error)) {
+          return Response.json(
+            {
+              form: 'create',
+              errorKey: 'errors.validation.failed',
+              errorMessage: extractErrorMessage(error),
+              requiresOrganization: true,
+            },
+            { status: 400 }
+          );
+        }
+        throw error;
+      }
     },
   },
   getFormName: (method) => {
@@ -113,13 +145,31 @@ export const ordersAction = createActionHandler({
   },
 });
 
-function OrdersContent({ groupOrders }: Readonly<{ groupOrders: LoaderData['groupOrders'] }>) {
+function OrdersContent({
+  groupOrders,
+  organizations,
+}: Readonly<{
+  groupOrders: LoaderData['groupOrders'];
+  organizations: LoaderData['organizations'];
+}>) {
   const { t } = useTranslation();
   const { formatDateTime, formatDate, formatDateOnly, formatDayName, formatTime12Hour } =
     useDateFormat();
   const actionData = useActionData<ActionData | undefined>();
   const navigation = useNavigation();
   const isSubmitting = navigation.state === 'submitting';
+
+  // Filter to only active organizations
+  const activeOrganizations = getActiveOrganizations(organizations);
+  const showOrganizationSelector = shouldShowOrganizationSelector(
+    organizations,
+    actionData?.requiresOrganization
+  );
+
+  // State for selected organization
+  const [selectedOrganizationId, setSelectedOrganizationId] = useState<string>(
+    activeOrganizations[0]?.id ?? ''
+  );
 
   // Get current date/time for smart defaults
   const now = new Date();
@@ -332,6 +382,9 @@ function OrdersContent({ groupOrders }: Readonly<{ groupOrders: LoaderData['grou
             <input type="hidden" name="_intent" value="create" />
             <input type="hidden" name="startDate" value={getStartDateTime()} />
             <input type="hidden" name="endDate" value={getEndDateTime()} />
+            {showOrganizationSelector && (
+              <input type="hidden" name="organizationId" value={selectedOrganizationId} />
+            )}
 
             <div className="grid gap-2">
               <Label htmlFor="name">{t('common.labels.dropName')}</Label>
@@ -349,6 +402,50 @@ function OrdersContent({ groupOrders }: Readonly<{ groupOrders: LoaderData['grou
                 />
               </InputGroup>
             </div>
+
+            {showOrganizationSelector && (
+              <div className="grid gap-2">
+                <Label htmlFor="organizationId">{t('orders.list.form.labels.organization')}</Label>
+                <Select
+                  value={selectedOrganizationId || undefined}
+                  onValueChange={setSelectedOrganizationId}
+                  disabled={isSubmitting}
+                  required
+                >
+                  <SelectTrigger
+                    id="organizationId"
+                    error={actionData?.requiresOrganization}
+                    className="w-full"
+                  >
+                    <SelectValue
+                      placeholder={t('orders.list.form.placeholders.selectOrganization')}
+                    >
+                      {selectedOrganizationId &&
+                        (() => {
+                          const selectedOrg = activeOrganizations.find(
+                            (org) => org.id === selectedOrganizationId
+                          );
+                          return selectedOrg ? (
+                            <OrganizationSelectItem organization={selectedOrg} size="sm" />
+                          ) : null;
+                        })()}
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    {activeOrganizations.map((org) => (
+                      <SelectItem key={org.id} value={org.id}>
+                        <OrganizationSelectItem organization={org} size="sm" />
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {actionData?.requiresOrganization && (
+                  <p className="text-rose-400 text-xs">
+                    {t('orders.list.form.errors.organizationRequired')}
+                  </p>
+                )}
+              </div>
+            )}
 
             <div className="space-y-4 rounded-2xl border border-white/10 bg-slate-950/60 p-4">
               <div className="flex items-center gap-2">
@@ -440,12 +537,17 @@ function OrdersContent({ groupOrders }: Readonly<{ groupOrders: LoaderData['grou
 }
 
 export function OrdersRoute() {
-  const { groupOrders } = useLoaderData<{ groupOrders: Promise<LoaderData['groupOrders']> }>();
+  const { groupOrders, organizations } = useLoaderData<{
+    groupOrders: Promise<LoaderData['groupOrders']>;
+    organizations: Promise<LoaderData['organizations']>;
+  }>();
 
   return (
     <Suspense fallback={<OrdersSkeleton />}>
-      <Await resolve={groupOrders}>
-        {(resolvedGroupOrders) => <OrdersContent groupOrders={resolvedGroupOrders} />}
+      <Await resolve={Promise.all([groupOrders, organizations])}>
+        {([resolvedGroupOrders, resolvedOrganizations]) => (
+          <OrdersContent groupOrders={resolvedGroupOrders} organizations={resolvedOrganizations} />
+        )}
       </Await>
     </Suspense>
   );

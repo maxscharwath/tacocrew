@@ -17,10 +17,10 @@ export async function rootLoader({ request }: LoaderFunctionArgs) {
   }
 
   // Check session first to avoid unnecessary API calls
-  await requireSession();
+  await requireSession(request);
 
   // Fetch profile with error handling
-  const profile = await withAuthErrorHandling(() => UserApi.getProfile());
+  const profile = await withAuthErrorHandling(() => UserApi.getProfile(), request);
   return Response.json({ profile });
 }
 

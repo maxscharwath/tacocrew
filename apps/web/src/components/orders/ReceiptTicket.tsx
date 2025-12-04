@@ -1,10 +1,10 @@
 import type { LucideIcon } from 'lucide-react';
 import { Bell, Clock3, RefreshCcw, ShieldCheck, Undo2, Wallet } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { getUserInitials } from '@/components/orders/user-utils';
 import { Avatar, Badge, Button } from '@/components/ui';
 import { useLocaleFormatter } from '@/hooks/useLocaleFormatter';
 import { getAvatarUrl } from '@/lib/api/user';
-import { getUserInitials } from './user-utils';
 
 export type ReceiptStatusVariant =
   | 'leader'

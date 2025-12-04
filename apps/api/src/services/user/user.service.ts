@@ -4,7 +4,9 @@
  */
 
 import { injectable } from 'tsyringe';
+import { OrganizationMemberStatus } from '../../generated/client';
 import { PrismaService } from '../../infrastructure/database/prisma.service';
+import { OrganizationRepository } from '../../infrastructure/repositories/organization.repository';
 import { UserRepository } from '../../infrastructure/repositories/user.repository';
 import { UserDeliveryProfileRepository } from '../../infrastructure/repositories/user-delivery-profile.repository';
 import {
@@ -19,7 +21,7 @@ import {
   type UserDeliveryProfileId,
 } from '../../schemas/user-delivery-profile.schema';
 import { NotFoundError } from '../../shared/utils/errors.utils';
-import { buildAvatarUrl } from '../../shared/utils/image.utils';
+import { buildAvatarUrl, buildOrganizationAvatarUrl } from '../../shared/utils/image.utils';
 import { inject } from '../../shared/utils/inject.utils';
 import { GetPreviousOrdersUseCase, type PreviousOrder } from './get-previous-orders.service';
 import { GetUserOrdersHistoryUseCase } from './get-user-orders-history.service';
@@ -63,6 +65,7 @@ const normalizeProfileInput = (profile: DeliveryProfileInput): DeliveryProfileRe
 export class UserService {
   private readonly userRepository = inject(UserRepository);
   private readonly userDeliveryProfileRepository = inject(UserDeliveryProfileRepository);
+  private readonly organizationRepository = inject(OrganizationRepository);
   private readonly prisma = inject(PrismaService);
   private readonly getUserOrdersHistoryUseCase = inject(GetUserOrdersHistoryUseCase);
   private readonly getPreviousOrdersUseCase = inject(GetPreviousOrdersUseCase);
@@ -117,7 +120,7 @@ export class UserService {
     return this.getUserOrdersHistoryUseCase.execute(userId);
   }
 
-  async getUserGroupOrders(_userId: UserId): Promise<
+  async getUserGroupOrders(userId: UserId): Promise<
     Array<{
       id: GroupOrderId;
       name: string | null;
@@ -126,6 +129,11 @@ export class UserService {
       startDate: Date;
       endDate: Date;
       createdAt: Date;
+      organization: {
+        id: string;
+        name: string;
+        image: string | null;
+      } | null;
       leader: {
         id: UserId;
         name: string | null;
@@ -137,8 +145,54 @@ export class UserService {
       }>;
     }>
   > {
-    // Get all group orders (not just where user is leader)
+    // Get user's organization IDs (only ACTIVE memberships)
+    const userOrganizations = await this.organizationRepository.findByUserId(userId);
+    const userOrganizationIds = userOrganizations
+      .filter((uo) => uo.status === OrganizationMemberStatus.ACTIVE)
+      .map((uo) => uo.organization.id);
+
+    // Build filter: show group orders where:
+    // 1. Group order's organizationId matches user's organization(s), OR
+    // 2. Group order's leader belongs to same organization(s) as user, OR
+    // 3. Group order has no organization (backward compatibility - show only if user also has no organizations)
+    const whereClause: {
+      OR?: Array<{
+        organizationId?: { in: string[] } | null;
+        leader?: { organizations?: { some: { organizationId: { in: string[] } } } };
+      }>;
+      organizationId?: null;
+    } = {};
+
+    if (userOrganizationIds.length > 0) {
+      // User has organizations - filter by organization
+      whereClause.OR = [
+        // Group orders assigned to user's organizations
+        {
+          organizationId: {
+            in: userOrganizationIds,
+          },
+        },
+        // Group orders where leader is in user's organizations
+        {
+          leader: {
+            organizations: {
+              some: {
+                organizationId: {
+                  in: userOrganizationIds,
+                },
+              },
+            },
+          },
+        },
+      ];
+    } else {
+      // User has no organizations - only show group orders with no organization (backward compatibility)
+      whereClause.organizationId = null;
+    }
+
+    // Get filtered group orders
     const dbGroupOrders = await this.prisma.client.groupOrder.findMany({
+      where: whereClause,
       select: {
         id: true,
         name: true,
@@ -148,6 +202,15 @@ export class UserService {
         endDate: true,
         createdAt: true,
         updatedAt: true,
+        organizationId: true,
+        organization: {
+          select: {
+            id: true,
+            name: true,
+            image: true,
+            updatedAt: true,
+          },
+        },
         leader: {
           select: {
             id: true,
@@ -202,6 +265,18 @@ export class UserService {
         updatedAt: leader.updatedAt ?? null,
       };
       const participants = participantsByGroupOrder.get(go.id) ?? [];
+      const organization = go.organization
+        ? {
+            id: go.organization.id,
+            name: go.organization.name,
+            image: buildOrganizationAvatarUrl({
+              id: go.organization.id,
+              hasImage: Boolean(go.organization.image),
+              updatedAt: go.organization.updatedAt ?? null,
+            }),
+          }
+        : null;
+
       return {
         id: go.id as GroupOrderId,
         name: go.name,
@@ -210,6 +285,7 @@ export class UserService {
         startDate: go.startDate,
         endDate: go.endDate,
         createdAt: go.createdAt,
+        organization,
         leader: {
           id: leader.id as UserId,
           name: leader.name,

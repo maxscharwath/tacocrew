@@ -1,11 +1,12 @@
 import { ArrowUpRight, Calendar } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
+import { StackedAvatars } from '@/components/orders/StackedAvatars';
+import { UserBadge } from '@/components/orders/UserBadge';
+import { OrganizationAvatarWithTooltip } from '@/components/shared/OrganizationAvatarWithTooltip';
 import { StatusBadge } from '@/components/ui';
 import type { UserGroupOrder } from '@/lib/api/types';
 import { routes } from '@/lib/routes';
-import { StackedAvatars } from './StackedAvatars';
-import { UserBadge } from './UserBadge';
 
 type OrderListItemProps = {
   readonly order: UserGroupOrder;
@@ -29,13 +30,36 @@ export function OrderListItem({
       to={routes.root.orderDetail({ orderId: order.id })}
       className="group block transition-all duration-200"
     >
-      <article className="flex flex-col gap-4 rounded-2xl border border-white/10 bg-slate-900/70 p-4 shadow-[0_20px_60px_rgba(8,47,73,0.25)] transition-all duration-200 hover:border-brand-400/40 hover:bg-slate-900/80 hover:shadow-[0_20px_60px_rgba(99,102,241,0.2)] sm:flex-row sm:items-center sm:gap-6 sm:p-6">
+      <article className="group/article flex flex-col gap-4 rounded-2xl border border-white/10 bg-slate-900/70 p-4 shadow-[0_20px_60px_rgba(8,47,73,0.25)] transition-all duration-200 hover:border-brand-400/40 hover:bg-slate-900/80 hover:shadow-[0_20px_60px_rgba(99,102,241,0.2)] sm:flex-row sm:items-center sm:gap-6 sm:p-6">
+        {/* Organization Avatar (Left Side - Desktop) */}
+        {order.organization && (
+          <div className="hidden shrink-0 sm:block sm:border-white/10 sm:border-r sm:pr-6">
+            <OrganizationAvatarWithTooltip
+              organizationId={order.organization.id}
+              name={order.organization.name}
+              size="md"
+              hasImage={!!order.organization.image}
+            />
+          </div>
+        )}
+
         {/* Main Content */}
         <div className="flex flex-1 flex-col gap-3 sm:flex-row sm:items-center sm:gap-6">
           {/* Order Info */}
           <div className="min-w-0 flex-1">
             <div className="mb-2 flex flex-wrap items-center gap-2 sm:gap-3">
-              <h3 className="truncate font-bold text-base text-white group-hover:text-brand-100">
+              {/* Organization Avatar (Mobile - Inline) */}
+              {order.organization && (
+                <div className="sm:hidden">
+                  <OrganizationAvatarWithTooltip
+                    organizationId={order.organization.id}
+                    name={order.organization.name}
+                    size="sm"
+                    hasImage={!!order.organization.image}
+                  />
+                </div>
+              )}
+              <h3 className="truncate font-bold text-base text-white transition-colors group-hover/article:text-brand-100">
                 {order.name ?? unnamedOrderText}
               </h3>
               <StatusBadge
@@ -45,7 +69,7 @@ export function OrderListItem({
               />
             </div>
             <div className="flex flex-wrap items-center gap-2 text-slate-400 text-sm sm:gap-3">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5">
                 <Calendar size={14} className="shrink-0" />
                 <span className="whitespace-nowrap">
                   {formatDateTimeRange(order.startDate, order.endDate)}
@@ -53,7 +77,9 @@ export function OrderListItem({
               </div>
               {order.leader && (
                 <>
-                  <span className="text-white/20">•</span>
+                  <span className="text-white/20" aria-hidden="true">
+                    •
+                  </span>
                   <UserBadge
                     userId={order.leader.id}
                     name={order.leader.name ?? t('orders.list.queue.unknownLeader')}

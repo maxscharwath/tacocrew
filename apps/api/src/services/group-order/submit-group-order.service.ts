@@ -6,7 +6,6 @@
 import { PaymentMethod } from '@tacobot/gigatacos-client';
 import { injectable } from 'tsyringe';
 import { GroupOrderRepository } from '../../infrastructure/repositories/group-order.repository';
-import { UserRepository } from '../../infrastructure/repositories/user.repository';
 import { UserOrderRepository } from '../../infrastructure/repositories/user-order.repository';
 import { t } from '../../lib/i18n';
 import { canSubmitGroupOrder, type GroupOrderId } from '../../schemas/group-order.schema';
@@ -43,7 +42,6 @@ type ExecuteResult = {
 export class SubmitGroupOrderUseCase {
   private readonly groupOrderRepository = inject(GroupOrderRepository);
   private readonly userOrderRepository = inject(UserOrderRepository);
-  private readonly userRepository = inject(UserRepository);
   private readonly resourceService = inject(ResourceService);
   private readonly backendOrderSubmissionService = inject(BackendOrderSubmissionService);
   private readonly notificationService = inject(NotificationService);
@@ -104,16 +102,10 @@ export class SubmitGroupOrderUseCase {
     // Send localized notifications to each participant
     const notificationPromises = participantIds.map(async (participantId) => {
       try {
-        // Get user's language preference
-        const userLanguage = await this.userRepository.getUserLanguage(participantId);
-
-        // Get localized notification content
-        const title = t('notifications.orderSubmitted.title', { lng: userLanguage });
-        const body = t('notifications.orderSubmitted.body', { lng: userLanguage, orderName });
-
         await this.notificationService.sendToUser(participantId, {
-          title,
-          body,
+          type: 'submitted',
+          title: t('notifications.orderSubmitted.title'),
+          body: t('notifications.orderSubmitted.body', { orderName }),
           tag: `submitted-${groupOrderId}${dryRun ? '-dryrun' : ''}`,
           url: `/orders/${groupOrderId}`,
           data: {

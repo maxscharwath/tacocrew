@@ -16,12 +16,39 @@
       },
       "paymentReminder": {
         "title": "Zahlungserinnerung",
-        "body": "{{leaderName}} erinnert dich, für \"{{orderName}}\" zu bezahlen",
-        "defaultOrderName": "die Gruppenbestellung"
+        "body": "{{leaderName}} erinnert dich, für \"{{orderName}}\" zu bezahlen"
       },
       "test": {
         "title": "Test-Benachrichtigung",
         "body": "Dies ist eine Test-Benachrichtigung von TacoBot!"
+      },
+      "organization": {
+        "joinRequest": {
+          "title": "Neue Beitrittsanfrage",
+          "body": "{{userName}} hat angefragt, {{organizationName}} beizutreten"
+        },
+        "joinAccepted": {
+          "title": "Beitrittsanfrage akzeptiert",
+          "body": "Sie wurden in {{organizationName}} aufgenommen"
+        },
+        "joinRejected": {
+          "title": "Beitrittsanfrage abgelehnt",
+          "body": "Ihre Anfrage, {{organizationName}} beizutreten, wurde abgelehnt"
+        },
+        "roleUpdated": {
+          "title": "Rolle aktualisiert",
+          "body": "Ihre Rolle in {{organizationName}} wurde auf {{role}} aktualisiert"
+        },
+        "memberRemoved": {
+          "title": "Aus Organisation entfernt",
+          "body": "Sie wurden aus {{organizationName}} entfernt"
+        }
+      }
+    },
+    "organizations": {
+      "roles": {
+        "admin": "Administrator",
+        "member": "Mitglied"
       }
     },
     "errors": {

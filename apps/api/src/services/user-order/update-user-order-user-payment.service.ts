@@ -60,14 +60,11 @@ export class UpdateUserOrderUserPaymentStatusUseCase {
       const user = await this.userRepository.findById(requesterId);
       const userName = user?.name || 'Someone';
 
-      // Get leader's language preference for localized notification
-      const leaderLanguage = await this.userRepository.getUserLanguage(groupOrder.leaderId);
-
       this.notificationService
         .sendToUser(groupOrder.leaderId, {
           type: 'payment_update',
-          title: t('notifications.paymentUpdate.title', { lng: leaderLanguage }),
-          body: t('notifications.paymentUpdate.body', { lng: leaderLanguage, userName }),
+          title: t('notifications.paymentUpdate.title'),
+          body: t('notifications.paymentUpdate.body', { userName }),
           tag: `payment-${groupOrderId}-${userOrderId}`,
           url: `/orders/${groupOrderId}`,
           data: {

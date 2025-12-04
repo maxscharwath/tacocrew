@@ -10,4 +10,5 @@ export interface CreateGroupOrderRequestDto {
   name?: string;
   startDate: Date;
   endDate: Date;
+  organizationId?: string | null;
 }

@@ -1,11 +1,11 @@
-import { Avatar } from '@/components/ui';
-import { getAvatarUrl } from '@/lib/api/user';
 import {
   getAvatarSizeClass,
   getAvatarSizePixels,
   getStackedOffsetClass,
   getUserInitials,
-} from './user-utils';
+} from '@/components/orders/user-utils';
+import { Avatar } from '@/components/ui';
+import { getAvatarUrl } from '@/lib/api/user';
 
 type Participant = {
   readonly userId: string;

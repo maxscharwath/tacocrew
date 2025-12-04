@@ -16,6 +16,9 @@
     "edit": "Modifier",
     "submit": "Envoyer",
     "back": "Retour",
+    "accept": "Accepter",
+    "reject": "Rejeter",
+    "you": "Vous",
     "outOfStock": "Rupture",
     "labels": {
       "dropName": "Nom de la commande",
@@ -253,6 +256,114 @@
     "save": "Enregistrer",
     "cancel": "Annuler"
   },
+  "organizations": {
+    "title": "Organisations",
+    "description": "Gérez vos organisations et voyez quelles commandes de groupe appartiennent à chaque organisation",
+    "list": {
+      "title": "Organisations",
+      "add": "Nouveau"
+    },
+    "form": {
+      "name": {
+        "label": "Nom de l'organisation",
+        "placeholder": "Entrez le nom de l'organisation"
+      },
+      "create": "Créer une organisation"
+    },
+    "details": {
+      "avatar": {
+        "title": "Avatar de l'organisation",
+        "description": "Téléchargez une image d'avatar pour cette organisation",
+        "upload": "Télécharger un avatar",
+        "change": "Changer l'avatar",
+        "delete": "Supprimer l'avatar",
+        "deleteTitle": "Supprimer l'avatar",
+        "deleteDescription": "Êtes-vous sûr de vouloir supprimer l'avatar de cette organisation ?"
+      },
+      "created": "Créé le {{date}}"
+    },
+    "empty": {
+      "title": "Aucune organisation",
+      "description": "Vous n'appartenez à aucune organisation pour le moment. Créez-en une pour commencer.",
+      "createButton": "Créer une organisation",
+      "select": "Sélectionner une organisation",
+      "selectDescription": "Sélectionnez une organisation dans la liste pour voir et gérer ses détails."
+    },
+    "messages": {
+      "created": "Organisation créée avec succès",
+      "deleted": "Organisation supprimée avec succès",
+      "avatarUploaded": "Avatar téléchargé avec succès",
+      "avatarDeleted": "Avatar supprimé avec succès",
+      "missingName": "Le nom de l'organisation est requis",
+      "missingEmail": "L'e-mail de l'utilisateur est requis",
+      "userLookupNotImplemented": "La recherche d'utilisateur par e-mail n'est pas encore implémentée",
+      "genericError": "Une erreur s'est produite. Veuillez réessayer."
+    },
+    "roles": {
+      "admin": "Administrateur",
+      "member": "Membre"
+    },
+    "join": {
+      "description": "Demandez à rejoindre cette organisation et collaborez avec les membres de l'équipe",
+      "infoTitle": "Comment ça marche",
+      "info": "Cliquez sur le bouton ci-dessous pour envoyer une demande d'adhésion. Un administrateur examinera votre demande et l'approuvera. Une fois approuvée, vous pourrez voir et participer aux commandes de groupe.",
+      "button": "Demander à rejoindre",
+      "requesting": "Envoi de la demande...",
+      "success": "Demande d'adhésion envoyée avec succès",
+      "error": "Échec de l'envoi de la demande d'adhésion",
+      "requestSent": "Demande d'adhésion envoyée avec succès !",
+      "waitingApproval": "En attente d'approbation par un administrateur. Vous serez notifié une fois votre demande examinée.",
+      "pendingInfo": "Votre demande est en attente. Un administrateur l'examinera sous peu.",
+      "backToOrganizations": "Retour aux organisations",
+      "copyLink": "Copier le lien d'adhésion",
+      "linkCopied": "Lien copié !"
+    },
+    "members": {
+      "title": "Membres",
+      "description": "Gérer les membres de l'organisation et leurs rôles",
+      "pendingRequests": "Demandes en attente",
+      "pendingDescription": "Utilisateurs qui ont demandé à rejoindre cette organisation",
+      "notMember": "Vous n'êtes pas membre de cette organisation",
+      "requestPending": "Votre demande d'adhésion est en attente d'approbation par un administrateur",
+      "requestToJoin": "Demander à rejoindre cette organisation pour voir les commandes de groupe et collaborer",
+      "requestJoin": "Demander à rejoindre",
+      "requestAccepted": "Demande d'adhésion acceptée",
+      "requestAcceptedWithName": "La demande d'adhésion de {{name}} a été acceptée",
+      "requestRejected": "Demande d'adhésion rejetée",
+      "requestRejectedWithName": "La demande d'adhésion de {{name}} a été rejetée",
+      "requestAcceptFailed": "Échec de l'acceptation de la demande d'adhésion : {{error}}",
+      "requestRejectFailed": "Échec du rejet de la demande d'adhésion : {{error}}",
+      "roleUpdated": "Rôle du membre mis à jour avec succès",
+      "roleUpdatedWithDetails": "Le rôle de {{name}} a été mis à jour en {{role}}",
+      "roleUpdateFailed": "Échec de la mise à jour du rôle : {{error}}",
+      "memberRemoved": "Membre retiré de l'organisation",
+      "memberRemovedWithName": "{{name}} a été retiré de l'organisation",
+      "memberRemoveFailed": "Échec du retrait du membre : {{error}}",
+      "confirmRemove": "Êtes-vous sûr de vouloir retirer ce membre de l'organisation ?",
+      "confirmRemoveWithName": "Êtes-vous sûr de vouloir retirer {{name}} de l'organisation ?",
+      "joinRequested": "Demande d'adhésion envoyée avec succès",
+      "joinRequestFailed": "Échec de l'envoi de la demande d'adhésion : {{error}}",
+      "user": "Utilisateur",
+      "empty": "Aucun membre",
+      "emptyDescription": "Cette organisation n'a pas encore de membres",
+      "viewOnly": "Vous avez un accès en lecture seule. Seuls les administrateurs peuvent gérer les paramètres de l'organisation.",
+      "addUser": {
+        "title": "Ajouter un membre",
+        "description": "Ajoutez un utilisateur à cette organisation par e-mail. Il sera ajouté immédiatement sans confirmation.",
+        "emailLabel": "E-mail",
+        "emailPlaceholder": "utilisateur@exemple.com",
+        "roleLabel": "Rôle",
+        "emailRequired": "L'e-mail est requis",
+        "button": "Ajouter",
+        "success": "L'utilisateur {{email}} a été ajouté à l'organisation",
+        "failed": "Échec de l'ajout de l'utilisateur : {{error}}"
+      }
+    },
+    "delete": {
+      "title": "Supprimer l'organisation",
+      "description": "Êtes-vous sûr de vouloir supprimer {{name}} ? Cette action ne peut pas être annulée."
+    }
+  },
   "dashboard": {
     "kitchenPulse": "Vos commandes",
     "hero": {
@@ -413,7 +524,14 @@
           "timeWindow": "Créneau horaire",
           "opens": "Ouverture",
           "closes": "Clôture (limite)",
-          "deadlineHint": "Les commandes doivent arriver avant cette heure."
+          "deadlineHint": "Les commandes doivent arriver avant cette heure.",
+          "organization": "Organisation"
+        },
+        "placeholders": {
+          "selectOrganization": "Sélectionner une organisation"
+        },
+        "errors": {
+          "organizationRequired": "Veuillez sélectionner une organisation pour cette commande de groupe"
         },
         "quickDeadlines": {
           "morning": "10 h",

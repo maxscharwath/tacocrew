@@ -3,13 +3,18 @@ import {
   Archive,
   ArchiveX,
   Bell,
+  CheckCircle,
   CircleDollarSign,
   Inbox,
   Loader2,
   Package,
   Receipt,
+  Shield,
   Sparkles,
+  UserMinus,
+  UserPlus,
   Wallet,
+  XCircle,
 } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -39,6 +44,11 @@ const NOTIFICATION_ICONS: Record<string, { icon: LucideIcon; color: string }> = 
   payment_update: { icon: CircleDollarSign, color: 'text-emerald-400' },
   reimbursement_update: { icon: Receipt, color: 'text-sky-400' },
   order_submitted: { icon: Package, color: 'text-violet-400' },
+  organization_join_request: { icon: UserPlus, color: 'text-blue-400' },
+  organization_join_accepted: { icon: CheckCircle, color: 'text-emerald-400' },
+  organization_join_rejected: { icon: XCircle, color: 'text-rose-400' },
+  organization_role_updated: { icon: Shield, color: 'text-purple-400' },
+  organization_member_removed: { icon: UserMinus, color: 'text-orange-400' },
 };
 
 const DEFAULT_ICON = { icon: Bell, color: 'text-slate-400' };

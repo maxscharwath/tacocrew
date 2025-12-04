@@ -12,6 +12,8 @@ import {
   type GroupOrder,
   GroupOrderIdSchema,
 } from '../../schemas/group-order.schema';
+import { OrganizationIdSchema } from '../../schemas/organization.schema';
+import { UserIdSchema } from '../../schemas/user.schema';
 import type { UserOrder } from '../../schemas/user-order.schema';
 import { CreateGroupOrderUseCase } from '../../services/group-order/create-group-order.service';
 import { DeleteGroupOrderUseCase } from '../../services/group-order/delete-group-order.service';
@@ -19,13 +21,14 @@ import { GetGroupOrderUseCase } from '../../services/group-order/get-group-order
 import { GetGroupOrderWithUserOrdersUseCase } from '../../services/group-order/get-group-order-with-user-orders.service';
 import { UpdateGroupOrderUseCase } from '../../services/group-order/update-group-order.service';
 import { UpdateGroupOrderStatusUseCase } from '../../services/group-order/update-group-order-status.service';
+import { OrganizationService } from '../../services/organization/organization.service';
 import { SessionService } from '../../services/session/session.service';
 import { UserService } from '../../services/user/user.service';
 import { GroupOrderStatus } from '../../shared/types/types';
-import { NotFoundError } from '../../shared/utils/errors.utils';
+import { ForbiddenError, NotFoundError } from '../../shared/utils/errors.utils';
 import { buildAvatarUrl } from '../../shared/utils/image.utils';
 import { inject } from '../../shared/utils/inject.utils';
-import { jsonContent } from '../schemas/shared.schemas';
+import { ErrorResponseSchema, jsonContent } from '../schemas/shared.schemas';
 import { UserOrderItemsSchema } from '../schemas/user-order.schemas';
 import { authSecurity, createAuthenticatedRouteApp, requireUserId } from '../utils/route.utils';
 
@@ -35,6 +38,7 @@ const CreateGroupOrderRequestSchema = z.object({
   name: z.string().optional(),
   startDate: z.iso.datetime(),
   endDate: z.iso.datetime(),
+  organizationId: z.string().uuid().optional().nullable(),
 });
 
 const GroupOrderResponseSchema = z.object({
@@ -140,6 +144,38 @@ function sanitizeGroupUserOrderItems(items: UserOrder['items']): UserOrder['item
   };
 }
 
+/**
+ * Check if user has access to a group order
+ * Throws ForbiddenError if user is not an active member of the organization
+ */
+async function requireGroupOrderAccess(groupOrderId: string, userId: string): Promise<void> {
+  const groupOrderRepository = inject(GroupOrderRepository);
+  const organizationService = inject(OrganizationService);
+
+  const parsedGroupOrderId = GroupOrderIdSchema.parse(groupOrderId);
+  const parsedUserId = UserIdSchema.parse(userId);
+
+  const groupOrder = await groupOrderRepository.findById(parsedGroupOrderId);
+  if (!groupOrder) {
+    throw new NotFoundError({ resource: 'GroupOrder', id: groupOrderId });
+  }
+
+  // If group order has no organization, allow access (legacy behavior)
+  if (!groupOrder.organizationId) {
+    return;
+  }
+
+  // Check if user is an active member of the organization
+  const parsedOrganizationId = OrganizationIdSchema.parse(groupOrder.organizationId);
+  const isActiveMember = await organizationService.isUserActiveMember(
+    parsedUserId,
+    parsedOrganizationId
+  );
+  if (!isActiveMember) {
+    throw new ForbiddenError();
+  }
+}
+
 app.openapi(
   createRoute({
     method: 'post',
@@ -166,6 +202,7 @@ app.openapi(
       name: body.name,
       startDate: new Date(body.startDate),
       endDate: new Date(body.endDate),
+      organizationId: body.organizationId ?? undefined,
     });
 
     return c.json(await serializeGroupOrderResponse(groupOrder), 201);
@@ -188,10 +225,22 @@ app.openapi(
         description: 'Group order details',
         content: jsonContent(GroupOrderResponseSchema),
       },
+      403: {
+        description: 'Forbidden - User is not an active member of the organization',
+        content: jsonContent(ErrorResponseSchema),
+      },
+      404: {
+        description: 'Group order not found',
+        content: jsonContent(ErrorResponseSchema),
+      },
     },
   }),
   async (c) => {
     const { id } = c.req.valid('param');
+    const userId = requireUserId(c);
+
+    await requireGroupOrderAccess(id, userId);
+
     const getGroupOrderUseCase = inject(GetGroupOrderUseCase);
     const groupOrder = await getGroupOrderUseCase.execute(id);
 
@@ -218,12 +267,23 @@ app.openapi(
         description: 'Group order status updated',
         content: jsonContent(GroupOrderResponseSchema),
       },
+      403: {
+        description: 'Forbidden - User is not an active member of the organization',
+        content: jsonContent(ErrorResponseSchema),
+      },
+      404: {
+        description: 'Group order not found',
+        content: jsonContent(ErrorResponseSchema),
+      },
     },
   }),
   async (c) => {
     const { id } = c.req.valid('param');
     const body = c.req.valid('json');
     const userId = requireUserId(c);
+
+    await requireGroupOrderAccess(id, userId);
+
     const updateGroupOrderStatusUseCase = inject(UpdateGroupOrderStatusUseCase);
     const groupOrder = await updateGroupOrderStatusUseCase.execute(id, userId, body.status);
 
@@ -250,12 +310,23 @@ app.openapi(
         description: 'Group order details updated',
         content: jsonContent(GroupOrderResponseSchema),
       },
+      403: {
+        description: 'Forbidden - User is not an active member of the organization',
+        content: jsonContent(ErrorResponseSchema),
+      },
+      404: {
+        description: 'Group order not found',
+        content: jsonContent(ErrorResponseSchema),
+      },
     },
   }),
   async (c) => {
     const { id } = c.req.valid('param');
     const body = c.req.valid('json');
     const userId = requireUserId(c);
+
+    await requireGroupOrderAccess(id, userId);
+
     const updateGroupOrderUseCase = inject(UpdateGroupOrderUseCase);
     const groupOrder = await updateGroupOrderUseCase.execute(id, userId, {
       name: body.name,
@@ -283,10 +354,22 @@ app.openapi(
         description: 'Group order with user orders',
         content: jsonContent(GroupOrderWithUserOrdersSchema),
       },
+      403: {
+        description: 'Forbidden - User is not an active member of the organization',
+        content: jsonContent(ErrorResponseSchema),
+      },
+      404: {
+        description: 'Group order not found',
+        content: jsonContent(ErrorResponseSchema),
+      },
     },
   }),
   async (c) => {
     const { id } = c.req.valid('param');
+    const userId = requireUserId(c);
+
+    await requireGroupOrderAccess(id, userId);
+
     const getGroupOrderWithUserOrdersUseCase = inject(GetGroupOrderWithUserOrdersUseCase);
     const result = await getGroupOrderWithUserOrdersUseCase.execute(id);
     const groupOrder = await serializeGroupOrderResponse(result.groupOrder);
@@ -365,6 +448,10 @@ app.openapi(
   }),
   async (c) => {
     const { id: groupOrderId } = c.req.valid('param');
+    const userId = requireUserId(c);
+
+    await requireGroupOrderAccess(groupOrderId, userId);
+
     const groupOrderRepository = inject(GroupOrderRepository);
     const sessionService = inject(SessionService);
 
@@ -438,6 +525,9 @@ app.openapi(
   async (c) => {
     const { id } = c.req.valid('param');
     const userId = requireUserId(c);
+
+    await requireGroupOrderAccess(id, userId);
+
     const deleteGroupOrderUseCase = inject(DeleteGroupOrderUseCase);
 
     await deleteGroupOrderUseCase.execute(id, userId);

@@ -6,7 +6,6 @@
 import { createRoute } from '@hono/zod-openapi';
 import { z } from 'zod';
 import { PushSubscriptionRepository } from '../../infrastructure/repositories/push-subscription.repository';
-import { UserRepository } from '../../infrastructure/repositories/user.repository';
 import { t } from '../../lib/i18n';
 import { NotificationService } from '../../services/notification/notification.service';
 import { inject } from '../../shared/utils/inject.utils';
@@ -236,21 +235,15 @@ app.openapi(
   async (c) => {
     const userId = requireUserId(c);
     const notificationService = inject(NotificationService);
-    const userRepository = inject(UserRepository);
 
-    const userLanguage = await userRepository.getUserLanguage(userId);
-    logger.debug('Sending test notification', { userId, userLanguage });
-
-    const title = t('notifications.test.title', { lng: userLanguage });
-    const body = t('notifications.test.body', { lng: userLanguage });
-    logger.debug('Notification content', { userLanguage, title, body });
+    logger.debug('Sending test notification', { userId });
 
     await notificationService.sendToUser(
       userId,
       {
         type: 'test',
-        title,
-        body,
+        title: t('notifications.test.title'),
+        body: t('notifications.test.body'),
         tag: 'test-notification',
         icon: '/icon.png',
         data: {

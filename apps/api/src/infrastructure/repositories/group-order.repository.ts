@@ -27,6 +27,7 @@ export class GroupOrderRepository {
     leaderId: UserId;
     startDate: Date;
     endDate: Date;
+    organizationId?: string | null;
   }): Promise<GroupOrder> {
     try {
       const dbGroupOrder = await this.prisma.client.groupOrder.create({
@@ -36,6 +37,7 @@ export class GroupOrderRepository {
           startDate: data.startDate,
           endDate: data.endDate,
           status: GroupOrderStatus.OPEN,
+          organizationId: data.organizationId ?? null,
         },
         include: {
           leader: {

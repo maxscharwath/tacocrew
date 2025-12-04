@@ -13,6 +13,7 @@ export type CreateGroupOrderFormData = {
   name?: string;
   startDate: string;
   endDate: string;
+  organizationId?: string;
 };
 
 /**

@@ -1,4 +1,4 @@
-import { apiClient } from './http';
+import { apiClient } from '@/lib/api/http';
 import type {
   CreateGroupOrderBody,
   GroupOrder,
@@ -8,7 +8,7 @@ import type {
   UpsertUserOrderBody,
   UserOrderDetail,
   UserOrderResponse,
-} from './types';
+} from '@/lib/api/types';
 
 export type {
   CreateGroupOrderBody,
@@ -19,7 +19,7 @@ export type {
   UpsertUserOrderBody,
   UserOrderDetail,
   UserOrderResponse,
-} from './types';
+} from '@/lib/api/types';
 
 export function createGroupOrder(body: CreateGroupOrderBody) {
   return apiClient.post<GroupOrder>('/api/v1/orders', { body });

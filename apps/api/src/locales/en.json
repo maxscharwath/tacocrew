@@ -16,12 +16,39 @@
       },
       "paymentReminder": {
         "title": "Payment Reminder",
-        "body": "{{leaderName}} is reminding you to pay for \"{{orderName}}\"",
-        "defaultOrderName": "the group order"
+        "body": "{{leaderName}} is reminding you to pay for \"{{orderName}}\""
       },
       "test": {
         "title": "Test Notification",
         "body": "This is a test notification from TacoBot!"
+      },
+      "organization": {
+        "joinRequest": {
+          "title": "New Join Request",
+          "body": "{{userName}} has requested to join {{organizationName}}"
+        },
+        "joinAccepted": {
+          "title": "Join Request Accepted",
+          "body": "You have been accepted to join {{organizationName}}"
+        },
+        "joinRejected": {
+          "title": "Join Request Rejected",
+          "body": "Your request to join {{organizationName}} has been rejected"
+        },
+        "roleUpdated": {
+          "title": "Role Updated",
+          "body": "Your role in {{organizationName}} has been updated to {{role}}"
+        },
+        "memberRemoved": {
+          "title": "Removed from Organization",
+          "body": "You have been removed from {{organizationName}}"
+        }
+      }
+    },
+    "organizations": {
+      "roles": {
+        "admin": "Admin",
+        "member": "Member"
       }
     },
     "errors": {

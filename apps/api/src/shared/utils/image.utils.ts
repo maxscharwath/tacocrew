@@ -189,3 +189,17 @@ export function buildAvatarUrl(user: {
 
   return version ? `${basePath}?v=${version}` : basePath;
 }
+
+export function buildOrganizationAvatarUrl(organization: {
+  id: string;
+  hasImage?: boolean;
+  updatedAt?: Date | string | null;
+}): string | null {
+  if (!organization.hasImage) return null;
+
+  const date = organization.updatedAt;
+  const version = date && isValid(date) ? getTime(date).toString() : null;
+  const basePath = `/api/v1/organizations/${organization.id}/avatar`;
+
+  return version ? `${basePath}?v=${version}` : basePath;
+}

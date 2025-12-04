@@ -66,20 +66,15 @@ export class SendPaymentReminderService {
     // Get leader's name for the notification
     const leader = await this.userRepository.findById(requesterId);
     const leaderName = leader?.name || 'The group leader';
-
-    // Get target user's language preference
-    const userLanguage = await this.userRepository.getUserLanguage(userOrder.userId);
+    const orderName = groupOrder.name || 'the group order';
 
     // Send the notification
     await this.notificationService.sendToUser(userOrder.userId, {
       type: 'payment_reminder',
-      title: t('notifications.paymentReminder.title', { lng: userLanguage }),
+      title: t('notifications.paymentReminder.title'),
       body: t('notifications.paymentReminder.body', {
-        lng: userLanguage,
         leaderName,
-        orderName:
-          groupOrder.name ||
-          t('notifications.paymentReminder.defaultOrderName', { lng: userLanguage }),
+        orderName,
       }),
       tag: `payment-reminder-${groupOrderId}-${userOrderId}`,
       url: `/orders/${groupOrderId}`,

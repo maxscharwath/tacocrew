@@ -3,6 +3,12 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useRevalidator } from 'react-router';
 import { toast } from 'sonner';
+import {
+  type ReceiptItem,
+  type ReceiptStatusVariant,
+  ReceiptTicket,
+  type ReceiptTicketModel,
+} from '@/components/orders/ReceiptTicket';
 import { Avatar, Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui';
 import { useLocaleFormatter } from '@/hooks/useLocaleFormatter';
 import { calculateOrderPrice } from '@/hooks/useOrderPrice';
@@ -11,12 +17,6 @@ import { OrdersApi } from '@/lib/api';
 import { sendPaymentReminder } from '@/lib/api/notifications';
 import type { GroupOrder, UserOrderSummary } from '@/lib/api/types';
 import { formatPhoneNumber } from '@/utils/phone-formatter';
-import {
-  type ReceiptItem,
-  type ReceiptStatusVariant,
-  ReceiptTicket,
-  type ReceiptTicketModel,
-} from './ReceiptTicket';
 
 type GroupedOrders = {
   userId: string;

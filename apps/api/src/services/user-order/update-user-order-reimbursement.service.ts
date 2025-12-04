@@ -5,7 +5,6 @@
 
 import { injectable } from 'tsyringe';
 import { GroupOrderRepository } from '../../infrastructure/repositories/group-order.repository';
-import { UserRepository } from '../../infrastructure/repositories/user.repository';
 import { UserOrderRepository } from '../../infrastructure/repositories/user-order.repository';
 import { t } from '../../lib/i18n';
 import type { GroupOrderId } from '../../schemas/group-order.schema';
@@ -19,7 +18,6 @@ import { NotificationService } from '../notification/notification.service';
 export class UpdateUserOrderReimbursementStatusUseCase {
   private readonly groupOrderRepository = inject(GroupOrderRepository);
   private readonly userOrderRepository = inject(UserOrderRepository);
-  private readonly userRepository = inject(UserRepository);
   private readonly notificationService = inject(NotificationService);
 
   async execute(
@@ -51,16 +49,13 @@ export class UpdateUserOrderReimbursementStatusUseCase {
 
     // Notify the user when their order reimbursement status changes
     if (userOrder.userId !== requesterId) {
-      // Get user's language preference for localized notification
-      const userLanguage = await this.userRepository.getUserLanguage(userOrder.userId);
-
       this.notificationService
         .sendToUser(userOrder.userId, {
           type: 'reimbursement_update',
-          title: t('notifications.reimbursementUpdate.title', { lng: userLanguage }),
+          title: t('notifications.reimbursementUpdate.title'),
           body: reimbursed
-            ? t('notifications.reimbursementUpdate.bodyReimbursed', { lng: userLanguage })
-            : t('notifications.reimbursementUpdate.bodyUpdated', { lng: userLanguage }),
+            ? t('notifications.reimbursementUpdate.bodyReimbursed')
+            : t('notifications.reimbursementUpdate.bodyUpdated'),
           tag: `reimbursement-${groupOrderId}-${userOrderId}`,
           url: `/orders/${groupOrderId}`,
           data: {

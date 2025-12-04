@@ -18,6 +18,11 @@ import {
   InputGroupInput,
   Label,
   PhoneInput,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from '@/components/ui';
 import { getSwissCantons, getSwitzerlandName } from '@/constants/location';
 import { UserApi } from '@/lib/api';
@@ -319,19 +324,22 @@ export function DeliveryProfilesManager({ profiles }: DeliveryProfilesManagerPro
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="grid gap-1">
               <Label htmlFor="stateField">{t('orders.submit.form.fields.state')}</Label>
-              <select
-                id="stateField"
-                className="rounded-xl border border-white/10 bg-slate-900/70 px-3 py-2 text-sm text-white focus:border-brand-400 focus:outline-none disabled:opacity-60"
+              <Select
                 value={form.address.state ?? ''}
+                onValueChange={(value) => setAddressField('state', value)}
                 disabled={busy}
-                onChange={(event) => setAddressField('state', event.target.value)}
               >
-                {getSwissCantons(t).map((canton) => (
-                  <option key={canton.code} value={canton.code}>
-                    {canton.label}
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger id="stateField" className="w-full">
+                  <SelectValue placeholder={t('orders.submit.form.fields.state')} />
+                </SelectTrigger>
+                <SelectContent>
+                  {getSwissCantons(t).map((canton) => (
+                    <SelectItem key={canton.code} value={canton.code}>
+                      {canton.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="grid gap-1">
               <Label htmlFor="countryField">{t('orders.submit.form.fields.country')}</Label>

@@ -16,6 +16,9 @@
     "edit": "Bearbeiten",
     "submit": "Absenden",
     "back": "Zurück",
+    "accept": "Akzeptieren",
+    "reject": "Ablehnen",
+    "you": "Du",
     "outOfStock": "Nicht verfügbar",
     "labels": {
       "dropName": "Bestellname",
@@ -253,6 +256,114 @@
     "save": "Speichern",
     "cancel": "Abbrechen"
   },
+  "organizations": {
+    "title": "Organisationen",
+    "description": "Verwalten Sie Ihre Organisationen und sehen Sie, welche Gruppenbestellungen zu welcher Organisation gehören",
+    "list": {
+      "title": "Organisationen",
+      "add": "Neu"
+    },
+    "form": {
+      "name": {
+        "label": "Organisationsname",
+        "placeholder": "Organisationsname eingeben"
+      },
+      "create": "Organisation erstellen"
+    },
+    "details": {
+      "avatar": {
+        "title": "Organisations-Avatar",
+        "description": "Laden Sie ein Avatar-Bild für diese Organisation hoch",
+        "upload": "Avatar hochladen",
+        "change": "Avatar ändern",
+        "delete": "Avatar löschen",
+        "deleteTitle": "Avatar löschen",
+        "deleteDescription": "Sind Sie sicher, dass Sie den Avatar dieser Organisation löschen möchten?"
+      },
+      "created": "Erstellt am {{date}}"
+    },
+    "empty": {
+      "title": "Keine Organisationen",
+      "description": "Sie gehören noch keiner Organisation an. Erstellen Sie eine, um zu beginnen.",
+      "createButton": "Organisation erstellen",
+      "select": "Organisation auswählen",
+      "selectDescription": "Wählen Sie eine Organisation aus der Liste aus, um Details anzuzeigen und zu verwalten."
+    },
+    "messages": {
+      "created": "Organisation erfolgreich erstellt",
+      "deleted": "Organisation erfolgreich gelöscht",
+      "avatarUploaded": "Avatar erfolgreich hochgeladen",
+      "avatarDeleted": "Avatar erfolgreich gelöscht",
+      "missingName": "Organisationsname ist erforderlich",
+      "missingEmail": "Benutzer-E-Mail ist erforderlich",
+      "userLookupNotImplemented": "Benutzersuche per E-Mail ist noch nicht implementiert",
+      "genericError": "Ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut."
+    },
+    "roles": {
+      "admin": "Administrator",
+      "member": "Mitglied"
+    },
+    "join": {
+      "description": "Anfrage zum Beitritt zu dieser Organisation und Zusammenarbeit mit Teammitgliedern",
+      "infoTitle": "So funktioniert es",
+      "info": "Klicken Sie auf die Schaltfläche unten, um eine Beitrittsanfrage zu senden. Ein Administrator wird Ihre Anfrage prüfen und genehmigen. Nach der Genehmigung können Sie Gruppenbestellungen einsehen und daran teilnehmen.",
+      "button": "Beitrittsanfrage senden",
+      "requesting": "Anfrage wird gesendet...",
+      "success": "Beitrittsanfrage erfolgreich gesendet",
+      "error": "Beitrittsanfrage konnte nicht gesendet werden",
+      "requestSent": "Beitrittsanfrage erfolgreich gesendet!",
+      "waitingApproval": "Warten auf Genehmigung durch einen Administrator. Sie werden benachrichtigt, sobald Ihre Anfrage geprüft wurde.",
+      "pendingInfo": "Ihre Anfrage ist ausstehend. Ein Administrator wird sie in Kürze prüfen.",
+      "backToOrganizations": "Zurück zu Organisationen",
+      "copyLink": "Beitrittslink kopieren",
+      "linkCopied": "Link kopiert!"
+    },
+    "members": {
+      "title": "Mitglieder",
+      "description": "Verwalten Sie Organisationsmitglieder und ihre Rollen",
+      "pendingRequests": "Ausstehende Anfragen",
+      "pendingDescription": "Benutzer, die angefragt haben, dieser Organisation beizutreten",
+      "notMember": "Sie sind kein Mitglied dieser Organisation",
+      "requestPending": "Ihre Beitrittsanfrage wartet auf Genehmigung durch einen Administrator",
+      "requestToJoin": "Anfrage zum Beitritt zu dieser Organisation, um Gruppenbestellungen einzusehen und zusammenzuarbeiten",
+      "requestJoin": "Beitrittsanfrage senden",
+      "requestAccepted": "Beitrittsanfrage akzeptiert",
+      "requestAcceptedWithName": "Die Beitrittsanfrage von {{name}} wurde akzeptiert",
+      "requestRejected": "Beitrittsanfrage abgelehnt",
+      "requestRejectedWithName": "Die Beitrittsanfrage von {{name}} wurde abgelehnt",
+      "requestAcceptFailed": "Beitrittsanfrage konnte nicht akzeptiert werden: {{error}}",
+      "requestRejectFailed": "Beitrittsanfrage konnte nicht abgelehnt werden: {{error}}",
+      "roleUpdated": "Mitgliedsrolle erfolgreich aktualisiert",
+      "roleUpdatedWithDetails": "Die Rolle von {{name}} wurde auf {{role}} aktualisiert",
+      "roleUpdateFailed": "Rolle konnte nicht aktualisiert werden: {{error}}",
+      "memberRemoved": "Mitglied aus Organisation entfernt",
+      "memberRemovedWithName": "{{name}} wurde aus der Organisation entfernt",
+      "memberRemoveFailed": "Mitglied konnte nicht entfernt werden: {{error}}",
+      "confirmRemove": "Sind Sie sicher, dass Sie dieses Mitglied aus der Organisation entfernen möchten?",
+      "confirmRemoveWithName": "Sind Sie sicher, dass Sie {{name}} aus der Organisation entfernen möchten?",
+      "joinRequested": "Beitrittsanfrage erfolgreich gesendet",
+      "joinRequestFailed": "Beitrittsanfrage konnte nicht gesendet werden: {{error}}",
+      "user": "Benutzer",
+      "empty": "Keine Mitglieder",
+      "emptyDescription": "Diese Organisation hat noch keine Mitglieder",
+      "viewOnly": "Sie haben nur Lesezugriff. Nur Administratoren können Organisationseinstellungen verwalten.",
+      "addUser": {
+        "title": "Mitglied hinzufügen",
+        "description": "Fügen Sie einen Benutzer zu dieser Organisation per E-Mail hinzu. Er wird sofort ohne Bestätigung hinzugefügt.",
+        "emailLabel": "E-Mail",
+        "emailPlaceholder": "benutzer@beispiel.com",
+        "roleLabel": "Rolle",
+        "emailRequired": "E-Mail ist erforderlich",
+        "button": "Hinzufügen",
+        "success": "Benutzer {{email}} wurde zur Organisation hinzugefügt",
+        "failed": "Benutzer konnte nicht hinzugefügt werden: {{error}}"
+      }
+    },
+    "delete": {
+      "title": "Organisation löschen",
+      "description": "Sind Sie sicher, dass Sie {{name}} löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden."
+    }
+  },
   "dashboard": {
     "kitchenPulse": "Deine Bestellungen",
     "hero": {
@@ -410,7 +521,14 @@
           "timeWindow": "Zeitfenster",
           "opens": "Öffnet",
           "closes": "Schließt (Deadline)",
-          "deadlineHint": "Bestellungen müssen vor dieser Zeit abgesendet werden"
+          "deadlineHint": "Bestellungen müssen vor dieser Zeit abgesendet werden",
+          "organization": "Organisation"
+        },
+        "placeholders": {
+          "selectOrganization": "Organisation auswählen"
+        },
+        "errors": {
+          "organizationRequired": "Bitte wählen Sie eine Organisation für diese Gruppenbestellung aus"
         },
         "quickDeadlines": {
           "morning": "10 Uhr",

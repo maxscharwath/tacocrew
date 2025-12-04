@@ -1,5 +1,8 @@
 import { useTranslation } from 'react-i18next';
 import { useFetcher } from 'react-router';
+import { OrderCardActions } from '@/components/orders/OrderCardActions';
+import { OrderTags } from '@/components/orders/OrderTags';
+import { UserBadge } from '@/components/orders/UserBadge';
 import { Avatar, Card, CardContent, CardHeader } from '@/components/ui';
 import { useOrderPrice } from '@/hooks/useOrderPrice';
 import type { StockResponse } from '@/lib/api';
@@ -9,9 +12,6 @@ import { formatTacoSizeName, TACO_SIZE_CONFIG } from '@/lib/taco-config';
 import { cn } from '@/lib/utils';
 import { convertOrderToUpsertBody } from '@/utils/order-converter';
 import { extractOrderItems } from '@/utils/order-item-extractors';
-import { OrderCardActions } from './OrderCardActions';
-import { OrderTags } from './OrderTags';
-import { UserBadge } from './UserBadge';
 
 /**
  * OrderCard - A presentational component for displaying a single order card
