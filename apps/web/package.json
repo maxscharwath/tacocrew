@@ -1,7 +1,7 @@
 {
   "name": "@tacobot/web",
   "private": true,
-  "version": "0.2512.0",
+  "version": "0.2512.1",
   "type": "module",
   "description": "TacoCrew - Order French tacos together with your team",
   "repository": {

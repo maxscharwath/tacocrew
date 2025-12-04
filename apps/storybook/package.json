@@ -1,6 +1,6 @@
 {
   "name": "@tacobot/storybook",
-  "version": "0.2512.0",
+  "version": "0.2512.1",
   "private": true,
   "scripts": {
     "dev": "storybook dev -p 6006",
