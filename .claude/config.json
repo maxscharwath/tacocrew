@@ -1,0 +1,4 @@
+{
+  "customInstructions": "IMPORTANT: CLAUDE.md is automatically loaded - refer to it for critical rules and workflows.\n\nBefore coding:\n1. IDENTIFY project from file path (apps/api, apps/web, packages/*)\n2. READ relevant guidelines ONLY:\n   • ALWAYS: GUIDELINES.md (universal)\n   • Backend: apps/api/GUIDELINES.md\n   • Frontend: apps/web/GUIDELINES.md\n   • UI-Kit: packages/ui-kit/GUIDELINES.md\n\nYOU MUST:\n- Never use 'any' or 'as' (except 'as const')\n- Never add Claude/Anthropic to commits\n- Always use readonly props\n- Backend: @injectable() + inject() + branded IDs\n- Frontend: ui-kit ONLY (no custom buttons/cards)\n- UI-Kit: JSDoc + Storybook required\n\nUse /review-code before committing.\nUse /clear between unrelated tasks.\nBe explicit in requests for best results.",
+  "mcpServers": {}
+}
