@@ -44,5 +44,5 @@ await esbuild.build({
   outfile: 'dist/index.js',
   packages: 'external',
   plugins: [pathAliasPlugin],
-  sourcemap: true,
+  sourcemap: 'external', // Use external source maps to avoid issues with Vercel
 });
