@@ -43,9 +43,6 @@ coverage/
 .pnp.*
 
 # Generated files
-/src/generated/prisma
-apps/api/src/generated/
-logs/
 .vercel
 .turbo/
 

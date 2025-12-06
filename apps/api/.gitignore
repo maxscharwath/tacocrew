@@ -1,0 +1,8 @@
+# Generated files
+src/generated/
+src/generated/prisma
+
+# Logs
+logs/
+*.log
+

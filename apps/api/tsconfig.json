@@ -6,6 +6,12 @@
     "module": "ESNext",
     "moduleResolution": "Bundler",
 
+    /* Path Mapping */
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+
     /* Emit */
     "noEmit": false,
     "outDir": "./dist",
@@ -40,6 +46,6 @@
     "skipLibCheck": true,
     "types": []
   },
-  "include": ["src/**/*", "api/**/*"],
+  "include": ["src/**/*", "api/**/*", "esbuild.config.ts"],
   "exclude": ["node_modules", "**/*.spec.ts", "**/*.test.ts", "dist"]
 }
