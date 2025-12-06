@@ -6,7 +6,7 @@
 import { createHash } from 'node:crypto';
 import { getTime, isValid } from 'date-fns';
 import sharp from 'sharp';
-import { logger } from './logger.utils';
+import { logger } from '@/shared/utils/logger.utils';
 
 const MAX_IMAGE_SIZE = 512;
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB

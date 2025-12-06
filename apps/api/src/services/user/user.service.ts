@@ -4,27 +4,27 @@
  */
 
 import { injectable } from 'tsyringe';
-import { OrganizationMemberStatus } from '../../generated/client';
-import { PrismaService } from '../../infrastructure/database/prisma.service';
-import { OrganizationRepository } from '../../infrastructure/repositories/organization.repository';
-import { UserRepository } from '../../infrastructure/repositories/user.repository';
-import { UserDeliveryProfileRepository } from '../../infrastructure/repositories/user-delivery-profile.repository';
+import { OrganizationMemberStatus } from '@/generated/client';
+import { PrismaService } from '@/infrastructure/database/prisma.service';
+import { OrganizationRepository } from '@/infrastructure/repositories/organization.repository';
+import { UserRepository } from '@/infrastructure/repositories/user.repository';
+import { UserDeliveryProfileRepository } from '@/infrastructure/repositories/user-delivery-profile.repository';
 import {
   canAcceptOrders,
   createGroupOrderFromDb,
   type GroupOrderId,
-} from '../../schemas/group-order.schema';
-import type { OrderId } from '../../schemas/order.schema';
-import type { User, UserId } from '../../schemas/user.schema';
+} from '@/schemas/group-order.schema';
+import type { OrderId } from '@/schemas/order.schema';
+import type { User, UserId } from '@/schemas/user.schema';
 import {
   type UserDeliveryProfile,
   type UserDeliveryProfileId,
-} from '../../schemas/user-delivery-profile.schema';
-import { NotFoundError } from '../../shared/utils/errors.utils';
-import { buildAvatarUrl, buildOrganizationAvatarUrl } from '../../shared/utils/image.utils';
-import { inject } from '../../shared/utils/inject.utils';
-import { GetPreviousOrdersUseCase, type PreviousOrder } from './get-previous-orders.service';
-import { GetUserOrdersHistoryUseCase } from './get-user-orders-history.service';
+} from '@/schemas/user-delivery-profile.schema';
+import { NotFoundError } from '@/shared/utils/errors.utils';
+import { buildAvatarUrl, buildOrganizationAvatarUrl } from '@/shared/utils/image.utils';
+import { inject } from '@/shared/utils/inject.utils';
+import { GetPreviousOrdersUseCase, type PreviousOrder } from '@/services/user/get-previous-orders.service';
+import { GetUserOrdersHistoryUseCase } from '@/services/user/get-user-orders-history.service';
 
 type DeliveryProfileInput = {
   label?: string | null;

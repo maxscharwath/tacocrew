@@ -4,15 +4,15 @@
  */
 
 import { OrderType, TacoSize } from '@tacobot/gigatacos-client';
-import { CartId } from '../../schemas/cart.schema';
-import { Dessert } from '../../schemas/dessert.schema';
-import { Drink } from '../../schemas/drink.schema';
-import { Extra } from '../../schemas/extra.schema';
-import { GroupOrderId } from '../../schemas/group-order.schema';
-import type { Taco } from '../../schemas/taco.schema';
-import { UserId } from '../../schemas/user.schema';
-import { UserOrderId } from '../../schemas/user-order.schema';
-import { TimeSlot } from '../../shared/types/time-slot';
+import { CartId } from '@/schemas/cart.schema';
+import { Dessert } from '@/schemas/dessert.schema';
+import { Drink } from '@/schemas/drink.schema';
+import { Extra } from '@/schemas/extra.schema';
+import { GroupOrderId } from '@/schemas/group-order.schema';
+import type { Taco } from '@/schemas/taco.schema';
+import { UserId } from '@/schemas/user.schema';
+import { UserOrderId } from '@/schemas/user-order.schema';
+import { TimeSlot } from '@/shared/types/time-slot';
 
 // Re-export enums and config from gigatacos-client for convenience
 // These are external enums used for API communication
@@ -23,26 +23,26 @@ export {
   TacoSize,
   type TacoSizeConfig,
 } from '@tacobot/gigatacos-client';
-export type { CartId } from '../../schemas/cart.schema';
-export type { Dessert, DessertId } from '../../schemas/dessert.schema';
-export { DessertIdSchema } from '../../schemas/dessert.schema';
-export type { Drink, DrinkId } from '../../schemas/drink.schema';
-export { DrinkIdSchema } from '../../schemas/drink.schema';
-export type { Extra, ExtraId, FreeSauce } from '../../schemas/extra.schema';
-export { ExtraIdSchema } from '../../schemas/extra.schema';
-export type { GroupOrderId } from '../../schemas/group-order.schema';
-export type { OrderId } from '../../schemas/order.schema';
-export type { SessionId } from '../../schemas/session.schema';
+export type { CartId } from '@/schemas/cart.schema';
+export type { Dessert, DessertId } from '@/schemas/dessert.schema';
+export { DessertIdSchema } from '@/schemas/dessert.schema';
+export type { Drink, DrinkId } from '@/schemas/drink.schema';
+export { DrinkIdSchema } from '@/schemas/drink.schema';
+export type { Extra, ExtraId, FreeSauce } from '@/schemas/extra.schema';
+export { ExtraIdSchema } from '@/schemas/extra.schema';
+export type { GroupOrderId } from '@/schemas/group-order.schema';
+export type { OrderId } from '@/schemas/order.schema';
+export type { SessionId } from '@/schemas/session.schema';
 export type {
   Garniture,
   Meat,
   Sauce,
   Taco,
-} from '../../schemas/taco.schema';
-export type { UserId } from '../../schemas/user.schema';
-export type { UserOrderId } from '../../schemas/user-order.schema';
-export * from './api';
-export * from './session';
+} from '@/schemas/taco.schema';
+export type { UserId } from '@/schemas/user.schema';
+export type { UserOrderId } from '@/schemas/user-order.schema';
+export * from '@/shared/types/api';
+export * from '@/shared/types/session';
 
 // Meat, Sauce, Garniture, and Taco types are now exported from @/schemas/taco.schema
 

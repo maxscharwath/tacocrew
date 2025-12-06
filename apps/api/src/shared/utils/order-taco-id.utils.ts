@@ -5,7 +5,7 @@
 
 import { createHash } from 'node:crypto';
 import bs58 from 'bs58';
-import type { Taco } from '../../schemas/taco.schema';
+import type { Taco } from '@/schemas/taco.schema';
 
 /**
  * Normalized taco structure for generating tacoId

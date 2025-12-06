@@ -5,21 +5,21 @@
 
 import { createRoute } from '@hono/zod-openapi';
 import { z } from 'zod';
-import { OrganizationMemberStatus, OrganizationRole } from '../../generated/client';
-import { UserRepository } from '../../infrastructure/repositories/user.repository';
-import { OrganizationIdSchema } from '../../schemas/organization.schema';
-import { UserIdSchema } from '../../schemas/user.schema';
-import { OrganizationService } from '../../services/organization/organization.service';
+import { OrganizationMemberStatus, OrganizationRole } from '@/generated/client';
+import { UserRepository } from '@/infrastructure/repositories/user.repository';
+import { OrganizationIdSchema } from '@/schemas/organization.schema';
+import { UserIdSchema } from '@/schemas/user.schema';
+import { OrganizationService } from '@/services/organization/organization.service';
 import {
   buildOrganizationAvatarUrl,
   processAvatarImage,
   processProfileImage,
-} from '../../shared/utils/image.utils';
-import { inject } from '../../shared/utils/inject.utils';
-import { logger } from '../../shared/utils/logger.utils';
-import { jsonContent, OrganizationSchemas } from '../schemas/organization.schemas';
-import { IsoDateStringSchema } from '../schemas/shared.schemas';
-import { authSecurity, createAuthenticatedRouteApp, requireUserId } from '../utils/route.utils';
+} from '@/shared/utils/image.utils';
+import { inject } from '@/shared/utils/inject.utils';
+import { logger } from '@/shared/utils/logger.utils';
+import { jsonContent, OrganizationSchemas } from '@/api/schemas/organization.schemas';
+import { IsoDateStringSchema } from '@/api/schemas/shared.schemas';
+import { authSecurity, createAuthenticatedRouteApp, requireUserId } from '@/api/utils/route.utils';
 
 const app = createAuthenticatedRouteApp();
 

@@ -3,8 +3,8 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import type { StructuredAddress } from '../../shared/types/types';
-import { formatAddressForBackend } from '../../shared/utils/address-formatter.utils';
+import type { StructuredAddress } from '@/shared/types/types';
+import { formatAddressForBackend } from '@/shared/utils/address-formatter.utils';
 
 describe('formatAddressForBackend', () => {
   it('should format address with all fields', () => {

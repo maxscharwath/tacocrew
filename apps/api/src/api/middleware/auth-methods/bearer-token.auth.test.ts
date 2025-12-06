@@ -5,10 +5,10 @@
 import type { Context } from 'hono';
 import { container } from 'tsyringe';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { UserId } from '../../../schemas/user.schema';
-import { AuthService } from '../../../services/auth/auth.service';
-import { UnauthorizedError, ValidationError } from '../../../shared/utils/errors.utils';
-import { bearerTokenAuth } from './bearer-token.auth';
+import type { UserId } from '@/schemas/user.schema';
+import { AuthService } from '@/services/auth/auth.service';
+import { UnauthorizedError, ValidationError } from '@/shared/utils/errors.utils';
+import { bearerTokenAuth } from '@/api/middleware/auth-methods/bearer-token.auth';
 
 describe('bearerTokenAuth', () => {
   let mockContext: Context;

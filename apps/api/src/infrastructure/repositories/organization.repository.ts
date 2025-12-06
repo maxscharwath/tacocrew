@@ -4,16 +4,16 @@
  */
 
 import { injectable } from 'tsyringe';
-import { OrganizationMemberStatus, OrganizationRole } from '../../generated/client';
+import { OrganizationMemberStatus, OrganizationRole } from '@/generated/client';
 import {
   createOrganizationFromDb,
   type Organization,
   type OrganizationId,
-} from '../../schemas/organization.schema';
-import type { UserId } from '../../schemas/user.schema';
-import { inject } from '../../shared/utils/inject.utils';
-import { logger } from '../../shared/utils/logger.utils';
-import { PrismaService } from '../database/prisma.service';
+} from '@/schemas/organization.schema';
+import type { UserId } from '@/schemas/user.schema';
+import { inject } from '@/shared/utils/inject.utils';
+import { logger } from '@/shared/utils/logger.utils';
+import { PrismaService } from '@/infrastructure/database/prisma.service';
 
 export interface MembershipOptions {
   role?: OrganizationRole;

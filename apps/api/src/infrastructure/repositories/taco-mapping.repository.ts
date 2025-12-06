@@ -4,10 +4,10 @@
  */
 
 import { injectable } from 'tsyringe';
-import { CartId } from '../../schemas/cart.schema';
-import { inject } from '../../shared/utils/inject.utils';
-import { logger } from '../../shared/utils/logger.utils';
-import { PrismaService } from '../database/prisma.service';
+import { CartId } from '@/schemas/cart.schema';
+import { inject } from '@/shared/utils/inject.utils';
+import { logger } from '@/shared/utils/logger.utils';
+import { PrismaService } from '@/infrastructure/database/prisma.service';
 
 /**
  * Repository for managing taco UUID to backend index mappings

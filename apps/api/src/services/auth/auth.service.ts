@@ -7,9 +7,9 @@
 import type { Secret, SignOptions } from 'jsonwebtoken';
 import jwt from 'jsonwebtoken';
 import { injectable } from 'tsyringe';
-import type { UserId } from '../../schemas/user.schema';
-import { config } from '../../shared/config/app.config';
-import { ValidationError } from '../../shared/utils/errors.utils';
+import type { UserId } from '@/schemas/user.schema';
+import { config } from '@/shared/config/app.config';
+import { ValidationError } from '@/shared/utils/errors.utils';
 
 /**
  * JWT payload structure

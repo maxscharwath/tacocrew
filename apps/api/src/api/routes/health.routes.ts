@@ -5,7 +5,7 @@
 
 import { createRoute, OpenAPIHono } from '@hono/zod-openapi';
 import { z } from 'zod';
-import { jsonContent } from '../schemas/shared.schemas';
+import { jsonContent } from '@/api/schemas/shared.schemas';
 
 const app = new OpenAPIHono();
 

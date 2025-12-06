@@ -4,15 +4,15 @@
  */
 
 import { injectable } from 'tsyringe';
-import { GroupOrderRepository } from '../../infrastructure/repositories/group-order.repository';
-import { UserOrderRepository } from '../../infrastructure/repositories/user-order.repository';
-import type { UserId } from '../../schemas/user.schema';
-import { isUserOrderEmpty, type UserOrder } from '../../schemas/user-order.schema';
-import { GroupOrderStatus } from '../../shared/types/types';
-import { NotFoundError, ValidationError } from '../../shared/utils/errors.utils';
-import { inject } from '../../shared/utils/inject.utils';
-import { validateItemAvailability } from '../../shared/utils/order-validation.utils';
-import { ResourceService } from '../resource/resource.service';
+import { GroupOrderRepository } from '@/infrastructure/repositories/group-order.repository';
+import { UserOrderRepository } from '@/infrastructure/repositories/user-order.repository';
+import type { UserId } from '@/schemas/user.schema';
+import { isUserOrderEmpty, type UserOrder } from '@/schemas/user-order.schema';
+import { GroupOrderStatus } from '@/shared/types/types';
+import { NotFoundError, ValidationError } from '@/shared/utils/errors.utils';
+import { inject } from '@/shared/utils/inject.utils';
+import { validateItemAvailability } from '@/shared/utils/order-validation.utils';
+import { ResourceService } from '@/services/resource/resource.service';
 
 /**
  * Submit user order use case

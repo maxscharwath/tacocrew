@@ -3,7 +3,7 @@
  * @module utils/route-debugger
  */
 
-import { logger } from './logger.utils';
+import { logger } from '@/shared/utils/logger.utils';
 
 /**
  * Debug routes from manual route definitions

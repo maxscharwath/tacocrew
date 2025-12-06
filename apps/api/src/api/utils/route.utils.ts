@@ -4,9 +4,9 @@
  */
 
 import { OpenAPIHono } from '@hono/zod-openapi';
-import type { UserId } from '../../schemas/user.schema';
-import { UnauthorizedError } from '../../shared/utils/errors.utils';
-import { authMiddleware } from '../middleware/auth.middleware';
+import type { UserId } from '@/schemas/user.schema';
+import { UnauthorizedError } from '@/shared/utils/errors.utils';
+import { authMiddleware } from '@/api/middleware/auth.middleware';
 
 /**
  * Create a new OpenAPIHono app instance

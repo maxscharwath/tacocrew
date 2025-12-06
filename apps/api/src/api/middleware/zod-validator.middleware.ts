@@ -5,7 +5,7 @@
 
 import { MiddlewareHandler } from 'hono';
 import { z } from 'zod';
-import { ValidationError } from '../../shared/utils/errors.utils';
+import { ValidationError } from '@/shared/utils/errors.utils';
 
 /**
  * Validates request body using Zod schema

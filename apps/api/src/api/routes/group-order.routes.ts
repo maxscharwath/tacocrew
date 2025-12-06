@@ -5,32 +5,32 @@
 
 import { createRoute } from '@hono/zod-openapi';
 import { z } from 'zod';
-import { GroupOrderRepository } from '../../infrastructure/repositories/group-order.repository';
+import { GroupOrderRepository } from '@/infrastructure/repositories/group-order.repository';
 import {
   canAcceptOrders,
   canSubmitGroupOrder,
   type GroupOrder,
   GroupOrderIdSchema,
-} from '../../schemas/group-order.schema';
-import { OrganizationIdSchema } from '../../schemas/organization.schema';
-import { UserIdSchema } from '../../schemas/user.schema';
-import type { UserOrder } from '../../schemas/user-order.schema';
-import { CreateGroupOrderUseCase } from '../../services/group-order/create-group-order.service';
-import { DeleteGroupOrderUseCase } from '../../services/group-order/delete-group-order.service';
-import { GetGroupOrderUseCase } from '../../services/group-order/get-group-order.service';
-import { GetGroupOrderWithUserOrdersUseCase } from '../../services/group-order/get-group-order-with-user-orders.service';
-import { UpdateGroupOrderUseCase } from '../../services/group-order/update-group-order.service';
-import { UpdateGroupOrderStatusUseCase } from '../../services/group-order/update-group-order-status.service';
-import { OrganizationService } from '../../services/organization/organization.service';
-import { SessionService } from '../../services/session/session.service';
-import { UserService } from '../../services/user/user.service';
-import { GroupOrderStatus } from '../../shared/types/types';
-import { ForbiddenError, NotFoundError } from '../../shared/utils/errors.utils';
-import { buildAvatarUrl } from '../../shared/utils/image.utils';
-import { inject } from '../../shared/utils/inject.utils';
-import { ErrorResponseSchema, jsonContent } from '../schemas/shared.schemas';
-import { UserOrderItemsSchema } from '../schemas/user-order.schemas';
-import { authSecurity, createAuthenticatedRouteApp, requireUserId } from '../utils/route.utils';
+} from '@/schemas/group-order.schema';
+import { OrganizationIdSchema } from '@/schemas/organization.schema';
+import { UserIdSchema } from '@/schemas/user.schema';
+import type { UserOrder } from '@/schemas/user-order.schema';
+import { CreateGroupOrderUseCase } from '@/services/group-order/create-group-order.service';
+import { DeleteGroupOrderUseCase } from '@/services/group-order/delete-group-order.service';
+import { GetGroupOrderUseCase } from '@/services/group-order/get-group-order.service';
+import { GetGroupOrderWithUserOrdersUseCase } from '@/services/group-order/get-group-order-with-user-orders.service';
+import { UpdateGroupOrderUseCase } from '@/services/group-order/update-group-order.service';
+import { UpdateGroupOrderStatusUseCase } from '@/services/group-order/update-group-order-status.service';
+import { OrganizationService } from '@/services/organization/organization.service';
+import { SessionService } from '@/services/session/session.service';
+import { UserService } from '@/services/user/user.service';
+import { GroupOrderStatus } from '@/shared/types/types';
+import { ForbiddenError, NotFoundError } from '@/shared/utils/errors.utils';
+import { buildAvatarUrl } from '@/shared/utils/image.utils';
+import { inject } from '@/shared/utils/inject.utils';
+import { ErrorResponseSchema, jsonContent } from '@/api/schemas/shared.schemas';
+import { UserOrderItemsSchema } from '@/api/schemas/user-order.schemas';
+import { authSecurity, createAuthenticatedRouteApp, requireUserId } from '@/api/utils/route.utils';
 
 const app = createAuthenticatedRouteApp();
 

@@ -4,8 +4,8 @@
  */
 
 import { z } from 'zod';
-import type { Id } from '../shared/utils/branded-ids.utils';
-import { zId } from '../shared/utils/branded-ids.utils';
+import type { Id } from '@/shared/utils/branded-ids.utils';
+import { zId } from '@/shared/utils/branded-ids.utils';
 
 /**
  * Dessert ID type - branded string

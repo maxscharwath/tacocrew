@@ -1,13 +1,13 @@
 import { injectable } from 'tsyringe';
-import type { UserId } from '../../schemas/user.schema';
+import type { UserId } from '@/schemas/user.schema';
 import {
   createUserDeliveryProfileFromDb,
   type UserDeliveryProfile,
   type UserDeliveryProfileId,
-} from '../../schemas/user-delivery-profile.schema';
-import { inject } from '../../shared/utils/inject.utils';
-import { logger } from '../../shared/utils/logger.utils';
-import { PrismaService } from '../database/prisma.service';
+} from '@/schemas/user-delivery-profile.schema';
+import { inject } from '@/shared/utils/inject.utils';
+import { logger } from '@/shared/utils/logger.utils';
+import { PrismaService } from '@/infrastructure/database/prisma.service';
 
 @injectable()
 export class UserDeliveryProfileRepository {

@@ -5,16 +5,16 @@
 
 import type { Context } from 'hono';
 import { MiddlewareHandler, Next } from 'hono';
-import { UserRepository } from '../../infrastructure/repositories/user.repository';
-import { UnauthorizedError } from '../../shared/utils/errors.utils';
-import { inject } from '../../shared/utils/inject.utils';
-import { logger } from '../../shared/utils/logger.utils';
-import type { AuthMethod, AuthResult } from './auth.types';
-import { bearerTokenAuth } from './auth-methods/bearer-token.auth';
+import { UserRepository } from '@/infrastructure/repositories/user.repository';
+import { UnauthorizedError } from '@/shared/utils/errors.utils';
+import { inject } from '@/shared/utils/inject.utils';
+import { logger } from '@/shared/utils/logger.utils';
+import type { AuthMethod, AuthResult } from '@/api/middleware/auth.types';
+import { bearerTokenAuth } from '@/api/middleware/auth-methods/bearer-token.auth';
 
 // Re-export types and auth methods for convenience
-export type { AuthMethod, AuthResult } from './auth.types';
-export { bearerTokenAuth } from './auth-methods/bearer-token.auth';
+export type { AuthMethod, AuthResult } from '@/api/middleware/auth.types';
+export { bearerTokenAuth } from '@/api/middleware/auth-methods/bearer-token.auth';
 
 /**
  * Store user info in context

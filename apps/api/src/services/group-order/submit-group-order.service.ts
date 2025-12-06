@@ -5,21 +5,21 @@
 
 import { PaymentMethod } from '@tacobot/gigatacos-client';
 import { injectable } from 'tsyringe';
-import { GroupOrderRepository } from '../../infrastructure/repositories/group-order.repository';
-import { UserOrderRepository } from '../../infrastructure/repositories/user-order.repository';
-import { t } from '../../lib/i18n';
-import { canSubmitGroupOrder, type GroupOrderId } from '../../schemas/group-order.schema';
-import { isUserOrderEmpty, type UserOrder } from '../../schemas/user-order.schema';
-import type { Customer, DeliveryInfo, StockAvailability } from '../../shared/types/types';
-import { GroupOrderStatus } from '../../shared/types/types';
-import { NotFoundError, ValidationError } from '../../shared/utils/errors.utils';
-import { inject } from '../../shared/utils/inject.utils';
-import { logger } from '../../shared/utils/logger.utils';
-import { calculateTotalPriceFromUserOrders } from '../../shared/utils/order-price.utils';
-import { validateItemAvailability } from '../../shared/utils/order-validation.utils';
-import { NotificationService } from '../notification/notification.service';
-import { BackendOrderSubmissionService } from '../order/backend-order-submission.service';
-import { ResourceService } from '../resource/resource.service';
+import { GroupOrderRepository } from '@/infrastructure/repositories/group-order.repository';
+import { UserOrderRepository } from '@/infrastructure/repositories/user-order.repository';
+import { t } from '@/lib/i18n';
+import { canSubmitGroupOrder, type GroupOrderId } from '@/schemas/group-order.schema';
+import { isUserOrderEmpty, type UserOrder } from '@/schemas/user-order.schema';
+import type { Customer, DeliveryInfo, StockAvailability } from '@/shared/types/types';
+import { GroupOrderStatus } from '@/shared/types/types';
+import { NotFoundError, ValidationError } from '@/shared/utils/errors.utils';
+import { inject } from '@/shared/utils/inject.utils';
+import { logger } from '@/shared/utils/logger.utils';
+import { calculateTotalPriceFromUserOrders } from '@/shared/utils/order-price.utils';
+import { validateItemAvailability } from '@/shared/utils/order-validation.utils';
+import { NotificationService } from '@/services/notification/notification.service';
+import { BackendOrderSubmissionService } from '@/services/order/backend-order-submission.service';
+import { ResourceService } from '@/services/resource/resource.service';
 
 type SubmissionResult = {
   orderId: string;

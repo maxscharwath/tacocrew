@@ -6,8 +6,8 @@
  */
 
 import { PrismaPg } from '@prisma/adapter-pg';
-import { Prisma, PrismaClient } from '../../generated/client';
-import { logger } from '../../shared/utils/logger.utils';
+import { Prisma, PrismaClient } from '@/generated/client';
+import { logger } from '@/shared/utils/logger.utils';
 
 // Singleton pattern to ensure only one PrismaClient instance exists
 let prismaClient: PrismaClient | null = null;

@@ -4,10 +4,10 @@
  */
 
 import { injectable } from 'tsyringe';
-import { UserOrderRepository } from '../../infrastructure/repositories/user-order.repository';
-import type { UserOrder } from '../../schemas/user-order.schema';
-import { NotFoundError } from '../../shared/utils/errors.utils';
-import { inject } from '../../shared/utils/inject.utils';
+import { UserOrderRepository } from '@/infrastructure/repositories/user-order.repository';
+import type { UserOrder } from '@/schemas/user-order.schema';
+import { NotFoundError } from '@/shared/utils/errors.utils';
+import { inject } from '@/shared/utils/inject.utils';
 
 /**
  * Get user order use case

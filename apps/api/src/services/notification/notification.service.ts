@@ -7,18 +7,18 @@ import { injectable } from 'tsyringe';
 import {
   type NotificationRecord,
   NotificationRepository,
-} from '../../infrastructure/repositories/notification.repository';
-import { UserRepository } from '../../infrastructure/repositories/user.repository';
-import type { UserId } from '../../schemas/user.schema';
-import { inject } from '../../shared/utils/inject.utils';
-import { logger } from '../../shared/utils/logger.utils';
+} from '@/infrastructure/repositories/notification.repository';
+import { UserRepository } from '@/infrastructure/repositories/user.repository';
+import type { UserId } from '@/schemas/user.schema';
+import { inject } from '@/shared/utils/inject.utils';
+import { logger } from '@/shared/utils/logger.utils';
 import {
   type NotificationChannel,
   type NotificationPayload,
   PushNotificationChannel,
-} from './channels';
+} from '@/services/notification/channels';
 
-export type { NotificationPayload } from './channels';
+export type { NotificationPayload } from '@/services/notification/channels';
 
 export interface SendNotificationOptions {
   /** If true, skip storing notification in DB (useful for test notifications) */

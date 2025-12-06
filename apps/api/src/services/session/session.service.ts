@@ -5,13 +5,13 @@
 
 import type { SessionContext } from '@tacobot/gigatacos-client';
 import { injectable } from 'tsyringe';
-import { BackendIntegrationClient } from '../../infrastructure/api/backend-integration.client';
-import { PrismaService } from '../../infrastructure/database/prisma.service';
-import { SessionIdSchema } from '../../schemas/session.schema';
-import { CreateSessionOptions, SessionData, SessionStats } from '../../shared/types/session';
-import { inject } from '../../shared/utils/inject.utils';
-import { logger } from '../../shared/utils/logger.utils';
-import { randomUUID } from '../../shared/utils/uuid.utils';
+import { BackendIntegrationClient } from '@/infrastructure/api/backend-integration.client';
+import { PrismaService } from '@/infrastructure/database/prisma.service';
+import { SessionIdSchema } from '@/schemas/session.schema';
+import { CreateSessionOptions, SessionData, SessionStats } from '@/shared/types/session';
+import { inject } from '@/shared/utils/inject.utils';
+import { logger } from '@/shared/utils/logger.utils';
+import { randomUUID } from '@/shared/utils/uuid.utils';
 
 /**
  * Session Service

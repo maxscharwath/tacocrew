@@ -4,12 +4,12 @@
  */
 
 import { injectable } from 'tsyringe';
-import { GroupOrderRepository } from '../../infrastructure/repositories/group-order.repository';
-import { UserOrderRepository } from '../../infrastructure/repositories/user-order.repository';
-import type { GroupOrder, GroupOrderId } from '../../schemas/group-order.schema';
-import type { UserOrder } from '../../schemas/user-order.schema';
-import { NotFoundError } from '../../shared/utils/errors.utils';
-import { inject } from '../../shared/utils/inject.utils';
+import { GroupOrderRepository } from '@/infrastructure/repositories/group-order.repository';
+import { UserOrderRepository } from '@/infrastructure/repositories/user-order.repository';
+import type { GroupOrder, GroupOrderId } from '@/schemas/group-order.schema';
+import type { UserOrder } from '@/schemas/user-order.schema';
+import { NotFoundError } from '@/shared/utils/errors.utils';
+import { inject } from '@/shared/utils/inject.utils';
 
 /**
  * Get group order with user orders use case

@@ -4,9 +4,9 @@
  */
 
 import i18next from 'i18next';
-import deTranslations from '../locales/de.json';
-import enTranslations from '../locales/en.json';
-import frTranslations from '../locales/fr.json';
+import deTranslations from '@/locales/de.json';
+import enTranslations from '@/locales/en.json';
+import frTranslations from '@/locales/fr.json';
 
 const supportedLngs: readonly string[] = ['en', 'fr', 'de'];
 

@@ -4,11 +4,11 @@
  */
 
 import { z } from 'zod';
-import { UserOrderItems } from '../shared/types/types';
-import type { Id } from '../shared/utils/branded-ids.utils';
-import { zId } from '../shared/utils/branded-ids.utils';
-import type { GroupOrderId } from './group-order.schema';
-import type { UserId } from './user.schema';
+import { UserOrderItems } from '@/shared/types/types';
+import type { Id } from '@/shared/utils/branded-ids.utils';
+import { zId } from '@/shared/utils/branded-ids.utils';
+import type { GroupOrderId } from '@/schemas/group-order.schema';
+import type { UserId } from '@/schemas/user.schema';
 
 /**
  * User Order ID type - branded string

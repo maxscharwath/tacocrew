@@ -5,14 +5,14 @@
 
 import { createRoute } from '@hono/zod-openapi';
 import { z } from 'zod';
-import { NotificationRepository } from '../../infrastructure/repositories/notification.repository';
-import { inject } from '../../shared/utils/inject.utils';
+import { NotificationRepository } from '@/infrastructure/repositories/notification.repository';
+import { inject } from '@/shared/utils/inject.utils';
 import {
   CursorPaginationQuerySchema,
   createPageSchema,
   jsonContent,
-} from '../schemas/shared.schemas';
-import { authSecurity, createAuthenticatedRouteApp, requireUserId } from '../utils/route.utils';
+} from '@/api/schemas/shared.schemas';
+import { authSecurity, createAuthenticatedRouteApp, requireUserId } from '@/api/utils/route.utils';
 
 const app = createAuthenticatedRouteApp();
 

@@ -5,19 +5,19 @@
 
 import { createRoute } from '@hono/zod-openapi';
 import { z } from 'zod';
-import type { User, UserId } from '../../schemas/user.schema';
-import type { UserDeliveryProfile } from '../../schemas/user-delivery-profile.schema';
-import { UserDeliveryProfileIdSchema } from '../../schemas/user-delivery-profile.schema';
-import { UserService } from '../../services/user/user.service';
+import type { User, UserId } from '@/schemas/user.schema';
+import type { UserDeliveryProfile } from '@/schemas/user-delivery-profile.schema';
+import { UserDeliveryProfileIdSchema } from '@/schemas/user-delivery-profile.schema';
+import { UserService } from '@/services/user/user.service';
 import {
   buildAvatarUrl,
   processAvatarImage,
   processProfileImage,
-} from '../../shared/utils/image.utils';
-import { inject } from '../../shared/utils/inject.utils';
-import { logger } from '../../shared/utils/logger.utils';
-import { jsonContent, UserSchemas } from '../schemas/user.schemas';
-import { authSecurity, createAuthenticatedRouteApp, requireUserId } from '../utils/route.utils';
+} from '@/shared/utils/image.utils';
+import { inject } from '@/shared/utils/inject.utils';
+import { logger } from '@/shared/utils/logger.utils';
+import { jsonContent, UserSchemas } from '@/api/schemas/user.schemas';
+import { authSecurity, createAuthenticatedRouteApp, requireUserId } from '@/api/utils/route.utils';
 
 const app = createAuthenticatedRouteApp();
 

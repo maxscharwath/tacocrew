@@ -4,7 +4,7 @@
  */
 
 import { z } from 'zod';
-import type { Brand } from '../utils/branded-ids.utils';
+import type { Brand } from '@/shared/utils/branded-ids.utils';
 
 /**
  * Time slot type - branded string in HH:MM format (e.g., "15:00")

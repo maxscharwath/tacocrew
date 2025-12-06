@@ -5,10 +5,10 @@
 
 import { OrderStatus, OrderType } from '@tacobot/gigatacos-client';
 import { z } from 'zod';
-import type { Id } from '../shared/utils/branded-ids.utils';
-import { zId } from '../shared/utils/branded-ids.utils';
-import type { CartId } from './cart.schema';
-import type { UserId } from './user.schema';
+import type { Id } from '@/shared/utils/branded-ids.utils';
+import { zId } from '@/shared/utils/branded-ids.utils';
+import type { CartId } from '@/schemas/cart.schema';
+import type { UserId } from '@/schemas/user.schema';
 
 /**
  * Order ID type - branded string

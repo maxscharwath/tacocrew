@@ -4,34 +4,34 @@
  */
 
 import { injectable } from 'tsyringe';
-import type { CreateUserOrderRequestDto } from '../../api/schemas/user-order.schemas';
-import { GroupOrderRepository } from '../../infrastructure/repositories/group-order.repository';
-import { UserOrderRepository } from '../../infrastructure/repositories/user-order.repository';
-import { DessertIdSchema } from '../../schemas/dessert.schema';
-import { DrinkIdSchema } from '../../schemas/drink.schema';
-import { ExtraIdSchema } from '../../schemas/extra.schema';
-import { canGroupOrderBeModified, type GroupOrderId } from '../../schemas/group-order.schema';
+import type { CreateUserOrderRequestDto } from '@/api/schemas/user-order.schemas';
+import { GroupOrderRepository } from '@/infrastructure/repositories/group-order.repository';
+import { UserOrderRepository } from '@/infrastructure/repositories/user-order.repository';
+import { DessertIdSchema } from '@/schemas/dessert.schema';
+import { DrinkIdSchema } from '@/schemas/drink.schema';
+import { ExtraIdSchema } from '@/schemas/extra.schema';
+import { canGroupOrderBeModified, type GroupOrderId } from '@/schemas/group-order.schema';
 import {
   GarnitureIdSchema,
   MeatIdSchema,
   SauceIdSchema,
   TacoIdSchema,
-} from '../../schemas/taco.schema';
-import type { UserId } from '../../schemas/user.schema';
-import type { UserOrder } from '../../schemas/user-order.schema';
-import { type StockAvailability, StockCategory, UserOrderItems } from '../../shared/types/types';
-import { NotFoundError, ValidationError } from '../../shared/utils/errors.utils';
-import { inject } from '../../shared/utils/inject.utils';
-import { logger } from '../../shared/utils/logger.utils';
+} from '@/schemas/taco.schema';
+import type { UserId } from '@/schemas/user.schema';
+import type { UserOrder } from '@/schemas/user-order.schema';
+import { type StockAvailability, StockCategory, UserOrderItems } from '@/shared/types/types';
+import { NotFoundError, ValidationError } from '@/shared/utils/errors.utils';
+import { inject } from '@/shared/utils/inject.utils';
+import { logger } from '@/shared/utils/logger.utils';
 import {
   extractTacoIdsHex,
   generateTacoID,
   generateTacoIdHex,
-} from '../../shared/utils/order-taco-id.utils';
-import { validateItemAvailability } from '../../shared/utils/order-validation.utils';
-import { deterministicUUID } from '../../shared/utils/uuid.utils';
-import { ResourceService } from '../resource/resource.service';
-import { UserService } from '../user/user.service';
+} from '@/shared/utils/order-taco-id.utils';
+import { validateItemAvailability } from '@/shared/utils/order-validation.utils';
+import { deterministicUUID } from '@/shared/utils/uuid.utils';
+import { ResourceService } from '@/services/resource/resource.service';
+import { UserService } from '@/services/user/user.service';
 
 /**
  * Create or update user order use case

@@ -4,9 +4,9 @@
  */
 
 import { z } from 'zod';
-import { CartMetadata } from '../shared/types/types';
-import type { Id } from '../shared/utils/branded-ids.utils';
-import { zId } from '../shared/utils/branded-ids.utils';
+import { CartMetadata } from '@/shared/types/types';
+import type { Id } from '@/shared/utils/branded-ids.utils';
+import { zId } from '@/shared/utils/branded-ids.utils';
 
 /**
  * Cart ID type - branded string

@@ -4,7 +4,7 @@
  */
 
 import { Context, Next } from 'hono';
-import { ValidationError } from '../../shared/utils/errors.utils';
+import { ValidationError } from '@/shared/utils/errors.utils';
 
 /**
  * Middleware to validate and extract username from header

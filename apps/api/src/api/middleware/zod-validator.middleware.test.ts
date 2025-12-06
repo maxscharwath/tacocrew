@@ -5,8 +5,8 @@
 import type { Context, HonoRequest } from 'hono';
 import { describe, expect, it, vi } from 'vitest';
 import { z } from 'zod';
-import { ValidationError } from '../../shared/utils/errors.utils';
-import { zodValidator } from './zod-validator.middleware';
+import { ValidationError } from '@/shared/utils/errors.utils';
+import { zodValidator } from '@/api/middleware/zod-validator.middleware';
 
 describe('zodValidator', () => {
   it('should validate request body successfully', async () => {

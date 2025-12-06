@@ -3,7 +3,7 @@
  * @module utils/address-formatter
  */
 
-import type { StructuredAddress } from '../types/types';
+import type { StructuredAddress } from '@/shared/types/types';
 
 /**
  * Format structured address back to string format expected by backend API

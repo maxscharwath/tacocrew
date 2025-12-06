@@ -1,10 +1,10 @@
 import { injectable } from 'tsyringe';
 import { z } from 'zod';
-import { TacoSchema, UserOrderItemsSchema } from '../../api/schemas/user-order.schemas';
-import { PrismaService } from '../../infrastructure/database/prisma.service';
-import type { Taco } from '../../schemas/taco.schema';
-import type { UserId } from '../../schemas/user.schema';
-import { inject } from '../../shared/utils/inject.utils';
+import { TacoSchema, UserOrderItemsSchema } from '@/api/schemas/user-order.schemas';
+import { PrismaService } from '@/infrastructure/database/prisma.service';
+import type { Taco } from '@/schemas/taco.schema';
+import type { UserId } from '@/schemas/user.schema';
+import { inject } from '@/shared/utils/inject.utils';
 
 export interface PreviousOrder {
   tacoID: string; // base58-encoded tacoID

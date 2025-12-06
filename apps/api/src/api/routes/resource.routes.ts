@@ -5,11 +5,11 @@
 
 import { createRoute } from '@hono/zod-openapi';
 import { z } from 'zod';
-import { ResourceService } from '../../services/resource/resource.service';
-import { TacoSize } from '../../shared/types/types';
-import { inject } from '../../shared/utils/inject.utils';
-import { jsonContent } from '../schemas/shared.schemas';
-import { createRouteApp } from '../utils/route.utils';
+import { ResourceService } from '@/services/resource/resource.service';
+import { TacoSize } from '@/shared/types/types';
+import { inject } from '@/shared/utils/inject.utils';
+import { jsonContent } from '@/api/schemas/shared.schemas';
+import { createRouteApp } from '@/api/utils/route.utils';
 
 const app = createRouteApp();
 

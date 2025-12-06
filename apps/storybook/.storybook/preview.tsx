@@ -56,11 +56,10 @@ const preview: Preview = {
       },
     },
     backgrounds: {
-      default: 'dark',
-      values: [
-        { name: 'dark', value: '#0f172a' },
-        { name: 'light', value: '#ffffff' },
-      ],
+      options: {
+        dark: { name: 'dark', value: '#0f172a' },
+        light: { name: 'light', value: '#ffffff' }
+      }
     },
     previewTabs: {
       'storybook/docs/panel': { hidden: true },

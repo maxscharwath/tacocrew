@@ -4,16 +4,16 @@
  */
 
 import { z } from '@hono/zod-openapi';
-import { DessertIdSchema } from '../../schemas/dessert.schema';
-import { DrinkIdSchema } from '../../schemas/drink.schema';
-import { ExtraIdSchema, FreeSauceIdSchema } from '../../schemas/extra.schema';
+import { DessertIdSchema } from '@/schemas/dessert.schema';
+import { DrinkIdSchema } from '@/schemas/drink.schema';
+import { ExtraIdSchema, FreeSauceIdSchema } from '@/schemas/extra.schema';
 import {
   GarnitureIdSchema,
   MeatIdSchema,
   SauceIdSchema,
   TacoIdSchema,
-} from '../../schemas/taco.schema';
-import { TacoSize } from '../../shared/types/types';
+} from '@/schemas/taco.schema';
+import { TacoSize } from '@/shared/types/types';
 
 // Response schemas (full item details for responses)
 export const FreeSauceSchema = z.object({

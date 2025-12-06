@@ -3,8 +3,8 @@
  * @module utils/errors
  */
 
-import { ErrorCode, ErrorCodes } from '../types/types';
-import { randomUUID } from './uuid.utils';
+import { ErrorCode, ErrorCodes } from '@/shared/types/types';
+import { randomUUID } from '@/shared/utils/uuid.utils';
 
 /**
  * Options for creating an ApiError

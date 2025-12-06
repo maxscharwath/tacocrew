@@ -1,8 +1,8 @@
 import { z } from '@hono/zod-openapi';
-import { ErrorResponseSchema, IsoDateStringSchema } from './shared.schemas';
-import { TacoSchema } from './user-order.schemas';
+import { ErrorResponseSchema, IsoDateStringSchema } from '@/api/schemas/shared.schemas';
+import { TacoSchema } from '@/api/schemas/user-order.schemas';
 
-export { jsonContent } from './shared.schemas';
+export { jsonContent } from '@/api/schemas/shared.schemas';
 
 const UserResponseSchema = z.object({
   id: z.string(),

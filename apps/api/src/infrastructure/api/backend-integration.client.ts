@@ -22,11 +22,11 @@ import {
   type TacoFormData,
 } from '@tacobot/gigatacos-client';
 import { injectable } from 'tsyringe';
-import type { SessionId } from '../../schemas/session.schema';
-import { SessionService } from '../../services/session/session.service';
-import { config } from '../../shared/config/app.config';
-import { injectLazy } from '../../shared/utils/inject.utils';
-import { logger } from '../../shared/utils/logger.utils';
+import type { SessionId } from '@/schemas/session.schema';
+import { SessionService } from '@/services/session/session.service';
+import { config } from '@/shared/config/app.config';
+import { injectLazy } from '@/shared/utils/inject.utils';
+import { logger } from '@/shared/utils/logger.utils';
 
 export type { OrderSummary } from '@tacobot/gigatacos-client';
 

@@ -3,7 +3,7 @@
  * @module types/session
  */
 
-import type { SessionId } from '../../schemas/session.schema';
+import type { SessionId } from '@/schemas/session.schema';
 
 /**
  * Session data containing authentication and state

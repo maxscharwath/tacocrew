@@ -1,20 +1,22 @@
+// This file has been automatically migrated to valid ESM format by Storybook.
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { StorybookConfig } from '@storybook/react-vite';
+
+const __filename = fileURLToPath(import.meta.url);
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const uiKitPath = resolve(__dirname, '../../../packages/ui-kit/src');
 
 const config: StorybookConfig = {
   stories: ['../src/**/*.mdx', '../src/**/*.stories.@(js|jsx|ts|tsx)'],
-  addons: ['@storybook/addon-links'],
+  addons: [getAbsolutePath("@storybook/addon-links")],
+
   framework: {
-    name: '@storybook/react-vite',
+    name: getAbsolutePath("@storybook/react-vite"),
     options: {},
   },
-  docs: {
-    autodocs: 'tag',
-  },
+
   viteFinal: async (config) => {
     const { default: tailwindcss } = await import('@tailwindcss/vite');
 
@@ -36,7 +38,11 @@ const config: StorybookConfig = {
     };
 
     return config;
-  },
+  }
 };
 
 export default config;
+
+function getAbsolutePath(value: string): any {
+  return dirname(fileURLToPath(import.meta.resolve(`${value}/package.json`)));
+}

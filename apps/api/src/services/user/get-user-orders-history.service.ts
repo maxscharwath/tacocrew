@@ -4,10 +4,10 @@
  */
 
 import { injectable } from 'tsyringe';
-import { PrismaService } from '../../infrastructure/database/prisma.service';
-import { OrderIdSchema } from '../../schemas/order.schema';
-import { OrderId, UserId } from '../../shared/types/types';
-import { inject } from '../../shared/utils/inject.utils';
+import { PrismaService } from '@/infrastructure/database/prisma.service';
+import { OrderIdSchema } from '@/schemas/order.schema';
+import { OrderId, UserId } from '@/shared/types/types';
+import { inject } from '@/shared/utils/inject.utils';
 
 /**
  * Get user orders history use case

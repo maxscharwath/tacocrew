@@ -4,7 +4,7 @@
  */
 
 import type { Context } from 'hono';
-import type { UserId } from '../../schemas/user.schema';
+import type { UserId } from '@/schemas/user.schema';
 
 /**
  * Result of an authentication attempt

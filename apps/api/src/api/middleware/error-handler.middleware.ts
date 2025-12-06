@@ -5,9 +5,9 @@
 
 import { CsrfError, NetworkError, RateLimitError } from '@tacobot/gigatacos-client';
 import { Context, ErrorHandler } from 'hono';
-import { ErrorCodes } from '../../shared/types/types';
-import { ApiError, CsrfError as AppCsrfError } from '../../shared/utils/errors.utils';
-import { logger } from '../../shared/utils/logger.utils';
+import { ErrorCodes } from '@/shared/types/types';
+import { ApiError, CsrfError as AppCsrfError } from '@/shared/utils/errors.utils';
+import { logger } from '@/shared/utils/logger.utils';
 
 /**
  * Global error handler for Hono

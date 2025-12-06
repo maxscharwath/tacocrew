@@ -4,7 +4,7 @@
  */
 
 import { z } from '@hono/zod-openapi';
-import { OrderType, TacoSize } from '../../shared/types/types';
+import { OrderType, TacoSize } from '@/shared/types/types';
 
 /**
  * Free sauce schema (reusable)

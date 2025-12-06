@@ -4,10 +4,10 @@
  */
 
 import type { Context } from 'hono';
-import { AuthService } from '../../../services/auth/auth.service';
-import { UnauthorizedError } from '../../../shared/utils/errors.utils';
-import { inject } from '../../../shared/utils/inject.utils';
-import type { AuthResult } from '../auth.types';
+import { AuthService } from '@/services/auth/auth.service';
+import { UnauthorizedError } from '@/shared/utils/errors.utils';
+import { inject } from '@/shared/utils/inject.utils';
+import type { AuthResult } from '@/api/middleware/auth.types';
 
 /**
  * Bearer token authentication method

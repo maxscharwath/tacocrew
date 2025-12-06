@@ -23,11 +23,6 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': resolve(__dirname, './src'),
-      '@types': resolve(__dirname, './src/types'),
-      '@services': resolve(__dirname, './src/services'),
-      '@api': resolve(__dirname, './src/api'),
-      '@utils': resolve(__dirname, './src/utils'),
-      '@config': resolve(__dirname, './src/config'),
     },
   },
 });

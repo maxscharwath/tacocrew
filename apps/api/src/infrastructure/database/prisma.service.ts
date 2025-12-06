@@ -4,9 +4,9 @@
  */
 
 import { injectable } from 'tsyringe';
-import { PrismaClient } from '../../generated/client';
-import { logger } from '../../shared/utils/logger.utils';
-import { getPrismaClient } from './prisma.client';
+import { PrismaClient } from '@/generated/client';
+import { getPrismaClient } from '@/infrastructure/database/prisma.client';
+import { logger } from '@/shared/utils/logger.utils';
 
 /**
  * Prisma service wrapper for dependency injection

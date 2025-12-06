@@ -3,7 +3,7 @@
  * @module shared/utils/order-price
  */
 
-import type { UserOrder } from '../../schemas/user-order.schema';
+import type { UserOrder } from '@/schemas/user-order.schema';
 
 /**
  * Calculate the total price of all items across multiple user orders

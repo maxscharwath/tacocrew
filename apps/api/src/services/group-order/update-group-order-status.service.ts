@@ -4,13 +4,13 @@
  */
 
 import { injectable } from 'tsyringe';
-import { GroupOrderRepository } from '../../infrastructure/repositories/group-order.repository';
-import { type GroupOrderId } from '../../schemas/group-order.schema';
-import type { UserId } from '../../schemas/user.schema';
-import { GroupOrderStatus } from '../../shared/types/types';
-import { ForbiddenError, NotFoundError } from '../../shared/utils/errors.utils';
-import { inject } from '../../shared/utils/inject.utils';
-import { logger } from '../../shared/utils/logger.utils';
+import { GroupOrderRepository } from '@/infrastructure/repositories/group-order.repository';
+import { type GroupOrderId } from '@/schemas/group-order.schema';
+import type { UserId } from '@/schemas/user.schema';
+import { GroupOrderStatus } from '@/shared/types/types';
+import { ForbiddenError, NotFoundError } from '@/shared/utils/errors.utils';
+import { inject } from '@/shared/utils/inject.utils';
+import { logger } from '@/shared/utils/logger.utils';
 
 @injectable()
 export class UpdateGroupOrderStatusUseCase {

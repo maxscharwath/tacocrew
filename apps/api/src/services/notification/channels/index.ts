@@ -3,5 +3,5 @@
  * @module services/notification/channels
  */
 
-export * from './notification-channel.interface';
-export * from './push-notification.channel';
+export * from '@/services/notification/channels/notification-channel.interface';
+export * from '@/services/notification/channels/push-notification.channel';

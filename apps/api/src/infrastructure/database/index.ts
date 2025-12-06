@@ -13,5 +13,5 @@ export {
   type PaginationOptions,
   parsePaginationParams,
   processPageResults,
-} from './pagination';
-export { PrismaService } from './prisma.service';
+} from '@/infrastructure/database/pagination';
+export { PrismaService } from '@/infrastructure/database/prisma.service';

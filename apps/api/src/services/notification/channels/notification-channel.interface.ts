@@ -4,7 +4,7 @@
  * @module services/notification/channels
  */
 
-import type { UserId } from '../../../schemas/user.schema';
+import type { UserId } from '@/schemas/user.schema';
 
 export interface NotificationPayload {
   title: string;

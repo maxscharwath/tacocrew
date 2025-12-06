@@ -4,10 +4,10 @@
  */
 
 import { injectable } from 'tsyringe';
-import { GroupOrderRepository } from '../../infrastructure/repositories/group-order.repository';
-import type { GroupOrder, GroupOrderId } from '../../schemas/group-order.schema';
-import { NotFoundError } from '../../shared/utils/errors.utils';
-import { inject } from '../../shared/utils/inject.utils';
+import { GroupOrderRepository } from '@/infrastructure/repositories/group-order.repository';
+import type { GroupOrder, GroupOrderId } from '@/schemas/group-order.schema';
+import { NotFoundError } from '@/shared/utils/errors.utils';
+import { inject } from '@/shared/utils/inject.utils';
 
 /**
  * Get group order use case

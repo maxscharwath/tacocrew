@@ -3,9 +3,9 @@
  * @module shared/utils/order-validation
  */
 
-import type { StockAvailability, UserOrderItems } from '../types/types';
-import { StockCategory } from '../types/types';
-import { ValidationError } from './errors.utils';
+import type { StockAvailability, UserOrderItems } from '@/shared/types/types';
+import { StockCategory } from '@/shared/types/types';
+import { ValidationError } from '@/shared/utils/errors.utils';
 
 /**
  * Check a single item against stock

@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import type { Context } from 'hono';
-import { ErrorCodes } from '../../shared/types/types';
-import { logger } from '../../shared/utils/logger.utils';
+import { ErrorCodes } from '@/shared/types/types';
+import { logger } from '@/shared/utils/logger.utils';
 
 /**
  * Maps Better Auth error codes to our internal error codes with i18n keys

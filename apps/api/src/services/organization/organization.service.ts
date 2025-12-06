@@ -4,19 +4,19 @@
  */
 
 import { injectable } from 'tsyringe';
-import { OrganizationMemberStatus, OrganizationRole } from '../../generated/client';
+import { OrganizationMemberStatus, OrganizationRole } from '@/generated/client';
 import {
   type MembershipOptions,
   OrganizationRepository,
-} from '../../infrastructure/repositories/organization.repository';
-import { UserRepository } from '../../infrastructure/repositories/user.repository';
-import { t } from '../../lib/i18n';
-import type { Organization, OrganizationId } from '../../schemas/organization.schema';
-import type { UserId } from '../../schemas/user.schema';
-import { UserIdSchema } from '../../schemas/user.schema';
-import { inject } from '../../shared/utils/inject.utils';
-import { logger } from '../../shared/utils/logger.utils';
-import { NotificationService } from '../notification/notification.service';
+} from '@/infrastructure/repositories/organization.repository';
+import { UserRepository } from '@/infrastructure/repositories/user.repository';
+import { t } from '@/lib/i18n';
+import type { Organization, OrganizationId } from '@/schemas/organization.schema';
+import type { UserId } from '@/schemas/user.schema';
+import { UserIdSchema } from '@/schemas/user.schema';
+import { inject } from '@/shared/utils/inject.utils';
+import { logger } from '@/shared/utils/logger.utils';
+import { NotificationService } from '@/services/notification/notification.service';
 
 /**
  * Organization service

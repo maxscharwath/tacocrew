@@ -4,12 +4,12 @@
  */
 
 import { injectable } from 'tsyringe';
-import { Prisma } from '../../generated/client';
-import type { UserId } from '../../schemas/user.schema';
-import { inject } from '../../shared/utils/inject.utils';
-import { logger } from '../../shared/utils/logger.utils';
-import { createPage, cursorArgs, normalizeLimit, type Page } from '../database/pagination';
-import { PrismaService } from '../database/prisma.service';
+import { Prisma } from '@/generated/client';
+import type { UserId } from '@/schemas/user.schema';
+import { inject } from '@/shared/utils/inject.utils';
+import { logger } from '@/shared/utils/logger.utils';
+import { createPage, cursorArgs, normalizeLimit, type Page } from '@/infrastructure/database/pagination';
+import { PrismaService } from '@/infrastructure/database/prisma.service';
 
 export interface CreateNotificationData {
   userId: UserId;
