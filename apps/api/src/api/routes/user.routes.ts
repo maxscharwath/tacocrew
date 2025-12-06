@@ -5,6 +5,8 @@
 
 import { createRoute } from '@hono/zod-openapi';
 import { z } from 'zod';
+import { jsonContent, UserSchemas } from '@/api/schemas/user.schemas';
+import { authSecurity, createAuthenticatedRouteApp, requireUserId } from '@/api/utils/route.utils';
 import type { User, UserId } from '@/schemas/user.schema';
 import type { UserDeliveryProfile } from '@/schemas/user-delivery-profile.schema';
 import { UserDeliveryProfileIdSchema } from '@/schemas/user-delivery-profile.schema';
@@ -14,10 +16,9 @@ import {
   processAvatarImage,
   processProfileImage,
 } from '@/shared/utils/image.utils';
+import { Currency } from '@/shared/types/types';
 import { inject } from '@/shared/utils/inject.utils';
 import { logger } from '@/shared/utils/logger.utils';
-import { jsonContent, UserSchemas } from '@/api/schemas/user.schemas';
-import { authSecurity, createAuthenticatedRouteApp, requireUserId } from '@/api/utils/route.utils';
 
 const app = createAuthenticatedRouteApp();
 
@@ -251,7 +252,13 @@ app.openapi(
         tacoID: order.tacoID,
         orderCount: order.orderCount,
         lastOrderedAt: order.lastOrderedAt.toISOString(),
-        taco: order.taco,
+        taco: {
+          ...order.taco,
+          price: {
+            value: order.taco.price ?? 0,
+            currency: Currency.CHF,
+          },
+        },
         recentGroupOrderName: order.recentGroupOrderName ?? null,
       })),
       200

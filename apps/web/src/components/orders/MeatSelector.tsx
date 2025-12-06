@@ -103,9 +103,9 @@ export function MeatSelector({
                         {item.name}
                       </span>
                       <div className="mt-0.5 flex items-center gap-2">
-                        {(item.price ?? 0) > 0 && item.in_stock && (
+                        {item.price && item.price.value > 0 && item.in_stock && (
                           <span className="text-slate-400 text-xs">
-                            {item.price!.toFixed(2)} {currency}
+                            {item.price.value.toFixed(2)} {item.price.currency}
                           </span>
                         )}
                         {item.in_stock === false && (

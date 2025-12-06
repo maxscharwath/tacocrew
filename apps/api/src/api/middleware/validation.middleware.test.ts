@@ -3,8 +3,8 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { OrderType, TacoSize } from '@/shared/types/types';
 import { schemas } from '@/api/middleware/validation.middleware';
+import { OrderType, TacoSize } from '@/shared/types/types';
 
 describe('Validation Schemas', () => {
   describe('addTaco', () => {

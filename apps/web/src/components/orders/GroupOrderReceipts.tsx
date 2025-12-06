@@ -11,11 +11,10 @@ import {
 } from '@/components/orders/ReceiptTicket';
 import { Avatar, Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui';
 import { useLocaleFormatter } from '@/hooks/useLocaleFormatter';
-import { calculateOrderPrice } from '@/hooks/useOrderPrice';
-import type { StockResponse } from '@/lib/api';
 import { OrdersApi } from '@/lib/api';
 import { sendPaymentReminder } from '@/lib/api/notifications';
 import type { GroupOrder, UserOrderSummary } from '@/lib/api/types';
+import { Currency } from '@/lib/api/types';
 import { formatPhoneNumber } from '@/utils/phone-formatter';
 
 type GroupedOrders = {
@@ -53,12 +52,11 @@ function formatTacoDetails(order: UserOrderSummary['items']['tacos'][number]) {
   return details.join(' • ');
 }
 
-function buildReceiptItems(order: UserOrderSummary, stock: StockResponse): ReceiptItem[] {
+function buildReceiptItems(order: UserOrderSummary): ReceiptItem[] {
   const items: ReceiptItem[] = [];
 
   for (const taco of order.items.tacos) {
-    const sizePrice = stock.tacos.find((size) => size.code === taco.size)?.price ?? 0;
-    const subtotal = (sizePrice + taco.price) * (taco.quantity ?? 1);
+    const subtotal = taco.price.value * (taco.quantity ?? 1);
     items.push({
       name: `${taco.size.toUpperCase()} x${taco.quantity ?? 1}`,
       details: formatTacoDetails(taco),
@@ -73,7 +71,7 @@ function buildReceiptItems(order: UserOrderSummary, stock: StockResponse): Recei
       items.push({
         name: `${item.name}${item.quantity > 1 ? ` x${item.quantity}` : ''}`,
         details: '',
-        price: item.price * (item.quantity ?? 1),
+        price: item.price.value * (item.quantity ?? 1),
       });
     }
   };
@@ -101,8 +99,6 @@ function resolveReceiptStatusVariant(receipt: ReceiptViewModel): ReceiptStatusVa
 type GroupOrderReceiptsProps = {
   readonly groupOrder: GroupOrder;
   readonly userOrders: UserOrderSummary[];
-  readonly stock: StockResponse;
-  readonly currency: string;
   readonly isLeader: boolean;
   readonly currentUserId: string;
 };
@@ -110,14 +106,14 @@ type GroupOrderReceiptsProps = {
 export function GroupOrderReceipts({
   groupOrder,
   userOrders,
-  stock,
-  currency,
   isLeader,
   currentUserId,
 }: GroupOrderReceiptsProps) {
   // ALL hooks must be called unconditionally before any early returns
   const { t } = useTranslation();
   const revalidator = useRevalidator();
+  // Get currency from first order, default to CHF
+  const currency = userOrders[0]?.totalPrice.currency ?? Currency.CHF;
   const { formatDate, formatTime } = useLocaleFormatter(currency);
   const [processing, setProcessing] = useState<ProcessingState>(null);
 
@@ -156,11 +152,8 @@ export function GroupOrderReceipts({
   // Build receipt view models (React Compiler will memoize automatically)
   const receipts: ReceiptViewModel[] = canRender
     ? groupedOrders.map((group) => {
-        const items = group.orders.flatMap((order) => buildReceiptItems(order, stock));
-        const subtotal = group.orders.reduce(
-          (sum, order) => sum + calculateOrderPrice(order, stock),
-          0
-        );
+        const items = group.orders.flatMap((order) => buildReceiptItems(order));
+        const subtotal = group.orders.reduce((sum, order) => sum + order.totalPrice.value, 0);
         const reimbursementComplete = group.orders.every((order) => order.reimbursement.settled);
         const isLeaderReceipt = group.userId === groupOrder.leader.id;
         const participantPaid = isLeaderReceipt

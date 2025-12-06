@@ -5,13 +5,13 @@
 
 import { createRoute } from '@hono/zod-openapi';
 import { z } from 'zod';
+import { jsonContent } from '@/api/schemas/shared.schemas';
+import { authSecurity, createAuthenticatedRouteApp, requireUserId } from '@/api/utils/route.utils';
 import { PushSubscriptionRepository } from '@/infrastructure/repositories/push-subscription.repository';
 import { t } from '@/lib/i18n';
 import { NotificationService } from '@/services/notification/notification.service';
 import { inject } from '@/shared/utils/inject.utils';
 import { logger } from '@/shared/utils/logger.utils';
-import { jsonContent } from '@/api/schemas/shared.schemas';
-import { authSecurity, createAuthenticatedRouteApp, requireUserId } from '@/api/utils/route.utils';
 
 const app = createAuthenticatedRouteApp();
 

@@ -1,16 +1,13 @@
 import { injectable } from 'tsyringe';
 import { z } from 'zod';
-import { TacoSchema, UserOrderItemsSchema } from '@/api/schemas/user-order.schemas';
 import { PrismaService } from '@/infrastructure/database/prisma.service';
 import type { Taco } from '@/schemas/taco.schema';
+import { TacoSchema } from '@/schemas/taco.schema';
+import { UserOrderItemsSchema } from '@/schemas/user-order.schema';
 import { NotFoundError } from '@/shared/utils/errors.utils';
 import { inject } from '@/shared/utils/inject.utils';
 import { logger } from '@/shared/utils/logger.utils';
-import {
-  generateTacoID,
-  generateTacoIdHex,
-  tacoIDToHex,
-} from '@/shared/utils/order-taco-id.utils';
+import { generateTacoID, generateTacoIdHex, tacoIDToHex } from '@/shared/utils/order-taco-id.utils';
 
 const TacoWithTacoIdHexSchema = TacoSchema.extend({
   tacoIdHex: z.string().min(1).optional(),

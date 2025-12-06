@@ -10,15 +10,10 @@ import { GroupOrderRepository } from '@/infrastructure/repositories/group-order.
 import { UserOrderRepository } from '@/infrastructure/repositories/user-order.repository';
 import { createGroupOrder } from '@/schemas/group-order.schema';
 import { createUserOrderFromDb } from '@/schemas/user-order.schema';
-import {
-  GroupOrderStatus,
-  StockCategory,
-  TacoSize,
-  UserOrderStatus,
-} from '@/shared/types/types';
-import { deterministicUUID, randomUUID } from '@/shared/utils/uuid.utils';
 import { ResourceService } from '@/services/resource/resource.service';
 import { CreateUserOrderUseCase } from '@/services/user-order/create-user-order.service';
+import { GroupOrderStatus, StockCategory, TacoSize, UserOrderStatus } from '@/shared/types/types';
+import { deterministicUUID, randomUUID } from '@/shared/utils/uuid.utils';
 
 describe('CreateUserOrderUseCase', () => {
   const groupOrderId = randomUUID();

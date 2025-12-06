@@ -19,6 +19,8 @@ import {
 } from '@/schemas/taco.schema';
 import type { UserId } from '@/schemas/user.schema';
 import type { UserOrder } from '@/schemas/user-order.schema';
+import { ResourceService } from '@/services/resource/resource.service';
+import { UserService } from '@/services/user/user.service';
 import { type StockAvailability, StockCategory, UserOrderItems } from '@/shared/types/types';
 import { NotFoundError, ValidationError } from '@/shared/utils/errors.utils';
 import { inject } from '@/shared/utils/inject.utils';
@@ -30,8 +32,6 @@ import {
 } from '@/shared/utils/order-taco-id.utils';
 import { validateItemAvailability } from '@/shared/utils/order-validation.utils';
 import { deterministicUUID } from '@/shared/utils/uuid.utils';
-import { ResourceService } from '@/services/resource/resource.service';
-import { UserService } from '@/services/user/user.service';
 
 /**
  * Create or update user order use case
@@ -168,12 +168,14 @@ export class CreateUserOrderUseCase {
           }
         );
 
-        // Calculate taco price (base price + meat prices)
-        // For now, use sum of meat prices as taco price
-        const price = meats.reduce((sum: number, meat: (typeof meats)[number]) => {
+        // Calculate taco price (base size price + meat prices)
+        const tacoSizeItem = stock.tacos.find((t) => t.code === simpleTaco.size);
+        const baseSizePrice = tacoSizeItem?.price.value ?? 0;
+        const meatPrice = meats.reduce((sum: number, meat: (typeof meats)[number]) => {
           const meatItem = stock[StockCategory.Meats].find((m) => m.id === meat.id);
-          return sum + (meatItem?.price ?? 0) * meat.quantity;
+          return sum + (meatItem?.price?.value ?? 0) * meat.quantity;
         }, 0);
+        const price = baseSizePrice + meatPrice;
 
         const taco = {
           id: TacoIdSchema.parse(
@@ -201,7 +203,7 @@ export class CreateUserOrderUseCase {
           id: ExtraIdSchema.parse(extra.id),
           code: extra.code,
           name: extra.name,
-          price: extra.price,
+          price: extra.price?.value ?? 0,
           quantity: simpleExtra.quantity ?? 1,
         };
       }),
@@ -214,7 +216,7 @@ export class CreateUserOrderUseCase {
           id: DrinkIdSchema.parse(drink.id),
           code: drink.code,
           name: drink.name,
-          price: drink.price,
+          price: drink.price?.value ?? 0,
           quantity: simpleDrink.quantity ?? 1,
         };
       }),
@@ -227,7 +229,7 @@ export class CreateUserOrderUseCase {
           id: DessertIdSchema.parse(dessert.id),
           code: dessert.code,
           name: dessert.name,
-          price: dessert.price,
+          price: dessert.price?.value ?? 0,
           quantity: simpleDessert.quantity ?? 1,
         };
       }),

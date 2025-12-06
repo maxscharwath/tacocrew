@@ -3,6 +3,7 @@ import type { UserOrderSummary } from '@/lib/api/types';
 
 /**
  * Calculate the total price for a single order
+ * @deprecated Use order.totalPrice from API response instead
  */
 export function calculateOrderPrice(order: UserOrderSummary, stock: StockResponse): number {
   const taco = order.items.tacos?.[0];
@@ -14,7 +15,7 @@ export function calculateOrderPrice(order: UserOrderSummary, stock: StockRespons
         return tacoSize ? tacoSize.price * (taco.quantity ?? 1) : 0;
       })()
     : 0;
-  const meatPrices = taco ? taco.price * (taco.quantity ?? 1) : 0;
+  const meatPrices = taco ? taco.price.value * (taco.quantity ?? 1) : 0;
   const tacoTotalPrice = tacoSizeBasePrice + meatPrices;
 
   // Calculate additional items
@@ -24,9 +25,9 @@ export function calculateOrderPrice(order: UserOrderSummary, stock: StockRespons
 
   return (
     tacoTotalPrice +
-    extras.reduce((sum, item) => sum + item.price * (item.quantity ?? 1), 0) +
-    drinks.reduce((sum, item) => sum + item.price * (item.quantity ?? 1), 0) +
-    desserts.reduce((sum, item) => sum + item.price * (item.quantity ?? 1), 0)
+    extras.reduce((sum, item) => sum + item.price.value * (item.quantity ?? 1), 0) +
+    drinks.reduce((sum, item) => sum + item.price.value * (item.quantity ?? 1), 0) +
+    desserts.reduce((sum, item) => sum + item.price.value * (item.quantity ?? 1), 0)
   );
 }
 

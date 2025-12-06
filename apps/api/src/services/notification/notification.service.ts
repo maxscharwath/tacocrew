@@ -10,13 +10,13 @@ import {
 } from '@/infrastructure/repositories/notification.repository';
 import { UserRepository } from '@/infrastructure/repositories/user.repository';
 import type { UserId } from '@/schemas/user.schema';
-import { inject } from '@/shared/utils/inject.utils';
-import { logger } from '@/shared/utils/logger.utils';
 import {
   type NotificationChannel,
   type NotificationPayload,
   PushNotificationChannel,
 } from '@/services/notification/channels';
+import { inject } from '@/shared/utils/inject.utils';
+import { logger } from '@/shared/utils/logger.utils';
 
 export type { NotificationPayload } from '@/services/notification/channels';
 

@@ -20,9 +20,9 @@ import {
 import { OrderDetailSkeleton } from '@/components/skeletons';
 import { Button } from '@/components/ui';
 import { useDeveloperMode } from '@/hooks/useDeveloperMode';
-import { useTotalPrice } from '@/hooks/useOrderPrice';
 import type { UpsertUserOrderBody } from '@/lib/api';
 import { OrdersApi, StockApi } from '@/lib/api';
+import { type Amount, Currency } from '@/lib/api/types';
 import { routes } from '@/lib/routes';
 import type {
   DeleteUserOrderFormData,
@@ -204,10 +204,14 @@ function OrderDetailContent({
     isClosedManually || (isDeveloperMode && isSubmitted)
       ? 'reopen-group-order'
       : 'close-group-order';
-  const currency = t('common.currency.chf');
-
-  // Calculate total price using hook
-  const totalPrice = useTotalPrice(userOrders, stock);
+  // Calculate total price from API response
+  const totalPrice: Amount = userOrders.reduce<Amount>(
+    (acc, order) => ({
+      value: acc.value + order.totalPrice.value,
+      currency: order.totalPrice.currency,
+    }),
+    { value: 0, currency: Currency.CHF }
+  );
 
   return (
     <div className="space-y-8">
@@ -215,7 +219,6 @@ function OrderDetailContent({
         groupOrder={groupOrder}
         userOrders={userOrders}
         totalPrice={totalPrice}
-        currency={currency}
         canAddOrders={canAddOrders}
         canSubmit={canSubmit}
         orderId={params.orderId ?? ''}
@@ -231,8 +234,6 @@ function OrderDetailContent({
         <OrdersList
           userOrders={userOrders}
           groupOrder={groupOrder}
-          stock={stock}
-          currency={currency}
           currentUserId={currentUserId}
           isLeader={isLeader}
           orderId={params.orderId ?? ''}
@@ -259,8 +260,6 @@ function OrderDetailContent({
       <GroupOrderReceipts
         groupOrder={groupOrder}
         userOrders={userOrders}
-        stock={stock}
-        currency={currency}
         isLeader={isLeader}
         currentUserId={currentUserId}
       />

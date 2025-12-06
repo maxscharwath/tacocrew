@@ -4,6 +4,7 @@
  */
 
 import { injectable } from 'tsyringe';
+import { PrismaService } from '@/infrastructure/database/prisma.service';
 import {
   createGroupOrderFromDb,
   type GroupOrder,
@@ -13,7 +14,6 @@ import type { UserId } from '@/schemas/user.schema';
 import { GroupOrderStatus } from '@/shared/types/types';
 import { inject } from '@/shared/utils/inject.utils';
 import { logger } from '@/shared/utils/logger.utils';
-import { PrismaService } from '@/infrastructure/database/prisma.service';
 
 /**
  * Group order repository

@@ -1,6 +1,49 @@
 import { TacoSize } from '@tacobot/gigatacos-client';
 import type { DeliveryType } from '@/components/orders';
 
+/**
+ * Currency namespace with common ISO 4217 currency codes
+ * Use Currency.CHF, Currency.EUR, etc. for type-safe currency access
+ */
+export const Currency = {
+  CHF: 'CHF', // Swiss Franc
+  EUR: 'EUR', // Euro
+  USD: 'USD', // US Dollar
+  GBP: 'GBP', // British Pound
+  JPY: 'JPY', // Japanese Yen
+  CAD: 'CAD', // Canadian Dollar
+  AUD: 'AUD', // Australian Dollar
+  CNY: 'CNY', // Chinese Yuan
+} as const;
+
+/**
+ * Common currency codes from the Currency namespace
+ */
+export type CommonCurrency = (typeof Currency)[keyof typeof Currency];
+
+/**
+ * Currency type that allows common currencies with autocomplete
+ * while also accepting any valid ISO 4217 currency code string
+ */
+export type CurrencyCode = CommonCurrency | (string & {});
+
+/**
+ * Represents a monetary amount with currency
+ */
+export interface Amount {
+  /** The monetary value */
+  readonly value: number;
+  /** The currency code (ISO 4217) */
+  readonly currency: CurrencyCode;
+}
+
+/**
+ * Creates an Amount object
+ */
+export function createAmount(value: number, currency: CurrencyCode = Currency.CHF): Amount {
+  return { value, currency };
+}
+
 export interface LoginRequestBody {
   username: string;
 }
@@ -142,7 +185,7 @@ export interface StockItem {
   id: string;
   code: string;
   name: string;
-  price?: number;
+  price?: Amount;
   in_stock: boolean;
 }
 
@@ -150,7 +193,7 @@ export interface TacoSizeItem {
   id: string;
   code: TacoSize;
   name: string;
-  price: number;
+  price: Amount;
   maxMeats: number;
   maxSauces: number;
   allowGarnitures: boolean;
@@ -223,7 +266,7 @@ export interface MenuItem {
   id: string;
   code: string;
   name: string;
-  price: number;
+  price: Amount;
 }
 
 export interface TacoOrder extends MenuItem {
@@ -273,6 +316,7 @@ export interface UserOrderSummary {
   name?: string | null;
   status: string;
   items: UserOrderItems;
+  totalPrice: Amount;
   reimbursement: ReimbursementStatus;
   participantPayment: ParticipantPaymentStatus;
   createdAt: string;

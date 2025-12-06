@@ -16,7 +16,6 @@ const pathAliasPlugin: esbuild.Plugin = {
 
       // Check if it's a file that exists or try extensions
       const extensions = ['', '.ts', '.tsx', '.js', '.jsx', '/index.ts', '/index.js'];
-      let found = false;
 
       for (const ext of extensions) {
         const pathWithExt = resolvedPath + ext;
@@ -24,7 +23,6 @@ const pathAliasPlugin: esbuild.Plugin = {
           const stats = statSync(pathWithExt);
           if (stats.isFile()) {
             resolvedPath = pathWithExt;
-            found = true;
             break;
           }
         }

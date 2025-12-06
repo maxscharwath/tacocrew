@@ -66,7 +66,7 @@ export function TacoSizeSelector({ sizes, selected, onSelect, currency }: TacoSi
                 <div className="space-y-1 text-center">
                   <span className="block font-semibold text-sm text-white">{tacoSize.name}</span>
                   <span className="block font-medium text-brand-200 text-xs">
-                    {tacoSize.price.toFixed(2)} {currency}
+                    {tacoSize.price.value.toFixed(2)} {tacoSize.price.currency}
                   </span>
                   {config && (
                     <span className="block text-slate-400 text-xs">

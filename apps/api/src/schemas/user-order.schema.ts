@@ -4,11 +4,26 @@
  */
 
 import { z } from 'zod';
+import { DessertSchema } from '@/schemas/dessert.schema';
+import { DrinkSchema } from '@/schemas/drink.schema';
+import { ExtraSchema } from '@/schemas/extra.schema';
+import type { GroupOrderId } from '@/schemas/group-order.schema';
+import { TacoSchema } from '@/schemas/taco.schema';
+import type { UserId } from '@/schemas/user.schema';
 import { UserOrderItems } from '@/shared/types/types';
 import type { Id } from '@/shared/utils/branded-ids.utils';
 import { zId } from '@/shared/utils/branded-ids.utils';
-import type { GroupOrderId } from '@/schemas/group-order.schema';
-import type { UserId } from '@/schemas/user.schema';
+
+/**
+ * Schema for parsing user order items from database
+ * Uses domain schemas with price as number (internal format)
+ */
+export const UserOrderItemsSchema = z.object({
+  tacos: z.array(TacoSchema),
+  extras: z.array(ExtraSchema),
+  drinks: z.array(DrinkSchema),
+  desserts: z.array(DessertSchema),
+});
 
 /**
  * User Order ID type - branded string

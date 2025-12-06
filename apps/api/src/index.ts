@@ -68,6 +68,22 @@ app.use('*', async (c, next) => {
   await next();
 });
 
+// Custom get-session handler - removes image from response to reduce payload size
+app.get('/api/auth/get-session', async (c) => {
+  const session = await auth.api.getSession({ headers: c.req.raw.headers });
+
+  if (!session) {
+    return c.json(null);
+  }
+
+  const { image: _, ...userWithoutImage } = session.user;
+
+  return c.json({
+    session: session.session,
+    user: userWithoutImage,
+  });
+});
+
 // Better Auth handler - mount before other routes
 // Handle all HTTP methods for Better Auth (including OPTIONS for CORS, PUT/DELETE for passkey management, etc.)
 // The wrapBetterAuthErrors middleware transforms Better Auth errors to include i18n keys

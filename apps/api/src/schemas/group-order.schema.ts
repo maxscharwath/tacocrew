@@ -4,10 +4,10 @@
  */
 import { isWithinInterval } from 'date-fns';
 import { z } from 'zod';
+import type { UserId } from '@/schemas/user.schema';
 import { GroupOrderStatus } from '@/shared/types/types';
 import type { Id } from '@/shared/utils/branded-ids.utils';
 import { zId } from '@/shared/utils/branded-ids.utils';
-import type { UserId } from '@/schemas/user.schema';
 
 /**
  * Group Order ID type - branded string

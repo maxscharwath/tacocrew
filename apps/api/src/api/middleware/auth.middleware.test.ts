@@ -4,10 +4,14 @@
 
 import type { Context, Next } from 'hono';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import {
+  authMiddleware,
+  createAuthMiddleware,
+  optionalAuthMiddleware,
+} from '@/api/middleware/auth.middleware';
+import type { AuthMethod } from '@/api/middleware/auth.types';
 import type { UserId } from '@/schemas/user.schema';
 import { UnauthorizedError } from '@/shared/utils/errors.utils';
-import { authMiddleware, createAuthMiddleware, optionalAuthMiddleware } from '@/api/middleware/auth.middleware';
-import type { AuthMethod } from '@/api/middleware/auth.types';
 
 describe('createAuthMiddleware', () => {
   let mockContext: Context;

@@ -5,6 +5,7 @@
 
 import { injectable } from 'tsyringe';
 import { OrganizationMemberStatus, OrganizationRole } from '@/generated/client';
+import { PrismaService } from '@/infrastructure/database/prisma.service';
 import {
   createOrganizationFromDb,
   type Organization,
@@ -13,7 +14,6 @@ import {
 import type { UserId } from '@/schemas/user.schema';
 import { inject } from '@/shared/utils/inject.utils';
 import { logger } from '@/shared/utils/logger.utils';
-import { PrismaService } from '@/infrastructure/database/prisma.service';
 
 export interface MembershipOptions {
   role?: OrganizationRole;

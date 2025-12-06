@@ -4,8 +4,6 @@ import { OrderCardActions } from '@/components/orders/OrderCardActions';
 import { OrderTags } from '@/components/orders/OrderTags';
 import { UserBadge } from '@/components/orders/UserBadge';
 import { Avatar, Card, CardContent, CardHeader } from '@/components/ui';
-import { useOrderPrice } from '@/hooks/useOrderPrice';
-import type { StockResponse } from '@/lib/api';
 import { OrdersApi } from '@/lib/api';
 import type { UserOrderSummary } from '@/lib/api/types';
 import { formatTacoSizeName, TACO_SIZE_CONFIG } from '@/lib/taco-config';
@@ -24,8 +22,6 @@ type OrderCardProps = {
   readonly canDelete: boolean;
   readonly orderId: string;
   readonly isSubmitting: boolean;
-  readonly stock: StockResponse;
-  readonly currency: string;
   readonly onDelete?: (orderId: string) => void;
   readonly onDuplicate?: () => void;
   readonly onOrderChange?: () => void;
@@ -38,8 +34,6 @@ export function OrderCard({
   canDelete,
   orderId,
   isSubmitting,
-  stock,
-  currency,
   onDuplicate,
   onOrderChange,
 }: OrderCardProps) {
@@ -57,8 +51,6 @@ export function OrderCard({
     desserts: dessertsList,
   } = extractOrderItems(order);
 
-  // Calculate price using hook
-  const totalPrice = useOrderPrice(order, stock);
   const itemCount = (taco ? 1 : 0) + extrasList.length + drinksList.length + dessertsList.length;
 
   const handleDuplicate = async () => {
@@ -138,9 +130,11 @@ export function OrderCard({
             {t('orders.detail.list.itemCount', { count: itemCount })}
           </div>
           <div className="text-right">
-            <p className="font-bold text-brand-100 text-xl leading-none">{totalPrice.toFixed(2)}</p>
+            <p className="font-bold text-brand-100 text-xl leading-none">
+              {order.totalPrice.value.toFixed(2)}
+            </p>
             <p className="mt-0.5 font-semibold text-[10px] text-slate-400 uppercase tracking-wide">
-              {currency}
+              {order.totalPrice.currency}
             </p>
           </div>
         </div>

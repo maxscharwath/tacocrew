@@ -20,11 +20,14 @@ import {
   type UserDeliveryProfile,
   type UserDeliveryProfileId,
 } from '@/schemas/user-delivery-profile.schema';
+import {
+  GetPreviousOrdersUseCase,
+  type PreviousOrder,
+} from '@/services/user/get-previous-orders.service';
+import { GetUserOrdersHistoryUseCase } from '@/services/user/get-user-orders-history.service';
 import { NotFoundError } from '@/shared/utils/errors.utils';
 import { buildAvatarUrl, buildOrganizationAvatarUrl } from '@/shared/utils/image.utils';
 import { inject } from '@/shared/utils/inject.utils';
-import { GetPreviousOrdersUseCase, type PreviousOrder } from '@/services/user/get-previous-orders.service';
-import { GetUserOrdersHistoryUseCase } from '@/services/user/get-user-orders-history.service';
 
 type DeliveryProfileInput = {
   label?: string | null;

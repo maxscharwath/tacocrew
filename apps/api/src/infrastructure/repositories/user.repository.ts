@@ -4,10 +4,10 @@
  */
 
 import { injectable } from 'tsyringe';
+import { PrismaService } from '@/infrastructure/database/prisma.service';
 import { createUserFromDb, type User } from '@/schemas/user.schema';
 import { inject } from '@/shared/utils/inject.utils';
 import { logger } from '@/shared/utils/logger.utils';
-import { PrismaService } from '@/infrastructure/database/prisma.service';
 
 /**
  * User repository

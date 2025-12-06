@@ -14,9 +14,9 @@ import { t } from '@/lib/i18n';
 import type { Organization, OrganizationId } from '@/schemas/organization.schema';
 import type { UserId } from '@/schemas/user.schema';
 import { UserIdSchema } from '@/schemas/user.schema';
+import { NotificationService } from '@/services/notification/notification.service';
 import { inject } from '@/shared/utils/inject.utils';
 import { logger } from '@/shared/utils/logger.utils';
-import { NotificationService } from '@/services/notification/notification.service';
 
 /**
  * Organization service

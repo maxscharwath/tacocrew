@@ -4,7 +4,11 @@
  */
 
 import { z } from '@hono/zod-openapi';
-import { ErrorResponseSchema, IsoDateStringSchema, jsonContent } from '@/api/schemas/shared.schemas';
+import {
+  ErrorResponseSchema,
+  IsoDateStringSchema,
+  jsonContent,
+} from '@/api/schemas/shared.schemas';
 
 // Define enums first before they are used
 const OrganizationRoleSchema = z.enum(['ADMIN', 'MEMBER']);

@@ -16,11 +16,11 @@ import { injectable } from 'tsyringe';
 import { BackendIntegrationClient } from '@/infrastructure/api/backend-integration.client';
 import type { SessionId } from '@/schemas/session.schema';
 import type { UserOrder } from '@/schemas/user-order.schema';
+import { SessionService } from '@/services/session/session.service';
 import type { Customer, DeliveryInfo } from '@/shared/types/types';
 import { formatAddressForBackend } from '@/shared/utils/address-formatter.utils';
 import { inject } from '@/shared/utils/inject.utils';
 import { logger } from '@/shared/utils/logger.utils';
-import { SessionService } from '@/services/session/session.service';
 
 /**
  * Backend order submission service

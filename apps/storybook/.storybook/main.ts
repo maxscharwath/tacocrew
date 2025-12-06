@@ -10,10 +10,10 @@ const uiKitPath = resolve(__dirname, '../../../packages/ui-kit/src');
 
 const config: StorybookConfig = {
   stories: ['../src/**/*.mdx', '../src/**/*.stories.@(js|jsx|ts|tsx)'],
-  addons: [getAbsolutePath("@storybook/addon-links")],
+  addons: [getAbsolutePath('@storybook/addon-links')],
 
   framework: {
-    name: getAbsolutePath("@storybook/react-vite"),
+    name: getAbsolutePath('@storybook/react-vite'),
     options: {},
   },
 
@@ -38,7 +38,7 @@ const config: StorybookConfig = {
     };
 
     return config;
-  }
+  },
 };
 
 export default config;

@@ -4,11 +4,11 @@
  */
 
 import type { Context, Next } from 'hono';
+import { requireUserId } from '@/api/utils/route.utils';
 import { OrganizationIdSchema } from '@/schemas/organization.schema';
 import { OrganizationService } from '@/services/organization/organization.service';
 import { ValidationError } from '@/shared/utils/errors.utils';
 import { inject } from '@/shared/utils/inject.utils';
-import { requireUserId } from '@/api/utils/route.utils';
 
 /**
  * Middleware to ensure the user is an admin of the organization

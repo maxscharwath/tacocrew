@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { Badge, Checkbox } from '@/components/ui';
+import type { Amount } from '@/lib/api/types';
 import { cn } from '@/lib/utils';
 
 /**
@@ -7,7 +8,7 @@ import { cn } from '@/lib/utils';
  * @component
  */
 type SelectionGroupProps = {
-  readonly items: Array<{ id: string; name: string; price?: number; in_stock: boolean }>;
+  readonly items: Array<{ id: string; name: string; price?: Amount; in_stock: boolean }>;
   readonly selected: string[];
   readonly onToggle: (id: string) => void;
   readonly disabled?: boolean;
@@ -22,7 +23,6 @@ export function SelectionGroup({
   maxSelections,
 }: SelectionGroupProps) {
   const { t } = useTranslation();
-  const currency = t('common.currency.chf');
   const canSelectMore = maxSelections === undefined || selected.length < maxSelections;
 
   return (
@@ -30,7 +30,8 @@ export function SelectionGroup({
       {items.map((item) => {
         const isSelected = selected.includes(item.id);
         const isDisabled = disabled || !item.in_stock || (!isSelected && !canSelectMore);
-        const price = item.price ?? 0;
+        const priceValue = item.price?.value ?? 0;
+        const currency = item.price?.currency ?? 'CHF';
 
         return (
           <label
@@ -61,9 +62,9 @@ export function SelectionGroup({
                 {item.name}
               </span>
               <div className="mt-0.5 flex items-center gap-2">
-                {price > 0 && item.in_stock && (
+                {priceValue > 0 && item.in_stock && (
                   <span className="text-slate-400 text-xs">
-                    {price.toFixed(2)} {currency}
+                    {priceValue.toFixed(2)} {currency}
                   </span>
                 )}
                 {!item.in_stock && (

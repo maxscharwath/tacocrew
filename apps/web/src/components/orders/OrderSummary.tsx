@@ -138,7 +138,7 @@ export function OrderSummary({
                       )}
                     </div>
                     <p className="shrink-0 font-semibold text-brand-100 text-sm">
-                      {selectedTacoSize.price.toFixed(2)} {currency}
+                      {selectedTacoSize.price.value.toFixed(2)} {selectedTacoSize.price.currency}
                     </p>
                   </div>
                   {note.trim() && (

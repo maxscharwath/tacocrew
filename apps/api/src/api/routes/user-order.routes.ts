@@ -5,6 +5,12 @@
 
 import { createRoute } from '@hono/zod-openapi';
 import { z } from 'zod';
+import { AmountSchema, ErrorResponseSchema, jsonContent } from '@/api/schemas/shared.schemas';
+import {
+  UserOrderItemsRequestSchema,
+  UserOrderItemsSchema,
+} from '@/api/schemas/user-order.schemas';
+import { authSecurity, createAuthenticatedRouteApp, requireUserId } from '@/api/utils/route.utils';
 import { GroupOrderRepository } from '@/infrastructure/repositories/group-order.repository';
 import { GroupOrderIdSchema } from '@/schemas/group-order.schema';
 import { OrganizationIdSchema } from '@/schemas/organization.schema';
@@ -20,12 +26,10 @@ import { GetUserOrderUseCase } from '@/services/user-order/get-user-order.servic
 import { UpdateUserOrderReimbursementStatusUseCase } from '@/services/user-order/update-user-order-reimbursement.service';
 import { UpdateUserOrderUserPaymentStatusUseCase } from '@/services/user-order/update-user-order-user-payment.service';
 import { TimeSlotSchema } from '@/shared/types/time-slot';
-import { OrderType } from '@/shared/types/types';
+import { Currency, OrderType } from '@/shared/types/types';
 import { ForbiddenError, NotFoundError } from '@/shared/utils/errors.utils';
 import { inject } from '@/shared/utils/inject.utils';
-import { ErrorResponseSchema, jsonContent } from '@/api/schemas/shared.schemas';
-import { UserOrderItemsRequestSchema, UserOrderItemsSchema } from '@/api/schemas/user-order.schemas';
-import { authSecurity, createAuthenticatedRouteApp, requireUserId } from '@/api/utils/route.utils';
+import { calculateUserOrderPrice } from '@/shared/utils/order-price.utils';
 
 const app = createAuthenticatedRouteApp();
 
@@ -57,6 +61,7 @@ const UserOrderResponseSchema = z.object({
   name: z.string().nullish(),
   username: z.string().optional(),
   items: UserOrderItemsSchema,
+  totalPrice: AmountSchema,
   reimbursement: ReimbursementStatusResponseSchema,
   participantPayment: ParticipantPaymentStatusResponseSchema,
   createdAt: z.string(),
@@ -71,17 +76,51 @@ const UpdateUserPaidRequestSchema = z.object({
   paid: z.boolean(),
 });
 
-function sanitizeUserOrderItems(items: UserOrder['items']): UserOrder['items'] {
+/**
+ * Convert price number to Amount object
+ */
+function toAmount(price: number) {
+  return { value: price, currency: Currency.CHF };
+}
+
+/**
+ * Sanitize user order items for API response
+ * - Removes internal fields (tacoIdHex)
+ * - Converts price numbers to Amount objects
+ */
+function sanitizeUserOrderItems(items: UserOrder['items']) {
   return {
-    ...items,
     tacos: items.tacos.map((taco) => {
-      const { tacoIdHex, ...rest } = taco as typeof taco & { tacoIdHex?: string };
-      if (tacoIdHex) {
-        // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-        delete (rest as typeof taco & { tacoIdHex?: string }).tacoIdHex;
-      }
-      return rest;
+      const { price, ...rest } = taco;
+      return {
+        ...rest,
+        price: toAmount(price ?? 0),
+      };
     }),
+    extras: items.extras.map((extra) => ({
+      ...extra,
+      price: toAmount(extra.price ?? 0),
+      free_sauce: extra.free_sauce
+        ? {
+            ...extra.free_sauce,
+            price: toAmount(extra.free_sauce.price),
+          }
+        : undefined,
+      free_sauces: extra.free_sauces
+        ? extra.free_sauces.map((sauce) => ({
+            ...sauce,
+            price: toAmount(sauce.price),
+          }))
+        : undefined,
+    })),
+    drinks: items.drinks.map((drink) => ({
+      ...drink,
+      price: toAmount(drink.price ?? 0),
+    })),
+    desserts: items.desserts.map((dessert) => ({
+      ...dessert,
+      price: toAmount(dessert.price ?? 0),
+    })),
   };
 }
 
@@ -93,6 +132,10 @@ function serializeUserOrderResponse(userOrder: UserOrder) {
     name: userOrder.name ?? null,
     username: userOrder.name ?? undefined,
     items: sanitizeUserOrderItems(userOrder.items),
+    totalPrice: {
+      value: calculateUserOrderPrice(userOrder.items),
+      currency: Currency.CHF,
+    },
     reimbursement: {
       settled: userOrder.reimbursement.settled,
       settledAt: userOrder.reimbursement.settledAt?.toISOString() ?? null,

@@ -32,14 +32,14 @@ import { useDateFormat } from '@/hooks/useDateFormat';
 import { OrdersApi, OrganizationApi, UserApi } from '@/lib/api';
 import type { Organization } from '@/lib/api/types';
 import { routes } from '@/lib/routes';
-import {
-  getActiveOrganizations,
-  shouldShowOrganizationSelector,
-} from '@/lib/utils/organization-helpers';
 import { toDate } from '@/lib/utils/date';
 import { defer } from '@/lib/utils/defer';
 import { extractErrorMessage, isMultipleOrganizationsError } from '@/lib/utils/error-helpers';
 import { createDeferredWithAuth, requireSession } from '@/lib/utils/loader-helpers';
+import {
+  getActiveOrganizations,
+  shouldShowOrganizationSelector,
+} from '@/lib/utils/organization-helpers';
 
 type LoaderData = {
   groupOrders: Awaited<ReturnType<typeof UserApi.getGroupOrders>>;

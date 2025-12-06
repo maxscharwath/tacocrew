@@ -1,6 +1,20 @@
 import { z } from '@hono/zod-openapi';
+import { Currency } from '@/shared/types/types';
 
 export const IsoDateStringSchema = z.iso.datetime();
+
+/**
+ * Schema for currency codes (ISO 4217)
+ */
+export const CurrencySchema = z.string().min(3).max(3).describe('ISO 4217 currency code');
+
+/**
+ * Schema for monetary amounts with currency
+ */
+export const AmountSchema = z.object({
+  value: z.number().describe('The monetary value'),
+  currency: CurrencySchema.default(Currency.CHF).describe('ISO 4217 currency code'),
+});
 
 export const IsoDateSchema = IsoDateStringSchema.transform((value: string) => new Date(value));
 

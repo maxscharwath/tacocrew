@@ -26,6 +26,7 @@ import {
 import { useDateFormat } from '@/hooks/useDateFormat';
 import type { GroupOrder, UserOrderSummary } from '@/lib/api';
 import { OrdersApi, resolveImageUrl } from '@/lib/api';
+import type { Amount } from '@/lib/api/types';
 import { routes } from '@/lib/routes';
 import { toDate } from '@/lib/utils/date';
 
@@ -36,8 +37,7 @@ import { toDate } from '@/lib/utils/date';
 type OrderHeroProps = {
   readonly groupOrder: GroupOrder;
   readonly userOrders: UserOrderSummary[];
-  readonly totalPrice: number;
-  readonly currency: string;
+  readonly totalPrice: Amount;
   readonly canAddOrders: boolean;
   readonly canSubmit: boolean;
   readonly orderId: string;
@@ -53,7 +53,6 @@ export function OrderHero({
   groupOrder,
   userOrders,
   totalPrice,
-  currency,
   canAddOrders,
   canSubmit,
   orderId,
@@ -172,7 +171,7 @@ export function OrderHero({
                     {t('orders.detail.hero.total.label')}
                   </p>
                   <p className="mt-1 font-bold text-2xl text-brand-100">
-                    {totalPrice.toFixed(2)} {currency}
+                    {totalPrice.value.toFixed(2)} {totalPrice.currency}
                   </p>
                   <p className="mt-0.5 text-slate-400 text-xs">
                     {t('orders.detail.hero.total.caption')}

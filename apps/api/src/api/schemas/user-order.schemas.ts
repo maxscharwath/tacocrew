@@ -4,6 +4,7 @@
  */
 
 import { z } from '@hono/zod-openapi';
+import { AmountSchema } from '@/api/schemas/shared.schemas';
 import { DessertIdSchema } from '@/schemas/dessert.schema';
 import { DrinkIdSchema } from '@/schemas/drink.schema';
 import { ExtraIdSchema, FreeSauceIdSchema } from '@/schemas/extra.schema';
@@ -20,7 +21,7 @@ export const FreeSauceSchema = z.object({
   id: FreeSauceIdSchema,
   code: z.string(),
   name: z.string(),
-  price: z.number().min(0),
+  price: AmountSchema,
 });
 
 export const MeatSchema = z.object({
@@ -50,7 +51,7 @@ export const TacoSchema = z.object({
   garnitures: z.array(GarnitureSchema),
   note: z.string().optional(),
   quantity: z.number().int().min(1),
-  price: z.number().min(0),
+  price: AmountSchema,
   tacoID: z.string().min(1), // base58-encoded tacoID (Bitcoin-style identifier) - always required
 });
 
@@ -58,7 +59,7 @@ export const ExtraSchema = z.object({
   id: ExtraIdSchema,
   code: z.string(),
   name: z.string(),
-  price: z.number(),
+  price: AmountSchema,
   quantity: z.number().int().min(1),
   free_sauce: FreeSauceSchema.optional(),
   free_sauces: z.array(FreeSauceSchema).optional(),
@@ -68,7 +69,7 @@ export const DrinkSchema = z.object({
   id: DrinkIdSchema,
   code: z.string(),
   name: z.string(),
-  price: z.number(),
+  price: AmountSchema,
   quantity: z.number().int().min(1),
 });
 
@@ -76,7 +77,7 @@ export const DessertSchema = z.object({
   id: DessertIdSchema,
   code: z.string(),
   name: z.string(),
-  price: z.number(),
+  price: AmountSchema,
   quantity: z.number().int().min(1),
 });
 

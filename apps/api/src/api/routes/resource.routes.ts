@@ -5,11 +5,11 @@
 
 import { createRoute } from '@hono/zod-openapi';
 import { z } from 'zod';
+import { AmountSchema, jsonContent } from '@/api/schemas/shared.schemas';
+import { createRouteApp } from '@/api/utils/route.utils';
 import { ResourceService } from '@/services/resource/resource.service';
 import { TacoSize } from '@/shared/types/types';
 import { inject } from '@/shared/utils/inject.utils';
-import { jsonContent } from '@/api/schemas/shared.schemas';
-import { createRouteApp } from '@/api/utils/route.utils';
 
 const app = createRouteApp();
 
@@ -17,7 +17,7 @@ const StockItemSchema = z.object({
   id: z.string(),
   code: z.string(),
   name: z.string(),
-  price: z.number().optional(),
+  price: AmountSchema.optional(),
   in_stock: z.boolean(),
 });
 
@@ -25,7 +25,7 @@ const TacoSizeItemSchema = z.object({
   id: z.string(),
   code: z.enum(TacoSize),
   name: z.string(),
-  price: z.number(),
+  price: AmountSchema,
   maxMeats: z.number(),
   maxSauces: z.number(),
   allowGarnitures: z.boolean(),

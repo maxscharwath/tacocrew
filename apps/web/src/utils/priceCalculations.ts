@@ -12,13 +12,13 @@ export function calculateTacoPrice(
 ): number {
   if (!tacoSize) return 0;
 
-  let total = tacoSize.price;
+  let total = tacoSize.price.value;
 
   // Add meat prices
   for (const meatSelection of meats) {
     const meat = stock.meats.find((m) => m.id === meatSelection.id);
     if (meat?.price) {
-      total += meat.price * meatSelection.quantity;
+      total += meat.price.value * meatSelection.quantity;
     }
   }
 
@@ -34,7 +34,7 @@ export function calculateAdditionalItemsPrice(
 ): number {
   return itemIds.reduce((total, id) => {
     const item = stockItems.find((i) => i.id === id);
-    return total + (item?.price ?? 0);
+    return total + (item?.price?.value ?? 0);
   }, 0);
 }
 
@@ -69,28 +69,28 @@ export function generatePriceBreakdown(
   if (tacoSize) {
     breakdown.push({
       label: tacoSize.name,
-      price: tacoSize.price,
+      price: tacoSize.price.value,
     });
   }
 
   for (const extraId of extras) {
     const extra = stock.extras.find((e) => e.id === extraId);
     if (extra?.price) {
-      breakdown.push({ label: extra.name, price: extra.price });
+      breakdown.push({ label: extra.name, price: extra.price.value });
     }
   }
 
   for (const drinkId of drinks) {
     const drink = stock.drinks.find((d) => d.id === drinkId);
     if (drink?.price) {
-      breakdown.push({ label: drink.name, price: drink.price });
+      breakdown.push({ label: drink.name, price: drink.price.value });
     }
   }
 
   for (const dessertId of desserts) {
     const dessert = stock.desserts.find((d) => d.id === dessertId);
     if (dessert?.price) {
-      breakdown.push({ label: dessert.name, price: dessert.price });
+      breakdown.push({ label: dessert.name, price: dessert.price.value });
     }
   }
 

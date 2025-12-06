@@ -247,7 +247,7 @@ function StockContent({ stock }: Readonly<{ stock: LoaderData['stock'] }>) {
                                 : t(`stock.list.availability.outOfStock`)}
                             </Badge>
                             <span className="font-semibold text-sm text-white">
-                              {typeof item.price === 'number' ? (
+                              {item.price ? (
                                 formatPrice(item.price)
                               ) : (
                                 <span className="font-normal text-slate-400 text-xs">
@@ -274,10 +274,10 @@ function StockContent({ stock }: Readonly<{ stock: LoaderData['stock'] }>) {
   );
 }
 
-function formatPrice(value: number) {
-  return value.toLocaleString(undefined, {
+function formatPrice(amount: { value: number; currency: string }) {
+  return amount.value.toLocaleString(undefined, {
     style: 'currency',
-    currency: 'CHF',
+    currency: amount.currency,
   });
 }
 

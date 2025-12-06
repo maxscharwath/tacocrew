@@ -11,7 +11,6 @@ import {
   CardTitle,
   EmptyState,
 } from '@/components/ui';
-import type { StockResponse } from '@/lib/api';
 import type { GroupOrder, UserOrderSummary } from '@/lib/api/types';
 import { routes } from '@/lib/routes';
 import { getOrderPermissions, useEmptyStateDescription } from '@/utils/order-helpers';
@@ -20,8 +19,6 @@ import { OrderCard } from './OrderCard';
 type OrdersListProps = {
   readonly userOrders: UserOrderSummary[];
   readonly groupOrder: GroupOrder;
-  readonly stock: StockResponse;
-  readonly currency: string;
   readonly currentUserId: string;
   readonly isLeader: boolean;
   readonly orderId: string;
@@ -32,8 +29,6 @@ type OrdersListProps = {
 export function OrdersList({
   userOrders,
   groupOrder,
-  stock,
-  currency,
   currentUserId,
   isLeader,
   orderId,
@@ -78,8 +73,6 @@ export function OrdersList({
                   canDelete={canDelete}
                   orderId={orderId}
                   isSubmitting={isSubmitting}
-                  stock={stock}
-                  currency={currency}
                   onDuplicate={() => {
                     revalidator.revalidate();
                   }}

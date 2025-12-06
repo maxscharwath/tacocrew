@@ -8,14 +8,14 @@ import { injectable } from 'tsyringe';
 import webpush from 'web-push';
 import { PushSubscriptionRepository } from '@/infrastructure/repositories/push-subscription.repository';
 import type { UserId } from '@/schemas/user.schema';
-import { inject } from '@/shared/utils/inject.utils';
-import { logger } from '@/shared/utils/logger.utils';
-import { randomUUID } from '@/shared/utils/uuid.utils';
 import type {
   NotificationChannel,
   NotificationChannelResult,
   NotificationPayload,
 } from '@/services/notification/channels/notification-channel.interface';
+import { inject } from '@/shared/utils/inject.utils';
+import { logger } from '@/shared/utils/logger.utils';
+import { randomUUID } from '@/shared/utils/uuid.utils';
 
 @injectable()
 export class PushNotificationChannel implements NotificationChannel {

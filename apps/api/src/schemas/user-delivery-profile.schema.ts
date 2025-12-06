@@ -2,9 +2,9 @@
  * User delivery profile schema
  */
 import { z } from 'zod';
+import type { UserId } from '@/schemas/user.schema';
 import type { Id } from '@/shared/utils/branded-ids.utils';
 import { zId } from '@/shared/utils/branded-ids.utils';
-import type { UserId } from '@/schemas/user.schema';
 
 export type UserDeliveryProfileId = Id<'UserDeliveryProfile'>;
 

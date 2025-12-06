@@ -12,9 +12,9 @@ import { t } from '@/lib/i18n';
 import type { GroupOrderId } from '@/schemas/group-order.schema';
 import type { UserId } from '@/schemas/user.schema';
 import type { UserOrderId } from '@/schemas/user-order.schema';
+import { NotificationService } from '@/services/notification/notification.service';
 import { NotFoundError, ValidationError } from '@/shared/utils/errors.utils';
 import { inject } from '@/shared/utils/inject.utils';
-import { NotificationService } from '@/services/notification/notification.service';
 
 @injectable()
 export class SendPaymentReminderService {

@@ -5,6 +5,7 @@
 
 import { injectable } from 'tsyringe';
 import { Prisma } from '@/generated/client';
+import { PrismaService } from '@/infrastructure/database/prisma.service';
 import type { GroupOrderId } from '@/schemas/group-order.schema';
 import type { UserId } from '@/schemas/user.schema';
 import { createUserOrderFromDb, type UserOrder } from '@/schemas/user-order.schema';
@@ -12,7 +13,6 @@ import { UserOrderItems } from '@/shared/types/types';
 import { inject } from '@/shared/utils/inject.utils';
 import { logger } from '@/shared/utils/logger.utils';
 import { extractTacoIdsHex } from '@/shared/utils/order-taco-id.utils';
-import { PrismaService } from '@/infrastructure/database/prisma.service';
 
 /**
  * User order repository

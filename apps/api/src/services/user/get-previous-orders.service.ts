@@ -1,8 +1,9 @@
 import { injectable } from 'tsyringe';
 import { z } from 'zod';
-import { TacoSchema, UserOrderItemsSchema } from '@/api/schemas/user-order.schemas';
 import { PrismaService } from '@/infrastructure/database/prisma.service';
 import type { Taco } from '@/schemas/taco.schema';
+import { TacoSchema } from '@/schemas/taco.schema';
+import { UserOrderItemsSchema } from '@/schemas/user-order.schema';
 import type { UserId } from '@/schemas/user.schema';
 import { inject } from '@/shared/utils/inject.utils';
 

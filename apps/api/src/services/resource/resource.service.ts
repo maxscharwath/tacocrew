@@ -6,8 +6,7 @@
 import { TacoSize } from '@tacobot/gigatacos-client';
 import { injectable } from 'tsyringe';
 import { BackendIntegrationClient } from '@/infrastructure/api/backend-integration.client';
-import type { StockAvailability } from '@/shared/types/types';
-import { StockCategory, TACO_SIZE_CONFIG } from '@/shared/types/types';
+import { Currency, StockCategory, TACO_SIZE_CONFIG, createAmount } from '@/shared/types/types';
 import { inject } from '@/shared/utils/inject.utils';
 import { deterministicUUID } from '@/shared/utils/uuid.utils';
 
@@ -18,7 +17,7 @@ import { deterministicUUID } from '@/shared/utils/uuid.utils';
 export class ResourceService {
   private readonly backendClient = inject(BackendIntegrationClient);
 
-  async getStock(): Promise<StockAvailability> {
+  async getStock() {
     // Create new session context for stock request (no existing session needed)
     const sessionContext = await this.backendClient.createNewSession();
     const { csrfToken, cookies } = sessionContext;
@@ -26,54 +25,58 @@ export class ResourceService {
     // Fetch stock from backend
     const backendStock = await this.backendClient.getStock(csrfToken, cookies);
 
-    // Transform dictionaries to arrays with deterministic IDs
+    // Transform dictionaries to arrays with deterministic IDs and convert prices to Amount objects
     return {
       meats: Object.entries(backendStock.viandes || {}).map(([code, info]) => ({
         id: deterministicUUID(code, StockCategory.Meats),
         code,
         name: info.name,
-        price: info.price ?? 0,
+        price: info.price !== undefined ? createAmount(info.price, Currency.CHF) : undefined,
         in_stock: info.in_stock,
       })),
       sauces: Object.entries(backendStock.sauces || {}).map(([code, info]) => ({
         id: deterministicUUID(code, StockCategory.Sauces),
         code,
         name: info.name,
-        price: info.price ?? 0,
+        price: info.price !== undefined ? createAmount(info.price, Currency.CHF) : undefined,
         in_stock: info.in_stock,
       })),
       garnishes: Object.entries(backendStock.garnitures || {}).map(([code, info]) => ({
         id: deterministicUUID(code, StockCategory.Garnishes),
         code,
         name: info.name,
-        price: info.price ?? 0,
+        price: info.price !== undefined ? createAmount(info.price, Currency.CHF) : undefined,
         in_stock: info.in_stock,
       })),
       extras: Object.entries(backendStock.extras || {}).map(([code, info]) => ({
         id: deterministicUUID(code, StockCategory.Extras),
         code,
         name: info.name,
-        price: info.price ?? 0,
+        price: info.price !== undefined ? createAmount(info.price, Currency.CHF) : undefined,
         in_stock: info.in_stock,
       })),
       drinks: Object.entries(backendStock.boissons || {}).map(([code, info]) => ({
         id: deterministicUUID(code, StockCategory.Drinks),
         code,
         name: info.name,
-        price: info.price ?? 0,
+        price: info.price !== undefined ? createAmount(info.price, Currency.CHF) : undefined,
         in_stock: info.in_stock,
       })),
       desserts: Object.entries(backendStock.desserts || {}).map(([code, info]) => ({
         id: deterministicUUID(code, StockCategory.Desserts),
         code,
         name: info.name,
-        price: info.price ?? 0,
+        price: info.price !== undefined ? createAmount(info.price, Currency.CHF) : undefined,
         in_stock: info.in_stock,
       })),
       tacos: Object.entries(TACO_SIZE_CONFIG).map(([code, config]) => ({
         id: deterministicUUID(code, 'tacos'),
         code: code as TacoSize,
-        ...config,
+        name: config.name,
+        price: createAmount(config.price, Currency.CHF),
+        maxMeats: config.maxMeats,
+        maxSauces: config.maxSauces,
+        allowGarnitures: config.allowGarnitures,
       })),
     };
   }

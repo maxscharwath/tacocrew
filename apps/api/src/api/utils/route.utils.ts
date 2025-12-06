@@ -4,9 +4,9 @@
  */
 
 import { OpenAPIHono } from '@hono/zod-openapi';
+import { authMiddleware } from '@/api/middleware/auth.middleware';
 import type { UserId } from '@/schemas/user.schema';
 import { UnauthorizedError } from '@/shared/utils/errors.utils';
-import { authMiddleware } from '@/api/middleware/auth.middleware';
 
 /**
  * Create a new OpenAPIHono app instance
@@ -23,16 +23,6 @@ export function createAuthenticatedRouteApp(): OpenAPIHono {
   app.use('*', authMiddleware);
   return app;
 }
-
-/**
- * Security definition for Bearer token authentication
- */
-export const bearerSecurity = [{ BearerAuth: [] }];
-
-/**
- * Security definition for username header authentication
- */
-export const usernameHeaderSecurity = [{ UsernameHeader: [] }];
 
 /**
  * Security definition allowing either Bearer token or username header
