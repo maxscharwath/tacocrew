@@ -39,10 +39,11 @@ await esbuild.build({
   entryPoints: ['src/index.ts'],
   bundle: true,
   platform: 'node',
-  target: 'esnext',
+  target: 'node20', // Use specific Node.js version instead of esnext
   format: 'esm',
   outfile: 'dist/index.js',
   packages: 'external',
   plugins: [pathAliasPlugin],
   sourcemap: 'external', // Use external source maps to avoid issues with Vercel
+  charset: 'utf8', // Ensure UTF-8 encoding
 });
