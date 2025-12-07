@@ -2,7 +2,7 @@
  * Unit tests for validation schemas
  */
 
-import { describe, expect, it } from 'vitest';
+import { describe, expect, test as it } from 'bun:test';
 import { schemas } from '@/api/middleware/validation.middleware';
 import { OrderType, TacoSize } from '@/shared/types/types';
 

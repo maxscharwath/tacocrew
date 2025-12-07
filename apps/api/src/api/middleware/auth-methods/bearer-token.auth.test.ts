@@ -4,7 +4,7 @@
 
 import type { Context } from 'hono';
 import { container } from 'tsyringe';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, mock, test as it } from 'bun:test';
 import { bearerTokenAuth } from '@/api/middleware/auth-methods/bearer-token.auth';
 import type { UserId } from '@/schemas/user.schema';
 import { AuthService } from '@/services/auth/auth.service';
@@ -24,14 +24,14 @@ describe('bearerTokenAuth', () => {
     // Create mock context
     mockContext = {
       req: {
-        header: vi.fn(),
+        header: mock(),
       },
     } as unknown as Context;
 
     // Create and register mock auth service
     mockAuthService = {
-      generateToken: vi.fn(),
-      verifyToken: vi.fn(),
+      generateToken: mock(),
+      verifyToken: mock(),
     };
     container.registerInstance(AuthService, mockAuthService as unknown as AuthService);
   });

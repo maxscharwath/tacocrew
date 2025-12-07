@@ -2,7 +2,7 @@
  * Unit tests for address formatter utility
  */
 
-import { describe, expect, it } from 'vitest';
+import { describe, expect, test as it } from 'bun:test';
 import type { StructuredAddress } from '@/shared/types/types';
 import { formatAddressForBackend } from '@/shared/utils/address-formatter.utils';
 

@@ -3,7 +3,7 @@
  */
 
 import type { Context, Next } from 'hono';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, mock, test as it } from 'bun:test';
 import {
   authMiddleware,
   createAuthMiddleware,
@@ -21,15 +21,15 @@ describe('createAuthMiddleware', () => {
   beforeEach(() => {
     mockContext = {
       var: {},
-      set: vi.fn(),
+      set: mock(),
     } as unknown as Context;
 
-    mockNext = vi.fn().mockResolvedValue(undefined);
+    mockNext = mock().mockResolvedValue(undefined);
   });
 
   describe('required authentication', () => {
     it('should call next when authentication succeeds', async () => {
-      const authMethod: AuthMethod = vi.fn().mockResolvedValue({
+      const authMethod: AuthMethod = mock().mockResolvedValue({
         success: true,
         userId: mockUserId,
         username: 'testuser',
@@ -46,7 +46,7 @@ describe('createAuthMiddleware', () => {
     });
 
     it('should set slackId in context when provided', async () => {
-      const authMethod: AuthMethod = vi.fn().mockResolvedValue({
+      const authMethod: AuthMethod = mock().mockResolvedValue({
         success: true,
         userId: mockUserId,
         username: 'testuser',
@@ -61,10 +61,10 @@ describe('createAuthMiddleware', () => {
     });
 
     it('should throw UnauthorizedError when all methods fail', async () => {
-      const authMethod1: AuthMethod = vi.fn().mockResolvedValue({
+      const authMethod1: AuthMethod = mock().mockResolvedValue({
         success: false,
       });
-      const authMethod2: AuthMethod = vi.fn().mockResolvedValue({
+      const authMethod2: AuthMethod = mock().mockResolvedValue({
         success: false,
         error: new Error('Method 2 failed'),
       });
@@ -77,7 +77,7 @@ describe('createAuthMiddleware', () => {
 
     it('should include error message in UnauthorizedError', async () => {
       const error = new Error('Test error');
-      const authMethod: AuthMethod = vi.fn().mockResolvedValue({
+      const authMethod: AuthMethod = mock().mockResolvedValue({
         success: false,
         error,
       });
@@ -92,10 +92,10 @@ describe('createAuthMiddleware', () => {
     });
 
     it('should try methods in order until one succeeds', async () => {
-      const failingMethod: AuthMethod = vi.fn().mockResolvedValue({
+      const failingMethod: AuthMethod = mock().mockResolvedValue({
         success: false,
       });
-      const succeedingMethod: AuthMethod = vi.fn().mockResolvedValue({
+      const succeedingMethod: AuthMethod = mock().mockResolvedValue({
         success: true,
         userId: mockUserId,
         username: 'testuser',
@@ -111,12 +111,12 @@ describe('createAuthMiddleware', () => {
     });
 
     it('should stop trying methods after first success', async () => {
-      const firstMethod: AuthMethod = vi.fn().mockResolvedValue({
+      const firstMethod: AuthMethod = mock().mockResolvedValue({
         success: true,
         userId: mockUserId,
         username: 'testuser',
       });
-      const secondMethod: AuthMethod = vi.fn();
+      const secondMethod: AuthMethod = mock();
 
       const middleware = createAuthMiddleware([firstMethod, secondMethod], true);
 
@@ -129,7 +129,7 @@ describe('createAuthMiddleware', () => {
 
   describe('optional authentication', () => {
     it('should call next even when all methods fail', async () => {
-      const authMethod: AuthMethod = vi.fn().mockResolvedValue({
+      const authMethod: AuthMethod = mock().mockResolvedValue({
         success: false,
       });
 
@@ -141,7 +141,7 @@ describe('createAuthMiddleware', () => {
     });
 
     it('should set user context when authentication succeeds', async () => {
-      const authMethod: AuthMethod = vi.fn().mockResolvedValue({
+      const authMethod: AuthMethod = mock().mockResolvedValue({
         success: true,
         userId: mockUserId,
         username: 'testuser',
@@ -157,7 +157,7 @@ describe('createAuthMiddleware', () => {
     });
 
     it('should not set context when authentication fails', async () => {
-      const authMethod: AuthMethod = vi.fn().mockResolvedValue({
+      const authMethod: AuthMethod = mock().mockResolvedValue({
         success: false,
       });
 
@@ -172,7 +172,7 @@ describe('createAuthMiddleware', () => {
 
   describe('context setting', () => {
     it('should only set userId if provided', async () => {
-      const authMethod: AuthMethod = vi.fn().mockResolvedValue({
+      const authMethod: AuthMethod = mock().mockResolvedValue({
         success: true,
         userId: mockUserId,
       });
@@ -187,7 +187,7 @@ describe('createAuthMiddleware', () => {
     });
 
     it('should only set username if provided', async () => {
-      const authMethod: AuthMethod = vi.fn().mockResolvedValue({
+      const authMethod: AuthMethod = mock().mockResolvedValue({
         success: true,
         username: 'testuser',
       });
@@ -201,7 +201,7 @@ describe('createAuthMiddleware', () => {
     });
 
     it('should handle partial user data', async () => {
-      const authMethod: AuthMethod = vi.fn().mockResolvedValue({
+      const authMethod: AuthMethod = mock().mockResolvedValue({
         success: true,
         userId: mockUserId,
         username: 'testuser',
@@ -227,12 +227,12 @@ describe('authMiddleware', () => {
     mockContext = {
       var: {},
       req: {
-        header: vi.fn(),
+        header: mock(),
       },
-      set: vi.fn(),
+      set: mock(),
     } as unknown as Context;
 
-    mockNext = vi.fn().mockResolvedValue(undefined);
+    mockNext = mock().mockResolvedValue(undefined);
   });
 
   it('should be a middleware function', () => {
@@ -255,12 +255,12 @@ describe('optionalAuthMiddleware', () => {
     mockContext = {
       var: {},
       req: {
-        header: vi.fn(),
+        header: mock(),
       },
-      set: vi.fn(),
+      set: mock(),
     } as unknown as Context;
 
-    mockNext = vi.fn().mockResolvedValue(undefined);
+    mockNext = mock().mockResolvedValue(undefined);
   });
 
   it('should be a middleware function', () => {

@@ -31,13 +31,13 @@ Execute these checks in parallel and report results:
 
 ```bash
 # TypeScript compilation check
-pnpm tsc --noEmit
+bun tsc --noEmit
 
 # Biome linting and formatting
-pnpm biome check .
+bun biome check .
 
 # Run tests
-pnpm test
+bun test
 ```
 
 If any checks fail:
@@ -158,7 +158,7 @@ Create a structured report:
 
 1. Fix critical issues before committing
 2. Consider addressing warnings for better code quality
-3. Run `pnpm biome check --write` to auto-fix formatting
+3. Run `bun biome check --write` to auto-fix formatting
 
 ## Next Steps
 

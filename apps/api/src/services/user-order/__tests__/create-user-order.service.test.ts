@@ -4,7 +4,7 @@
 
 import { addHours, subMinutes } from 'date-fns';
 import { container } from 'tsyringe';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, mock, test as it } from 'bun:test';
 import type { CreateUserOrderRequestDto } from '@/api/schemas/user-order.schemas';
 import { GroupOrderRepository } from '@/infrastructure/repositories/group-order.repository';
 import { UserOrderRepository } from '@/infrastructure/repositories/user-order.repository';
@@ -30,15 +30,15 @@ describe('CreateUserOrderUseCase', () => {
   });
 
   const mockGroupOrderRepository = {
-    findById: vi.fn(),
+    findById: mock(),
   };
 
   const mockUserOrderRepository = {
-    upsert: vi.fn(),
+    upsert: mock(),
   };
 
   const mockResourceService = {
-    getStock: vi.fn(),
+    getStock: mock(),
   };
 
   beforeEach(() => {

@@ -15,9 +15,9 @@ Runs all code quality checks in parallel:
 
 ```bash
 # Run these in parallel for speed
-pnpm tsc --noEmit &      # TypeScript check
-pnpm biome check . &     # Linting + formatting
-pnpm test &              # Run tests
+bun tsc --noEmit &      # TypeScript check
+bun biome check . &     # Linting + formatting
+bun test &              # Run tests
 wait
 ```
 
@@ -65,7 +65,7 @@ apps/web/src/components/Button.tsx:23:5
    - Add onClick to ButtonProps type
 
 2. Biome issues:
-   - Run: pnpm biome check --write .
+   - Run: bun biome check --write .
 ```
 
 ## Options
@@ -73,10 +73,10 @@ apps/web/src/components/Button.tsx:23:5
 If user wants to auto-fix issues:
 ```bash
 # Fix biome issues automatically
-pnpm biome check --write .
+bun biome check --write .
 
 # Re-run checks
-pnpm tsc --noEmit && pnpm biome check . && pnpm test
+bun tsc --noEmit && bun biome check . && bun test
 ```
 
 ## When to Use

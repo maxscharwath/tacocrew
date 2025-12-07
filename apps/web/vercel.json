@@ -1,7 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "pnpm turbo build --filter=@tacobot/web",
-  "installCommand": "pnpm install",
+  "buildCommand": "bun install && bun turbo build --filter=@tacobot/web",
   "framework": "vite",
   "outputDirectory": "dist",
   "rewrites": [

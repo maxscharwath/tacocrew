@@ -6,7 +6,7 @@
 
 **Project**: TacoCrew - Monorepo taco ordering app
 **Versioning**: CalVer (0.YYMM.patch)
-**Stack**: React + Hono + Prisma + TypeScript + Tailwind
+**Stack**: React + Hono + Prisma + TypeScript + Tailwind + Bun
 
 ```
 apps/api/          # Backend (Hono + Prisma + DI)
@@ -58,13 +58,13 @@ git commit         → Clean commits (no AI mentions)
 
 ```bash
 # Development
-pnpm dev                    # All apps
-pnpm dev:api / dev:web      # Specific app
+bun dev                    # All apps
+bun dev:api / dev:web      # Specific app
 
 # Quality
-pnpm biome check --write .  # Lint + format
-pnpm tsc --noEmit           # Type check
-pnpm test                   # Tests
+bun biome check --write .  # Lint + format
+bun tsc --noEmit           # Type check
+bun test                   # Tests
 
 # Claude Commands
 /plan                       # Plan implementation

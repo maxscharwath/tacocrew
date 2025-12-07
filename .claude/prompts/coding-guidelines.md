@@ -75,8 +75,8 @@ packages/gigatacos-client/** → API Client
 - [ ] No `any` or `as` (except `as const`)
 - [ ] Type safety maintained
 - [ ] Project guidelines followed
-- [ ] `pnpm tsc --noEmit` passes
-- [ ] `pnpm biome check` passes
+- [ ] `bun tsc --noEmit` passes
+- [ ] `bun biome check` passes
 - [ ] No dead code
 - [ ] DRY applied
 

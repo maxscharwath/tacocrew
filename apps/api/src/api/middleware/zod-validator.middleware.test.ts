@@ -3,7 +3,7 @@
  */
 
 import type { Context, HonoRequest } from 'hono';
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, mock, test as it } from 'bun:test';
 import { z } from 'zod';
 import { zodValidator } from '@/api/middleware/zod-validator.middleware';
 import { ValidationError } from '@/shared/utils/errors.utils';
@@ -19,12 +19,12 @@ describe('zodValidator', () => {
 
     const mockContext = {
       req: {
-        json: vi.fn().mockResolvedValue({ name: 'John', age: 30 }),
+        json: mock().mockResolvedValue({ name: 'John', age: 30 }),
       } as Partial<HonoRequest>,
-      set: vi.fn(),
+      set: mock(),
     } as unknown as Context;
 
-    const next = vi.fn().mockResolvedValue(undefined);
+    const next = mock().mockResolvedValue(undefined);
 
     await validator(mockContext as Context, next);
 
@@ -43,12 +43,12 @@ describe('zodValidator', () => {
 
     const mockContext = {
       req: {
-        json: vi.fn().mockResolvedValue({ name: 'John', age: 'not-a-number' }),
+        json: mock().mockResolvedValue({ name: 'John', age: 'not-a-number' }),
       } as Partial<HonoRequest>,
-      set: vi.fn(),
+      set: mock(),
     } as unknown as Context;
 
-    const next = vi.fn();
+    const next = mock();
 
     await expect(validator(mockContext as Context, next)).rejects.toThrow(ValidationError);
 
@@ -64,12 +64,12 @@ describe('zodValidator', () => {
 
     const mockContext = {
       req: {
-        json: vi.fn().mockRejectedValue(new Error('Empty body')),
+        json: mock().mockRejectedValue(new Error('Empty body')),
       } as Partial<HonoRequest>,
-      set: vi.fn(),
+      set: mock(),
     } as unknown as Context;
 
-    const next = vi.fn().mockResolvedValue(undefined);
+    const next = mock().mockResolvedValue(undefined);
 
     // Should handle the error and still validate (empty object)
     await validator(mockContext as Context, next);
@@ -87,15 +87,15 @@ describe('zodValidator', () => {
 
     const mockContext = {
       req: {
-        json: vi.fn().mockResolvedValue({
+        json: mock().mockResolvedValue({
           email: 'invalid-email',
           password: 'short',
         }),
       } as Partial<HonoRequest>,
-      set: vi.fn(),
+      set: mock(),
     } as unknown as Context;
 
-    const next = vi.fn();
+    const next = mock();
 
     try {
       await validator(mockContext as Context, next);

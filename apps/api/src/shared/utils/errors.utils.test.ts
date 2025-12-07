@@ -2,7 +2,7 @@
  * Unit tests for error classes
  */
 
-import { describe, expect, it } from 'vitest';
+import { describe, expect, test as it } from 'bun:test';
 import { ErrorCodes } from '@/shared/types/types';
 import {
   ApiError,
