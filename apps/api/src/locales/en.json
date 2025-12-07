@@ -58,6 +58,19 @@
           "cannotRemindSelf": "You cannot send a payment reminder to yourself",
           "alreadyPaid": "This user has already marked their order as paid"
         }
+      },
+      "orders": {
+        "reimbursement": {
+          "leaderOnly": "Only the group leader can update reimbursement status"
+        },
+        "modify": {
+          "invalidStatus": "You can only modify your own orders"
+        },
+        "submit": {
+          "invalidStatus": "Cannot submit order. Group order status is invalid",
+          "noUserOrders": "Cannot submit group order. No user orders found",
+          "emptyUserOrder": "Cannot submit group order. One or more user orders are empty"
+        }
       }
     }
   }

@@ -435,4 +435,33 @@ export class OrganizationRepository {
       updatedAt: dbOrganization.updatedAt,
     };
   }
+
+  async update(organizationId: OrganizationId, data: { name: string }): Promise<Organization | null> {
+    try {
+      const dbOrganization = await this.prisma.client.organization.update({
+        where: { id: organizationId },
+        data: { name: data.name },
+      });
+      logger.debug('Organization updated', { id: organizationId });
+      return createOrganizationFromDb(dbOrganization);
+    } catch (error) {
+      if (error && typeof error === 'object' && 'code' in error && error.code === 'P2025') {
+        return null;
+      }
+      logger.error('Failed to update organization', { organizationId, error });
+      return null;
+    }
+  }
+
+  async delete(organizationId: OrganizationId): Promise<void> {
+    try {
+      await this.prisma.client.organization.delete({
+        where: { id: organizationId },
+      });
+      logger.debug('Organization deleted', { id: organizationId });
+    } catch (error) {
+      logger.error('Failed to delete organization', { organizationId, error });
+      throw error;
+    }
+  }
 }

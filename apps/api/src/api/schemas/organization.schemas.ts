@@ -59,6 +59,10 @@ const UpdateUserRoleRequestSchema = z.object({
   role: OrganizationRoleSchema,
 });
 
+const UpdateOrganizationRequestSchema = z.object({
+  name: z.string().min(1).max(200),
+});
+
 export const OrganizationSchemas = {
   OrganizationResponseSchema,
   UserOrganizationResponseSchema,
@@ -68,6 +72,7 @@ export const OrganizationSchemas = {
   OrganizationMemberStatusSchema,
   OrganizationMemberResponseSchema,
   UpdateUserRoleRequestSchema,
+  UpdateOrganizationRequestSchema,
   ErrorResponseSchema,
 };
 

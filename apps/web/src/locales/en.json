@@ -31,8 +31,10 @@
       "garnishes": "Garnishes",
       "extras": "Extras",
       "drinks": "Drinks",
-      "desserts": "Desserts"
+      "desserts": "Desserts",
+      "addMeat": "Add meat"
     },
+    "close": "Close",
     "placeholders": {
       "dropName": "Friday Lunch",
       "specialInstructions": "e.g., No onions, extra spicy, extra sauce on the side..."
@@ -224,9 +226,10 @@
         }
       }
     },
-    "avatar": {
-      "title": "Profile Picture",
-      "description": "Upload a profile picture to personalize your account",
+      "avatar": {
+        "title": "Profile Picture",
+        "description": "Upload a profile picture to personalize your account",
+        "customColor": "Custom color",
       "invalidType": "Invalid file type. Only images are allowed.",
       "fileTooLarge": "File is too large. Maximum size is 5MB.",
       "uploadFailed": "Failed to upload image. Please try again.",
@@ -280,7 +283,11 @@
         "deleteTitle": "Delete Avatar",
         "deleteDescription": "Are you sure you want to delete this organization's avatar?"
       },
-      "created": "Created {{date}}"
+      "created": "Created {{date}}",
+      "rename": "Rename Organization",
+      "delete": "Delete Organization",
+      "deleteTitle": "Delete Organization",
+      "deleteDescription": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone and will remove all members and data associated with this organization."
     },
     "empty": {
       "title": "No organizations",
@@ -294,7 +301,12 @@
       "created": "Organization created successfully",
       "createdWithName": "Organization \"{{name}}\" created successfully",
       "createFailed": "Failed to create organization: {{error}}",
+      "updating": "Updating organization...",
+      "updated": "Organization updated successfully",
+      "updateFailed": "Failed to update organization: {{error}}",
+      "deleting": "Deleting organization...",
       "deleted": "Organization deleted successfully",
+      "deleteFailed": "Failed to delete organization: {{error}}",
       "avatarUploaded": "Avatar uploaded successfully",
       "uploadingAvatar": "Uploading avatar...",
       "avatarUploadFailed": "Failed to upload avatar: {{error}}",
@@ -660,7 +672,8 @@
           "empty": "Add sauces"
         },
         "garnishes": {
-          "selected": "{{count}} selected",
+          "selected_one": "{{count}} selected",
+          "selected_other": "{{count}} selected",
           "empty": "Add garnishes (optional)"
         }
       },
@@ -785,6 +798,8 @@
           "desserts_one": "{{count}} dessert",
           "desserts_other": "{{count}} desserts"
         },
+        "itemCount_one": "{{count}} item",
+        "itemCount_other": "{{count}} items",
         "reimbursement": {
           "reimbursed": "Reimbursed",
           "pending": "Pending reimbursement",
@@ -863,6 +878,7 @@
         "fields": {
           "customerName": "Customer name",
           "customerPhone": "Phone",
+          "paymentMethod": "Payment method",
           "deliveryType": "Delivery type",
           "street": "Street",
           "houseNumber": "Number",
@@ -996,6 +1012,9 @@
       "userId": "User ID",
       "created": "Created",
       "updated": "Updated"
+    },
+    "history": {
+      "backToProfile": "Back to profile"
     },
     "previousOrders": {
       "title": "My Tacos",

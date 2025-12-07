@@ -387,4 +387,33 @@ export class OrganizationService {
   > {
     return this.organizationRepository.getPendingRequests(organizationId);
   }
+
+  async updateOrganization(
+    organizationId: OrganizationId,
+    data: { name: string },
+    adminUserId: UserId
+  ): Promise<Organization> {
+    // Verify admin has permission
+    const isAdmin = await this.isUserAdmin(adminUserId, organizationId);
+    if (!isAdmin) {
+      throw new Error('Only admins can update organizations');
+    }
+
+    const updatedOrganization = await this.organizationRepository.update(organizationId, data);
+    if (!updatedOrganization) {
+      throw new Error(`Organization not found: ${organizationId}`);
+    }
+
+    return updatedOrganization;
+  }
+
+  async deleteOrganization(organizationId: OrganizationId, adminUserId: UserId): Promise<void> {
+    // Verify admin has permission
+    const isAdmin = await this.isUserAdmin(adminUserId, organizationId);
+    if (!isAdmin) {
+      throw new Error('Only admins can delete organizations');
+    }
+
+    await this.organizationRepository.delete(organizationId);
+  }
 }

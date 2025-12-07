@@ -5,6 +5,7 @@
     "ignoreUnknown": false,
     "includes": [
       "apps/**",
+      "scripts/**",
       "*.json",
       "*.ts",
       "*.tsx",
@@ -32,6 +33,7 @@
     "useEditorconfig": true,
     "includes": [
       "apps/**",
+      "scripts/**",
       "*.json",
       "*.config.ts",
       "!biome.json",
@@ -110,7 +112,7 @@
         "noCompareNegZero": "error",
         "noConsole": {
           "level": "warn",
-          "options": { "allow": ["warn", "error", "info"] }
+          "options": { "allow": ["warn", "error", "info", "log"] }
         },
         "noControlCharactersInRegex": "error",
         "noDebugger": "error",
@@ -153,9 +155,10 @@
         }
       }
     },
-    "includes": ["apps/**/src/**/*.ts", "apps/**/src/**/*.tsx"]
+    "includes": ["apps/**/src/**/*.ts", "apps/**/src/**/*.tsx", "scripts/**/*.ts"]
   },
   "javascript": {
+    "globals": ["Bun"],
     "formatter": {
       "jsxQuoteStyle": "double",
       "quoteProperties": "asNeeded",
@@ -180,6 +183,22 @@
     }
   },
   "overrides": [
+    {
+      "includes": ["scripts/**/*.ts"],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noConsole": "off"
+          },
+          "correctness": {
+            "noUndeclaredVariables": "off"
+          }
+        }
+      },
+      "javascript": {
+        "globals": ["Bun"]
+      }
+    },
     {
       "includes": ["*.ts", "*.tsx", "*.mts", "*.cts"],
       "linter": {

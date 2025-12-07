@@ -31,8 +31,10 @@
       "garnishes": "Beilagen",
       "extras": "Extras",
       "drinks": "Getränke",
-      "desserts": "Desserts"
+      "desserts": "Desserts",
+      "addMeat": "Fleisch hinzufügen"
     },
+    "close": "Schließen",
     "placeholders": {
       "dropName": "Freitag Mittagessen",
       "specialInstructions": "z.B. Keine Zwiebeln, extra scharf, Soße extra..."
@@ -224,9 +226,10 @@
         }
       }
     },
-    "avatar": {
-      "title": "Profilbild",
-      "description": "Lade ein Profilbild hoch, um dein Konto zu personalisieren",
+      "avatar": {
+        "title": "Profilbild",
+        "description": "Lade ein Profilbild hoch, um dein Konto zu personalisieren",
+        "customColor": "Benutzerdefinierte Farbe",
       "invalidType": "Ungültiger Dateityp. Es sind nur Bilder erlaubt.",
       "fileTooLarge": "Datei ist zu groß. Maximal 5 MB.",
       "uploadFailed": "Bild konnte nicht hochgeladen werden. Bitte versuche es erneut.",
@@ -280,7 +283,11 @@
         "deleteTitle": "Avatar löschen",
         "deleteDescription": "Sind Sie sicher, dass Sie den Avatar dieser Organisation löschen möchten?"
       },
-      "created": "Erstellt am {{date}}"
+      "created": "Erstellt am {{date}}",
+      "rename": "Organisation umbenennen",
+      "delete": "Organisation löschen",
+      "deleteTitle": "Organisation löschen",
+      "deleteDescription": "Sind Sie sicher, dass Sie \"{{name}}\" löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden und entfernt alle Mitglieder und Daten, die mit dieser Organisation verbunden sind."
     },
     "empty": {
       "title": "Keine Organisationen",
@@ -290,10 +297,22 @@
       "selectDescription": "Wählen Sie eine Organisation aus der Liste aus, um Details anzuzeigen und zu verwalten."
     },
     "messages": {
+      "creating": "Organisation wird erstellt...",
       "created": "Organisation erfolgreich erstellt",
+      "createdWithName": "Organisation \"{{name}}\" erfolgreich erstellt",
+      "createFailed": "Fehler beim Erstellen der Organisation: {{error}}",
+      "updating": "Organisation wird aktualisiert...",
+      "updated": "Organisation erfolgreich aktualisiert",
+      "updateFailed": "Fehler beim Aktualisieren der Organisation: {{error}}",
+      "deleting": "Organisation wird gelöscht...",
       "deleted": "Organisation erfolgreich gelöscht",
+      "deleteFailed": "Fehler beim Löschen der Organisation: {{error}}",
       "avatarUploaded": "Avatar erfolgreich hochgeladen",
+      "uploadingAvatar": "Avatar wird hochgeladen...",
+      "avatarUploadFailed": "Fehler beim Hochladen des Avatars: {{error}}",
       "avatarDeleted": "Avatar erfolgreich gelöscht",
+      "deletingAvatar": "Avatar wird gelöscht...",
+      "avatarDeleteFailed": "Fehler beim Löschen des Avatars: {{error}}",
       "missingName": "Organisationsname ist erforderlich",
       "missingEmail": "Benutzer-E-Mail ist erforderlich",
       "userLookupNotImplemented": "Benutzersuche per E-Mail ist noch nicht implementiert",
@@ -642,7 +661,8 @@
           "empty": "Soßen hinzufügen"
         },
         "garnishes": {
-          "selected": "{{count}} ausgewählt",
+          "selected_one": "{{count}} ausgewählt",
+          "selected_other": "{{count}} ausgewählt",
           "empty": "Beilagen hinzufügen (optional)"
         }
       },
@@ -839,6 +859,7 @@
         "fields": {
           "customerName": "Kundenname",
           "customerPhone": "Telefon",
+          "paymentMethod": "Zahlungsmethode",
           "deliveryType": "Lieferart",
           "street": "Straße",
           "houseNumber": "Nummer",
@@ -976,6 +997,9 @@
       "userId": "Benutzer-ID",
       "created": "Erstellt",
       "updated": "Aktualisiert"
+    },
+    "history": {
+      "backToProfile": "Zurück zum Profil"
     },
     "previousOrders": {
       "title": "Meine Tacos",

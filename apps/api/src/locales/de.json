@@ -58,6 +58,19 @@
           "cannotRemindSelf": "Du kannst dir keine Zahlungserinnerung senden",
           "alreadyPaid": "Dieser Benutzer hat seine Bestellung bereits als bezahlt markiert"
         }
+      },
+      "orders": {
+        "reimbursement": {
+          "leaderOnly": "Nur der Gruppenleiter kann den Rückerstattungsstatus aktualisieren"
+        },
+        "modify": {
+          "invalidStatus": "Sie können nur Ihre eigenen Bestellungen ändern"
+        },
+        "submit": {
+          "invalidStatus": "Bestellung kann nicht übermittelt werden. Der Status der Gruppenbestellung ist ungültig",
+          "noUserOrders": "Gruppenbestellung kann nicht übermittelt werden. Keine Benutzerbestellungen gefunden",
+          "emptyUserOrder": "Gruppenbestellung kann nicht übermittelt werden. Eine oder mehrere Benutzerbestellungen sind leer"
+        }
       }
     }
   }

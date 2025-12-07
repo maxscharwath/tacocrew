@@ -58,6 +58,19 @@
           "cannotRemindSelf": "Vous ne pouvez pas vous envoyer un rappel de paiement",
           "alreadyPaid": "Cet utilisateur a déjà marqué sa commande comme payée"
         }
+      },
+      "orders": {
+        "reimbursement": {
+          "leaderOnly": "Seul le responsable du groupe peut mettre à jour le statut de remboursement"
+        },
+        "modify": {
+          "invalidStatus": "Vous ne pouvez modifier que vos propres commandes"
+        },
+        "submit": {
+          "invalidStatus": "Impossible de soumettre la commande. Le statut de la commande groupée est invalide",
+          "noUserOrders": "Impossible de soumettre la commande groupée. Aucune commande utilisateur trouvée",
+          "emptyUserOrder": "Impossible de soumettre la commande groupée. Une ou plusieurs commandes utilisateur sont vides"
+        }
       }
     }
   }

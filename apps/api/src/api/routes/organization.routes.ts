@@ -186,6 +186,104 @@ app.openapi(
   }
 );
 
+// PATCH /organizations/{id} - Update organization (admin)
+app.openapi(
+  createRoute({
+    method: 'patch',
+    path: '/organizations/{id}',
+    tags: ['Organization'],
+    security: authSecurity,
+    request: {
+      params: z.object({
+        id: z.uuid(),
+      }),
+      body: {
+        content: jsonContent(OrganizationSchemas.UpdateOrganizationRequestSchema),
+      },
+    },
+    responses: {
+      200: {
+        description: 'Organization updated',
+        content: jsonContent(OrganizationSchemas.OrganizationResponseSchema),
+      },
+      400: {
+        description: 'Invalid request',
+        content: jsonContent(OrganizationSchemas.ErrorResponseSchema),
+      },
+      401: {
+        description: 'Unauthorized',
+        content: jsonContent(OrganizationSchemas.ErrorResponseSchema),
+      },
+      403: {
+        description: 'Forbidden',
+        content: jsonContent(OrganizationSchemas.ErrorResponseSchema),
+      },
+      404: {
+        description: 'Organization not found',
+        content: jsonContent(OrganizationSchemas.ErrorResponseSchema),
+      },
+    },
+  }),
+  async (c) => {
+    const userId = c.var.user.id;
+    const { id } = c.req.valid('param');
+    const payload = c.req.valid('json');
+    const organizationId = OrganizationIdSchema.parse(id);
+    const organizationService = inject(OrganizationService);
+    const organization = await organizationService.updateOrganization(
+      organizationId,
+      payload,
+      userId
+    );
+    return c.json(serializeOrganizationResponse(organization), 200);
+  }
+);
+
+// DELETE /organizations/{id} - Delete organization (admin)
+app.openapi(
+  createRoute({
+    method: 'delete',
+    path: '/organizations/{id}',
+    tags: ['Organization'],
+    security: authSecurity,
+    request: {
+      params: z.object({
+        id: z.uuid(),
+      }),
+    },
+    responses: {
+      200: {
+        description: 'Organization deleted',
+        content: jsonContent(
+          z.object({
+            success: z.boolean(),
+          })
+        ),
+      },
+      401: {
+        description: 'Unauthorized',
+        content: jsonContent(OrganizationSchemas.ErrorResponseSchema),
+      },
+      403: {
+        description: 'Forbidden',
+        content: jsonContent(OrganizationSchemas.ErrorResponseSchema),
+      },
+      404: {
+        description: 'Organization not found',
+        content: jsonContent(OrganizationSchemas.ErrorResponseSchema),
+      },
+    },
+  }),
+  async (c) => {
+    const userId = c.var.user.id;
+    const { id } = c.req.valid('param');
+    const organizationId = OrganizationIdSchema.parse(id);
+    const organizationService = inject(OrganizationService);
+    await organizationService.deleteOrganization(organizationId, userId);
+    return c.json({ success: true }, 200);
+  }
+);
+
 // POST /organizations/{id}/users - Add user to organization (admin)
 app.openapi(
   createRoute({
