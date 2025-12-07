@@ -78,6 +78,8 @@ export default defineConfig({
   },
   build: {
     chunkSizeWarningLimit: 1000, // Increase warning limit to 1000kb
+    // Don't fail build on TypeScript errors - Vite handles image imports with query params at build time
+    // TypeScript errors for image imports are non-blocking
     rollupOptions: {
       output: {
         manualChunks: {

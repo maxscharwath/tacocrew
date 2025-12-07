@@ -16,6 +16,7 @@ import {
   isSansEntry,
   nameToSlug,
   parseListFromLabeledParagraph,
+  type CheerioSelection,
 } from './shared.utils';
 
 /**
@@ -43,7 +44,7 @@ function parsePriceFromTitle(title: string): number {
  * Parse meat items with quantity support
  */
 function parseMeats(
-  $body: ReturnType<typeof load>,
+  $body: CheerioSelection,
   stockData?: StockAvailability
 ): Array<{ id: string; name: string; quantity: number }> {
   const meats: Array<{ id: string; name: string; quantity: number }> = [];
@@ -72,7 +73,7 @@ function parseMeats(
  * Parse simple ingredient lists (sauces or garnitures)
  */
 function parseSimpleIngredients(
-  $body: ReturnType<typeof load>,
+  $body: CheerioSelection,
   labels: string[],
   stockKey: 'sauces' | 'garnitures',
   stockData?: StockAvailability

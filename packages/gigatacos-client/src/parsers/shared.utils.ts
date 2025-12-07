@@ -5,9 +5,10 @@
 
 import { load } from 'cheerio';
 
-// Infer Cheerio selection type from actual usage
-const _$ = load('<div></div>');
-type CheerioSelection = ReturnType<typeof _$>;
+// Infer Cheerio selection type from actual usage (result of .find(), .first(), etc.)
+const _$test = load('<div></div>');
+const _$selection = _$test('div').first();
+export type CheerioSelection = typeof _$selection;
 
 export function nameToSlug(name: string): string {
   return name
