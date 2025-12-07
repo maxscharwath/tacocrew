@@ -10,7 +10,7 @@
   },
   "scripts": {
     "dev": "bun --watch src/index.ts",
-    "build": "bun build src/index.ts --outdir dist --target node --format esm --sourcemap=external --external hono --external @hono/*",
+    "build": "bun run build.ts",
     "start": "bun dist/index.js",
     "check": "tsc --noEmit --pretty",
     "prisma:generate": "bunx prisma generate",
