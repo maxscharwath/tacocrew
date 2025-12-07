@@ -1,35 +1,13 @@
-import { Building2, Check, Copy, Pencil, Plus, Save, Trash2, Upload, X } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { Building2, Plus } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { OrganizationMembers } from '@/components/profile/OrganizationMembers';
-import { OrganizationAvatar } from '@/components/shared/OrganizationAvatar';
-import {
-  Alert,
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  Button,
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-  EmptyState,
-  InputGroup,
-  InputGroupAddon,
-  InputGroupInput,
-  Label,
-  toast,
-} from '@/components/ui';
-import { useCopyFeedback } from '@/hooks/useCopyFeedback';
+import { useRevalidator } from 'react-router';
+import { OrganizationCreateForm } from '@/components/profile/OrganizationCreateForm';
+import { OrganizationDetails } from '@/components/profile/OrganizationDetails';
+import { OrganizationsList } from '@/components/profile/OrganizationsList';
+import { Button, Card, CardContent, EmptyState, toast } from '@/components/ui';
 import { OrganizationApi, UserApi } from '@/lib/api';
 import type { Organization, OrganizationPayload } from '@/lib/api/types';
-import { routes } from '@/lib/routes';
 
 interface OrganizationsManagerProps {
   readonly organizations: Organization[];
@@ -39,24 +17,29 @@ export function OrganizationsManager({
   organizations: initialOrganizations,
 }: OrganizationsManagerProps) {
   const { t } = useTranslation();
+  const revalidator = useRevalidator();
   const [organizations, setOrganizations] = useState<Organization[]>(initialOrganizations);
   const [selectedId, setSelectedId] = useState<string>(organizations[0]?.id ?? '');
-  const [form, setForm] = useState<OrganizationPayload>({ name: '' });
-  const [busy, setBusy] = useState(false);
-  const [feedback, setFeedback] = useState<{ tone: 'success' | 'error'; text: string } | null>(
-    null
-  );
   const [isCreating, setIsCreating] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string>('');
   const [userRole, setUserRole] = useState<'ADMIN' | 'MEMBER' | null>(null);
   const [userStatus, setUserStatus] = useState<'ACTIVE' | 'PENDING' | null>(null);
-  const { isCopied, copyToClipboard } = useCopyFeedback();
 
   const selectedOrganization = organizations.find((org) => org.id === selectedId);
 
-  // Load current user ID and role
+  // Sync local state with loader data when it changes
+  useEffect(() => {
+    setOrganizations(initialOrganizations);
+    // Update selectedId if current selection is no longer in the list
+    setSelectedId((currentSelectedId) => {
+      if (currentSelectedId && !initialOrganizations.find((org) => org.id === currentSelectedId)) {
+        return initialOrganizations[0]?.id ?? '';
+      }
+      return currentSelectedId;
+    });
+  }, [initialOrganizations]);
+
+  // Load current user ID
   useEffect(() => {
     const loadUserInfo = async () => {
       try {
@@ -72,7 +55,6 @@ export function OrganizationsManager({
   // Load user role and status when organization is selected
   useEffect(() => {
     if (selectedId && currentUserId) {
-      // Get role and status from the organizations list
       const org = organizations.find((o) => o.id === selectedId);
       if (org && org.role && org.status) {
         setUserRole(org.role);
@@ -92,136 +74,55 @@ export function OrganizationsManager({
 
   const selectOrganization = (orgId: string) => {
     setSelectedId(orgId);
-    const org = orgId ? organizations.find((item) => item.id === orgId) : null;
-    setForm(org ? { name: org.name } : { name: '' });
     setIsCreating(false);
-    setIsEditing(false);
   };
 
   const handleCreateNew = () => {
-    setForm({ name: '' });
     setSelectedId('');
     setIsCreating(true);
-    setFeedback(null);
   };
 
-  const validate = () => {
-    if (!form.name.trim()) {
-      setFeedback({ tone: 'error', text: t('organizations.messages.missingName') });
-      return false;
-    }
-    return true;
-  };
-
-  const handleSave = async () => {
-    if (!validate()) return;
-    setBusy(true);
-    setFeedback(null);
+  const handleCreateSubmit = async (
+    data: OrganizationPayload,
+    avatarFile: File | null,
+    backgroundColor: string | null
+  ) => {
+    const loadingToastId = toast.loading(t('organizations.messages.creating'));
     try {
-      if (isCreating) {
-        toast.loading(t('organizations.messages.creating'));
-        const newOrg = await OrganizationApi.createOrganization(form);
-        setOrganizations((prev) => [...prev, newOrg]);
-        setSelectedId(newOrg.id);
-        setIsCreating(false);
-        toast.success(t('organizations.messages.createdWithName', { name: newOrg.name }));
-      } else if (isEditing && selectedId) {
-        toast.loading(t('organizations.messages.updating'));
-        const updated = await OrganizationApi.updateOrganization(selectedId, form);
-        setOrganizations((prev) => prev.map((org) => (org.id === selectedId ? updated : org)));
-        setIsEditing(false);
-        toast.success(t('organizations.messages.updated'));
-      }
+      const newOrg = await OrganizationApi.createOrganization(data, avatarFile, backgroundColor);
+      setOrganizations((prev) => [...prev, newOrg]);
+      setSelectedId(newOrg.id);
+      setIsCreating(false);
+      toast.success(t('organizations.messages.createdWithName', { name: newOrg.name }), {
+        id: loadingToastId,
+      });
+      // Revalidate loader data to sync with server
+      revalidator.revalidate();
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : t('organizations.messages.genericError');
-      if (isCreating) {
-        toast.error(t('organizations.messages.createFailed', { error: errorMessage }));
-      } else {
-        toast.error(t('organizations.messages.updateFailed', { error: errorMessage }));
-      }
-      setFeedback({ tone: 'error', text: errorMessage });
-    } finally {
-      setBusy(false);
+      toast.error(t('organizations.messages.createFailed', { error: errorMessage }), {
+        id: loadingToastId,
+      });
+      throw error; // Re-throw so form can handle it
     }
   };
 
-  const handleDelete = async () => {
-    if (!selectedId) return;
-    setShowDeleteDialog(false);
-    setBusy(true);
-    setFeedback(null);
-    try {
-      toast.loading(t('organizations.messages.deleting'));
-      await OrganizationApi.deleteOrganization(selectedId);
-      const remainingOrgs = organizations.filter((org) => org.id !== selectedId);
-      setOrganizations(remainingOrgs);
-      setSelectedId(remainingOrgs[0]?.id ?? '');
-      toast.success(t('organizations.messages.deleted'));
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : t('organizations.messages.genericError');
-      toast.error(t('organizations.messages.deleteFailed', { error: errorMessage }));
-      setFeedback({ tone: 'error', text: errorMessage });
-    } finally {
-      setBusy(false);
-    }
+  const handleCreateCancel = () => {
+    setIsCreating(false);
+    setSelectedId(organizations[0]?.id ?? '');
   };
 
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const [showDeleteAvatarDialog, setShowDeleteAvatarDialog] = useState(false);
-
-  const handleAvatarUpload = async (file: File, backgroundColor?: string | null) => {
-    if (!selectedId) return;
-    setBusy(true);
-    setFeedback(null);
-    try {
-      toast.loading(t('organizations.messages.uploadingAvatar'));
-      const updated = await OrganizationApi.uploadOrganizationAvatar(
-        selectedId,
-        file,
-        backgroundColor
-      );
-      setOrganizations((prev) => prev.map((org) => (org.id === selectedId ? updated : org)));
-      toast.success(t('organizations.messages.avatarUploaded'));
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : t('organizations.messages.genericError');
-      toast.error(t('organizations.messages.avatarUploadFailed', { error: errorMessage }));
-      setFeedback({ tone: 'error', text: errorMessage });
-    } finally {
-      setBusy(false);
-    }
+  const handleOrganizationUpdate = (updated: Organization) => {
+    setOrganizations((prev) => prev.map((org) => (org.id === updated.id ? updated : org)));
+    revalidator.revalidate();
   };
 
-  const handleAvatarDelete = async () => {
-    if (!selectedId) return;
-    setShowDeleteAvatarDialog(false);
-    setBusy(true);
-    setFeedback(null);
-    try {
-      toast.loading(t('organizations.messages.deletingAvatar'));
-      const updated = await OrganizationApi.deleteOrganizationAvatar(selectedId);
-      setOrganizations((prev) => prev.map((org) => (org.id === selectedId ? updated : org)));
-      toast.success(t('organizations.messages.avatarDeleted'));
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : t('organizations.messages.genericError');
-      toast.error(t('organizations.messages.avatarDeleteFailed', { error: errorMessage }));
-      setFeedback({ tone: 'error', text: errorMessage });
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file && selectedId) {
-      handleAvatarUpload(file);
-    }
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
+  const handleOrganizationDelete = () => {
+    const remainingOrgs = organizations.filter((org) => org.id !== selectedId);
+    setOrganizations(remainingOrgs);
+    setSelectedId(remainingOrgs[0]?.id ?? '');
+    revalidator.revalidate();
   };
 
   return (
@@ -252,332 +153,34 @@ export function OrganizationsManager({
       ) : (
         <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
           {/* Organizations List Sidebar */}
-          <Card>
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-base">{t('organizations.list.title')}</CardTitle>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleCreateNew}
-                  className="h-8 w-8 p-0"
-                  disabled={busy || isCreating}
-                  title={t('organizations.list.add')}
-                >
-                  <Plus size={16} />
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {organizations.map((org) => (
-                  <button
-                    key={org.id}
-                    type="button"
-                    className={`group relative flex w-full items-center gap-3 rounded-xl border px-3 py-2 text-left transition-all duration-200 ${
-                      org.id === selectedId
-                        ? 'border-brand-400/60 bg-brand-500/15 text-white shadow-[0_4px_12px_rgba(99,102,241,0.25)]'
-                        : 'border-white/5 bg-slate-900/30 text-slate-300 hover:border-brand-400/30 hover:bg-slate-800/50 hover:text-white'
-                    }`}
-                    onClick={() => selectOrganization(org.id)}
-                    disabled={busy}
-                  >
-                    <OrganizationAvatar
-                      organizationId={org.id}
-                      name={org.name}
-                      hasImage={Boolean(org.image)}
-                      size="sm"
-                    />
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate font-medium text-sm">{org.name}</p>
-                    </div>
-                    {org.id === selectedId && (
-                      <Check size={16} className="shrink-0 text-brand-400" />
-                    )}
-                  </button>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+          <OrganizationsList
+            organizations={organizations}
+            selectedId={selectedId}
+            onSelect={selectOrganization}
+            onCreateNew={handleCreateNew}
+            disabled={isCreating}
+          />
 
-          {/* Organization Details */}
+          {/* Main Content Area */}
           <div className="space-y-6">
             {isCreating ? (
-              /* Create Form */
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Plus size={20} />
-                    {t('organizations.form.create')}
-                  </CardTitle>
-                  <CardDescription>{t('organizations.empty.description')}</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  {feedback && (
-                    <Alert tone={feedback.tone}>
-                      <p className="text-sm">{feedback.text}</p>
-                    </Alert>
-                  )}
-                  <div className="space-y-2">
-                    <Label htmlFor="org-name" className="text-base">
-                      {t('organizations.form.name.label')}
-                    </Label>
-                    <InputGroup>
-                      <InputGroupAddon>
-                        <Building2 className="size-4" />
-                      </InputGroupAddon>
-                      <InputGroupInput
-                        id="org-name"
-                        value={form.name}
-                        onChange={(e) => setForm({ name: e.target.value })}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' && !e.shiftKey) {
-                            e.preventDefault();
-                            handleSave();
-                          }
-                        }}
-                        placeholder={t('organizations.form.name.placeholder')}
-                        disabled={busy}
-                        autoFocus
-                      />
-                    </InputGroup>
-                  </div>
-                  <div className="flex gap-3">
-                    <Button
-                      onClick={handleSave}
-                      loading={busy}
-                      disabled={busy}
-                      size="lg"
-                      className="flex-1 gap-2"
-                    >
-                      <Check size={16} />
-                      {t('organizations.form.create')}
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      onClick={() => {
-                        setIsCreating(false);
-                        setForm({ name: '' });
-                        setSelectedId(organizations[0]?.id ?? '');
-                        setFeedback(null);
-                      }}
-                      disabled={busy}
-                      size="lg"
-                      className="gap-2"
-                    >
-                      <X size={16} />
-                      {t('common.cancel')}
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
+              <OrganizationCreateForm
+                onSubmit={handleCreateSubmit}
+                onCancel={handleCreateCancel}
+                disabled={false}
+              />
             ) : selectedOrganization ? (
-              <>
-                {/* Organization Details */}
-                <Card>
-                  <CardHeader>
-                    <div className="flex items-start gap-6">
-                      <div className="shrink-0">
-                        <OrganizationAvatar
-                          organizationId={selectedOrganization.id}
-                          name={selectedOrganization.name}
-                          hasImage={Boolean(selectedOrganization.image)}
-                          size="2xl"
-                          color="brand"
-                        />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        {isEditing && isAdmin ? (
-                          <div className="space-y-2">
-                            <InputGroup>
-                              <InputGroupAddon>
-                                <Building2 className="size-4" />
-                              </InputGroupAddon>
-                              <InputGroupInput
-                                value={form.name}
-                                onChange={(e) => setForm({ name: e.target.value })}
-                                onKeyDown={(e) => {
-                                  if (e.key === 'Enter' && !e.shiftKey) {
-                                    e.preventDefault();
-                                    handleSave();
-                                  }
-                                  if (e.key === 'Escape') {
-                                    setIsEditing(false);
-                                    setForm({ name: selectedOrganization.name });
-                                  }
-                                }}
-                                placeholder={t('organizations.form.name.placeholder')}
-                                disabled={busy}
-                                autoFocus
-                              />
-                            </InputGroup>
-                            <div className="flex gap-2">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => {
-                                  setIsEditing(false);
-                                  setForm({ name: selectedOrganization.name });
-                                }}
-                                disabled={busy}
-                                className="gap-2"
-                              >
-                                <X size={16} />
-                                {t('common.cancel')}
-                              </Button>
-                              <Button
-                                size="sm"
-                                onClick={handleSave}
-                                loading={busy}
-                                disabled={busy}
-                                className="gap-2"
-                              >
-                                <Save size={16} />
-                                {t('common.save')}
-                              </Button>
-                            </div>
-                          </div>
-                        ) : (
-                          <>
-                            <div className="flex items-center gap-3">
-                              <CardTitle className="text-2xl">{selectedOrganization.name}</CardTitle>
-                              {isAdmin && (
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => {
-                                    setIsEditing(true);
-                                    setForm({ name: selectedOrganization.name });
-                                  }}
-                                  disabled={busy}
-                                  className="h-8 w-8 p-0"
-                                  title={t('organizations.details.rename')}
-                                >
-                                  <Pencil size={16} />
-                                </Button>
-                              )}
-                            </div>
-                            <CardDescription className="mt-1">
-                              {t('organizations.details.created', {
-                                date: new Date(
-                                  selectedOrganization.createdAt ?? ''
-                                ).toLocaleDateString(undefined, {
-                                  year: 'numeric',
-                                  month: 'long',
-                                  day: 'numeric',
-                                }),
-                              })}
-                            </CardDescription>
-                            {isAdmin && (
-                              <div className="mt-3 flex flex-wrap items-center gap-2">
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => {
-                                    const joinUrl = routes.organizationJoin.url({
-                                      id: selectedOrganization.id,
-                                    });
-                                    copyToClipboard(joinUrl);
-                                    toast.success(t('organizations.join.linkCopied'));
-                                  }}
-                                  className="gap-2"
-                                >
-                                  <Copy size={16} />
-                                  {isCopied
-                                    ? t('organizations.join.linkCopied')
-                                    : t('organizations.join.copyLink')}
-                                </Button>
-                                <Button
-                                  variant="danger"
-                                  size="sm"
-                                  onClick={() => setShowDeleteDialog(true)}
-                                  disabled={busy}
-                                  className="gap-2"
-                                >
-                                  <Trash2 size={16} />
-                                  {t('organizations.details.delete')}
-                                </Button>
-                              </div>
-                            )}
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="space-y-6">
-                    {feedback && (
-                      <Alert tone={feedback.tone}>
-                        <p className="text-sm">{feedback.text}</p>
-                      </Alert>
-                    )}
-
-                    {/* Avatar Management Section (Admin Only) */}
-                    {isAdmin && (
-                      <div className="space-y-4">
-                        <div>
-                          <Label className="text-base">
-                            {t('organizations.details.avatar.title')}
-                          </Label>
-                          <p className="mt-1 text-slate-400 text-sm">
-                            {t('organizations.details.avatar.description')}
-                          </p>
-                        </div>
-                        <div className="flex flex-wrap items-center gap-4">
-                          <input
-                            ref={fileInputRef}
-                            type="file"
-                            accept="image/*"
-                            onChange={handleFileSelect}
-                            className="hidden"
-                            disabled={busy}
-                          />
-                          <Button
-                            variant="outline"
-                            onClick={() => fileInputRef.current?.click()}
-                            disabled={busy}
-                            className="gap-2"
-                          >
-                            <Upload size={16} />
-                            {selectedOrganization.image
-                              ? t('organizations.details.avatar.change')
-                              : t('organizations.details.avatar.upload')}
-                          </Button>
-                          {selectedOrganization.image && (
-                            <Button
-                              variant="danger"
-                              onClick={() => setShowDeleteAvatarDialog(true)}
-                              disabled={busy}
-                              className="gap-2"
-                            >
-                              <Trash2 size={16} />
-                              {t('organizations.details.avatar.delete')}
-                            </Button>
-                          )}
-                        </div>
-                      </div>
-                    )}
-                    {isPending && (
-                      <Alert tone="warning">
-                        <p className="text-sm">{t('organizations.members.requestPending')}</p>
-                      </Alert>
-                    )}
-                    {!isAdmin && userRole === 'MEMBER' && userStatus === 'ACTIVE' && (
-                      <Alert tone="info">
-                        <p className="text-sm">{t('organizations.members.viewOnly')}</p>
-                      </Alert>
-                    )}
-                  </CardContent>
-                </Card>
-
-                {/* Members Management - Only show for ACTIVE members */}
-                {currentUserId && userStatus === 'ACTIVE' && (
-                  <OrganizationMembers
-                    organizationId={selectedOrganization.id}
-                    isAdmin={isAdmin}
-                    currentUserId={currentUserId}
-                  />
-                )}
-              </>
+              <OrganizationDetails
+                organization={selectedOrganization}
+                isAdmin={isAdmin}
+                isPending={isPending}
+                userRole={userRole}
+                userStatus={userStatus}
+                currentUserId={currentUserId}
+                onUpdate={handleOrganizationUpdate}
+                onDelete={handleOrganizationDelete}
+                disabled={false}
+              />
             ) : (
               /* No Selection State */
               <Card>
@@ -593,44 +196,6 @@ export function OrganizationsManager({
           </div>
         </div>
       )}
-
-      {/* Delete Avatar Confirmation Dialog */}
-      <AlertDialog open={showDeleteAvatarDialog} onOpenChange={setShowDeleteAvatarDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{t('organizations.details.avatar.deleteTitle')}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {t('organizations.details.avatar.deleteDescription')}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={busy}>{t('common.cancel')}</AlertDialogCancel>
-            <AlertDialogAction onClick={handleAvatarDelete} disabled={busy} variant="destructive">
-              {t('common.delete')}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      {/* Delete Organization Confirmation Dialog */}
-      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{t('organizations.details.deleteTitle')}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {t('organizations.details.deleteDescription', {
-                name: selectedOrganization?.name,
-              })}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={busy}>{t('common.cancel')}</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} disabled={busy} variant="destructive">
-              {t('common.delete')}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
 }

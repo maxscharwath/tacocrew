@@ -36,7 +36,9 @@ describe('SubmitUserOrderUseCase', () => {
     groupOrderId,
     userId,
     items: {
-      tacos: [{ size: 'XL', meats: [], sauces: [], garnitures: [], quantity: 1, tacoID: 'test-taco-id' }],
+      tacos: [
+        { size: 'XL', meats: [], sauces: [], garnitures: [], quantity: 1, tacoID: 'test-taco-id' },
+      ],
       extras: [],
       drinks: [],
       desserts: [],
@@ -86,10 +88,7 @@ describe('SubmitUserOrderUseCase', () => {
       UserOrderRepository,
       mockUserOrderRepository as unknown as UserOrderRepository
     );
-    container.registerInstance(
-      ResourceService,
-      mockResourceService as unknown as ResourceService
-    );
+    container.registerInstance(ResourceService, mockResourceService as unknown as ResourceService);
   });
 
   it('should submit user order successfully', async () => {

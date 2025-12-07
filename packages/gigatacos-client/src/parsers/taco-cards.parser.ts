@@ -18,6 +18,98 @@ import {
   parseListFromLabeledParagraph,
 } from './shared.utils';
 
+/**
+ * Parse size from taco title
+ */
+function parseSizeFromTitle(title: string): TacoSize | null {
+  if (/tacos\s+L\s+mixte/i.test(title)) {
+    return TacoSize.L_MIXTE;
+  }
+  const match = /tacos\s+(XL|XXL|L|BOWL|GIGA)\b/i.exec(title);
+  const variant = match?.[1]?.toUpperCase();
+  if (!variant) return null;
+  return variant === 'L' ? TacoSize.L : (('tacos_' + variant) as TacoSize);
+}
+
+/**
+ * Parse price from taco title
+ */
+function parsePriceFromTitle(title: string): number {
+  const match = /-\s*([0-9]+(?:[.,][0-9]+)?)\s*(?:CHF|EUR|€|\$)\.?/i.exec(title);
+  return match?.[1] ? Number.parseFloat(match[1].replace(',', '.')) : 0;
+}
+
+/**
+ * Parse meat items with quantity support
+ */
+function parseMeats(
+  $body: ReturnType<typeof load>,
+  stockData?: StockAvailability
+): Array<{ id: string; name: string; quantity: number }> {
+  const meats: Array<{ id: string; name: string; quantity: number }> = [];
+  const values = parseListFromLabeledParagraph($body, ['Viande', 'Viande(s)']);
+
+  for (const part of values) {
+    const match = /^(.+?)\s+x\s*(\d+)$/i.exec(part);
+    const meatName = (match?.[1] ?? part).trim();
+    if (!meatName || /^sans(_?viande)?$/i.test(meatName)) continue;
+
+    const quantity = match?.[2] ? Math.max(1, Number.parseInt(match[2], 10) || 1) : 1;
+    let meatId = nameToSlug(meatName);
+
+    if (stockData?.meats) {
+      const found = findIdByName(meatName, stockData.meats);
+      if (found) meatId = found;
+    }
+
+    meats.push({ id: meatId, name: meatName, quantity });
+  }
+
+  return meats;
+}
+
+/**
+ * Parse simple ingredient lists (sauces or garnitures)
+ */
+function parseSimpleIngredients(
+  $body: ReturnType<typeof load>,
+  labels: string[],
+  stockKey: 'sauces' | 'garnitures',
+  stockData?: StockAvailability
+): Array<{ id: string; name: string }> {
+  const items: Array<{ id: string; name: string }> = [];
+  const values = parseListFromLabeledParagraph($body, labels);
+
+  for (const value of values) {
+    const name = value.trim();
+    if (!name || isSansEntry(name)) continue;
+
+    let itemId = nameToSlug(name);
+    const stock = stockData?.[stockKey];
+    if (stock) {
+      const found = findIdByName(name, stock);
+      if (found) itemId = found;
+    }
+
+    items.push({ id: itemId, name });
+  }
+
+  return items;
+}
+
+/**
+ * Transform ingredients to final structure with UUIDs
+ */
+function transformIngredients<T extends { id: string; name: string }>(
+  items: T[],
+  category: string
+): Array<T & { id: string }> {
+  return items.map((item) => ({
+    ...item,
+    id: deterministicUUID(item.id || item.name, category),
+  }));
+}
+
 export function parseTacoCard(
   html: string,
   tacoId: string,
@@ -25,120 +117,44 @@ export function parseTacoCard(
   logger: Logger = noopLogger
 ): Taco | null {
   try {
-    if (!html) {
-      return null;
-    }
+    if (!html) return null;
+
     const $ = load(html);
     const $card = $('div.card[id^="tacos-"]').first();
     if (!$card.length) return null;
 
     const $body = $card.find('.card-body').first();
-
     const title = $body.find('.card-title, h6, h5').first().text().replaceAll(/\s+/g, ' ').trim();
 
-    // Strict size parsing from title
-    let size: TacoSize | null = null;
-    if (/tacos\s+L\s+mixte/i.test(title)) {
-      size = TacoSize.L_MIXTE;
-    } else {
-      const match = new RegExp(/tacos\s+(XL|XXL|L|BOWL|GIGA)\b/i).exec(title);
-      const variant = match?.[1]?.toUpperCase();
-      if (variant) {
-        size = variant === 'L' ? TacoSize.L : (('tacos_' + variant) as TacoSize);
-      }
-    }
+    // Parse components using helper functions
+    let size = parseSizeFromTitle(title);
+    const price = parsePriceFromTitle(title);
+    const meats = parseMeats($body, stockData);
+    const sauces = parseSimpleIngredients($body, ['Sauce', 'Sauces'], 'sauces', stockData);
+    const garnitures = parseSimpleIngredients($body, ['Garniture', 'Garnitures'], 'garnitures', stockData);
 
-    // Price from title " - 12 CHF."
-    let price = 0;
-    const mPrice = new RegExp(/-\s*([0-9]+(?:[.,][0-9]+)?)\s*(?:CHF|EUR|€|\$)\.?/i).exec(title);
-    if (mPrice?.[1]) {
-      price = Number.parseFloat(mPrice[1].replace(',', '.'));
-    }
-
-    // Ingredients
-    const meats: Array<{ id: string; name: string; quantity: number }> = [];
-    const sauces: Array<{ id: string; name: string }> = [];
-    const garnitures: Array<{ id: string; name: string }> = [];
-
-    const viandeValues = parseListFromLabeledParagraph($body, ['Viande', 'Viande(s)']);
-    for (const part of viandeValues) {
-      const match = new RegExp(/^(.+?)\s+x\s*(\d+)$/i).exec(part);
-      const meatName = (match?.[1] ?? part).trim();
-      const quantityValue = match?.[2];
-      const quantity = quantityValue ? Math.max(1, Number.parseInt(quantityValue, 10) || 1) : 1;
-      if (!meatName || /^sans(_?viande)?$/i.test(meatName)) continue;
-      let meatId = nameToSlug(meatName);
-      const meatsStock = stockData?.meats;
-      if (meatsStock) {
-        const found = findIdByName(meatName, meatsStock);
-        if (found) meatId = found;
-      }
-      meats.push({ id: meatId, name: meatName, quantity });
-    }
-
-    const sauceValues = parseListFromLabeledParagraph($body, ['Sauce', 'Sauces']);
-    for (const s of sauceValues) {
-      const name = s.trim();
-      if (!name || isSansEntry(name)) continue;
-      let sauceId = nameToSlug(name);
-      const saucesStock = stockData?.sauces;
-      if (saucesStock) {
-        const found = findIdByName(name, saucesStock);
-        if (found) sauceId = found;
-      }
-      sauces.push({ id: sauceId, name });
-    }
-
-    const garnitureValues = parseListFromLabeledParagraph($body, ['Garniture', 'Garnitures']);
-    for (const g of garnitureValues) {
-      const name = g.trim();
-      if (!name || isSansEntry(name)) continue;
-      let garnitureId = nameToSlug(name);
-      const garnishesStock = stockData?.garnitures;
-      if (garnishesStock) {
-        const found = findIdByName(name, garnishesStock);
-        if (found) garnitureId = found;
-      }
-      garnitures.push({ id: garnitureId, name });
-    }
-
-    // Note
-    let note: string | undefined;
+    // Parse note
     const noteText = extractValueAfterColonFromParagraph(findLabeledParagraph($body, ['Remarque']));
-    if (noteText) note = noteText;
+    const note = noteText || undefined;
 
-    // Placeholder guard: require a real taco title OR a valid size; also discard pure placeholders "- 0 CHF." with no ingredients
+    // Validation
     const hasIngredients = meats.length + sauces.length + garnitures.length > 0;
     if ((!isRealTacoTitle(title) && !size) || (!hasIngredients && price === 0)) {
       return null;
     }
 
-    // Final size fallback only if title clearly mentions tacos
-    if (!size && isRealTacoTitle(title)) size = TacoSize.L;
+    // Fallback size
+    if (!size && isRealTacoTitle(title)) {
+      size = TacoSize.L;
+    }
 
-    // Transform items to new structure: id (UUID) and code (stock code)
-    const transformedMeats = meats.map((meat) => ({
-      id: deterministicUUID(meat.id, 'meats'),
-      name: meat.name,
-      quantity: meat.quantity,
-    }));
-
-    const transformedSauces = sauces.map((sauce) => ({
-      id: deterministicUUID(sauce.id || sauce.name, 'sauces'),
-      name: sauce.name,
-    }));
-
-    const transformedGarnitures = garnitures.map((garniture) => ({
-      id: deterministicUUID(garniture.id || garniture.name, 'garnitures'),
-      name: garniture.name,
-    }));
-
+    // Transform to final structure
     return {
       id: tacoId,
       size: size as TacoSize,
-      meats: transformedMeats,
-      sauces: transformedSauces,
-      garnitures: transformedGarnitures,
+      meats: transformIngredients(meats, 'meats'),
+      sauces: transformIngredients(sauces, 'sauces'),
+      garnitures: transformIngredients(garnitures, 'garnitures'),
       note,
       price,
     };

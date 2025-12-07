@@ -19,10 +19,13 @@ export const auth: ReturnType<typeof betterAuth> = betterAuth({
     process.env['FRONTEND_URL'] || 'http://localhost:5173',
   ],
   session: {
+    // Disable cookieCache to store session data in database instead of cookies
+    // This prevents large session data from being split across multiple cookies
+    // Session will still be tracked via a small session cookie, but data is in DB
     cookieCache: {
-      enabled: true,
-      maxAge: 60 * 60 * 24 * 7, // 7 days
+      enabled: false,
     },
+    expiresIn: 60 * 60 * 24 * 7, // 7 days
   },
   emailAndPassword: {
     enabled: true,

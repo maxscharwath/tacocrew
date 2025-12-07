@@ -57,7 +57,7 @@ async function extractTranslationKeys(files: string[]): Promise<TranslationUsage
             }
           }
         }
-      } catch (error) {
+      } catch (_error) {
         // Skip files that can't be read
       }
     })
@@ -89,7 +89,7 @@ async function extractDynamicKeyPatterns(files: string[]): Promise<DynamicKeyPat
           for (const match of matches) {
             const fullMatch = match[0]!;
             const prefixPart = match[1] || '';
-            const suffixPart = match[2] || '';
+            const _suffixPart = match[2] || '';
 
             // Extract the prefix (everything before ${variable})
             const prefix = prefixPart.trim().replace(/\.$/, '');
@@ -107,7 +107,7 @@ async function extractDynamicKeyPatterns(files: string[]): Promise<DynamicKeyPat
             }
           }
         }
-      } catch (error) {
+      } catch (_error) {
         // Skip files that can't be read
       }
     })
@@ -241,7 +241,7 @@ describe('Frontend Translation Keys', () => {
         const hasPluralVariantsInLocale = pluralSuffixes.some((suffix) =>
           keyExists(translations, `${key}${suffix}`)
         );
-        
+
         if (!keyExistsDirect && !hasPluralVariantsInLocale) {
           missingIn.push(lang);
         }
@@ -288,7 +288,10 @@ describe('Frontend Translation Keys', () => {
     if (missingKeys.length > 0) {
       errors.push(
         `Missing static translation keys:\n${missingKeys
-          .map(({ key, missingIn, usedIn }) => `  - ${key} (missing in: ${missingIn.join(', ')}, used in: ${usedIn})`)
+          .map(
+            ({ key, missingIn, usedIn }) =>
+              `  - ${key} (missing in: ${missingIn.join(', ')}, used in: ${usedIn})`
+          )
           .join('\n')}`
       );
     }
@@ -306,7 +309,10 @@ describe('Frontend Translation Keys', () => {
     }
 
     if (errors.length > 0) {
-      expect(errors).toHaveLength(0, errors.join('\n\n') + '\n\nRun "bun check:translations" for more details.');
+      expect(errors).toHaveLength(
+        0,
+        errors.join('\n\n') + '\n\nRun "bun check:translations" for more details.'
+      );
     }
   });
 });

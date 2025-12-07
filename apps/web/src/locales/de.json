@@ -12,6 +12,7 @@
     "saving": "Speichern…",
     "cancel": "Abbrechen",
     "delete": "Löschen",
+    "remove": "Entfernen",
     "ok": "OK",
     "edit": "Bearbeiten",
     "submit": "Absenden",
@@ -226,10 +227,10 @@
         }
       }
     },
-      "avatar": {
-        "title": "Profilbild",
-        "description": "Lade ein Profilbild hoch, um dein Konto zu personalisieren",
-        "customColor": "Benutzerdefinierte Farbe",
+    "avatar": {
+      "title": "Profilbild",
+      "description": "Lade ein Profilbild hoch, um dein Konto zu personalisieren",
+      "customColor": "Benutzerdefinierte Farbe",
       "invalidType": "Ungültiger Dateityp. Es sind nur Bilder erlaubt.",
       "fileTooLarge": "Datei ist zu groß. Maximal 5 MB.",
       "uploadFailed": "Bild konnte nicht hochgeladen werden. Bitte versuche es erneut.",
@@ -269,7 +270,8 @@
     "form": {
       "name": {
         "label": "Organisationsname",
-        "placeholder": "Organisationsname eingeben"
+        "placeholder": "Organisationsname eingeben",
+        "description": "Wählen Sie einen eindeutigen Namen für Ihre Organisation"
       },
       "create": "Organisation erstellen"
     },
@@ -451,6 +453,10 @@
       "outOfStock": "Ein oder mehrere Artikel sind nicht vorrätig. Bitte aktualisieren Sie Ihre Bestellung."
     },
     "notFound": {
+      "title": "Seite nicht gefunden",
+      "description": "Die gesuchte Seite existiert nicht oder wurde verschoben.",
+      "goHome": "Zur Startseite",
+      "goBack": "Zurück",
       "generic": "{{resource}} wurde nicht gefunden.",
       "generic_id": "{{resource}} mit der ID {{identifier}} wurde nicht gefunden.",
       "generic_tacoID": "{{resource}} mit der tacoID {{identifier}} wurde nicht gefunden.",
@@ -468,7 +474,56 @@
       "generic": "Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es erneut."
     },
     "forbidden": {
+      "title": "Zugriff verweigert",
+      "description": "Sie haben keine Berechtigung, auf diese Ressource zuzugreifen.",
+      "goHome": "Zur Startseite",
       "generic": "Sie haben keine Berechtigung, diese Aktion auszuführen."
+    },
+    "badRequest": {
+      "title": "Ungültige Anfrage",
+      "goBack": "Zurück"
+    },
+    "http": {
+      "title": "Fehler {{status}}",
+      "description": "Beim Verarbeiten Ihrer Anfrage ist ein Fehler aufgetreten.",
+      "goHome": "Zur Startseite"
+    },
+    "application": {
+      "title": "Anwendungsfehler",
+      "description": "Etwas ist schief gelaufen. Bitte versuchen Sie es erneut oder kontaktieren Sie den Support, wenn das Problem weiterhin besteht.",
+      "goHome": "Zur Startseite",
+      "reload": "Seite neu laden"
+    },
+    "unknown": {
+      "title": "Unbekannter Fehler",
+      "description": "Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es erneut.",
+      "goHome": "Zur Startseite",
+      "generic": "Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es erneut."
+    },
+    "organization": {
+      "notFound": {
+        "title": "Organisation nicht gefunden",
+        "description": "Diese Organisation konnte nicht gefunden werden. Sie wurde möglicherweise gelöscht, der Link könnte falsch sein, oder Sie sind möglicherweise kein Mitglied dieser Organisation. Bitte überprüfen Sie die Organisations-ID oder kehren Sie zu Ihrer Organisationsliste zurück.",
+        "goToOrganizations": "Zu Organisationen",
+        "goBack": "Zurück"
+      },
+      "forbidden": {
+        "title": "Zugriff verweigert",
+        "description": "Sie haben keine Berechtigung, auf diese Organisation zuzugreifen.",
+        "goToOrganizations": "Zu Organisationen",
+        "goBack": "Zurück"
+      },
+      "badRequest": {
+        "title": "Ungültige Anfrage",
+        "description": "Die Organisations-ID fehlt oder ist ungültig.",
+        "goToOrganizations": "Zu Organisationen"
+      },
+      "generic": {
+        "title": "Fehler beim Laden der Organisation",
+        "description": "Beim Laden der Organisation ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
+        "goToOrganizations": "Zu Organisationen",
+        "goBack": "Zurück"
+      }
     },
     "unauthorized": {
       "generic": "Sie müssen angemeldet sein, um diese Aktion auszuführen."

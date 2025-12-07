@@ -136,8 +136,8 @@ async function validate(
 
     const missingIn = Object.keys(locales).filter((lang) => {
       const keyExists = getValue(locales[lang], key) !== undefined;
-      const hasPluralVariantsInLocale = pluralSuffixes.some((suffix) =>
-        getValue(locales[lang], `${key}${suffix}`) !== undefined
+      const hasPluralVariantsInLocale = pluralSuffixes.some(
+        (suffix) => getValue(locales[lang], `${key}${suffix}`) !== undefined
       );
       return !keyExists && !hasPluralVariantsInLocale;
     });

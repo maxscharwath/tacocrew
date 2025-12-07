@@ -9,13 +9,13 @@ import { beforeEach, describe, expect, test as it, mock } from 'bun:test';
 import jwt from 'jsonwebtoken';
 import { container } from 'tsyringe';
 import { AuthService } from '@/services/auth/auth.service';
-import { ValidationError } from '@/shared/utils/errors.utils';
 import { config } from '@/shared/config/app.config';
+import { ValidationError } from '@/shared/utils/errors.utils';
 import { randomUUID } from '@/shared/utils/uuid.utils';
 
 describe('AuthService', () => {
   const jwtSecret = config.auth.jwtSecret;
-  const jwtExpiresIn = config.auth.jwtExpiresIn;
+  const _jwtExpiresIn = config.auth.jwtExpiresIn;
 
   beforeEach(() => {
     container.clearInstances();
@@ -78,11 +78,7 @@ describe('AuthService', () => {
       const service = new AuthService();
 
       // Create an expired token
-      const expiredToken = jwt.sign(
-        { userId, username },
-        jwtSecret,
-        { expiresIn: '-1h' }
-      );
+      const expiredToken = jwt.sign({ userId, username }, jwtSecret, { expiresIn: '-1h' });
 
       expect(() => {
         service.verifyToken(expiredToken);

@@ -20,7 +20,22 @@ export function getOrganizationById(organizationId: string) {
   return apiClient.get<Organization>(`/api/v1/organizations/${organizationId}`);
 }
 
-export function createOrganization(body: OrganizationPayload) {
+export function createOrganization(
+  body: OrganizationPayload,
+  avatarFile?: File | null,
+  backgroundColor?: string | null
+) {
+  // If avatar is provided, send as multipart/form-data
+  if (avatarFile) {
+    const formData = new FormData();
+    formData.append('name', body.name);
+    formData.append('image', avatarFile);
+    if (backgroundColor && backgroundColor !== 'transparent') {
+      formData.append('backgroundColor', backgroundColor);
+    }
+    return apiClient.post<Organization>('/api/v1/organizations', { body: formData });
+  }
+  // Otherwise, send as JSON (backward compatible)
   return apiClient.post<Organization>('/api/v1/organizations', { body });
 }
 

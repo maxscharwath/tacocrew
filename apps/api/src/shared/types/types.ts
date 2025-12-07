@@ -70,7 +70,7 @@ export type CommonCurrency = (typeof Currency)[keyof typeof Currency];
  * Currency type that allows common currencies with autocomplete
  * while also accepting any valid ISO 4217 currency code string
  */
-export type CurrencyCode = CommonCurrency | (string & {});
+export type CurrencyCode = CommonCurrency | string;
 
 /**
  * Represents a monetary amount with currency

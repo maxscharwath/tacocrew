@@ -41,7 +41,7 @@ async function extractTranslationKeys(files: string[]): Promise<TranslationUsage
             }
           }
         }
-      } catch (error) {
+      } catch (_error) {
         // Skip files that can't be read
       }
     })
@@ -136,7 +136,10 @@ describe('Backend Translation Keys', () => {
 
     if (missingKeys.length > 0) {
       const message = `Missing translation keys found:\n${missingKeys
-        .map(({ key, missingIn, usedIn }) => `  - ${key} (missing in: ${missingIn.join(', ')}, used in: ${usedIn})`)
+        .map(
+          ({ key, missingIn, usedIn }) =>
+            `  - ${key} (missing in: ${missingIn.join(', ')}, used in: ${usedIn})`
+        )
         .join('\n')}\n\nRun 'bun check:translations' for more details.`;
       expect(missingKeys).toHaveLength(0, message);
     }

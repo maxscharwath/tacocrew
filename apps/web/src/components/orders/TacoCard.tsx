@@ -124,7 +124,7 @@ export function TacoCard({ taco, badge, footer, showTacoID = false, className }:
         </div>
 
         {(footer || defaultFooter) && (
-          <div className="mt-auto shrink-0 flex items-center justify-between border-white/10 border-t pt-3">
+          <div className="mt-auto flex shrink-0 items-center justify-between border-white/10 border-t pt-3">
             {footer || defaultFooter}
           </div>
         )}

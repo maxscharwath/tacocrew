@@ -12,6 +12,7 @@
     "saving": "Saving...",
     "cancel": "Cancel",
     "delete": "Delete",
+    "remove": "Remove",
     "ok": "OK",
     "edit": "Edit",
     "submit": "Submit",
@@ -226,10 +227,10 @@
         }
       }
     },
-      "avatar": {
-        "title": "Profile Picture",
-        "description": "Upload a profile picture to personalize your account",
-        "customColor": "Custom color",
+    "avatar": {
+      "title": "Profile Picture",
+      "description": "Upload a profile picture to personalize your account",
+      "customColor": "Custom color",
       "invalidType": "Invalid file type. Only images are allowed.",
       "fileTooLarge": "File is too large. Maximum size is 5MB.",
       "uploadFailed": "Failed to upload image. Please try again.",
@@ -269,7 +270,8 @@
     "form": {
       "name": {
         "label": "Organization Name",
-        "placeholder": "Enter organization name"
+        "placeholder": "Enter organization name",
+        "description": "Choose a unique name for your organization"
       },
       "create": "Create Organization"
     },
@@ -454,6 +456,10 @@
       "outOfStock": "One or more items are out of stock. Please update your order."
     },
     "notFound": {
+      "title": "Page Not Found",
+      "description": "The page you're looking for doesn't exist or has been moved.",
+      "goHome": "Go Home",
+      "goBack": "Go Back",
       "generic": "{{resource}} was not found.",
       "generic_id": "{{resource}} with id {{identifier}} was not found.",
       "generic_tacoID": "{{resource}} with tacoID {{identifier}} was not found.",
@@ -470,8 +476,57 @@
     "unknown": {
       "generic": "An unexpected error occurred. Please try again."
     },
+    "organization": {
+      "notFound": {
+        "title": "Organization Not Found",
+        "description": "This organization could not be found. It may have been deleted, the link might be incorrect, or you may not be a member of this organization. Please check the organization ID or return to your organizations list.",
+        "goToOrganizations": "Go to Organizations",
+        "goBack": "Go Back"
+      },
+      "forbidden": {
+        "title": "Access Denied",
+        "description": "You don't have permission to access this organization.",
+        "goToOrganizations": "Go to Organizations",
+        "goBack": "Go Back"
+      },
+      "badRequest": {
+        "title": "Invalid Request",
+        "description": "The organization ID is missing or invalid.",
+        "goToOrganizations": "Go to Organizations"
+      },
+      "generic": {
+        "title": "Error Loading Organization",
+        "description": "An error occurred while loading the organization. Please try again.",
+        "goToOrganizations": "Go to Organizations",
+        "goBack": "Go Back"
+      }
+    },
     "forbidden": {
+      "title": "Access Forbidden",
+      "description": "You don't have permission to access this resource.",
+      "goHome": "Go Home",
       "generic": "You don't have permission to perform this action."
+    },
+    "badRequest": {
+      "title": "Bad Request",
+      "goBack": "Go Back"
+    },
+    "http": {
+      "title": "Error {{status}}",
+      "description": "An error occurred while processing your request.",
+      "goHome": "Go Home"
+    },
+    "application": {
+      "title": "Application Error",
+      "description": "Something went wrong. Please try again or contact support if the problem persists.",
+      "goHome": "Go Home",
+      "reload": "Reload Page"
+    },
+    "unknown": {
+      "title": "Unknown Error",
+      "description": "An unexpected error occurred. Please try again.",
+      "goHome": "Go Home",
+      "generic": "An unexpected error occurred. Please try again."
     },
     "unauthorized": {
       "generic": "You must be signed in to perform this action."

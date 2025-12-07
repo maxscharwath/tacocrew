@@ -12,6 +12,7 @@
     "saving": "Enregistrement…",
     "cancel": "Annuler",
     "delete": "Supprimer",
+    "remove": "Retirer",
     "ok": "OK",
     "edit": "Modifier",
     "submit": "Envoyer",
@@ -226,10 +227,10 @@
         }
       }
     },
-      "avatar": {
-        "title": "Photo de profil",
-        "description": "Téléchargez une photo pour personnaliser votre compte",
-        "customColor": "Couleur personnalisée",
+    "avatar": {
+      "title": "Photo de profil",
+      "description": "Téléchargez une photo pour personnaliser votre compte",
+      "customColor": "Couleur personnalisée",
       "invalidType": "Type de fichier invalide. Seules les images sont autorisées.",
       "fileTooLarge": "Fichier trop volumineux. Taille maximale de 5 Mo.",
       "uploadFailed": "Échec de l'envoi de l'image. Veuillez réessayer.",
@@ -269,7 +270,8 @@
     "form": {
       "name": {
         "label": "Nom de l'organisation",
-        "placeholder": "Entrez le nom de l'organisation"
+        "placeholder": "Entrez le nom de l'organisation",
+        "description": "Choisissez un nom unique pour votre organisation"
       },
       "create": "Créer une organisation"
     },
@@ -454,6 +456,10 @@
       "outOfStock": "Un ou plusieurs articles sont en rupture de stock. Veuillez mettre à jour votre commande."
     },
     "notFound": {
+      "title": "Page introuvable",
+      "description": "La page que vous recherchez n'existe pas ou a été déplacée.",
+      "goHome": "Retour à l'accueil",
+      "goBack": "Retour",
       "generic": "{{resource}} est introuvable.",
       "generic_id": "{{resource}} avec l'identifiant {{identifier}} est introuvable.",
       "generic_tacoID": "{{resource}} avec le tacoID {{identifier}} est introuvable.",
@@ -471,7 +477,56 @@
       "generic": "Une erreur inattendue s'est produite. Veuillez réessayer."
     },
     "forbidden": {
+      "title": "Accès interdit",
+      "description": "Vous n'avez pas la permission d'accéder à cette ressource.",
+      "goHome": "Retour à l'accueil",
       "generic": "Vous n'avez pas la permission d'effectuer cette action."
+    },
+    "badRequest": {
+      "title": "Requête invalide",
+      "goBack": "Retour"
+    },
+    "http": {
+      "title": "Erreur {{status}}",
+      "description": "Une erreur s'est produite lors du traitement de votre demande.",
+      "goHome": "Retour à l'accueil"
+    },
+    "application": {
+      "title": "Erreur d'application",
+      "description": "Quelque chose s'est mal passé. Veuillez réessayer ou contacter le support si le problème persiste.",
+      "goHome": "Retour à l'accueil",
+      "reload": "Recharger la page"
+    },
+    "unknown": {
+      "title": "Erreur inconnue",
+      "description": "Une erreur inattendue s'est produite. Veuillez réessayer.",
+      "goHome": "Retour à l'accueil",
+      "generic": "Une erreur inattendue s'est produite. Veuillez réessayer."
+    },
+    "organization": {
+      "notFound": {
+        "title": "Organisation introuvable",
+        "description": "Cette organisation est introuvable. Elle a peut-être été supprimée, le lien pourrait être incorrect, ou vous n'êtes peut-être pas membre de cette organisation. Veuillez vérifier l'identifiant de l'organisation ou retourner à votre liste d'organisations.",
+        "goToOrganizations": "Aller aux organisations",
+        "goBack": "Retour"
+      },
+      "forbidden": {
+        "title": "Accès refusé",
+        "description": "Vous n'avez pas la permission d'accéder à cette organisation.",
+        "goToOrganizations": "Aller aux organisations",
+        "goBack": "Retour"
+      },
+      "badRequest": {
+        "title": "Requête invalide",
+        "description": "L'identifiant de l'organisation est manquant ou invalide.",
+        "goToOrganizations": "Aller aux organisations"
+      },
+      "generic": {
+        "title": "Erreur lors du chargement de l'organisation",
+        "description": "Une erreur s'est produite lors du chargement de l'organisation. Veuillez réessayer.",
+        "goToOrganizations": "Aller aux organisations",
+        "goBack": "Retour"
+      }
     },
     "unauthorized": {
       "generic": "Vous devez être connecté pour effectuer cette action."

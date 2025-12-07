@@ -146,6 +146,7 @@ app.openapi(
 );
 
 // POST /organizations - Create organization (admin)
+// Supports both JSON (name only) and multipart/form-data (name + image + backgroundColor)
 app.openapi(
   createRoute({
     method: 'post',
@@ -154,7 +155,18 @@ app.openapi(
     security: authSecurity,
     request: {
       body: {
-        content: jsonContent(OrganizationSchemas.CreateOrganizationRequestSchema),
+        content: {
+          'application/json': {
+            schema: OrganizationSchemas.CreateOrganizationRequestSchema,
+          },
+          'multipart/form-data': {
+            schema: z.object({
+              name: z.string().min(1).max(200),
+              image: z.unknown().optional(),
+              backgroundColor: z.string().optional(),
+            }),
+          },
+        },
       },
     },
     responses: {
@@ -178,11 +190,51 @@ app.openapi(
   }),
   async (c) => {
     const userId = c.var.user.id;
-    const payload = c.req.valid('json');
     const organizationService = inject(OrganizationService);
-    // Creator is automatically set as ADMIN with ACTIVE status
-    const organization = await organizationService.createOrganization(payload, userId);
-    return c.json(serializeOrganizationResponse(organization), 201);
+
+    // Check content type to support both JSON and multipart/form-data
+    const contentType = c.req.header('content-type') || '';
+
+    if (contentType.includes('multipart/form-data')) {
+      // Handle multipart/form-data (with avatar)
+      const formData = await c.req.formData();
+      const name = formData.get('name');
+
+      if (!name || typeof name !== 'string' || !name.trim()) {
+        return c.json(buildErrorResponse('INVALID_REQUEST', 'Organization name is required'), 400);
+      }
+
+      const file = formData.get('image');
+      let processedImage: Buffer | null = null;
+
+      if (file && typeof file === 'object' && 'arrayBuffer' in file) {
+        try {
+          const backgroundColor = formData.get('backgroundColor');
+          const bgColor =
+            backgroundColor && typeof backgroundColor === 'string' ? backgroundColor : undefined;
+          processedImage = await processProfileImage(file, bgColor);
+        } catch (error) {
+          const errorMessage = error instanceof Error ? error.message : 'Failed to process image';
+          logger.error('Image processing failed during organization creation', {
+            error: errorMessage,
+            errorStack: error instanceof Error ? error.stack : undefined,
+          });
+          return c.json(buildErrorResponse('ORG_AVATAR_INVALID', errorMessage), 400);
+        }
+      }
+
+      const organization = await organizationService.createOrganization(
+        { name: name.trim() },
+        userId,
+        processedImage
+      );
+      return c.json(serializeOrganizationResponse(organization), 201);
+    } else {
+      // Handle JSON (name only, backward compatible)
+      const payload = c.req.valid('json');
+      const organization = await organizationService.createOrganization(payload, userId);
+      return c.json(serializeOrganizationResponse(organization), 201);
+    }
   }
 );
 

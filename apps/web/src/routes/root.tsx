@@ -11,19 +11,11 @@ import {
 import type { ComponentType } from 'react';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  Form,
-  isRouteErrorResponse,
-  Link,
-  NavLink,
-  Outlet,
-  useLoaderData,
-  useRevalidator,
-  useRouteError,
-} from 'react-router';
+import { Form, Link, NavLink, Outlet, useLoaderData, useRevalidator } from 'react-router';
 import appIcon from '@/assets/icon.png?w=80&h=80&format=webp';
+import { ErrorBoundary } from '@/components/errors/ErrorBoundary';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
-import { Alert, Avatar, Button, Card } from '@/components/ui';
+import { Avatar, Button, Card } from '@/components/ui';
 import { useDeveloperMode } from '@/hooks/useDeveloperMode';
 import { resolveImageUrl } from '@/lib/api';
 import { routes } from '@/lib/routes';
@@ -195,7 +187,7 @@ export function RootLayout() {
           </nav>
         </Card>
 
-        <main className="mt-3 flex-1 sm:mt-6">
+        <main className="mt-3 flex-1 bg-slate-950 sm:mt-6">
           <Outlet />
         </main>
       </div>
@@ -204,34 +196,5 @@ export function RootLayout() {
 }
 
 export function RootErrorBoundary() {
-  const { t } = useTranslation();
-  const error = useRouteError();
-
-  if (isRouteErrorResponse(error)) {
-    return <ErrorState title={error.status.toString()} message={error.statusText} />;
-  }
-
-  if (error instanceof Error) {
-    return <ErrorState title={t('root.errors.applicationError')} message={error.message} />;
-  }
-
-  return (
-    <ErrorState title={t('root.errors.unknownError')} message={t('root.errors.somethingWrong')} />
-  );
-}
-
-function ErrorState({ title, message }: { readonly title: string; readonly message: string }) {
-  return (
-    <div className="relative min-h-screen bg-slate-950 text-slate-100">
-      <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="-top-24 absolute right-1/2 h-72 w-72 rounded-full bg-brand-500/20 blur-3xl" />
-        <div className="absolute bottom-0 left-1/2 h-72 w-72 rounded-full bg-purple-500/20 blur-3xl" />
-      </div>
-      <div className="relative flex min-h-screen items-center justify-center p-6">
-        <Alert tone="error" title={title} className="max-w-md">
-          {message}
-        </Alert>
-      </div>
-    </div>
-  );
+  return <ErrorBoundary />;
 }

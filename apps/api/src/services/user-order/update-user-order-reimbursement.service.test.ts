@@ -116,9 +116,9 @@ describe('UpdateUserOrderReimbursementStatusUseCase', () => {
 
     const useCase = container.resolve(UpdateUserOrderReimbursementStatusUseCase);
 
-    await expect(
-      useCase.execute(groupOrderId, userOrderId, leaderId, true)
-    ).rejects.toThrow(NotFoundError);
+    await expect(useCase.execute(groupOrderId, userOrderId, leaderId, true)).rejects.toThrow(
+      NotFoundError
+    );
   });
 
   it('should throw ValidationError when user is not leader', async () => {
@@ -126,8 +126,8 @@ describe('UpdateUserOrderReimbursementStatusUseCase', () => {
 
     const useCase = container.resolve(UpdateUserOrderReimbursementStatusUseCase);
 
-    await expect(
-      useCase.execute(groupOrderId, userOrderId, userId, true)
-    ).rejects.toThrow(ValidationError);
+    await expect(useCase.execute(groupOrderId, userOrderId, userId, true)).rejects.toThrow(
+      ValidationError
+    );
   });
 });

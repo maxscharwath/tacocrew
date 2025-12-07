@@ -15,7 +15,13 @@ import { createUserOrderFromDb } from '@/schemas/user-order.schema';
 import { ResourceService } from '@/services/resource/resource.service';
 import { UserService } from '@/services/user/user.service';
 import { CreateUserOrderUseCase } from '@/services/user-order/create-user-order.service';
-import { GroupOrderStatus, StockCategory, TacoSize, UserOrderItems, UserOrderStatus } from '@/shared/types/types';
+import {
+  GroupOrderStatus,
+  StockCategory,
+  TacoSize,
+  UserOrderItems,
+  UserOrderStatus,
+} from '@/shared/types/types';
 import { deterministicUUID, randomUUID } from '@/shared/utils/uuid.utils';
 
 describe('CreateUserOrderUseCase', () => {

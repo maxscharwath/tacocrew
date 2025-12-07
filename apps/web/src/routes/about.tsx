@@ -61,11 +61,16 @@ function SocialButton({
 }) {
   const isExternal = !href.startsWith('mailto:');
   const variantClasses = {
-    default: 'bg-white/5 text-slate-400 hover:bg-white/10 hover:text-white border-white/10 hover:border-white/20',
-    bluesky: 'bg-sky-500/15 text-sky-400 hover:bg-sky-500/25 hover:text-sky-200 border-sky-500/20 hover:border-sky-500/30',
-    github: 'bg-slate-800/30 text-slate-200 hover:bg-slate-800/40 hover:text-white border-slate-700/30 hover:border-slate-600/40',
-    email: 'bg-orange-500/15 text-orange-400 hover:bg-orange-500/25 hover:text-orange-300 border-orange-500/20 hover:border-orange-500/30',
-    website: 'bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25 hover:text-emerald-300 border-emerald-500/20 hover:border-emerald-500/30',
+    default:
+      'bg-white/5 text-slate-400 hover:bg-white/10 hover:text-white border-white/10 hover:border-white/20',
+    bluesky:
+      'bg-sky-500/15 text-sky-400 hover:bg-sky-500/25 hover:text-sky-200 border-sky-500/20 hover:border-sky-500/30',
+    github:
+      'bg-slate-800/30 text-slate-200 hover:bg-slate-800/40 hover:text-white border-slate-700/30 hover:border-slate-600/40',
+    email:
+      'bg-orange-500/15 text-orange-400 hover:bg-orange-500/25 hover:text-orange-300 border-orange-500/20 hover:border-orange-500/30',
+    website:
+      'bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25 hover:text-emerald-300 border-emerald-500/20 hover:border-emerald-500/30',
   };
 
   return (
@@ -128,7 +133,11 @@ function ContributorCard({ contributor }: { contributor: Contributor }) {
               </SocialButton>
             )}
             {contributor.email && (
-              <SocialButton href={`mailto:${contributor.email}`} title={contributor.email} variant="email">
+              <SocialButton
+                href={`mailto:${contributor.email}`}
+                title={contributor.email}
+                variant="email"
+              >
                 <AtSignIcon size={16} />
               </SocialButton>
             )}

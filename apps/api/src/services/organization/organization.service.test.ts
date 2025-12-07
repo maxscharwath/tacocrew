@@ -78,10 +78,7 @@ describe('OrganizationService', () => {
       OrganizationRepository,
       mockOrganizationRepository as unknown as OrganizationRepository
     );
-    container.registerInstance(
-      UserRepository,
-      mockUserRepository as unknown as UserRepository
-    );
+    container.registerInstance(UserRepository, mockUserRepository as unknown as UserRepository);
     container.registerInstance(
       NotificationService,
       mockNotificationService as unknown as NotificationService
@@ -137,9 +134,12 @@ describe('OrganizationService', () => {
       const result = await service.createOrganization({ name: 'Test Organization' }, userId);
 
       expect(result).toEqual(mockOrganization);
-      expect(mockOrganizationRepository.create).toHaveBeenCalledWith({
-        name: 'Test Organization',
-      });
+      expect(mockOrganizationRepository.create).toHaveBeenCalledWith(
+        {
+          name: 'Test Organization',
+        },
+        undefined
+      );
       expect(mockOrganizationRepository.addUserToOrganization).toHaveBeenCalledWith(
         userId,
         organizationId,
@@ -240,9 +240,9 @@ describe('OrganizationService', () => {
       });
 
       const service = container.resolve(OrganizationService);
-      await expect(
-        service.requestToJoinOrganization(userId, organizationId)
-      ).rejects.toThrow('You are already a member of this organization');
+      await expect(service.requestToJoinOrganization(userId, organizationId)).rejects.toThrow(
+        'You are already a member of this organization'
+      );
     });
 
     it('should throw error if user already has pending request', async () => {
@@ -252,9 +252,9 @@ describe('OrganizationService', () => {
       });
 
       const service = container.resolve(OrganizationService);
-      await expect(
-        service.requestToJoinOrganization(userId, organizationId)
-      ).rejects.toThrow('You already have a pending join request for this organization');
+      await expect(service.requestToJoinOrganization(userId, organizationId)).rejects.toThrow(
+        'You already have a pending join request for this organization'
+      );
     });
   });
 
@@ -284,9 +284,9 @@ describe('OrganizationService', () => {
       mockOrganizationRepository.isUserAdmin.mockResolvedValue(false);
 
       const service = container.resolve(OrganizationService);
-      await expect(
-        service.acceptJoinRequest(adminUserId, userId, organizationId)
-      ).rejects.toThrow('Only admins can accept join requests');
+      await expect(service.acceptJoinRequest(adminUserId, userId, organizationId)).rejects.toThrow(
+        'Only admins can accept join requests'
+      );
     });
   });
 
@@ -315,9 +315,9 @@ describe('OrganizationService', () => {
       mockOrganizationRepository.isUserAdmin.mockResolvedValue(false);
 
       const service = container.resolve(OrganizationService);
-      await expect(
-        service.rejectJoinRequest(adminUserId, userId, organizationId)
-      ).rejects.toThrow('Only admins can reject join requests');
+      await expect(service.rejectJoinRequest(adminUserId, userId, organizationId)).rejects.toThrow(
+        'Only admins can reject join requests'
+      );
     });
   });
 
@@ -403,9 +403,9 @@ describe('OrganizationService', () => {
       mockOrganizationRepository.isUserAdmin.mockResolvedValue(false);
 
       const service = container.resolve(OrganizationService);
-      await expect(
-        service.deleteOrganization(organizationId, adminUserId)
-      ).rejects.toThrow('Only admins can delete organizations');
+      await expect(service.deleteOrganization(organizationId, adminUserId)).rejects.toThrow(
+        'Only admins can delete organizations'
+      );
     });
   });
 

@@ -71,15 +71,20 @@ export class OrganizationRepository {
     }
   }
 
-  async create(data: { name: string }): Promise<Organization> {
+  async create(data: { name: string }, image?: Buffer | null): Promise<Organization> {
     try {
+      const storedImage = image ? image.toString('base64') : null;
       const dbOrganization = await this.prisma.client.organization.create({
         data: {
           name: data.name,
+          image: storedImage,
         },
       });
 
-      logger.debug('Organization created', { id: dbOrganization.id });
+      logger.debug('Organization created', {
+        id: dbOrganization.id,
+        hasImage: Boolean(storedImage),
+      });
       return createOrganizationFromDb(dbOrganization);
     } catch (error) {
       logger.error('Failed to create organization', { error });
@@ -436,7 +441,10 @@ export class OrganizationRepository {
     };
   }
 
-  async update(organizationId: OrganizationId, data: { name: string }): Promise<Organization | null> {
+  async update(
+    organizationId: OrganizationId,
+    data: { name: string }
+  ): Promise<Organization | null> {
     try {
       const dbOrganization = await this.prisma.client.organization.update({
         where: { id: organizationId },

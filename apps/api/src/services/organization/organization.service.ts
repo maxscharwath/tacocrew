@@ -41,8 +41,12 @@ export class OrganizationService {
     return this.organizationRepository.findByUserId(userId);
   }
 
-  async createOrganization(data: { name: string }, creatorId: UserId): Promise<Organization> {
-    const organization = await this.organizationRepository.create(data);
+  async createOrganization(
+    data: { name: string },
+    creatorId: UserId,
+    image?: Buffer | null
+  ): Promise<Organization> {
+    const organization = await this.organizationRepository.create(data, image);
     // Set creator as ADMIN with ACTIVE status
     await this.organizationRepository.addUserToOrganization(creatorId, organization.id, {
       role: OrganizationRole.ADMIN,

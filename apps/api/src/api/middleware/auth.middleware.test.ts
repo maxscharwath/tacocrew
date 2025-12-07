@@ -2,6 +2,7 @@
  * Unit tests for auth middleware
  */
 
+import 'reflect-metadata';
 import { beforeEach, describe, expect, test as it, mock } from 'bun:test';
 import type { Context, Next } from 'hono';
 import {

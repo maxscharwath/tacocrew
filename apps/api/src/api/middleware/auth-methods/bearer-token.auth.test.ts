@@ -2,6 +2,8 @@
  * Unit tests for bearer token authentication method
  */
 
+import '@/test-setup';
+import 'reflect-metadata';
 import { beforeEach, describe, expect, test as it, mock } from 'bun:test';
 import type { Context } from 'hono';
 import { container } from 'tsyringe';

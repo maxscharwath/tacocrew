@@ -43,9 +43,12 @@ export async function bearerTokenAuth(c: Context): Promise<AuthResult> {
     if (error instanceof UnauthorizedError) {
       return { success: false, error };
     }
+    // For any other error during token verification, return unauthorized
+    const authError = new UnauthorizedError();
+    authError.message = 'Invalid or expired token';
     return {
       success: false,
-      error: new UnauthorizedError(),
+      error: authError,
     };
   }
 }

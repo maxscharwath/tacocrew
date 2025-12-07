@@ -79,10 +79,7 @@ describe('UpdateUserOrderUserPaymentStatusUseCase', () => {
       UserOrderRepository,
       mockUserOrderRepository as unknown as UserOrderRepository
     );
-    container.registerInstance(
-      UserRepository,
-      mockUserRepository as unknown as UserRepository
-    );
+    container.registerInstance(UserRepository, mockUserRepository as unknown as UserRepository);
     container.registerInstance(
       NotificationService,
       mockNotificationService as unknown as NotificationService
@@ -132,9 +129,9 @@ describe('UpdateUserOrderUserPaymentStatusUseCase', () => {
 
     const useCase = container.resolve(UpdateUserOrderUserPaymentStatusUseCase);
 
-    await expect(
-      useCase.execute(groupOrderId, userOrderId, userId, true)
-    ).rejects.toThrow(NotFoundError);
+    await expect(useCase.execute(groupOrderId, userOrderId, userId, true)).rejects.toThrow(
+      NotFoundError
+    );
   });
 
   it('should throw ValidationError when user is not owner', async () => {
@@ -143,8 +140,8 @@ describe('UpdateUserOrderUserPaymentStatusUseCase', () => {
 
     const useCase = container.resolve(UpdateUserOrderUserPaymentStatusUseCase);
 
-    await expect(
-      useCase.execute(groupOrderId, userOrderId, otherUserId, true)
-    ).rejects.toThrow(ValidationError);
+    await expect(useCase.execute(groupOrderId, userOrderId, otherUserId, true)).rejects.toThrow(
+      ValidationError
+    );
   });
 });

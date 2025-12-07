@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { OrganizationError } from '@/components/errors/OrganizationError';
 import { HydrateFallback } from '@/components/hydrate-fallback';
 import {
   DashboardSkeleton,
@@ -21,6 +22,12 @@ import { profileLoader } from '@/routes/profile';
 import { accountLoader } from '@/routes/profile.account';
 import { profileDeliveryLoader } from '@/routes/profile.delivery';
 import { profileOrganizationsLoader } from '@/routes/profile.organizations';
+import {
+  ProfileOrganizationsIndexRoute,
+  profileOrganizationsIndexLoader,
+} from '@/routes/profile.organizations._index';
+import { profileOrganizationsDetailLoader } from '@/routes/profile.organizations.$id';
+import { ProfileOrganizationsNewRoute } from '@/routes/profile.organizations.new';
 import { releasesLoader } from '@/routes/releases';
 import { RootErrorBoundary, RootLayout } from '@/routes/root';
 import { rootAction, rootLoader } from '@/routes/root.loader';
@@ -191,6 +198,33 @@ export const { routes, routerConfig } = defineRoutes({
         },
         loader: profileOrganizationsLoader,
         hydrateFallback: ProfileSkeleton,
+        children: {
+          index: {
+            index: true,
+            element: ProfileOrganizationsIndexRoute,
+            loader: profileOrganizationsIndexLoader,
+            hydrateFallback: ProfileSkeleton,
+          },
+          new: {
+            path: 'new',
+            element: ProfileOrganizationsNewRoute,
+          },
+          detail: {
+            path: ':id',
+            params: organizationParams,
+            element: {
+              type: 'lazy',
+              importFn: () =>
+                import('@/routes/profile.organizations.$id').then((module) => ({
+                  default: module.ProfileOrganizationsDetailRoute,
+                })),
+              fallback: ProfileSkeleton,
+            },
+            loader: profileOrganizationsDetailLoader,
+            errorElement: OrganizationError,
+            hydrateFallback: ProfileSkeleton,
+          },
+        },
       },
       about: {
         path: 'about',
