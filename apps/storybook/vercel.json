@@ -1,6 +1,5 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "pnpm turbo build --filter=@tacobot/storybook",
-  "installCommand": "pnpm install",
+  "buildCommand": "bun install && bun turbo build --filter=@tacobot/storybook",
   "outputDirectory": "storybook-static"
 }

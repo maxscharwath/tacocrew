@@ -35,7 +35,7 @@ tacobot/
 
 ### Technology Stack
 
-- **Package Manager**: pnpm with workspaces
+- **Package Manager**: bun with workspaces
 - **Build System**: Turbo for monorepo orchestration
 - **TypeScript**: Strict mode across all projects
 - **Code Quality**: Biome (linter + formatter)
@@ -250,13 +250,13 @@ TacoCrew uses Biome for code formatting and linting.
 
 ```bash
 # Check code quality
-pnpm biome check .
+bun biome check .
 
 # Fix auto-fixable issues
-pnpm biome check --write .
+bun biome check --write .
 
 # Format code
-pnpm biome format --write .
+bun biome format --write .
 ```
 
 ---
@@ -412,29 +412,29 @@ import { Button } from '../../../components/ui/Button';
 **Development**:
 ```bash
 # Run all apps in dev mode
-pnpm dev
+bun dev
 
 # Run specific app
-pnpm --filter @tacobot/web dev
-pnpm --filter @tacobot/api dev
+bun --filter @tacobot/web dev
+bun --filter @tacobot/api dev
 ```
 
 **Building**:
 ```bash
 # Build all projects (respects dependencies)
-pnpm build
+bun build
 
 # Build specific project
-pnpm --filter @tacobot/ui-kit build
+bun --filter @tacobot/ui-kit build
 ```
 
 **Testing**:
 ```bash
 # Run all tests
-pnpm test
+bun test
 
 # Run tests for specific project
-pnpm --filter @tacobot/api test
+bun --filter @tacobot/api test
 ```
 
 **Dependencies**: Turbo automatically builds dependencies first (e.g., `ui-kit` before `web`).
@@ -555,7 +555,7 @@ Use this checklist when reviewing pull requests:
 - [ ] Props marked as `readonly` where appropriate
 
 ### Code Quality
-- [ ] Biome checks pass (`pnpm biome check .`)
+- [ ] Biome checks pass (`bun biome check .`)
 - [ ] No console.log statements (use logger or remove)
 - [ ] Imports organized correctly
 - [ ] File naming follows conventions
@@ -569,7 +569,7 @@ Use this checklist when reviewing pull requests:
 
 ### Testing
 - [ ] New features have tests
-- [ ] Tests are passing (`pnpm test`)
+- [ ] Tests are passing (`bun test`)
 - [ ] Edge cases covered
 
 ### Documentation
@@ -607,4 +607,4 @@ Each project has additional guidelines:
 - [TypeScript Handbook](https://www.typescriptlang.org/docs/handbook/intro.html)
 - [Zod Documentation](https://zod.dev/)
 - [Turbo Documentation](https://turbo.build/repo/docs)
-- [pnpm Workspaces](https://pnpm.io/workspaces)
+- [bun Workspaces](https://bun.io/workspaces)

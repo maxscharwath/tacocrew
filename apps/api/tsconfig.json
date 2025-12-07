@@ -13,11 +13,7 @@
     },
 
     /* Emit */
-    "noEmit": false,
-    "outDir": "./dist",
-    "declaration": true,
-    "declarationMap": true,
-    "sourceMap": true,
+    "noEmit": true,
 
     /* Interop Constraints */
     "esModuleInterop": true,
@@ -44,8 +40,8 @@
 
     /* Completeness */
     "skipLibCheck": true,
-    "types": []
+    "types": ["bun-types"]
   },
-  "include": ["src/**/*", "api/**/*", "esbuild.config.ts"],
+  "include": ["src/**/*", "api/**/*"],
   "exclude": ["node_modules", "**/*.spec.ts", "**/*.test.ts", "dist"]
 }

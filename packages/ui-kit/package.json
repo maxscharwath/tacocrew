@@ -13,7 +13,7 @@
     }
   },
   "scripts": {
-    "build": "esbuild src/index.ts --bundle --platform=browser --target=esnext --format=esm --outfile=dist/index.js --packages=external && tsc",
+    "build": "tsc",
     "check": "tsc --noEmit",
     "dev": "tsc --watch"
   },
@@ -31,7 +31,6 @@
   "devDependencies": {
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
-    "esbuild": "^0.27.0",
     "typescript": "^5.9.3"
   },
   "peerDependencies": {

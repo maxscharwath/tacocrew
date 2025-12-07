@@ -1147,7 +1147,7 @@ describe('OrderRepository', () => {
 
 **Run coverage**:
 ```bash
-pnpm test --coverage
+bun test --coverage
 ```
 
 ---

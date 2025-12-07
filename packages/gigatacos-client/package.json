@@ -12,8 +12,8 @@
     }
   },
   "scripts": {
-    "dev": "tsx watch src/index.ts",
-    "build": "esbuild src/index.ts --bundle --platform=node --target=esnext --format=esm --outfile=dist/index.js --packages=external && tsc",
+    "dev": "bun --watch src/index.ts",
+    "build": "tsc",
     "check": "tsc --noEmit"
   },
   "dependencies": {
@@ -26,9 +26,6 @@
   },
   "devDependencies": {
     "@types/node": "^24.10.1",
-    "esbuild": "^0.27.0",
-    "tsx": "^4.20.6",
-    "typescript": "^5.0.0",
-    "vitest": "^4.0.14"
+    "typescript": "^5.0.0"
   }
 }

@@ -1,5 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "PRISMA_ENGINES_CHECKSUM_IGNORE_MISSING=1 pnpm --filter @tacobot/api prisma:db:push && pnpm --filter @tacobot/api prisma:generate && pnpm turbo build --filter=@tacobot/api",
+  "bunVersion": "1.x",
+  "buildCommand": "bun install && PRISMA_ENGINES_CHECKSUM_IGNORE_MISSING=1 bun --filter @tacobot/api prisma:db:push && bun --filter @tacobot/api prisma:generate && bun turbo build --filter=@tacobot/api",
   "outputDirectory": "dist"
 }

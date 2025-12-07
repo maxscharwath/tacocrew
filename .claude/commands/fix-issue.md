@@ -38,9 +38,9 @@ Follow the plan and guidelines:
 - Keep changes focused and minimal
 
 ### 5. Verify Solution
-- Run tests: `pnpm test`
-- Type check: `pnpm tsc --noEmit`
-- Lint: `pnpm biome check .`
+- Run tests: `bun test`
+- Type check: `bun tsc --noEmit`
+- Lint: `bun biome check .`
 - Manual testing if needed
 
 ### 6. Review Code

@@ -6,25 +6,25 @@ A modern taco ordering application built with React, Hono, and Prisma.
 
 ```bash
 # Install dependencies
-pnpm install
+bun install
 
 # Run all apps in development
-pnpm dev
+bun dev
 
 # Run specific app
-pnpm dev:api   # Backend only
-pnpm dev:web   # Frontend only
+bun dev:api   # Backend only
+bun dev:web   # Frontend only
 
 # Build all projects
-pnpm build
+bun build
 
 # Run tests
-pnpm test
+bun test
 ```
 
 ## 📁 Project Structure
 
-This is a **monorepo** managed with pnpm workspaces and Turbo:
+This is a **monorepo** managed with bun workspaces and Turbo:
 
 ```
 tacobot/
@@ -253,33 +253,33 @@ See [RELEASE.md](./RELEASE.md) for detailed release documentation.
 
 ```bash
 # Run all tests
-pnpm test
+bun test
 
 # Run specific project tests
-pnpm --filter @tacobot/api test
-pnpm --filter @tacobot/web test
+bun --filter @tacobot/api test
+bun --filter @tacobot/web test
 
 # Watch mode
-pnpm test --watch
+bun test --watch
 
 # Coverage
-pnpm test --coverage
+bun test --coverage
 ```
 
 ## 🎨 Code Quality
 
 ```bash
 # Check everything
-pnpm biome check .
+bun biome check .
 
 # Auto-fix issues
-pnpm biome check --write .
+bun biome check --write .
 
 # TypeScript check
-pnpm tsc --noEmit
+bun tsc --noEmit
 
 # Format code
-pnpm biome format --write .
+bun biome format --write .
 ```
 
 ## 📦 Technology Stack
@@ -301,7 +301,7 @@ pnpm biome format --write .
 - **Testing**: Vitest
 
 ### Shared
-- **Package Manager**: pnpm
+- **Package Manager**: bun
 - **Monorepo**: Turbo
 - **Language**: TypeScript (strict mode)
 - **Linting**: Biome
