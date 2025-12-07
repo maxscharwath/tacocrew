@@ -5,19 +5,20 @@
 
 import type { Context } from 'hono';
 import type { AuthResult } from '@/api/middleware/auth.types';
+import { UserRepository } from '@/infrastructure/repositories/user.repository';
 import { AuthService } from '@/services/auth/auth.service';
 import { UnauthorizedError } from '@/shared/utils/errors.utils';
 import { inject } from '@/shared/utils/inject.utils';
 
 /**
  * Bearer token authentication method
- * Validates JWT tokens from the Authorization header
+ * Validates JWT tokens from the Authorization header and fetches the full user
  */
-export function bearerTokenAuth(c: Context): Promise<AuthResult> {
+export async function bearerTokenAuth(c: Context): Promise<AuthResult> {
   const authHeader = c.req.header('authorization');
 
   if (!authHeader?.startsWith('Bearer ')) {
-    return Promise.resolve({ success: false });
+    return { success: false };
   }
 
   const token = authHeader.substring(7); // Remove 'Bearer ' prefix
@@ -26,19 +27,25 @@ export function bearerTokenAuth(c: Context): Promise<AuthResult> {
     const authService = inject(AuthService);
     const payload = authService.verifyToken(token);
 
-    return Promise.resolve({
+    // Fetch the full user object
+    const userRepository = inject(UserRepository);
+    const user = await userRepository.findById(payload.userId);
+
+    if (!user) {
+      return { success: false, error: new UnauthorizedError() };
+    }
+
+    return {
       success: true,
-      userId: payload.userId,
-      username: payload.username,
-      slackId: payload.slackId,
-    });
+      user,
+    };
   } catch (error) {
     if (error instanceof UnauthorizedError) {
-      return Promise.resolve({ success: false, error });
+      return { success: false, error };
     }
-    return Promise.resolve({
+    return {
       success: false,
       error: new UnauthorizedError(),
-    });
+    };
   }
 }

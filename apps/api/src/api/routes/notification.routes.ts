@@ -10,7 +10,7 @@ import {
   createPageSchema,
   jsonContent,
 } from '@/api/schemas/shared.schemas';
-import { authSecurity, createAuthenticatedRouteApp, requireUserId } from '@/api/utils/route.utils';
+import { authSecurity, createAuthenticatedRouteApp } from '@/api/utils/route.utils';
 import { NotificationRepository } from '@/infrastructure/repositories/notification.repository';
 import { inject } from '@/shared/utils/inject.utils';
 
@@ -89,7 +89,7 @@ app.openapi(
     },
   }),
   async (c) => {
-    const userId = requireUserId(c);
+    const userId = c.var.user.id;
     const { limit, cursor, archived } = c.req.valid('query');
     const notificationRepository = inject(NotificationRepository);
 
@@ -126,7 +126,7 @@ app.openapi(
     },
   }),
   async (c) => {
-    const userId = requireUserId(c);
+    const userId = c.var.user.id;
     const notificationRepository = inject(NotificationRepository);
 
     const count = await notificationRepository.getUnreadCount(userId);
@@ -157,7 +157,7 @@ app.openapi(
     },
   }),
   async (c) => {
-    const userId = requireUserId(c);
+    const userId = c.var.user.id;
     const { id } = c.req.valid('param');
     const notificationRepository = inject(NotificationRepository);
 
@@ -186,7 +186,7 @@ app.openapi(
     },
   }),
   async (c) => {
-    const userId = requireUserId(c);
+    const userId = c.var.user.id;
     const notificationRepository = inject(NotificationRepository);
 
     const count = await notificationRepository.markAllAsRead(userId);
@@ -217,7 +217,7 @@ app.openapi(
     },
   }),
   async (c) => {
-    const userId = requireUserId(c);
+    const userId = c.var.user.id;
     const { id } = c.req.valid('param');
     const notificationRepository = inject(NotificationRepository);
 
@@ -246,7 +246,7 @@ app.openapi(
     },
   }),
   async (c) => {
-    const userId = requireUserId(c);
+    const userId = c.var.user.id;
     const notificationRepository = inject(NotificationRepository);
 
     const count = await notificationRepository.archiveAll(userId);

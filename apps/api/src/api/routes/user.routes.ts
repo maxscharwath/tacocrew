@@ -6,17 +6,17 @@
 import { createRoute } from '@hono/zod-openapi';
 import { z } from 'zod';
 import { jsonContent, UserSchemas } from '@/api/schemas/user.schemas';
-import { authSecurity, createAuthenticatedRouteApp, requireUserId } from '@/api/utils/route.utils';
+import { authSecurity, createAuthenticatedRouteApp } from '@/api/utils/route.utils';
 import type { User, UserId } from '@/schemas/user.schema';
 import type { UserDeliveryProfile } from '@/schemas/user-delivery-profile.schema';
 import { UserDeliveryProfileIdSchema } from '@/schemas/user-delivery-profile.schema';
 import { UserService } from '@/services/user/user.service';
+import { Currency } from '@/shared/types/types';
 import {
   buildAvatarUrl,
   processAvatarImage,
   processProfileImage,
 } from '@/shared/utils/image.utils';
-import { Currency } from '@/shared/types/types';
 import { inject } from '@/shared/utils/inject.utils';
 import { logger } from '@/shared/utils/logger.utils';
 
@@ -28,7 +28,6 @@ function serializeUserResponse(user: User) {
     username: user.username,
     name: user.name,
     phone: user.phone ?? null,
-    slackId: user.slackId ?? undefined,
     language: user.language ?? null,
     image: buildAvatarUrl(user),
     createdAt: user.createdAt?.toISOString(),
@@ -79,37 +78,8 @@ app.openapi(
       },
     },
   }),
-  async (c) => {
-    const userId = requireUserId(c);
-    const userService = inject(UserService);
-
-    // Check if userId is a valid UUID - if not, it's a Better Auth ID, look up by email from context
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-    const isValidUUID = uuidRegex.test(userId);
-
-    let user;
-    if (isValidUUID) {
-      user = await userService.getUserById(userId);
-    } else {
-      // Better Auth ID - get email from context (set by auth middleware) or from Better Auth session
-      const email = c.get('email') || c.req.header('x-user-email');
-      if (email) {
-        user = await userService.getUserByEmail(email);
-      } else {
-        // Fallback: try to get from Better Auth session
-        const { auth } = await import('../../auth');
-        const session = await auth.api.getSession({
-          headers: c.req.raw.headers,
-        });
-        if (session?.user?.email) {
-          user = await userService.getUserByEmail(session.user.email);
-        } else {
-          throw new Error('Unable to determine user email for Better Auth ID');
-        }
-      }
-    }
-
-    return c.json(serializeUserResponse(user), 200);
+  (c) => {
+    return c.json(serializeUserResponse(c.var.user), 200);
   }
 );
 
@@ -136,7 +106,7 @@ app.openapi(
     },
   }),
   async (c) => {
-    const userId = requireUserId(c);
+    const userId = c.var.user.id;
     const { language } = c.req.valid('json');
     const userService = inject(UserService);
 
@@ -169,7 +139,7 @@ app.openapi(
     },
   }),
   async (c) => {
-    const userId = requireUserId(c);
+    const userId = c.var.user.id;
     const { phone } = c.req.valid('json');
     const userService = inject(UserService);
 
@@ -197,7 +167,7 @@ app.openapi(
     },
   }),
   async (c) => {
-    const userId = requireUserId(c);
+    const userId = c.var.user.id;
     const orders = await inject(UserService).getUserOrderHistory(userId);
     return c.json(orders, 200);
   }
@@ -221,7 +191,7 @@ app.openapi(
     },
   }),
   async (c) => {
-    const userId = requireUserId(c);
+    const userId = c.var.user.id;
     const groupOrders = await inject(UserService).getUserGroupOrders(userId);
     return c.json(groupOrders, 200);
   }
@@ -245,7 +215,7 @@ app.openapi(
     },
   }),
   async (c) => {
-    const userId = requireUserId(c);
+    const userId = c.var.user.id;
     const previousOrders = await inject(UserService).getPreviousOrders(userId);
     return c.json(
       previousOrders.map((order) => ({
@@ -280,7 +250,7 @@ app.openapi(
     },
   }),
   async (c) => {
-    const userId = requireUserId(c);
+    const userId = c.var.user.id;
     const profiles = await inject(UserService).getDeliveryProfiles(userId);
     return c.json(profiles.map(serializeDeliveryProfile), 200);
   }
@@ -305,7 +275,7 @@ app.openapi(
     },
   }),
   async (c) => {
-    const userId = requireUserId(c);
+    const userId = c.var.user.id;
     const payload = c.req.valid('json');
     const profile = await inject(UserService).createDeliveryProfile(userId, payload);
     return c.json(serializeDeliveryProfile(profile), 201);
@@ -332,7 +302,7 @@ app.openapi(
     },
   }),
   async (c) => {
-    const userId = requireUserId(c);
+    const userId = c.var.user.id;
     const { profileId: rawProfileId } = c.req.valid('param');
     const profileId = UserDeliveryProfileIdSchema.parse(rawProfileId);
     const payload = c.req.valid('json');
@@ -357,7 +327,7 @@ app.openapi(
     },
   }),
   async (c) => {
-    const userId = requireUserId(c);
+    const userId = c.var.user.id;
     const { profileId: rawProfileId } = c.req.valid('param');
     const profileId = UserDeliveryProfileIdSchema.parse(rawProfileId);
     await inject(UserService).deleteDeliveryProfile(userId, profileId);
@@ -399,7 +369,7 @@ app.openapi(
     },
   }),
   async (c) => {
-    const userId = requireUserId(c);
+    const userId = c.var.user.id;
     const formData = await c.req.formData();
     const file = formData.get('image');
 
@@ -458,7 +428,7 @@ app.openapi(
     },
   }),
   async (c) => {
-    const userId = requireUserId(c);
+    const userId = c.var.user.id;
     const userService = inject(UserService);
 
     // Remove user image

@@ -9,7 +9,6 @@ const UserResponseSchema = z.object({
   username: z.string().nullable(),
   name: z.string().nullable(),
   phone: z.string().nullable().optional(),
-  slackId: z.string().optional(),
   language: z.string().nullable(),
   image: z.string().nullable().optional(),
   createdAt: IsoDateStringSchema.optional(),

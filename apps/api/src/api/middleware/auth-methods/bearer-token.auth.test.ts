@@ -2,21 +2,32 @@
  * Unit tests for bearer token authentication method
  */
 
+import { beforeEach, describe, expect, test as it, mock } from 'bun:test';
 import type { Context } from 'hono';
 import { container } from 'tsyringe';
-import { beforeEach, describe, expect, mock, test as it } from 'bun:test';
 import { bearerTokenAuth } from '@/api/middleware/auth-methods/bearer-token.auth';
-import type { UserId } from '@/schemas/user.schema';
+import { UserRepository } from '@/infrastructure/repositories/user.repository';
+import type { User, UserId } from '@/schemas/user.schema';
 import { AuthService } from '@/services/auth/auth.service';
 import { UnauthorizedError, ValidationError } from '@/shared/utils/errors.utils';
 
 describe('bearerTokenAuth', () => {
   let mockContext: Context;
   let mockAuthService: {
-    generateToken: ReturnType<typeof vi.fn>;
-    verifyToken: ReturnType<typeof vi.fn>;
+    generateToken: ReturnType<typeof mock>;
+    verifyToken: ReturnType<typeof mock>;
+  };
+  let mockUserRepository: {
+    findById: ReturnType<typeof mock>;
   };
   const mockUserId = 'user-123' as UserId;
+  const mockUser: User = {
+    id: mockUserId,
+    username: 'testuser',
+    name: 'Test User',
+    phone: null,
+    language: null,
+  };
 
   beforeEach(() => {
     container.clearInstances();
@@ -34,6 +45,12 @@ describe('bearerTokenAuth', () => {
       verifyToken: mock(),
     };
     container.registerInstance(AuthService, mockAuthService as unknown as AuthService);
+
+    // Create and register mock user repository
+    mockUserRepository = {
+      findById: mock(),
+    };
+    container.registerInstance(UserRepository, mockUserRepository as unknown as UserRepository);
   });
 
   describe('successful authentication', () => {
@@ -41,44 +58,40 @@ describe('bearerTokenAuth', () => {
       const token = 'valid-token';
       const payload = {
         userId: mockUserId,
-        username: 'testuser',
-        slackId: 'slack-123',
       };
 
-      vi.mocked(mockContext.req.header).mockReturnValue(`Bearer ${token}`);
+      mockContext.req.header.mockReturnValue(`Bearer ${token}`);
       mockAuthService.verifyToken.mockReturnValue(payload);
+      mockUserRepository.findById.mockResolvedValue(mockUser);
 
       const result = await bearerTokenAuth(mockContext);
 
       expect(result.success).toBe(true);
-      expect(result.userId).toBe(mockUserId);
-      expect(result.username).toBe('testuser');
-      expect(result.slackId).toBe('slack-123');
+      expect(result.user).toEqual(mockUser);
       expect(mockAuthService.verifyToken).toHaveBeenCalledWith(token);
+      expect(mockUserRepository.findById).toHaveBeenCalledWith(mockUserId);
     });
 
-    it('should authenticate with valid token without slackId', async () => {
+    it('should return failure when user not found', async () => {
       const token = 'valid-token';
       const payload = {
         userId: mockUserId,
-        username: 'testuser',
       };
 
-      vi.mocked(mockContext.req.header).mockReturnValue(`Bearer ${token}`);
+      mockContext.req.header.mockReturnValue(`Bearer ${token}`);
       mockAuthService.verifyToken.mockReturnValue(payload);
+      mockUserRepository.findById.mockResolvedValue(null);
 
       const result = await bearerTokenAuth(mockContext);
 
-      expect(result.success).toBe(true);
-      expect(result.userId).toBe(mockUserId);
-      expect(result.username).toBe('testuser');
-      expect(result.slackId).toBeUndefined();
+      expect(result.success).toBe(false);
+      expect(result.error).toBeInstanceOf(UnauthorizedError);
     });
   });
 
   describe('failure cases', () => {
     it('should return failure when no authorization header', async () => {
-      vi.mocked(mockContext.req.header).mockReturnValue(undefined);
+      mockContext.req.header.mockReturnValue(undefined);
 
       const result = await bearerTokenAuth(mockContext);
 
@@ -87,7 +100,7 @@ describe('bearerTokenAuth', () => {
     });
 
     it('should return failure when authorization header does not start with Bearer', async () => {
-      vi.mocked(mockContext.req.header).mockReturnValue('Invalid token');
+      mockContext.req.header.mockReturnValue('Invalid token');
 
       const result = await bearerTokenAuth(mockContext);
 
@@ -99,7 +112,7 @@ describe('bearerTokenAuth', () => {
       const token = 'invalid-token';
       const error = new UnauthorizedError('Token expired');
 
-      vi.mocked(mockContext.req.header).mockReturnValue(`Bearer ${token}`);
+      mockContext.req.header.mockReturnValue(`Bearer ${token}`);
       mockAuthService.verifyToken.mockImplementation(() => {
         throw error;
       });
@@ -114,7 +127,7 @@ describe('bearerTokenAuth', () => {
       const token = 'invalid-token';
       const error = new ValidationError('Invalid token');
 
-      vi.mocked(mockContext.req.header).mockReturnValue(`Bearer ${token}`);
+      mockContext.req.header.mockReturnValue(`Bearer ${token}`);
       mockAuthService.verifyToken.mockImplementation(() => {
         throw error;
       });
@@ -130,7 +143,7 @@ describe('bearerTokenAuth', () => {
       const token = 'invalid-token';
       const error = new Error('Unexpected error');
 
-      vi.mocked(mockContext.req.header).mockReturnValue(`Bearer ${token}`);
+      mockContext.req.header.mockReturnValue(`Bearer ${token}`);
       mockAuthService.verifyToken.mockImplementation(() => {
         throw error;
       });
@@ -148,11 +161,11 @@ describe('bearerTokenAuth', () => {
       const token = 'my-secret-token';
       const payload = {
         userId: mockUserId,
-        username: 'testuser',
       };
 
-      vi.mocked(mockContext.req.header).mockReturnValue(`Bearer ${token}`);
+      mockContext.req.header.mockReturnValue(`Bearer ${token}`);
       mockAuthService.verifyToken.mockReturnValue(payload);
+      mockUserRepository.findById.mockResolvedValue(mockUser);
 
       await bearerTokenAuth(mockContext);
 
@@ -164,11 +177,11 @@ describe('bearerTokenAuth', () => {
       const token = 'token-with-spaces';
       const payload = {
         userId: mockUserId,
-        username: 'testuser',
       };
 
-      vi.mocked(mockContext.req.header).mockReturnValue(`Bearer ${token}`);
+      mockContext.req.header.mockReturnValue(`Bearer ${token}`);
       mockAuthService.verifyToken.mockReturnValue(payload);
+      mockUserRepository.findById.mockResolvedValue(mockUser);
 
       await bearerTokenAuth(mockContext);
 

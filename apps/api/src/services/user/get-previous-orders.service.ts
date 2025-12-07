@@ -3,8 +3,8 @@ import { z } from 'zod';
 import { PrismaService } from '@/infrastructure/database/prisma.service';
 import type { Taco } from '@/schemas/taco.schema';
 import { TacoSchema } from '@/schemas/taco.schema';
-import { UserOrderItemsSchema } from '@/schemas/user-order.schema';
 import type { UserId } from '@/schemas/user.schema';
+import { UserOrderItemsSchema } from '@/schemas/user-order.schema';
 import { inject } from '@/shared/utils/inject.utils';
 
 export interface PreviousOrder {

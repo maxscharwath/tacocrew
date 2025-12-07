@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
+import { passkey } from '@better-auth/passkey';
 import { betterAuth } from 'better-auth';
 import { prismaAdapter } from 'better-auth/adapters/prisma';
-import { passkey } from '@better-auth/passkey';
 import { getPrismaClient } from '@/infrastructure/database/prisma.client';
 
 // Use the shared PrismaClient instance to avoid connection pool exhaustion

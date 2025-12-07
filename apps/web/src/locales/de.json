@@ -720,7 +720,6 @@
           "copyCode": "Code kopieren",
           "codeLabel": "Beitrittscode",
           "qrCode": "Scannen zum Beitreten",
-          "shareToSlack": "Auf Slack teilen",
           "linkCopied": "Link kopiert!",
           "codeCopied": "Code kopiert!",
           "inviteInstructions": "Teile diesen Link oder Code mit deinem Team, um dieser Bestellung beizutreten."
@@ -975,7 +974,6 @@
     "fields": {
       "username": "Benutzername",
       "userId": "Benutzer-ID",
-      "slackId": "Slack-ID",
       "created": "Erstellt",
       "updated": "Aktualisiert"
     },

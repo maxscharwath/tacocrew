@@ -4,10 +4,7 @@
   "version": "0.2512.1",
   "type": "module",
   "packageManager": "bun@1.2.14",
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ],
+  "workspaces": ["apps/*", "packages/*"],
   "devDependencies": {
     "@biomejs/biome": "2.3.6",
     "storybook": "10.1.4",
@@ -22,8 +19,8 @@
     "build:ui-kit": "bun --filter @tacobot/ui-kit build",
     "db:setup": "bun --filter @tacobot/api db:setup",
     "test": "turbo run test",
-    "check": "bun --filter @tacobot/api check"
+    "check": "turbo run check",
+    "lint:fix": "biome check --write ."
   },
-  "dependencies": {
-  }
+  "dependencies": {}
 }

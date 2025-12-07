@@ -17,29 +17,44 @@ export type { AuthMethod, AuthResult } from '@/api/middleware/auth.types';
 export { bearerTokenAuth } from '@/api/middleware/auth-methods/bearer-token.auth';
 
 /**
- * Store user info in context
+ * Store user in context (Principal pattern - single source of truth)
  */
 function setUserContext(c: Context, result: AuthResult): void {
-  if (result.userId) {
-    c.set('userId', result.userId);
-  }
-  if (result.username) {
-    c.set('username', result.username);
-  }
-  if (result.slackId) {
-    c.set('slackId', result.slackId);
-  }
-  if (result.email) {
-    c.set('email', result.email);
+  if (result.user) {
+    c.set('user', result.user);
   }
 }
 
 /**
- * Check if Better Auth session exists in context and map to our user
- * This leverages the global Better Auth middleware that sets user/session in context
+ * Type guard for Prisma unique constraint violation errors
+ */
+function isPrismaUniqueConstraintError(
+  error: unknown,
+  field?: string
+): error is { code: string; meta: { target: string[] } } {
+  return (
+    error !== null &&
+    typeof error === 'object' &&
+    'code' in error &&
+    error.code === 'P2002' &&
+    'meta' in error &&
+    error.meta !== null &&
+    typeof error.meta === 'object' &&
+    'target' in error.meta &&
+    Array.isArray(error.meta.target) &&
+    (field === undefined || error.meta.target.includes(field))
+  );
+}
+
+/**
+ * Check if Better Auth session exists and map to our user
+ * Better Auth session is checked internally (not exposed in context)
  */
 async function checkBetterAuthSession(c: Context): Promise<AuthResult | null> {
-  const betterAuthUser = c.get('user');
+  // Get Better Auth session directly (not from context)
+  const { auth } = await import('@/auth');
+  const session = await auth.api.getSession({ headers: c.req.raw.headers });
+  const betterAuthUser = session?.user;
 
   if (!betterAuthUser?.email) {
     return null;
@@ -52,7 +67,7 @@ async function checkBetterAuthSession(c: Context): Promise<AuthResult | null> {
 
     if (!user) {
       // User doesn't exist in our system yet - create them
-      const baseUsername = betterAuthUser.name || betterAuthUser.email.split('@')[0];
+      const baseUsername = betterAuthUser.name || betterAuthUser.email.split('@')[0] || 'user';
       let username = baseUsername;
       let attempt = 0;
 
@@ -66,25 +81,11 @@ async function checkBetterAuthSession(c: Context): Promise<AuthResult | null> {
 
           return {
             success: true,
-            userId: newUser.id,
-            username: newUser.username || username,
-            slackId: newUser.slackId ?? undefined,
-            email: betterAuthUser.email,
+            user: newUser,
           };
         } catch (error: unknown) {
           // If username conflict, try with a number suffix
-          if (
-            error &&
-            typeof error === 'object' &&
-            'code' in error &&
-            error.code === 'P2002' &&
-            'meta' in error &&
-            error.meta &&
-            typeof error.meta === 'object' &&
-            'target' in error.meta &&
-            Array.isArray(error.meta.target) &&
-            error.meta.target.includes('username')
-          ) {
+          if (isPrismaUniqueConstraintError(error, 'username')) {
             attempt++;
             username = `${baseUsername}${attempt}`;
             continue;
@@ -97,13 +98,10 @@ async function checkBetterAuthSession(c: Context): Promise<AuthResult | null> {
       return null; // Exhausted attempts
     }
 
-    // User exists - return their info
+    // User exists - return full user object
     return {
       success: true,
-      userId: user.id,
-      username: user.username || betterAuthUser.name || betterAuthUser.email.split('@')[0],
-      slackId: user.slackId ?? undefined,
-      email: betterAuthUser.email,
+      user,
     };
   } catch (error_) {
     // If lookup fails, return null to try fallback auth methods
@@ -162,7 +160,8 @@ export function createAuthMiddleware(methods: AuthMethod[], required = true): Mi
  * // Add a custom authentication method
  * const customAuth: AuthMethod = async (c) => {
  *   // Your custom auth logic
- *   return { success: true, userId: '...', username: '...' };
+ *   const user = await getUserFromSomewhere();
+ *   return { success: true, user };
  * };
  * const customMiddleware = createAuthMiddleware([bearerTokenAuth, customAuth]);
  */

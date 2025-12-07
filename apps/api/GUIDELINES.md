@@ -435,19 +435,6 @@ app.openapi(createOrderRoute, async (c) => {
 });
 ```
 
-### Middleware Validation
-
-**✅ DO** use validation middleware for custom validation:
-
-```typescript
-import { zodValidator } from '@/api/middleware/zod-validator.middleware';
-
-app.post('/orders', zodValidator(CreateOrderRequestSchema), async (c) => {
-  const body = c.get('body'); // Already validated and typed
-  // ...
-});
-```
-
 ### Parse, Don't Validate
 
 **❌ DON'T** just validate data:

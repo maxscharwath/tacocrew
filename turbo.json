@@ -11,6 +11,9 @@
     },
     "test": {
       "dependsOn": ["^test"]
+    },
+    "check": {
+      "dependsOn": ["^check"]
     }
   }
 }

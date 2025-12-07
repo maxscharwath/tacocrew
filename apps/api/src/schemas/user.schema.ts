@@ -25,7 +25,6 @@ export const UserSchema = z.object({
   username: z.string().nullable(),
   name: z.string().nullable(),
   phone: z.string().nullable(),
-  slackId: z.string().nullish(),
   language: z.string().nullable(),
   hasImage: z.boolean().optional(),
   createdAt: z.date().optional(),
@@ -35,7 +34,7 @@ export const UserSchema = z.object({
 export type User = z.infer<typeof UserSchema>;
 
 /**
- * User from database (with nullable slackId and username)
+ * User from database
  */
 const DbImageSchema = z
   .union([z.instanceof(Buffer), z.instanceof(Uint8Array), z.string()])
@@ -47,7 +46,6 @@ export const UserFromDbSchema = z.object({
   username: z.string().nullable(),
   name: z.string().nullable(),
   phone: z.string().nullable(),
-  slackId: z.string().nullish(),
   language: z.string().nullable(),
   image: DbImageSchema,
   createdAt: z.date(),
@@ -64,11 +62,4 @@ export function createUserFromDb(data: z.infer<typeof UserFromDbSchema>): User {
     ...rest,
     hasImage: Boolean(image),
   });
-}
-
-/**
- * Check if user has Slack integration
- */
-export function hasSlackIntegration(user: User): boolean {
-  return !!user.slackId;
 }

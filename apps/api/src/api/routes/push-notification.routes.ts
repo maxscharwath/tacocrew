@@ -6,7 +6,7 @@
 import { createRoute } from '@hono/zod-openapi';
 import { z } from 'zod';
 import { jsonContent } from '@/api/schemas/shared.schemas';
-import { authSecurity, createAuthenticatedRouteApp, requireUserId } from '@/api/utils/route.utils';
+import { authSecurity, createAuthenticatedRouteApp } from '@/api/utils/route.utils';
 import { PushSubscriptionRepository } from '@/infrastructure/repositories/push-subscription.repository';
 import { t } from '@/lib/i18n';
 import { NotificationService } from '@/services/notification/notification.service';
@@ -16,7 +16,7 @@ import { logger } from '@/shared/utils/logger.utils';
 const app = createAuthenticatedRouteApp();
 
 const PushSubscriptionRequestSchema = z.object({
-  endpoint: z.string().url(),
+  endpoint: z.url(),
   keys: z.object({
     p256dh: z.string(),
     auth: z.string(),
@@ -47,7 +47,7 @@ app.openapi(
     },
   }),
   async (c) => {
-    const userId = requireUserId(c);
+    const userId = c.var.user.id;
     const body = c.req.valid('json');
     const pushSubscriptionRepository = inject(PushSubscriptionRepository);
 
@@ -72,7 +72,7 @@ app.openapi(
       body: {
         content: jsonContent(
           z.object({
-            endpoint: z.string().url(),
+            endpoint: z.url(),
           })
         ),
       },
@@ -147,7 +147,7 @@ app.openapi(
     },
   }),
   async (c) => {
-    const userId = requireUserId(c);
+    const userId = c.var.user.id;
     const pushSubscriptionRepository = inject(PushSubscriptionRepository);
 
     const subscriptions = await pushSubscriptionRepository.findAllByUserId(userId);
@@ -196,7 +196,7 @@ app.openapi(
     },
   }),
   async (c) => {
-    const userId = requireUserId(c);
+    const userId = c.var.user.id;
     const { id } = c.req.valid('param');
     const pushSubscriptionRepository = inject(PushSubscriptionRepository);
 
@@ -233,7 +233,7 @@ app.openapi(
     },
   }),
   async (c) => {
-    const userId = requireUserId(c);
+    const userId = c.var.user.id;
     const notificationService = inject(NotificationService);
 
     logger.debug('Sending test notification', { userId });

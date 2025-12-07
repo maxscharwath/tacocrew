@@ -2,21 +2,28 @@
  * Unit tests for auth middleware
  */
 
+import { beforeEach, describe, expect, test as it, mock } from 'bun:test';
 import type { Context, Next } from 'hono';
-import { beforeEach, describe, expect, mock, test as it } from 'bun:test';
 import {
   authMiddleware,
   createAuthMiddleware,
   optionalAuthMiddleware,
 } from '@/api/middleware/auth.middleware';
 import type { AuthMethod } from '@/api/middleware/auth.types';
-import type { UserId } from '@/schemas/user.schema';
+import type { User, UserId } from '@/schemas/user.schema';
 import { UnauthorizedError } from '@/shared/utils/errors.utils';
 
 describe('createAuthMiddleware', () => {
   let mockContext: Context;
   let mockNext: Next;
   const mockUserId = 'user-123' as UserId;
+  const mockUser: User = {
+    id: mockUserId,
+    username: 'testuser',
+    name: 'Test User',
+    phone: null,
+    language: null,
+  };
 
   beforeEach(() => {
     mockContext = {
@@ -31,8 +38,7 @@ describe('createAuthMiddleware', () => {
     it('should call next when authentication succeeds', async () => {
       const authMethod: AuthMethod = mock().mockResolvedValue({
         success: true,
-        userId: mockUserId,
-        username: 'testuser',
+        user: mockUser,
       });
 
       const middleware = createAuthMiddleware([authMethod], true);
@@ -40,24 +46,8 @@ describe('createAuthMiddleware', () => {
       await middleware(mockContext, mockNext);
 
       expect(authMethod).toHaveBeenCalledWith(mockContext);
-      expect(mockContext.set).toHaveBeenCalledWith('userId', mockUserId);
-      expect(mockContext.set).toHaveBeenCalledWith('username', 'testuser');
+      expect(mockContext.set).toHaveBeenCalledWith('user', mockUser);
       expect(mockNext).toHaveBeenCalled();
-    });
-
-    it('should set slackId in context when provided', async () => {
-      const authMethod: AuthMethod = mock().mockResolvedValue({
-        success: true,
-        userId: mockUserId,
-        username: 'testuser',
-        slackId: 'slack-123',
-      });
-
-      const middleware = createAuthMiddleware([authMethod], true);
-
-      await middleware(mockContext, mockNext);
-
-      expect(mockContext.set).toHaveBeenCalledWith('slackId', 'slack-123');
     });
 
     it('should throw UnauthorizedError when all methods fail', async () => {
@@ -97,8 +87,7 @@ describe('createAuthMiddleware', () => {
       });
       const succeedingMethod: AuthMethod = mock().mockResolvedValue({
         success: true,
-        userId: mockUserId,
-        username: 'testuser',
+        user: mockUser,
       });
 
       const middleware = createAuthMiddleware([failingMethod, succeedingMethod], true);
@@ -113,8 +102,7 @@ describe('createAuthMiddleware', () => {
     it('should stop trying methods after first success', async () => {
       const firstMethod: AuthMethod = mock().mockResolvedValue({
         success: true,
-        userId: mockUserId,
-        username: 'testuser',
+        user: mockUser,
       });
       const secondMethod: AuthMethod = mock();
 
@@ -143,16 +131,14 @@ describe('createAuthMiddleware', () => {
     it('should set user context when authentication succeeds', async () => {
       const authMethod: AuthMethod = mock().mockResolvedValue({
         success: true,
-        userId: mockUserId,
-        username: 'testuser',
+        user: mockUser,
       });
 
       const middleware = createAuthMiddleware([authMethod], false);
 
       await middleware(mockContext, mockNext);
 
-      expect(mockContext.set).toHaveBeenCalledWith('userId', mockUserId);
-      expect(mockContext.set).toHaveBeenCalledWith('username', 'testuser');
+      expect(mockContext.set).toHaveBeenCalledWith('user', mockUser);
       expect(mockNext).toHaveBeenCalled();
     });
 
@@ -171,50 +157,31 @@ describe('createAuthMiddleware', () => {
   });
 
   describe('context setting', () => {
-    it('should only set userId if provided', async () => {
+    it('should set user in context when provided', async () => {
       const authMethod: AuthMethod = mock().mockResolvedValue({
         success: true,
-        userId: mockUserId,
+        user: mockUser,
       });
 
       const middleware = createAuthMiddleware([authMethod], true);
 
       await middleware(mockContext, mockNext);
 
-      expect(mockContext.set).toHaveBeenCalledWith('userId', mockUserId);
-      expect(mockContext.set).not.toHaveBeenCalledWith('username', expect.anything());
-      expect(mockContext.set).not.toHaveBeenCalledWith('slackId', expect.anything());
+      expect(mockContext.set).toHaveBeenCalledWith('user', mockUser);
+      expect(mockNext).toHaveBeenCalled();
     });
 
-    it('should only set username if provided', async () => {
+    it('should not set user when authentication fails', async () => {
       const authMethod: AuthMethod = mock().mockResolvedValue({
-        success: true,
-        username: 'testuser',
+        success: false,
       });
 
-      const middleware = createAuthMiddleware([authMethod], true);
+      const middleware = createAuthMiddleware([authMethod], false);
 
       await middleware(mockContext, mockNext);
 
-      expect(mockContext.set).toHaveBeenCalledWith('username', 'testuser');
-      expect(mockContext.set).not.toHaveBeenCalledWith('userId', expect.anything());
-    });
-
-    it('should handle partial user data', async () => {
-      const authMethod: AuthMethod = mock().mockResolvedValue({
-        success: true,
-        userId: mockUserId,
-        username: 'testuser',
-        // No slackId
-      });
-
-      const middleware = createAuthMiddleware([authMethod], true);
-
-      await middleware(mockContext, mockNext);
-
-      expect(mockContext.set).toHaveBeenCalledWith('userId', mockUserId);
-      expect(mockContext.set).toHaveBeenCalledWith('username', 'testuser');
-      expect(mockContext.set).not.toHaveBeenCalledWith('slackId', expect.anything());
+      expect(mockContext.set).not.toHaveBeenCalled();
+      expect(mockNext).toHaveBeenCalled();
     });
   });
 });
@@ -240,7 +207,7 @@ describe('authMiddleware', () => {
   });
 
   it('should throw UnauthorizedError when no auth method succeeds', async () => {
-    vi.mocked(mockContext.req.header).mockReturnValue(undefined);
+    mockContext.req.header.mockReturnValue(undefined);
 
     await expect(authMiddleware(mockContext, mockNext)).rejects.toThrow(UnauthorizedError);
     expect(mockNext).not.toHaveBeenCalled();
@@ -268,7 +235,7 @@ describe('optionalAuthMiddleware', () => {
   });
 
   it('should call next even when no auth method succeeds', async () => {
-    vi.mocked(mockContext.req.header).mockReturnValue(undefined);
+    mockContext.req.header.mockReturnValue(undefined);
 
     await optionalAuthMiddleware(mockContext, mockNext);
 

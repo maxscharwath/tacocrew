@@ -1,6 +1,5 @@
 /**
  * Authentication service with JWT bearer tokens
- * Simplified for future Slack integration
  * @module services/auth
  */
 
@@ -17,7 +16,6 @@ import { ValidationError } from '@/shared/utils/errors.utils';
 export interface JWTPayload {
   userId: UserId;
   username: string;
-  slackId?: string;
 }
 
 /**
@@ -39,11 +37,10 @@ export class AuthService {
   /**
    * Generate a JWT token for a user
    */
-  generateToken(user: { id: UserId; username: string; slackId?: string }): string {
+  generateToken(user: { id: UserId; username: string }): string {
     const payload: JWTPayload = {
       userId: user.id,
       username: user.username,
-      slackId: user.slackId,
     };
 
     return jwt.sign(payload, this.jwtSecret, {

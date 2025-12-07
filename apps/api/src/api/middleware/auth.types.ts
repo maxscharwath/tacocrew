@@ -4,17 +4,14 @@
  */
 
 import type { Context } from 'hono';
-import type { UserId } from '@/schemas/user.schema';
+import type { User } from '@/schemas/user.schema';
 
 /**
  * Result of an authentication attempt
  */
 export interface AuthResult {
   success: boolean;
-  userId?: UserId;
-  username?: string;
-  slackId?: string;
-  email?: string; // For Better Auth users with non-UUID IDs
+  user?: User;
   error?: Error;
 }
 

@@ -58,15 +58,9 @@ app.use(
   })
 );
 
-// Better Auth session middleware - stores user/session in context globally
-// This follows the recommended Better Auth + Hono integration pattern
-app.use('*', async (c, next) => {
-  // Pass the raw Request object to Better Auth so it can read cookies
-  const session = await auth.api.getSession({ headers: c.req.raw.headers });
-  c.set('user', session?.user || null);
-  c.set('session', session?.session || null);
-  await next();
-});
+// Better Auth session is checked internally by auth middleware
+// We don't expose Better Auth's user/session in context to keep it clean
+// Only our app's User (from database) is exposed via c.var.user
 
 // Custom get-session handler - removes image from response to reduce payload size
 app.get('/api/auth/get-session', async (c) => {

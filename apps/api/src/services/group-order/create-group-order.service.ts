@@ -5,7 +5,6 @@
 
 import { isAfter } from 'date-fns';
 import { injectable } from 'tsyringe';
-import type { CreateGroupOrderRequestDto } from '@/api/dto/group-order.dto';
 import { OrganizationMemberStatus } from '@/generated/client';
 import { GroupOrderRepository } from '@/infrastructure/repositories/group-order.repository';
 import { OrganizationRepository } from '@/infrastructure/repositories/organization.repository';
@@ -16,6 +15,16 @@ import { inject } from '@/shared/utils/inject.utils';
 import { logger } from '@/shared/utils/logger.utils';
 
 /**
+ * Create group order request (with parsed dates)
+ */
+export interface CreateGroupOrderRequest {
+  name?: string;
+  startDate: Date;
+  endDate: Date;
+  organizationId?: string | null;
+}
+
+/**
  * Create group order use case
  */
 @injectable()
@@ -23,7 +32,7 @@ export class CreateGroupOrderUseCase {
   private readonly groupOrderRepository = inject(GroupOrderRepository);
   private readonly organizationRepository = inject(OrganizationRepository);
 
-  async execute(leaderId: UserId, request: CreateGroupOrderRequestDto): Promise<GroupOrder> {
+  async execute(leaderId: UserId, request: CreateGroupOrderRequest): Promise<GroupOrder> {
     const { startDate, endDate, organizationId: requestedOrganizationId } = request;
 
     if (!isAfter(endDate, startDate)) {

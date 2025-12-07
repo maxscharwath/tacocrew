@@ -37,55 +37,43 @@ export const errorHandler: ErrorHandler = (err: Error, c: Context) => {
   }
 
   // Convert client errors to ApiError
-  if (err instanceof CsrfError) {
-    const apiError = new AppCsrfError();
-    return c.json(
-      {
-        error: {
-          id: apiError.id,
-          code: apiError.code,
-          key: apiError.key,
-          details: apiError.details,
-        },
-      },
-      apiError.statusCode as 200 | 400 | 401 | 403 | 404 | 409 | 429 | 500
-    );
-  }
-
-  if (err instanceof RateLimitError) {
-    const apiError = new ApiError({
-      errorCode: ErrorCodes.RATE_LIMIT,
+  const clientErrorHandlers: Array<{
+    check: (error: Error) => boolean;
+    create: () => ApiError;
+    statusCode: 400 | 401 | 403 | 404 | 409 | 429 | 500 | 502;
+  }> = [
+    {
+      check: (error) => error instanceof CsrfError,
+      create: () => new AppCsrfError(),
+      statusCode: 403,
+    },
+    {
+      check: (error) => error instanceof RateLimitError,
+      create: () => new ApiError({ errorCode: ErrorCodes.RATE_LIMIT, statusCode: 429 }),
       statusCode: 429,
-    });
-    return c.json(
-      {
-        error: {
-          id: apiError.id,
-          code: apiError.code,
-          key: apiError.key,
-          details: apiError.details,
-        },
-      },
-      429
-    );
-  }
-
-  if (err instanceof NetworkError) {
-    const apiError = new ApiError({
-      errorCode: ErrorCodes.NETWORK_ERROR,
+    },
+    {
+      check: (error) => error instanceof NetworkError,
+      create: () => new ApiError({ errorCode: ErrorCodes.NETWORK_ERROR, statusCode: 502 }),
       statusCode: 502,
-    });
-    return c.json(
-      {
-        error: {
-          id: apiError.id,
-          code: apiError.code,
-          key: apiError.key,
-          details: apiError.details,
+    },
+  ];
+
+  for (const handler of clientErrorHandlers) {
+    if (handler.check(err)) {
+      const apiError = handler.create();
+      return c.json(
+        {
+          error: {
+            id: apiError.id,
+            code: apiError.code,
+            key: apiError.key,
+            details: apiError.details,
+          },
         },
-      },
-      502
-    );
+        handler.statusCode
+      );
+    }
   }
 
   // Handle unknown errors

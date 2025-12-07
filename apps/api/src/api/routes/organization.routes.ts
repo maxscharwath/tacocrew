@@ -7,7 +7,7 @@ import { createRoute } from '@hono/zod-openapi';
 import { z } from 'zod';
 import { jsonContent, OrganizationSchemas } from '@/api/schemas/organization.schemas';
 import { IsoDateStringSchema } from '@/api/schemas/shared.schemas';
-import { authSecurity, createAuthenticatedRouteApp, requireUserId } from '@/api/utils/route.utils';
+import { authSecurity, createAuthenticatedRouteApp } from '@/api/utils/route.utils';
 import { OrganizationMemberStatus, OrganizationRole } from '@/generated/client';
 import { UserRepository } from '@/infrastructure/repositories/user.repository';
 import { OrganizationIdSchema } from '@/schemas/organization.schema';
@@ -113,7 +113,7 @@ app.openapi(
     security: authSecurity,
     request: {
       params: z.object({
-        id: z.string().uuid(),
+        id: z.uuid(),
       }),
     },
     responses: {
@@ -177,7 +177,7 @@ app.openapi(
     },
   }),
   async (c) => {
-    const userId = requireUserId(c);
+    const userId = c.var.user.id;
     const payload = c.req.valid('json');
     const organizationService = inject(OrganizationService);
     // Creator is automatically set as ADMIN with ACTIVE status
@@ -195,7 +195,7 @@ app.openapi(
     security: authSecurity,
     request: {
       params: z.object({
-        id: z.string().uuid(),
+        id: z.uuid(),
       }),
       body: {
         content: jsonContent(OrganizationSchemas.AddUserToOrganizationRequestSchema),
@@ -233,7 +233,7 @@ app.openapi(
     },
   }),
   async (c) => {
-    const adminUserId = requireUserId(c);
+    const adminUserId = c.var.user.id;
     const { id } = c.req.valid('param');
     const { email, role } = c.req.valid('json');
     const organizationService = inject(OrganizationService);
@@ -295,7 +295,7 @@ app.openapi(
     security: authSecurity,
     request: {
       params: z.object({
-        id: z.string().uuid(),
+        id: z.uuid(),
       }),
     },
     responses: {
@@ -314,7 +314,7 @@ app.openapi(
     },
   }),
   async (c) => {
-    const userId = requireUserId(c);
+    const userId = c.var.user.id;
     const { id } = c.req.valid('param');
     const organizationId = OrganizationIdSchema.parse(id);
     const organizationService = inject(OrganizationService);
@@ -354,7 +354,7 @@ app.openapi(
     security: authSecurity,
     request: {
       params: z.object({
-        id: z.string().uuid(),
+        id: z.uuid(),
       }),
     },
     responses: {
@@ -363,10 +363,10 @@ app.openapi(
         content: jsonContent(
           z.array(
             z.object({
-              userId: z.string().uuid(),
+              userId: z.uuid(),
               role: OrganizationSchemas.OrganizationRoleSchema,
               user: z.object({
-                id: z.string().uuid(),
+                id: z.uuid(),
                 name: z.string(),
                 email: z.string(),
                 image: z.string().nullable(),
@@ -388,7 +388,7 @@ app.openapi(
     },
   }),
   async (c) => {
-    const userId = requireUserId(c);
+    const userId = c.var.user.id;
     const { id } = c.req.valid('param');
     const organizationId = OrganizationIdSchema.parse(id);
     const organizationService = inject(OrganizationService);
@@ -413,8 +413,8 @@ app.openapi(
     security: authSecurity,
     request: {
       params: z.object({
-        id: z.string().uuid(),
-        userId: z.string().uuid(),
+        id: z.uuid(),
+        userId: z.uuid(),
       }),
     },
     responses: {
@@ -441,7 +441,7 @@ app.openapi(
     },
   }),
   async (c) => {
-    const adminUserId = requireUserId(c);
+    const adminUserId = c.var.user.id;
     const { id, userId } = c.req.valid('param');
     const organizationId = OrganizationIdSchema.parse(id);
     const organizationService = inject(OrganizationService);
@@ -467,8 +467,8 @@ app.openapi(
     security: authSecurity,
     request: {
       params: z.object({
-        id: z.string().uuid(),
-        userId: z.string().uuid(),
+        id: z.uuid(),
+        userId: z.uuid(),
       }),
     },
     responses: {
@@ -495,7 +495,7 @@ app.openapi(
     },
   }),
   async (c) => {
-    const adminUserId = requireUserId(c);
+    const adminUserId = c.var.user.id;
     const { id, userId } = c.req.valid('param');
     const organizationId = OrganizationIdSchema.parse(id);
     const organizationService = inject(OrganizationService);
@@ -521,8 +521,8 @@ app.openapi(
     security: authSecurity,
     request: {
       params: z.object({
-        id: z.string().uuid(),
-        userId: z.string().uuid(),
+        id: z.uuid(),
+        userId: z.uuid(),
       }),
       body: {
         content: jsonContent(OrganizationSchemas.UpdateUserRoleRequestSchema),
@@ -552,7 +552,7 @@ app.openapi(
     },
   }),
   async (c) => {
-    const adminUserId = requireUserId(c);
+    const adminUserId = c.var.user.id;
     const { id, userId } = c.req.valid('param');
     const { role } = c.req.valid('json');
     const organizationId = OrganizationIdSchema.parse(id);
@@ -580,8 +580,8 @@ app.openapi(
     security: authSecurity,
     request: {
       params: z.object({
-        id: z.string().uuid(),
-        userId: z.string().uuid(),
+        id: z.uuid(),
+        userId: z.uuid(),
       }),
     },
     responses: {
@@ -604,7 +604,7 @@ app.openapi(
     },
   }),
   async (c) => {
-    const userId = requireUserId(c);
+    const userId = c.var.user.id;
     const { id, userId: targetUserId } = c.req.valid('param');
     const organizationId = OrganizationIdSchema.parse(id);
     const organizationService = inject(OrganizationService);
@@ -630,7 +630,7 @@ app.openapi(
     security: authSecurity,
     request: {
       params: z.object({
-        id: z.string().uuid(),
+        id: z.uuid(),
       }),
     },
     responses: {
@@ -653,7 +653,7 @@ app.openapi(
     },
   }),
   async (c) => {
-    const userId = requireUserId(c);
+    const userId = c.var.user.id;
     const { id } = c.req.valid('param');
     const organizationService = inject(OrganizationService);
     const organizationId = OrganizationIdSchema.parse(id);
@@ -665,14 +665,14 @@ app.openapi(
         (m) => m.role === OrganizationRole.ADMIN && m.status === OrganizationMemberStatus.ACTIVE
       );
 
-      if (!hasAdmin) {
+      if (hasAdmin) {
+        await organizationService.requestToJoinOrganization(userId, organizationId);
+      } else {
         // No admins exist - make this user admin
         await organizationService.addUserToOrganization(userId, organizationId, {
           role: OrganizationRole.ADMIN,
           status: OrganizationMemberStatus.ACTIVE,
         });
-      } else {
-        await organizationService.requestToJoinOrganization(userId, organizationId);
       }
 
       return c.json({ success: true }, 200);
@@ -713,7 +713,7 @@ app.openapi(
     },
   }),
   async (c) => {
-    const userId = requireUserId(c);
+    const userId = c.var.user.id;
     const organizationService = inject(OrganizationService);
     const userOrganizations = await organizationService.getUserOrganizations(userId);
     return c.json(userOrganizations.map(serializeUserOrganizationResponse), 200);
@@ -729,7 +729,7 @@ app.openapi(
     security: authSecurity,
     request: {
       params: z.object({
-        id: z.string().uuid(),
+        id: z.uuid(),
       }),
       body: {
         content: {
@@ -762,7 +762,7 @@ app.openapi(
     },
   }),
   async (c) => {
-    const userId = requireUserId(c);
+    const userId = c.var.user.id;
     const { id } = c.req.valid('param');
     const organizationId = OrganizationIdSchema.parse(id);
     const organizationService = inject(OrganizationService);
@@ -819,7 +819,7 @@ app.openapi(
     security: authSecurity,
     request: {
       params: z.object({
-        id: z.string().uuid(),
+        id: z.uuid(),
       }),
     },
     responses: {
@@ -838,7 +838,7 @@ app.openapi(
     },
   }),
   async (c) => {
-    const userId = requireUserId(c);
+    const userId = c.var.user.id;
     const { id } = c.req.valid('param');
     const organizationId = OrganizationIdSchema.parse(id);
     const organizationService = inject(OrganizationService);
@@ -868,7 +868,7 @@ app.openapi(
     security: authSecurity,
     request: {
       params: z.object({
-        id: z.string().uuid(),
+        id: z.uuid(),
       }),
       query: z.object({
         w: z

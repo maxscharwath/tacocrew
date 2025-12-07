@@ -10,7 +10,7 @@ import {
   UserOrderItemsRequestSchema,
   UserOrderItemsSchema,
 } from '@/api/schemas/user-order.schemas';
-import { authSecurity, createAuthenticatedRouteApp, requireUserId } from '@/api/utils/route.utils';
+import { authSecurity, createAuthenticatedRouteApp } from '@/api/utils/route.utils';
 import { GroupOrderRepository } from '@/infrastructure/repositories/group-order.repository';
 import { GroupOrderIdSchema } from '@/schemas/group-order.schema';
 import { OrganizationIdSchema } from '@/schemas/organization.schema';
@@ -191,7 +191,7 @@ app.openapi(
     },
   }),
   async (c) => {
-    const userId = requireUserId(c);
+    const userId = c.var.user.id;
     const { id: groupOrderId } = c.req.valid('param');
     const body = c.req.valid('json');
 
@@ -271,7 +271,7 @@ app.openapi(
     },
   }),
   async (c) => {
-    const deleterUserId = requireUserId(c);
+    const deleterUserId = c.var.user.id;
     const { itemId: orderId } = c.req.valid('param');
     const deleteUserOrderUseCase = inject(DeleteUserOrderUseCase);
     await deleteUserOrderUseCase.execute(orderId, deleterUserId);
@@ -303,7 +303,7 @@ app.openapi(
     },
   }),
   async (c) => {
-    const requesterId = requireUserId(c);
+    const requesterId = c.var.user.id;
     const { id: groupOrderId, itemId } = c.req.valid('param');
     const body = c.req.valid('json');
     const userOrderId = UserOrderIdSchema.parse(itemId);
@@ -342,7 +342,7 @@ app.openapi(
     },
   }),
   async (c) => {
-    const requesterId = requireUserId(c);
+    const requesterId = c.var.user.id;
     const { id: groupOrderId, itemId } = c.req.valid('param');
     const body = c.req.valid('json');
     const userOrderId = UserOrderIdSchema.parse(itemId);
@@ -379,7 +379,7 @@ app.openapi(
     },
   }),
   async (c) => {
-    const requesterId = requireUserId(c);
+    const requesterId = c.var.user.id;
     const { id: groupOrderId, itemId } = c.req.valid('param');
     const userOrderId = UserOrderIdSchema.parse(itemId);
     const sendReminderService = inject(SendPaymentReminderService);
@@ -455,7 +455,7 @@ app.openapi(
   async (c) => {
     const { id: groupOrderId } = c.req.valid('param');
     const body = c.req.valid('json');
-    const userId = requireUserId(c);
+    const userId = c.var.user.id;
 
     // Check if user has access to the group order
     const groupOrderRepository = inject(GroupOrderRepository);

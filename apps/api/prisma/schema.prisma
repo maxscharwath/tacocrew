@@ -50,7 +50,6 @@ model User {
   image           String?
   phone           String? // Phone number for reimbursement (Twint in Switzerland)
   username        String?  @unique // Unique username identifier
-  slackId         String? // Slack user ID for future Slack integration
   language        String?  @default("en") // User language preference for i18n (en, fr, de)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @default(now()) @updatedAt
@@ -76,7 +75,6 @@ model User {
 
   @@unique([email])
   @@index([username])
-  @@index([slackId])
   @@map("users")
 }
 

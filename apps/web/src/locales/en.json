@@ -737,7 +737,6 @@
           "copyCode": "Copy code",
           "codeLabel": "Join code",
           "qrCode": "Scan to join",
-          "shareToSlack": "Share to Slack",
           "linkCopied": "Link copied!",
           "codeCopied": "Code copied!",
           "inviteInstructions": "Share this link or code with your team to join this order."
@@ -995,7 +994,6 @@
     "fields": {
       "username": "Username",
       "userId": "User ID",
-      "slackId": "Slack ID",
       "created": "Created",
       "updated": "Updated"
     },

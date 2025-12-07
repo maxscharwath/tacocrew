@@ -52,7 +52,6 @@ export interface LoginResponse {
   user: {
     id: string;
     username: string;
-    slackId?: string;
     createdAt?: string;
     updatedAt?: string;
   };
@@ -64,7 +63,6 @@ export interface UserProfile {
   username: string | null;
   name: string | null;
   phone?: string | null;
-  slackId?: string;
   language?: string | null;
   image?: string | null;
   createdAt?: string;

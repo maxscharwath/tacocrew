@@ -723,7 +723,6 @@
           "copyCode": "Copier le code",
           "codeLabel": "Code de participation",
           "qrCode": "Scanner pour rejoindre",
-          "shareToSlack": "Partager sur Slack",
           "linkCopied": "Lien copié !",
           "codeCopied": "Code copié !",
           "inviteInstructions": "Partagez ce lien ou ce code avec votre équipe pour rejoindre cette commande."
@@ -981,7 +980,6 @@
     "fields": {
       "username": "Identifiant",
       "userId": "ID utilisateur",
-      "slackId": "ID Slack",
       "created": "Création",
       "updated": "Mise à jour"
     },
