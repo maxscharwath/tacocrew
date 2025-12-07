@@ -30,7 +30,6 @@ import {
 } from '@/components/ui';
 import { useDateFormat } from '@/hooks/useDateFormat';
 import { OrdersApi, OrganizationApi, UserApi } from '@/lib/api';
-import type { Organization } from '@/lib/api/types';
 import { routes } from '@/lib/routes';
 import { toDate } from '@/lib/utils/date';
 import { defer } from '@/lib/utils/defer';
@@ -65,53 +64,70 @@ import type { CreateGroupOrderFormData } from '@/lib/types/form-data';
 import { createActionHandler } from '@/lib/utils/action-handler';
 import { parseFormData } from '@/lib/utils/form-data';
 
+/**
+ * Normalize date string by adding seconds if missing
+ */
+function normalizeDateString(dateStr: string): string {
+  if (
+    dateStr.includes(':') &&
+    !dateStr.includes('Z') &&
+    !dateStr.includes('+')
+  ) {
+    return `${dateStr}:00`;
+  }
+  return dateStr;
+}
+
+/**
+ * Validate and convert date strings to Date objects
+ */
+function validateDates(
+  startDateStr: string,
+  endDateStr: string
+): { startDate: Date; endDate: Date } | Response {
+  const startDate = new Date(normalizeDateString(startDateStr));
+  const endDate = new Date(normalizeDateString(endDateStr));
+
+  if (Number.isNaN(startDate.valueOf()) || Number.isNaN(endDate.valueOf())) {
+    return Response.json(
+      {
+        form: 'create',
+        errorKey: 'errors.validation.failed',
+        errorMessage: 'Invalid date format. Please check your dates and times.',
+      },
+      { status: 400 }
+    );
+  }
+
+  if (endDate <= startDate) {
+    return Response.json(
+      {
+        form: 'create',
+        errorKey: 'errors.validation.failed',
+        errorMessage: 'End date must be after start date.',
+      },
+      { status: 400 }
+    );
+  }
+
+  return { startDate, endDate };
+}
+
 export const ordersAction = createActionHandler({
   handlers: {
     POST: async ({ formData }, request) => {
-      // Check for create intent
       if (formData.get('_intent') !== 'create') {
         throw new Response('Invalid action', { status: 400 });
       }
 
       const data = await parseFormData<CreateGroupOrderFormData>(request);
+      const dateResult = validateDates(data.startDate, data.endDate);
 
-      // Convert to Date objects for validation
-      // Handle both full ISO strings and YYYY-MM-DDTHH:mm format
-      const startDateStr =
-        data.startDate.includes(':') &&
-        !data.startDate.includes('Z') &&
-        !data.startDate.includes('+')
-          ? `${data.startDate}:00` // Add seconds if missing
-          : data.startDate;
-      const endDateStr =
-        data.endDate.includes(':') && !data.endDate.includes('Z') && !data.endDate.includes('+')
-          ? `${data.endDate}:00` // Add seconds if missing
-          : data.endDate;
-
-      const startDate = new Date(startDateStr);
-      const endDate = new Date(endDateStr);
-
-      if (Number.isNaN(startDate.valueOf()) || Number.isNaN(endDate.valueOf())) {
-        return Response.json(
-          {
-            form: 'create',
-            errorKey: 'errors.validation.failed',
-            errorMessage: 'Invalid date format. Please check your dates and times.',
-          },
-          { status: 400 }
-        );
+      if (dateResult instanceof Response) {
+        return dateResult;
       }
 
-      if (endDate <= startDate) {
-        return Response.json(
-          {
-            form: 'create',
-            errorKey: 'errors.validation.failed',
-            errorMessage: 'End date must be after start date.',
-          },
-          { status: 400 }
-        );
-      }
+      const { startDate, endDate } = dateResult;
 
       try {
         const created = await OrdersApi.createGroupOrder({
@@ -123,7 +139,6 @@ export const ordersAction = createActionHandler({
 
         return redirect(routes.root.orderDetail({ orderId: created.id }));
       } catch (error) {
-        // Check if it's a validation error about multiple organizations
         if (isMultipleOrganizationsError(error)) {
           return Response.json(
             {

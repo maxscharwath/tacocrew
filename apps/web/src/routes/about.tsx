@@ -30,7 +30,8 @@ type Contributor = {
 
 function parseContributor(contributor: string | Contributor): Contributor {
   if (typeof contributor === 'string') {
-    const match = contributor.match(/^([^<(]+)(?:\s*<([^>]+)>)?(?:\s*\(([^)]+)\))?$/);
+    // Use more specific regex to avoid ReDoS: limit whitespace repetition
+    const match = contributor.match(/^([^<(]+?)(?:\s?<([^>]+)>)?(?:\s?\(([^)]+)\))?$/);
     if (match) {
       return {
         name: match[1].trim(),

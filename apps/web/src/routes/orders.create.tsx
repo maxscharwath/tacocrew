@@ -55,6 +55,38 @@ type ActionData = {
   errorMessage?: string;
 };
 
+/**
+ * Get and validate user session
+ */
+async function getUserSession(): Promise<string> {
+  const session = await authClient.getSession();
+  if (!session?.data?.user) {
+    throw redirect(routes.signin());
+  }
+  return session.data.user.id;
+}
+
+/**
+ * Fetch order to prefill (either edit or duplicate)
+ */
+async function fetchPrefillOrder(
+  groupOrderId: string,
+  prefillOrderId: string,
+  userId: string,
+  isLeader: boolean,
+  isEdit: boolean
+): Promise<LoaderData['myOrder']> {
+  try {
+    const orderDetail = await OrdersApi.getUserOrder(groupOrderId, prefillOrderId);
+    if (isEdit && !isLeader && orderDetail.userId !== userId) {
+      throw new Response('Unauthorized', { status: 403 });
+    }
+    return orderDetail;
+  } catch {
+    throw redirect(routes.root.orderCreate({ orderId: groupOrderId }));
+  }
+}
+
 export async function orderCreateLoader({
   params,
   request,
@@ -64,13 +96,7 @@ export async function orderCreateLoader({
     throw new Response('Order not found', { status: 404 });
   }
 
-  // Check Better Auth session
-  const session = await authClient.getSession();
-  if (!session?.data?.user) {
-    throw redirect(routes.signin());
-  }
-
-  const userId = session.data.user.id;
+  const userId = await getUserSession();
 
   const url = new URL(request.url);
   const orderId = url.searchParams.get('orderId');
@@ -80,7 +106,7 @@ export async function orderCreateLoader({
     const [groupOrderWithUsers, stock, previousOrders] = await Promise.all([
       OrdersApi.getGroupOrderWithOrders(groupOrderId),
       StockApi.getStock(),
-      UserApi.getPreviousOrders().catch(() => []), // Fetch previous orders, fallback to empty array on error
+      UserApi.getPreviousOrders().catch(() => []),
     ]);
 
     const groupOrder = groupOrderWithUsers.groupOrder;
@@ -92,19 +118,9 @@ export async function orderCreateLoader({
     const isLeader = groupOrder.leader.id === userId;
     const prefillOrderId = orderId ?? duplicateId ?? undefined;
 
-    let myOrder: LoaderData['myOrder'] = undefined;
-
-    if (prefillOrderId) {
-      try {
-        const orderDetail = await OrdersApi.getUserOrder(groupOrderId, prefillOrderId);
-        if (orderId && !isLeader && orderDetail.userId !== userId) {
-          throw new Response('Unauthorized', { status: 403 });
-        }
-        myOrder = orderDetail;
-      } catch {
-        return redirect(routes.root.orderCreate({ orderId: groupOrderId }));
-      }
-    }
+    const myOrder = prefillOrderId
+      ? await fetchPrefillOrder(groupOrderId, prefillOrderId, userId, isLeader, !!orderId)
+      : undefined;
 
     return Response.json({
       groupOrder,
@@ -120,70 +136,85 @@ export async function orderCreateLoader({
   }
 }
 
+/**
+ * Parse meats with quantities from form data
+ */
+function parseMeatsFromFormData(formData: FormData): Array<{ id: string; quantity: number }> {
+  const meatIds = formData.getAll('meats').map((value) => value.toString());
+  return meatIds
+    .map((id) => {
+      const quantityStr = formData.get(`meat_quantity_${id}`);
+      const quantity = quantityStr ? Number(quantityStr) : 0;
+      return quantity > 0 ? { id, quantity } : null;
+    })
+    .filter((m): m is { id: string; quantity: number } => m !== null);
+}
+
+/**
+ * Parse simple item lists from form data
+ */
+function parseItemsFromFormData(
+  formData: FormData,
+  fieldName: string
+): Array<{ id: string; quantity: number }> {
+  return formData.getAll(fieldName).map((value) => ({ id: value.toString(), quantity: 1 }));
+}
+
+/**
+ * Validate taco selection and ingredients
+ */
+function validateTacoSelection(
+  size: string | undefined,
+  meats: Array<{ id: string; quantity: number }>,
+  sauces: Array<{ id: string }>,
+  garnitures: Array<{ id: string }>,
+  extras: Array<{ id: string; quantity: number }>,
+  drinks: Array<{ id: string; quantity: number }>,
+  desserts: Array<{ id: string; quantity: number }>,
+  tacoSize: { allowGarnitures: boolean } | undefined
+): void {
+  const hasTaco = size && meats.length > 0 && sauces.length > 0;
+  const hasOtherItems = extras.length > 0 || drinks.length > 0 || desserts.length > 0;
+
+  if (!hasTaco && !hasOtherItems) {
+    throw new Response('Missing selection', { status: 400 });
+  }
+
+  if (size && (!meats.length || !sauces.length)) {
+    throw new Response('Missing fillings', { status: 400 });
+  }
+
+  if (size && tacoSize && !tacoSize.allowGarnitures && garnitures.length > 0) {
+    throw new Response('Garnish not available', { status: 400 });
+  }
+}
+
 export const orderCreateAction = createActionHandler({
   handlers: {
     POST: async ({ formData }, _request, params) => {
       const groupOrderId = params?.orderId;
       if (!groupOrderId) throw new Response('Order not found', { status: 404 });
 
-      // Check Better Auth session
-      const session = await authClient.getSession();
-      if (!session?.data?.user) {
-        throw redirect(routes.signin());
-      }
+      await getUserSession();
 
       type TacoSize = UpsertUserOrderBody['items']['tacos'][number]['size'];
 
       const size = formData.get('tacoSize')?.toString() as TacoSize | undefined;
       const editOrderId = formData.get('editOrderId')?.toString();
 
-      // Parse meats with quantities (only include meats with quantity > 0)
-      const meatIds = formData.getAll('meats').map((value) => value.toString());
-      const meats = meatIds
-        .map((id) => {
-          const quantityStr = formData.get(`meat_quantity_${id}`);
-          const quantity = quantityStr ? Number(quantityStr) : 0;
-          return quantity > 0 ? { id, quantity } : null;
-        })
-        .filter((m): m is { id: string; quantity: number } => m !== null);
-
+      const meats = parseMeatsFromFormData(formData);
       const sauces = formData.getAll('sauces').map((value) => ({ id: value.toString() }));
       const garnitures = formData.getAll('garnitures').map((value) => ({ id: value.toString() }));
-      const extras = formData
-        .getAll('extras')
-        .map((value) => ({ id: value.toString(), quantity: 1 }));
-      const drinks = formData
-        .getAll('drinks')
-        .map((value) => ({ id: value.toString(), quantity: 1 }));
-      const desserts = formData
-        .getAll('desserts')
-        .map((value) => ({ id: value.toString(), quantity: 1 }));
+      const extras = parseItemsFromFormData(formData, 'extras');
+      const drinks = parseItemsFromFormData(formData, 'drinks');
+      const desserts = parseItemsFromFormData(formData, 'desserts');
       const note = formData.get('note')?.toString().trim();
 
-      // Validation: must have either a taco OR other items
-      // Get taco size config to validate garnitures availability
       const stock = await StockApi.getStock();
       const tacoSize = stock.tacos.find((t) => t.code === size);
 
-      // Garnitures are always optional - never required
-      const hasTaco = size && meats.length > 0 && sauces.length > 0;
-      const hasOtherItems = extras.length > 0 || drinks.length > 0 || desserts.length > 0;
+      validateTacoSelection(size, meats, sauces, garnitures, extras, drinks, desserts, tacoSize);
 
-      if (!hasTaco && !hasOtherItems) {
-        throw new Response('Missing selection', { status: 400 });
-      }
-
-      // If taco is selected, validate it
-      if (size && (!meats.length || !sauces.length)) {
-        throw new Response('Missing fillings', { status: 400 });
-      }
-
-      // Validate that garnitures are not selected if they're not available
-      if (size && tacoSize && !tacoSize.allowGarnitures && garnitures.length > 0) {
-        throw new Response('Garnish not available', { status: 400 });
-      }
-
-      // If editing an existing order, delete it first
       if (editOrderId) {
         try {
           await OrdersApi.deleteUserOrder(groupOrderId, editOrderId);
@@ -191,6 +222,8 @@ export const orderCreateAction = createActionHandler({
           // If delete fails, continue to create
         }
       }
+
+      const hasTaco = size && meats.length > 0 && sauces.length > 0;
 
       await OrdersApi.upsertUserOrder(groupOrderId, {
         items: {

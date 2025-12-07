@@ -86,78 +86,105 @@ export async function orderDetailLoader({ params }: LoaderFunctionArgs) {
   });
 }
 
+/**
+ * Helper to convert form data to array format
+ */
+function toArray(val: string | string[]): string[] {
+  return Array.isArray(val) ? val : val ? [val] : [];
+}
+
+/**
+ * Handle group order submission
+ */
+async function handleSubmitGroupOrder(groupOrderId: string, request: Request) {
+  const data = await parseFormData<SubmitGroupOrderFormData>(request);
+  await OrdersApi.submitGroupOrder(groupOrderId, {
+    customer: {
+      name: data.customerName,
+      phone: data.customerPhone,
+    },
+    delivery: {
+      type: data.deliveryType,
+      address: {
+        road: data.road,
+        house_number: data.houseNumber,
+        postcode: data.postcode,
+        city: data.city,
+        state: data.state,
+        country: data.country,
+      },
+      requestedFor: data.requestedFor,
+    },
+    paymentMethod: data.paymentMethod,
+  });
+}
+
+/**
+ * Handle user order creation/update
+ */
+async function handleUpsertUserOrder(groupOrderId: string, request: Request) {
+  const rawData = await parseFormData<UserOrderFormData>(request);
+  type TacoSize = UpsertUserOrderBody['items']['tacos'][number]['size'];
+
+  const tacoQuantity = Number(rawData.tacoQuantity) || 1;
+
+  await OrdersApi.upsertUserOrder(groupOrderId, {
+    items: {
+      tacos: [
+        {
+          size: rawData.tacoSize as TacoSize,
+          meats: toArray(rawData.meats).map((id) => ({ id, quantity: 1 })),
+          sauces: toArray(rawData.sauces).map((id) => ({ id })),
+          garnitures: toArray(rawData.garnitures).map((id) => ({ id })),
+          note: rawData.note,
+          quantity: tacoQuantity,
+        },
+      ],
+      extras: toArray(rawData.extras).map((id) => ({ id, quantity: 1 })),
+      drinks: toArray(rawData.drinks).map((id) => ({ id, quantity: 1 })),
+      desserts: toArray(rawData.desserts).map((id) => ({ id, quantity: 1 })),
+    },
+  });
+}
+
+/**
+ * Get group order ID from params or throw 404
+ */
+function getGroupOrderId(params?: Record<string, string | undefined>): string {
+  const groupOrderId = params?.orderId;
+  if (!groupOrderId) throw new Response('Order not found', { status: 404 });
+  return groupOrderId;
+}
+
+/**
+ * Get group order ID from URL path
+ */
+function getGroupOrderIdFromUrl(url: URL): string {
+  const groupOrderId = url.pathname.split('/').pop();
+  if (!groupOrderId) throw new Response('Order not found', { status: 404 });
+  return groupOrderId;
+}
+
 export const orderDetailAction = createActionHandler({
   handlers: {
     POST: async ({ formData }, request, params) => {
-      const groupOrderId = params?.orderId;
-      if (!groupOrderId) throw new Response('Order not found', { status: 404 });
+      const groupOrderId = getGroupOrderId(params);
 
-      // Distinguish between user order and submit order by field presence
       if (formData.has('customerName')) {
-        const data = await parseFormData<SubmitGroupOrderFormData>(request);
-        await OrdersApi.submitGroupOrder(groupOrderId, {
-          customer: {
-            name: data.customerName,
-            phone: data.customerPhone,
-          },
-          delivery: {
-            type: data.deliveryType,
-            address: {
-              road: data.road,
-              house_number: data.houseNumber,
-              postcode: data.postcode,
-              city: data.city,
-              state: data.state,
-              country: data.country,
-            },
-            requestedFor: data.requestedFor,
-          },
-          paymentMethod: data.paymentMethod,
-        });
+        await handleSubmitGroupOrder(groupOrderId, request);
       } else if (formData.has('tacoSize')) {
-        const rawData = await parseFormData<UserOrderFormData>(request);
-        type TacoSize = UpsertUserOrderBody['items']['tacos'][number]['size'];
-
-        // Convert form data arrays (can be string or string[])
-        const toArray = (val: string | string[]): string[] =>
-          Array.isArray(val) ? val : val ? [val] : [];
-
-        const tacoQuantity = Number(rawData.tacoQuantity) || 1;
-
-        await OrdersApi.upsertUserOrder(groupOrderId, {
-          items: {
-            tacos: [
-              {
-                size: rawData.tacoSize as TacoSize,
-                meats: toArray(rawData.meats).map((id) => ({ id, quantity: 1 })),
-                sauces: toArray(rawData.sauces).map((id) => ({ id })),
-                garnitures: toArray(rawData.garnitures).map((id) => ({ id })),
-                note: rawData.note,
-                quantity: tacoQuantity,
-              },
-            ],
-            extras: toArray(rawData.extras).map((id) => ({ id, quantity: 1 })),
-            drinks: toArray(rawData.drinks).map((id) => ({ id, quantity: 1 })),
-            desserts: toArray(rawData.desserts).map((id) => ({ id, quantity: 1 })),
-          },
-        });
+        await handleUpsertUserOrder(groupOrderId, request);
       } else {
         throw new Response('Invalid POST request', { status: 400 });
       }
     },
     DELETE: async (_, request) => {
-      const url = new URL(request.url);
-      const groupOrderId = url.pathname.split('/').pop();
-      if (!groupOrderId) throw new Response('Order not found', { status: 404 });
-
+      const groupOrderId = getGroupOrderIdFromUrl(new URL(request.url));
       const data = await parseFormData<DeleteUserOrderFormData>(request);
       await OrdersApi.deleteUserOrder(groupOrderId, data.itemId);
     },
     PATCH: async (_, request) => {
-      const url = new URL(request.url);
-      const groupOrderId = url.pathname.split('/').pop();
-      if (!groupOrderId) throw new Response('Order not found', { status: 404 });
-
+      const groupOrderId = getGroupOrderIdFromUrl(new URL(request.url));
       const data = await parseFormData<ManageOrderStatusFormData>(request);
       await OrdersApi.updateGroupOrderStatus(groupOrderId, data.status);
     },
@@ -173,15 +200,13 @@ export const orderDetailAction = createActionHandler({
     return 'unknown';
   },
   onSuccess: (_request, params) => {
-    const groupOrderId = params.orderId;
-    if (!groupOrderId) throw new Response('Order not found', { status: 404 });
+    const groupOrderId = getGroupOrderId(params);
     return redirect(routes.root.orderDetail({ orderId: groupOrderId }));
   },
 });
 
 function OrderDetailContent({
   groupOrderData,
-  stock,
 }: Readonly<{
   groupOrderData: GroupOrderData;
   stock: LoaderData['stock'];

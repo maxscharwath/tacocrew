@@ -123,69 +123,139 @@ async function executeHandler(
 }
 
 /**
+ * Check if error body contains ZodError
+ */
+function isZodErrorBody(errorBody: unknown): errorBody is {
+  error: { name: string; issues: unknown[] };
+} {
+  return (
+    Boolean(errorBody) &&
+    typeof errorBody === 'object' &&
+    errorBody !== null &&
+    'error' in errorBody &&
+    typeof errorBody.error === 'object' &&
+    errorBody.error !== null &&
+    'name' in errorBody.error &&
+    errorBody.error.name === 'ZodError' &&
+    'issues' in errorBody.error &&
+    Array.isArray(errorBody.error.issues)
+  );
+}
+
+/**
+ * Process ZodError issues into field errors and messages
+ */
+function processZodIssues(issues: unknown[]): {
+  fieldErrors: Record<string, string>;
+  messages: string[];
+} {
+  const fieldErrors: Record<string, string> = {};
+  const messages: string[] = [];
+
+  for (const issue of issues) {
+    if (typeof issue !== 'object' || issue === null || !('path' in issue) || !('message' in issue)) {
+      continue;
+    }
+
+    const path = Array.isArray(issue.path)
+      ? issue.path.filter((p: unknown) => typeof p === 'string').join('.')
+      : '';
+
+    if (path && !fieldErrors[path] && typeof issue.message === 'string') {
+      fieldErrors[path] = issue.message;
+    } else if (!path && typeof issue.message === 'string') {
+      messages.push(issue.message);
+    }
+  }
+
+  return { fieldErrors, messages };
+}
+
+/**
+ * Build user-friendly validation message
+ */
+function buildValidationMessage(
+  fieldErrors: Record<string, string>,
+  messages: string[]
+): string {
+  if (Object.keys(fieldErrors).length > 0) {
+    return `Validation failed: ${Object.entries(fieldErrors)
+      .map(([field, msg]) => `${field}: ${msg}`)
+      .join(', ')}`;
+  }
+  if (messages.length > 0) {
+    return messages.join(', ');
+  }
+  return 'Validation failed. Please check your input.';
+}
+
+/**
  * Parse ZodError from API response
  */
 function parseZodError(errorBody: unknown): {
   message: string;
   fieldErrors: Record<string, string>;
 } | null {
-  if (!errorBody || typeof errorBody !== 'object') {
+  if (!isZodErrorBody(errorBody)) {
     return null;
   }
 
-  // Check if it's a ZodError response from the API
-  if (!('error' in errorBody) || typeof errorBody.error !== 'object' || errorBody.error === null) {
-    return null;
-  }
-
-  const error = errorBody.error;
-  if (
-    !('name' in error) ||
-    error.name !== 'ZodError' ||
-    !('issues' in error) ||
-    !Array.isArray(error.issues)
-  ) {
-    return null;
-  }
-
-  const issues = error.issues;
-
-  const fieldErrors: Record<string, string> = {};
-  const messages: string[] = [];
-
-  for (const issue of issues) {
-    if (
-      typeof issue !== 'object' ||
-      issue === null ||
-      !('path' in issue) ||
-      !('message' in issue)
-    ) {
-      continue;
-    }
-    const path = Array.isArray(issue.path)
-      ? issue.path.filter((p: unknown) => typeof p === 'string').join('.')
-      : '';
-    if (path) {
-      // Use the first error for each field
-      if (!fieldErrors[path] && typeof issue.message === 'string') {
-        fieldErrors[path] = issue.message;
-      }
-    } else if (typeof issue.message === 'string') {
-      messages.push(issue.message);
-    }
-  }
-
-  // Build a user-friendly message
-  const message =
-    Object.keys(fieldErrors).length > 0
-      ? `Validation failed: ${Object.entries(fieldErrors)
-          .map(([field, msg]) => `${field}: ${msg}`)
-          .join(', ')}`
-      : messages.length > 0
-        ? messages.join(', ')
-        : 'Validation failed. Please check your input.';
+  const { fieldErrors, messages } = processZodIssues(errorBody.error.issues);
+  const message = buildValidationMessage(fieldErrors, messages);
 
   return { message, fieldErrors };
+}
+
+/**
+ * Extract error message from API error body
+ */
+function extractApiErrorMessage(body: unknown, defaultMessage: string): string {
+  if (typeof body !== 'object' || !body || !('error' in body)) {
+    return defaultMessage;
+  }
+
+  const errorObj = body.error;
+  if (
+    typeof errorObj === 'object' &&
+    errorObj &&
+    'message' in errorObj &&
+    typeof errorObj.message === 'string'
+  ) {
+    return errorObj.message;
+  }
+
+  return defaultMessage;
+}
+
+/**
+ * Handle ApiError response
+ */
+function handleApiError(error: ApiError, form: string): Response {
+  // Try to parse ZodError first
+  const zodError = parseZodError(error.body);
+  if (zodError) {
+    return Response.json(
+      {
+        form,
+        errorKey: ERROR_KEYS.VALIDATION_FAILED,
+        errorMessage: zodError.message,
+        fieldErrors: zodError.fieldErrors,
+      },
+      { status: error.status }
+    );
+  }
+
+  // Fall back to standard error message
+  const errorMessage = extractApiErrorMessage(error.body, error.message);
+  return Response.json(
+    {
+      form,
+      errorKey: error.key,
+      errorMessage,
+      errorDetails: error.details,
+    },
+    { status: error.status }
+  );
 }
 
 /**
@@ -193,51 +263,13 @@ function parseZodError(errorBody: unknown): {
  */
 function handleActionError(error: unknown, form: string): Response {
   if (error instanceof ApiError) {
-    // Try to parse ZodError from the API response
-    const zodError = parseZodError(error.body);
-    if (zodError) {
-      return Response.json(
-        {
-          form,
-          errorKey: ERROR_KEYS.VALIDATION_FAILED,
-          errorMessage: zodError.message,
-          fieldErrors: zodError.fieldErrors,
-        },
-        { status: error.status }
-      );
-    }
-
-    // Fall back to standard error message extraction
-    let errorMessage = error.message;
-    if (typeof error.body === 'object' && error.body && 'error' in error.body) {
-      const errorObj = error.body.error;
-      if (
-        typeof errorObj === 'object' &&
-        errorObj &&
-        'message' in errorObj &&
-        typeof errorObj.message === 'string'
-      ) {
-        errorMessage = errorObj.message;
-      }
-    }
-
-    return Response.json(
-      {
-        form,
-        errorKey: error.key,
-        errorMessage,
-        errorDetails: error.details,
-      },
-      { status: error.status }
-    );
+    return handleApiError(error, form);
   }
 
-  // Handle Response errors (from throw new Response(...))
   if (error instanceof Response) {
     return error;
   }
 
-  // Handle Error objects
   if (error instanceof Error) {
     return Response.json(
       {

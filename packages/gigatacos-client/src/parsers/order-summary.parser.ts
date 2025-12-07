@@ -62,7 +62,8 @@ export function parseOrderSummary(html: string, logger: Logger = noopLogger): Or
         const $p = $(el);
         const text = $p.text().trim();
         // Match: "1 x Tacos L Mixte - 12CHF"
-        const match = new RegExp(/(\d+)\s+x\s+(.+?)\s+-\s+(\d+(?:\.\d+)?)CHF/i).exec(text);
+        // Use more specific pattern to avoid ReDoS: capture non-dash characters before the dash
+        const match = /(\d+)\s+x\s+([^-]+?)\s+-\s+(\d+(?:\.\d+)?)CHF/i.exec(text);
         if (match?.[1] && match?.[2] && match?.[3]) {
           const quantity = Number.parseInt(match[1], 10);
           const size = match[2].trim();
@@ -104,7 +105,8 @@ export function parseOrderSummary(html: string, logger: Logger = noopLogger): Or
       $extrasCard.find('.card-body p.small').each((_, el) => {
         const text = $(el).text().trim();
         // Match: "1 x Portion frites - 4CHF"
-        const match = new RegExp(/(\d+)\s+x\s+(.+?)\s+-\s+(\d+(?:\.\d+)?)CHF/i).exec(text);
+        // Use more specific pattern to avoid ReDoS
+        const match = /(\d+)\s+x\s+([^-]+?)\s+-\s+(\d+(?:\.\d+)?)CHF/i.exec(text);
         if (match?.[1] && match?.[2] && match?.[3]) {
           items.extras.push({
             quantity: Number.parseInt(match[1], 10),
@@ -120,7 +122,8 @@ export function parseOrderSummary(html: string, logger: Logger = noopLogger): Or
     if ($drinksCard.length) {
       $drinksCard.find('.card-body p.small').each((_, el) => {
         const text = $(el).text().trim();
-        const match = new RegExp(/(\d+)\s+x\s+(.+?)\s+-\s+(\d+(?:\.\d+)?)CHF/i).exec(text);
+        // Use more specific pattern to avoid ReDoS
+        const match = /(\d+)\s+x\s+([^-]+?)\s+-\s+(\d+(?:\.\d+)?)CHF/i.exec(text);
         if (match?.[1] && match?.[2] && match?.[3]) {
           items.drinks.push({
             quantity: Number.parseInt(match[1], 10),
@@ -136,7 +139,8 @@ export function parseOrderSummary(html: string, logger: Logger = noopLogger): Or
     if ($dessertsCard.length) {
       $dessertsCard.find('.card-body p.small').each((_, el) => {
         const text = $(el).text().trim();
-        const match = new RegExp(/(\d+)\s+x\s+(.+?)\s+-\s+(\d+(?:\.\d+)?)CHF/i).exec(text);
+        // Use more specific pattern to avoid ReDoS
+        const match = /(\d+)\s+x\s+([^-]+?)\s+-\s+(\d+(?:\.\d+)?)CHF/i.exec(text);
         if (match?.[1] && match?.[2] && match?.[3]) {
           items.desserts.push({
             quantity: Number.parseInt(match[1], 10),
@@ -160,7 +164,7 @@ export function parseOrderSummary(html: string, logger: Logger = noopLogger): Or
         const valueText = $div.find('p.small').last().text().trim();
 
         // Extract number from "88.00CHF" or "2.00CHF"
-        const match = new RegExp(/(\d+(?:\.\d+)?)CHF/i).exec(valueText);
+        const match = /(\d+(?:\.\d+)?)CHF/i.exec(valueText);
         if (match?.[1]) {
           const value = Number.parseFloat(match[1]);
           if (label.includes('Total du panier')) {
