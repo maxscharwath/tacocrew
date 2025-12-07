@@ -6,6 +6,8 @@ import { defineConfig } from 'vite';
 import { imagetools } from 'vite-imagetools';
 import { VitePWA } from 'vite-plugin-pwa';
 
+const uiKitPath = resolve(__dirname, '../../packages/ui-kit/src');
+
 export default defineConfig({
   plugins: [
     react({
@@ -65,11 +67,14 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': resolve(__dirname, './src'),
+      '@tacobot/ui-kit': uiKitPath,
     },
     dedupe: ['react', 'react-dom', 'react-router'],
   },
   optimizeDeps: {
-    include: ['react', 'react-dom', 'react-router', '@tacobot/ui-kit'],
+    include: ['react', 'react-dom', 'react-router'],
+    exclude: ['@tacobot/ui-kit'],
+    force: true,
   },
   build: {
     chunkSizeWarningLimit: 1000, // Increase warning limit to 1000kb
@@ -83,6 +88,12 @@ export default defineConfig({
   },
   server: {
     port: 5173,
+    watch: {
+      ignored: ['!**/packages/ui-kit/**'],
+    },
+    fs: {
+      allow: ['..'],
+    },
     proxy: {
       '/api': {
         target: 'http://localhost:4000',
