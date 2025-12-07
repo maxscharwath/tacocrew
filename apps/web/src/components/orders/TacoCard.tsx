@@ -56,7 +56,7 @@ export function TacoCard({ taco, badge, footer, showTacoID = false, className }:
   return (
     <Card
       className={cn(
-        'group hover:-translate-y-0.5 relative border-brand-400/60 bg-linear-to-br from-brand-500/20 via-slate-900/80 to-slate-950/90 shadow-[0_8px_24px_rgba(99,102,241,0.35)] transition-all duration-300 hover:border-brand-400/80 hover:shadow-2xl hover:shadow-brand-500/40',
+        'group hover:-translate-y-0.5 relative flex flex-col border-brand-400/60 bg-linear-to-br from-brand-500/20 via-slate-900/80 to-slate-950/90 shadow-[0_8px_24px_rgba(99,102,241,0.35)] transition-all duration-300 hover:border-brand-400/80 hover:shadow-2xl hover:shadow-brand-500/40',
         className
       )}
     >
@@ -72,8 +72,8 @@ export function TacoCard({ taco, badge, footer, showTacoID = false, className }:
         </div>
       </CardHeader>
 
-      <CardContent className="flex flex-1 flex-col">
-        <div className="flex-1 space-y-2">
+      <CardContent className="flex min-h-0 flex-1 flex-col">
+        <div className="min-h-0 flex-1 space-y-2">
           {taco.quantity > 1 && (
             <div className="flex flex-wrap items-center gap-1.5">
               <Badge tone="brand" className="text-[11px]">
@@ -124,7 +124,7 @@ export function TacoCard({ taco, badge, footer, showTacoID = false, className }:
         </div>
 
         {(footer || defaultFooter) && (
-          <div className="mt-auto flex items-center justify-between border-white/10 border-t pt-3">
+          <div className="mt-auto shrink-0 flex items-center justify-between border-white/10 border-t pt-3">
             {footer || defaultFooter}
           </div>
         )}
