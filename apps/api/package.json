@@ -4,7 +4,7 @@
   "version": "0.2512.1",
   "type": "module",
   "description": "Modern TypeScript API wrapper for tacos ordering system with Web API integration",
-  "main": "src/index.ts",
+  "main": "dist/index.js",
   "exports": {
     ".": "./src/index.ts"
   },
