@@ -13,6 +13,7 @@ import type { UserId } from '@/schemas/user.schema';
 import { UserOrderItems } from '@/shared/types/types';
 import type { Id } from '@/shared/utils/branded-ids.utils';
 import { zId } from '@/shared/utils/branded-ids.utils';
+import { sortUserOrderIngredients } from '@/shared/utils/order-validation.utils';
 
 /**
  * Schema for parsing user order items from database
@@ -125,14 +126,20 @@ export function createUserOrderFromDb(data: z.infer<typeof UserOrderFromDbSchema
   // Validate all fields except userId (which may be a Better Auth ID, not UUID)
   const validated = UserOrderFromDbSchema.parse(data);
 
-  // Create the user order with userId as-is (may be Better Auth ID or UUID)
-  // We cast it to UserId to satisfy the type system, but we don't validate it as UUID
+  // Type guard ensures data.items is UserOrderItems, and validated.items has the same structure
+  if (!isUserOrderItems(validated.items)) {
+    throw new Error('Invalid user order items structure after validation');
+  }
+
+  // Sort ingredients alphabetically for consistent ordering
+  const sortedItems = sortUserOrderIngredients(validated.items);
+
   return {
     id: UserOrderIdSchema.parse(validated.id),
     groupOrderId: zId<GroupOrderId>().parse(validated.groupOrderId),
     userId: validated.userId as UserId, // Accept Better Auth IDs or UUIDs
     name: validated.user?.name,
-    items: validated.items as UserOrderItems, // Type guard ensures this is UserOrderItems
+    items: sortedItems,
     reimbursement: {
       settled: validated.reimbursed,
       settledAt: validated.reimbursedAt ?? null,

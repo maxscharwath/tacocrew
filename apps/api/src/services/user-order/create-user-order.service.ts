@@ -30,7 +30,10 @@ import {
   generateTacoID,
   generateTacoIdHex,
 } from '@/shared/utils/order-taco-id.utils';
-import { validateItemAvailability } from '@/shared/utils/order-validation.utils';
+import {
+  sortUserOrderIngredients,
+  validateItemAvailability,
+} from '@/shared/utils/order-validation.utils';
 import { deterministicUUID } from '@/shared/utils/uuid.utils';
 
 /**
@@ -81,13 +84,16 @@ export class CreateUserOrderUseCase {
     // Validate and assign deterministic IDs
     const itemsWithIds = this.assignDeterministicIds(itemsWithFullDetails);
 
+    // Sort ingredients alphabetically for consistent ordering
+    const itemsWithSortedIngredients = sortUserOrderIngredients(itemsWithIds);
+
     // Validate availability
-    validateItemAvailability(itemsWithIds, stock);
+    validateItemAvailability(itemsWithSortedIngredients, stock);
 
     // Generate tacoIdHex for each taco (store in items JSON)
     const itemsWithTacoIds: UserOrderItems = {
-      ...itemsWithIds,
-      tacos: itemsWithIds.tacos.map((taco) => ({
+      ...itemsWithSortedIngredients,
+      tacos: itemsWithSortedIngredients.tacos.map((taco) => ({
         ...taco,
         tacoIdHex: generateTacoIdHex(taco),
       })),

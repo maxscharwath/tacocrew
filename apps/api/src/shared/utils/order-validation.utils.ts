@@ -3,6 +3,7 @@
  * @module shared/utils/order-validation
  */
 
+import type { Taco } from '@/schemas/taco.schema';
 import type { StockAvailability, UserOrderItems } from '@/shared/types/types';
 import { StockCategory } from '@/shared/types/types';
 import { ValidationError } from '@/shared/utils/errors.utils';
@@ -79,6 +80,35 @@ function buildErrorMessage(notFound: string[], outOfStock: string[]): string {
     return notFoundMsg;
   }
   return `Some items are out of stock: ${outOfStock.join(', ')}`;
+}
+
+/**
+ * Sort array of items alphabetically by name
+ */
+function sortByName<T extends { name: string }>(items: readonly T[]): T[] {
+  return items.toSorted((a, b) => a.name.localeCompare(b.name));
+}
+
+/**
+ * Sort ingredients alphabetically by name for consistent ordering
+ */
+export function sortTacoIngredients(taco: Taco): Taco {
+  return {
+    ...taco,
+    meats: sortByName(taco.meats),
+    sauces: sortByName(taco.sauces),
+    garnitures: sortByName(taco.garnitures),
+  };
+}
+
+/**
+ * Sort all taco ingredients in user order items
+ */
+export function sortUserOrderIngredients(items: UserOrderItems): UserOrderItems {
+  return {
+    ...items,
+    tacos: items.tacos.map(sortTacoIngredients),
+  };
 }
 
 /**
