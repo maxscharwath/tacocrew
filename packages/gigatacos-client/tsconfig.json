@@ -13,8 +13,8 @@
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "declaration": true,
-    "emitDeclarationOnly": true,
     "outDir": "dist",
+    "rootDir": "src",
     "types": ["bun-types"]
   },
   "include": ["src/**/*"],

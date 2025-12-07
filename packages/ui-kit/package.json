@@ -13,7 +13,7 @@
     }
   },
   "scripts": {
-    "build": "bun build src/index.ts --outdir dist --target browser --format esm && tsc",
+    "build": "tsc",
     "check": "tsc --noEmit",
     "dev": "tsc --watch"
   },
