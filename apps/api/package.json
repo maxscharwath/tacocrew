@@ -10,7 +10,7 @@
   },
   "scripts": {
     "dev": "bun --watch src/index.ts",
-    "build": "bun run build.ts",
+    "build": "bun build.ts",
     "start": "bun dist/index.js",
     "check": "tsc --noEmit --pretty",
     "prisma:generate": "bunx prisma generate",
