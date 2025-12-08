@@ -9,7 +9,7 @@ import { beforeEach, describe, expect, test as it, mock } from 'bun:test';
 import { container } from 'tsyringe';
 import { BackendIntegrationClient } from '@/infrastructure/api/backend-integration.client';
 import { ResourceService } from '@/services/resource/resource.service';
-import { Currency, StockCategory } from '@/shared/types/types';
+import { Currency } from '@/shared/types/types';
 
 describe('ResourceService', () => {
   const mockBackendClient = {

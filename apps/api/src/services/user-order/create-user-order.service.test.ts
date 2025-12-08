@@ -20,7 +20,6 @@ import {
   StockCategory,
   TacoSize,
   UserOrderItems,
-  UserOrderStatus,
 } from '@/shared/types/types';
 import { deterministicUUID, randomUUID } from '@/shared/utils/uuid.utils';
 

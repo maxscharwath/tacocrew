@@ -58,24 +58,18 @@ export class CreateGroupOrderUseCase {
         });
       }
       organizationId = requestedOrganizationId;
-    } else {
-      // No organization specified
-      if (activeOrganizations.length === 0) {
-        // User has no ACTIVE organizations - leave it null (backward compatibility)
-        organizationId = null;
-      } else if (activeOrganizations.length === 1) {
-        // User has exactly one ACTIVE organization - use it automatically
-        const firstOrg = activeOrganizations[0];
-        if (firstOrg) {
-          organizationId = firstOrg.organization.id;
-        }
-      } else {
-        // User has multiple ACTIVE organizations - require them to specify
-        throw new ValidationError({
-          message:
-            'You belong to multiple organizations. Please specify which organization this group order is for by providing organizationId',
-        });
+    } else if (activeOrganizations.length === 1) {
+      // User has exactly one ACTIVE organization - use it automatically
+      const firstOrg = activeOrganizations[0];
+      if (firstOrg) {
+        organizationId = firstOrg.organization.id;
       }
+    } else if (activeOrganizations.length > 1) {
+      // User has multiple ACTIVE organizations - require them to specify
+      throw new ValidationError({
+        message:
+          'You belong to multiple organizations. Please specify which organization this group order is for by providing organizationId',
+      });
     }
 
     const groupOrder = await this.groupOrderRepository.create({

@@ -5,7 +5,7 @@
 // Load test environment variables first
 import '@/test-setup';
 import 'reflect-metadata';
-import { beforeEach, describe, expect, test as it, mock } from 'bun:test';
+import { beforeEach, describe, expect, test as it } from 'bun:test';
 import jwt from 'jsonwebtoken';
 import { container } from 'tsyringe';
 import { AuthService } from '@/services/auth/auth.service';

@@ -2,7 +2,6 @@ import { type LoaderFunctionArgs, useLoaderData, useNavigate, useRevalidator } f
 import { OrganizationDetails } from '@/components/profile/OrganizationDetails';
 import { OrganizationApi, UserApi } from '@/lib/api';
 import { ApiError } from '@/lib/api/http';
-import type { Organization } from '@/lib/api/types';
 import { routes } from '@/lib/routes';
 
 type LoaderData = {

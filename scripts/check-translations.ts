@@ -4,8 +4,8 @@
  * Checks for missing translation keys in both frontend and backend
  */
 
-import { readdirSync } from 'fs';
-import { join, resolve } from 'path';
+import { readdirSync } from 'node:fs';
+import { join, resolve } from 'node:path';
 
 type Locales = Record<string, unknown>;
 
@@ -108,6 +108,69 @@ async function extractKeys(files: string[]): Promise<{
   return { static: staticKeys, dynamic: dynamicPrefixes };
 }
 
+function checkMissingStatic(
+  staticKeys: Map<string, Array<{ file: string; line: number }>>,
+  locales: Record<string, unknown>
+) {
+  const pluralSuffixes = ['_zero', '_one', '_two', '_few', '_many', '_other'];
+  const missingStatic: Array<{
+    key: string;
+    missingIn: string[];
+    usedIn: Array<{ file: string; line: number }>;
+  }> = [];
+
+  for (const [key, usedIn] of Array.from(staticKeys.entries())) {
+    const hasPluralVariants = pluralSuffixes.some((suffix) => staticKeys.has(`${key}${suffix}`));
+    if (hasPluralVariants) continue;
+
+    const missingIn = Object.keys(locales).filter((lang) => {
+      const keyExists = getValue(locales[lang], key) !== undefined;
+      const hasPluralVariantsInLocale = pluralSuffixes.some(
+        (suffix) => getValue(locales[lang], `${key}${suffix}`) !== undefined
+      );
+      return !keyExists && !hasPluralVariantsInLocale;
+    });
+
+    if (missingIn.length > 0) {
+      missingStatic.push({ key, missingIn, usedIn });
+    }
+  }
+
+  return missingStatic;
+}
+
+function checkMissingDynamic(
+  dynamicPrefixes: Map<string, Array<{ file: string; line: number }>>,
+  locales: Record<string, unknown>
+) {
+  const missingDynamic: Array<{
+    prefix: string;
+    missingKeys: string[];
+    usedIn: Array<{ file: string; line: number }>;
+  }> = [];
+
+  const firstLang = Object.keys(locales)[0];
+  if (!firstLang) return missingDynamic;
+
+  for (const [prefix, usedIn] of Array.from(dynamicPrefixes.entries())) {
+    const refKeys = getAllKeys(getValue(locales[firstLang], prefix), prefix);
+    if (refKeys.length === 0) continue;
+
+    const missing = new Set<string>();
+    for (const [lang, translations] of Object.entries(locales)) {
+      if (lang === firstLang) continue;
+      const langKeys = getAllKeys(getValue(translations, prefix), prefix);
+      refKeys.filter((k) => !langKeys.includes(k)).forEach((k) => missing.add(k));
+    }
+
+    if (missing.size > 0) {
+      missingDynamic.push({ prefix, missingKeys: Array.from(missing), usedIn });
+    }
+  }
+
+  return missingDynamic;
+}
+
 // Validate translations
 async function validate(
   srcDir: string,
@@ -120,81 +183,60 @@ async function validate(
   const { static: staticKeys, dynamic: dynamicPrefixes } = await extractKeys(files);
   const locales = await loadLocales(localeDir, useNamespace);
 
-  // Check static keys
-  // Skip keys that have plural variants (i18next handles pluralization automatically)
-  // Plural variants: _zero, _one, _two, _few, _many, _other
-  const pluralSuffixes = ['_zero', '_one', '_two', '_few', '_many', '_other'];
-  const missingStatic: Array<{
+  const missingStatic = checkMissingStatic(staticKeys, locales);
+  const missingDynamic = checkMissingDynamic(dynamicPrefixes, locales);
+
+  return { missingStatic, missingDynamic };
+}
+
+function printMissingStatic(
+  missingStatic: Array<{
     key: string;
     missingIn: string[];
     usedIn: Array<{ file: string; line: number }>;
-  }> = [];
-  for (const [key, usedIn] of Array.from(staticKeys.entries())) {
-    // Check if this key has any plural variant - if so, skip it
-    const hasPluralVariants = pluralSuffixes.some((suffix) => staticKeys.has(`${key}${suffix}`));
-    if (hasPluralVariants) continue;
+  }>
+) {
+  if (missingStatic.length === 0) return;
 
-    const missingIn = Object.keys(locales).filter((lang) => {
-      const keyExists = getValue(locales[lang], key) !== undefined;
-      const hasPluralVariantsInLocale = pluralSuffixes.some(
-        (suffix) => getValue(locales[lang], `${key}${suffix}`) !== undefined
-      );
-      return !keyExists && !hasPluralVariantsInLocale;
-    });
-    if (missingIn.length > 0) missingStatic.push({ key, missingIn, usedIn });
+  console.log(`\n❌ ${missingStatic.length} missing static key(s):\n`);
+  for (const { key, missingIn, usedIn } of missingStatic) {
+    console.log(`  ${key} (missing in: ${missingIn.join(', ')})`);
+    for (const u of usedIn.slice(0, 2)) {
+      console.log(`    ${u.file.replace(process.cwd() + '/', '')}:${u.line}`);
+    }
+    if (usedIn.length > 2) {
+      console.log(`    ... ${usedIn.length - 2} more`);
+    }
   }
+}
 
-  // Check dynamic patterns
-  const missingDynamic: Array<{
+function printMissingDynamic(
+  missingDynamic: Array<{
     prefix: string;
     missingKeys: string[];
     usedIn: Array<{ file: string; line: number }>;
-  }> = [];
-  const firstLang = Object.keys(locales)[0];
-  if (firstLang) {
-    for (const [prefix, usedIn] of Array.from(dynamicPrefixes.entries())) {
-      const refKeys = getAllKeys(getValue(locales[firstLang], prefix), prefix);
-      if (refKeys.length === 0) continue;
+  }>
+) {
+  if (missingDynamic.length === 0) return;
 
-      const missing = new Set<string>();
-      for (const [lang, translations] of Object.entries(locales)) {
-        if (lang === firstLang) continue;
-        const langKeys = getAllKeys(getValue(translations, prefix), prefix);
-        refKeys.filter((k) => !langKeys.includes(k)).forEach((k) => missing.add(k));
-      }
-
-      if (missing.size > 0) {
-        missingDynamic.push({ prefix, missingKeys: Array.from(missing), usedIn });
-      }
+  console.log(`\n⚠️  ${missingDynamic.length} dynamic pattern(s) with missing keys:\n`);
+  for (const { prefix, missingKeys } of missingDynamic) {
+    console.log(`  t(\`${prefix}.\${var}\`) - ${missingKeys.length} missing:`);
+    for (const key of missingKeys.slice(0, 3)) {
+      console.log(`    ${key}`);
+    }
+    if (missingKeys.length > 3) {
+      console.log(`    ... ${missingKeys.length - 3} more`);
     }
   }
-
-  return { missingStatic, missingDynamic };
 }
 
 // Print results
 function print(name: string, result: Awaited<ReturnType<typeof validate>>) {
   console.log(`\n${name}:`);
 
-  if (result.missingStatic.length > 0) {
-    console.log(`\n❌ ${result.missingStatic.length} missing static key(s):\n`);
-    for (const { key, missingIn, usedIn } of result.missingStatic) {
-      console.log(`  ${key} (missing in: ${missingIn.join(', ')})`);
-      for (const u of usedIn.slice(0, 2)) {
-        console.log(`    ${u.file.replace(process.cwd() + '/', '')}:${u.line}`);
-      }
-      if (usedIn.length > 2) console.log(`    ... ${usedIn.length - 2} more`);
-    }
-  }
-
-  if (result.missingDynamic.length > 0) {
-    console.log(`\n⚠️  ${result.missingDynamic.length} dynamic pattern(s) with missing keys:\n`);
-    for (const { prefix, missingKeys } of result.missingDynamic) {
-      console.log(`  t(\`${prefix}.\${var}\`) - ${missingKeys.length} missing:`);
-      for (const key of missingKeys.slice(0, 3)) console.log(`    ${key}`);
-      if (missingKeys.length > 3) console.log(`    ... ${missingKeys.length - 3} more`);
-    }
-  }
+  printMissingStatic(result.missingStatic);
+  printMissingDynamic(result.missingDynamic);
 
   if (result.missingStatic.length === 0 && result.missingDynamic.length === 0) {
     console.log('✅ All keys present!\n');

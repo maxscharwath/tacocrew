@@ -4,7 +4,7 @@
  */
 
 import dotenv from 'dotenv';
-import { resolve } from 'path';
+import { resolve } from 'node:path';
 
 // Load test.env file if it exists, otherwise use .env
 const testEnvPath = resolve(process.cwd(), 'test.env');

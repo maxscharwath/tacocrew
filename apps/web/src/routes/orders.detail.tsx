@@ -90,7 +90,13 @@ export async function orderDetailLoader({ params }: LoaderFunctionArgs) {
  * Helper to convert form data to array format
  */
 function toArray(val: string | string[]): string[] {
-  return Array.isArray(val) ? val : val ? [val] : [];
+  if (Array.isArray(val)) {
+    return val;
+  }
+  if (val) {
+    return [val];
+  }
+  return [];
 }
 
 /**

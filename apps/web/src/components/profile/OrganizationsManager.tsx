@@ -13,6 +13,74 @@ interface OrganizationsManagerProps {
   readonly organizations: Organization[];
 }
 
+interface OrganizationContentProps {
+  readonly isCreating: boolean;
+  readonly selectedOrganization: Organization | undefined;
+  readonly isAdmin: boolean;
+  readonly isPending: boolean;
+  readonly userRole: 'ADMIN' | 'MEMBER' | null;
+  readonly userStatus: 'ACTIVE' | 'PENDING' | null;
+  readonly currentUserId: string;
+  readonly onCreateSubmit: (data: OrganizationPayload, avatarFile: File | null, backgroundColor: string | null) => Promise<void>;
+  readonly onCreateCancel: () => void;
+  readonly onUpdate: (updated: Organization) => void;
+  readonly onDelete: () => void;
+}
+
+function OrganizationContent({
+  isCreating,
+  selectedOrganization,
+  isAdmin,
+  isPending,
+  userRole,
+  userStatus,
+  currentUserId,
+  onCreateSubmit,
+  onCreateCancel,
+  onUpdate,
+  onDelete,
+}: OrganizationContentProps) {
+  const { t } = useTranslation();
+
+  if (isCreating) {
+    return (
+      <OrganizationCreateForm
+        onSubmit={onCreateSubmit}
+        onCancel={onCreateCancel}
+        disabled={false}
+      />
+    );
+  }
+
+  if (selectedOrganization) {
+    return (
+      <OrganizationDetails
+        organization={selectedOrganization}
+        isAdmin={isAdmin}
+        isPending={isPending}
+        userRole={userRole}
+        userStatus={userStatus}
+        currentUserId={currentUserId}
+        onUpdate={onUpdate}
+        onDelete={onDelete}
+        disabled={false}
+      />
+    );
+  }
+
+  return (
+    <Card>
+      <CardContent className="py-12">
+        <EmptyState
+          icon={Building2}
+          title={t('organizations.empty.select')}
+          description={t('organizations.empty.selectDescription')}
+        />
+      </CardContent>
+    </Card>
+  );
+}
+
 export function OrganizationsManager({
   organizations: initialOrganizations,
 }: OrganizationsManagerProps) {
@@ -56,7 +124,7 @@ export function OrganizationsManager({
   useEffect(() => {
     if (selectedId && currentUserId) {
       const org = organizations.find((o) => o.id === selectedId);
-      if (org && org.role && org.status) {
+      if (org?.role && org?.status) {
         setUserRole(org.role);
         setUserStatus(org.status);
       } else {
@@ -163,36 +231,19 @@ export function OrganizationsManager({
 
           {/* Main Content Area */}
           <div className="space-y-6">
-            {isCreating ? (
-              <OrganizationCreateForm
-                onSubmit={handleCreateSubmit}
-                onCancel={handleCreateCancel}
-                disabled={false}
-              />
-            ) : selectedOrganization ? (
-              <OrganizationDetails
-                organization={selectedOrganization}
-                isAdmin={isAdmin}
-                isPending={isPending}
-                userRole={userRole}
-                userStatus={userStatus}
-                currentUserId={currentUserId}
-                onUpdate={handleOrganizationUpdate}
-                onDelete={handleOrganizationDelete}
-                disabled={false}
-              />
-            ) : (
-              /* No Selection State */
-              <Card>
-                <CardContent className="py-12">
-                  <EmptyState
-                    icon={Building2}
-                    title={t('organizations.empty.select')}
-                    description={t('organizations.empty.selectDescription')}
-                  />
-                </CardContent>
-              </Card>
-            )}
+            <OrganizationContent
+              isCreating={isCreating}
+              selectedOrganization={selectedOrganization}
+              isAdmin={isAdmin}
+              isPending={isPending}
+              userRole={userRole}
+              userStatus={userStatus}
+              currentUserId={currentUserId}
+              onCreateSubmit={handleCreateSubmit}
+              onCreateCancel={handleCreateCancel}
+              onUpdate={handleOrganizationUpdate}
+              onDelete={handleOrganizationDelete}
+            />
           </div>
         </div>
       )}

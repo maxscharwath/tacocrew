@@ -4,8 +4,8 @@
  */
 
 import { describe, expect, test as it } from 'bun:test';
-import { readdirSync } from 'fs';
-import { join, resolve } from 'path';
+import { readdirSync } from 'node:fs';
+import { join, resolve } from 'node:path';
 
 interface TranslationUsage {
   key: string;

@@ -3,7 +3,6 @@ import {
   AlertTriangle,
   ArrowLeft,
   Building2,
-  Home,
   Search,
   ShieldAlert,
 } from 'lucide-react';

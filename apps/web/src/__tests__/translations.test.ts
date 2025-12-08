@@ -5,8 +5,8 @@
  */
 
 import { describe, expect, test as it } from 'bun:test';
-import { readdirSync } from 'fs';
-import { join, resolve } from 'path';
+import { readdirSync } from 'node:fs';
+import { join, resolve } from 'node:path';
 
 interface TranslationUsage {
   key: string;
@@ -179,6 +179,121 @@ function getKeysUnderPrefix(obj: unknown, prefix: string): string[] {
   return getTranslationKeys(current, prefix);
 }
 
+async function loadLocaleFiles(localeDir: string): Promise<Record<string, unknown>> {
+  const locales: Record<string, unknown> = {};
+  const localeFiles = readdirSync(localeDir).filter((f) => f.endsWith('.json'));
+
+  await Promise.all(
+    localeFiles.map(async (file) => {
+      const lang = file.replace('.json', '');
+      const fileContent = Bun.file(join(localeDir, file));
+      const content = await fileContent.json();
+      locales[lang] = content;
+    })
+  );
+
+  return locales;
+}
+
+function checkMissingStaticKeys(
+  keyUsages: Map<string, TranslationUsage[]>,
+  locales: Record<string, unknown>
+): Array<{ key: string; missingIn: string[]; usedIn: string }> {
+  const pluralSuffixes = ['_zero', '_one', '_two', '_few', '_many', '_other'];
+  const missingKeys: Array<{ key: string; missingIn: string[]; usedIn: string }> = [];
+
+  for (const [key, usageList] of keyUsages.entries()) {
+    const hasPluralVariants = pluralSuffixes.some((suffix) => keyUsages.has(`${key}${suffix}`));
+    if (hasPluralVariants) continue;
+
+    const missingIn: string[] = [];
+    for (const [lang, translations] of Object.entries(locales)) {
+      const keyExistsDirect = keyExists(translations, key);
+      const hasPluralVariantsInLocale = pluralSuffixes.some((suffix) =>
+        keyExists(translations, `${key}${suffix}`)
+      );
+
+      if (!keyExistsDirect && !hasPluralVariantsInLocale) {
+        missingIn.push(lang);
+      }
+    }
+
+    if (missingIn.length > 0) {
+      const firstUsage = usageList[0]!;
+      const relPath = firstUsage.file.replace(process.cwd() + '/', '');
+      missingKeys.push({
+        key,
+        missingIn,
+        usedIn: `${relPath}:${firstUsage.line}`,
+      });
+    }
+  }
+
+  return missingKeys;
+}
+
+function validateDynamicKeyPatterns(
+  dynamicPatterns: DynamicKeyPattern[],
+  locales: Record<string, unknown>
+): Array<{ prefix: string; missingKeys: string[] }> {
+  const dynamicKeyIssues: Array<{ prefix: string; missingKeys: string[] }> = [];
+  const firstLang = Object.keys(locales)[0];
+
+  if (!firstLang) return dynamicKeyIssues;
+
+  for (const { prefix } of dynamicPatterns) {
+    const possibleKeys = getKeysUnderPrefix(locales[firstLang], prefix);
+    const allMissing: string[] = [];
+
+    for (const [lang, translations] of Object.entries(locales)) {
+      if (lang === firstLang) continue;
+      const langKeys = getKeysUnderPrefix(translations, prefix);
+      const missing = possibleKeys.filter((key) => !langKeys.includes(key));
+      allMissing.push(...missing);
+    }
+
+    if (allMissing.length > 0) {
+      const uniqueMissing = [...new Set(allMissing)];
+      dynamicKeyIssues.push({ prefix, missingKeys: uniqueMissing });
+    }
+  }
+
+  return dynamicKeyIssues;
+}
+
+function buildErrorMessages(
+  missingKeys: Array<{ key: string; missingIn: string[]; usedIn: string }>,
+  dynamicKeyIssues: Array<{ prefix: string; missingKeys: string[] }>
+): string[] {
+  const errors: string[] = [];
+
+  if (missingKeys.length > 0) {
+    errors.push(
+      `Missing static translation keys:\n${missingKeys
+        .map(
+          ({ key, missingIn, usedIn }) =>
+            `  - ${key} (missing in: ${missingIn.join(', ')}, used in: ${usedIn})`
+        )
+        .join('\n')}`
+    );
+  }
+
+  if (dynamicKeyIssues.length > 0) {
+    errors.push(
+      `Dynamic translation patterns with missing keys:\n${dynamicKeyIssues
+        .map(
+          ({ prefix, missingKeys: missing }) =>
+            `  - Pattern: t(\`${prefix}.\${variable}\`) (missing: ${missing.slice(0, 3).join(', ')}${
+              missing.length > 3 ? `, ...${missing.length - 3} more` : ''
+            })`
+        )
+        .join('\n')}`
+    );
+  }
+
+  return errors;
+}
+
 describe('Frontend Translation Keys', () => {
   it('should have all translation keys present in all locale files', async () => {
     const webSrc = resolve(process.cwd(), 'apps/web/src');
@@ -212,101 +327,16 @@ describe('Frontend Translation Keys', () => {
     }
 
     // Load all locale files
-    const locales: Record<string, unknown> = {};
-    const localeFiles = readdirSync(localeDir).filter((f) => f.endsWith('.json'));
-
-    await Promise.all(
-      localeFiles.map(async (file) => {
-        const lang = file.replace('.json', '');
-        const fileContent = Bun.file(join(localeDir, file));
-        const content = await fileContent.json();
-        locales[lang] = content;
-      })
-    );
+    const locales = await loadLocaleFiles(localeDir);
 
     // Check for missing static keys
-    // Skip keys that have plural variants (i18next handles pluralization automatically)
-    // Plural variants: _zero, _one, _two, _few, _many, _other
-    const pluralSuffixes = ['_zero', '_one', '_two', '_few', '_many', '_other'];
-    const missingKeys: Array<{ key: string; missingIn: string[]; usedIn: string }> = [];
-    for (const [key, usageList] of keyUsages.entries()) {
-      // Check if this key has any plural variant - if so, skip it
-      const hasPluralVariants = pluralSuffixes.some((suffix) => keyUsages.has(`${key}${suffix}`));
-      if (hasPluralVariants) continue;
-
-      const missingIn: string[] = [];
-      for (const [lang, translations] of Object.entries(locales)) {
-        // Check if key exists directly, or if any plural variants exist
-        const keyExistsDirect = keyExists(translations, key);
-        const hasPluralVariantsInLocale = pluralSuffixes.some((suffix) =>
-          keyExists(translations, `${key}${suffix}`)
-        );
-
-        if (!keyExistsDirect && !hasPluralVariantsInLocale) {
-          missingIn.push(lang);
-        }
-      }
-      if (missingIn.length > 0) {
-        const firstUsage = usageList[0]!;
-        const relPath = firstUsage.file.replace(process.cwd() + '/', '');
-        missingKeys.push({
-          key,
-          missingIn,
-          usedIn: `${relPath}:${firstUsage.line}`,
-        });
-      }
-    }
+    const missingKeys = checkMissingStaticKeys(keyUsages, locales);
 
     // Validate dynamic key patterns
-    const dynamicKeyIssues: Array<{ prefix: string; missingKeys: string[] }> = [];
-    const firstLang = Object.keys(locales)[0];
-    if (firstLang) {
-      for (const { prefix } of dynamicPatterns) {
-        const possibleKeys = getKeysUnderPrefix(locales[firstLang], prefix);
-        const allMissing: string[] = [];
-
-        // Check each locale
-        for (const [lang, translations] of Object.entries(locales)) {
-          if (lang === firstLang) continue; // Skip reference locale
-          const langKeys = getKeysUnderPrefix(translations, prefix);
-          const missing = possibleKeys.filter((key) => !langKeys.includes(key));
-          allMissing.push(...missing);
-        }
-
-        if (allMissing.length > 0) {
-          const uniqueMissing = [...new Set(allMissing)];
-          dynamicKeyIssues.push({
-            prefix,
-            missingKeys: uniqueMissing,
-          });
-        }
-      }
-    }
+    const dynamicKeyIssues = validateDynamicKeyPatterns(dynamicPatterns, locales);
 
     // Build error message
-    const errors: string[] = [];
-    if (missingKeys.length > 0) {
-      errors.push(
-        `Missing static translation keys:\n${missingKeys
-          .map(
-            ({ key, missingIn, usedIn }) =>
-              `  - ${key} (missing in: ${missingIn.join(', ')}, used in: ${usedIn})`
-          )
-          .join('\n')}`
-      );
-    }
-    if (dynamicKeyIssues.length > 0) {
-      errors.push(
-        `Dynamic translation patterns with missing keys:\n${dynamicKeyIssues
-          .map(
-            ({ prefix, missingKeys: missing }) =>
-              `  - Pattern: t(\`${prefix}.\${variable}\`) (missing: ${missing.slice(0, 3).join(', ')}${
-                missing.length > 3 ? `, ...${missing.length - 3} more` : ''
-              })`
-          )
-          .join('\n')}`
-      );
-    }
+    const errors = buildErrorMessages(missingKeys, dynamicKeyIssues);
 
     if (errors.length > 0) {
       expect(errors).toHaveLength(

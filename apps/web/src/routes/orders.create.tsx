@@ -163,16 +163,17 @@ function parseItemsFromFormData(
 /**
  * Validate taco selection and ingredients
  */
-function validateTacoSelection(
-  size: string | undefined,
-  meats: Array<{ id: string; quantity: number }>,
-  sauces: Array<{ id: string }>,
-  garnitures: Array<{ id: string }>,
-  extras: Array<{ id: string; quantity: number }>,
-  drinks: Array<{ id: string; quantity: number }>,
-  desserts: Array<{ id: string; quantity: number }>,
-  tacoSize: { allowGarnitures: boolean } | undefined
-): void {
+function validateTacoSelection(params: {
+  readonly size: string | undefined;
+  readonly meats: ReadonlyArray<{ readonly id: string; readonly quantity: number }>;
+  readonly sauces: ReadonlyArray<{ readonly id: string }>;
+  readonly garnitures: ReadonlyArray<{ readonly id: string }>;
+  readonly extras: ReadonlyArray<{ readonly id: string; readonly quantity: number }>;
+  readonly drinks: ReadonlyArray<{ readonly id: string; readonly quantity: number }>;
+  readonly desserts: ReadonlyArray<{ readonly id: string; readonly quantity: number }>;
+  readonly tacoSize: { readonly allowGarnitures: boolean } | undefined;
+}): void {
+  const { size, meats, sauces, garnitures, extras, drinks, desserts, tacoSize } = params;
   const hasTaco = size && meats.length > 0 && sauces.length > 0;
   const hasOtherItems = extras.length > 0 || drinks.length > 0 || desserts.length > 0;
 
@@ -213,7 +214,16 @@ export const orderCreateAction = createActionHandler({
       const stock = await StockApi.getStock();
       const tacoSize = stock.tacos.find((t) => t.code === size);
 
-      validateTacoSelection(size, meats, sauces, garnitures, extras, drinks, desserts, tacoSize);
+      validateTacoSelection({
+        size,
+        meats,
+        sauces,
+        garnitures,
+        extras,
+        drinks,
+        desserts,
+        tacoSize,
+      });
 
       if (editOrderId) {
         try {

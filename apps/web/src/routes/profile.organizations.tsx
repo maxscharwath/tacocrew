@@ -10,7 +10,6 @@ import {
 import { OrganizationsList } from '@/components/profile/OrganizationsList';
 import { Button, Card, CardContent, EmptyState } from '@/components/ui';
 import { OrganizationApi } from '@/lib/api';
-import { routes } from '@/lib/routes';
 
 type LoaderData = {
   organizations: Awaited<ReturnType<typeof OrganizationApi.getMyOrganizations>>;
