@@ -1,10 +1,11 @@
 import { addHours, format, setHours, setMinutes } from 'date-fns';
-import { Calendar, Package, Tag, Truck } from 'lucide-react';
+import { ArrowRight, Calendar, Package, Tag, Truck } from 'lucide-react';
 import { Suspense, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Await,
   Form,
+  Link,
   type LoaderFunctionArgs,
   redirect,
   useActionData,
@@ -68,11 +69,7 @@ import { parseFormData } from '@/lib/utils/form-data';
  * Normalize date string by adding seconds if missing
  */
 function normalizeDateString(dateStr: string): string {
-  if (
-    dateStr.includes(':') &&
-    !dateStr.includes('Z') &&
-    !dateStr.includes('+')
-  ) {
+  if (dateStr.includes(':') && !dateStr.includes('Z') && !dateStr.includes('+')) {
     return `${dateStr}:00`;
   }
   return dateStr;
@@ -176,6 +173,7 @@ function OrdersContent({
 
   // Filter to only active organizations
   const activeOrganizations = getActiveOrganizations(organizations);
+  const hasNoOrganizations = activeOrganizations.length === 0;
   const showOrganizationSelector = shouldShowOrganizationSelector(
     organizations,
     actionData?.requiresOrganization
@@ -393,158 +391,179 @@ function OrdersContent({
             <p className="text-slate-300 text-sm">{t('orders.list.form.subtitle')}</p>
           </header>
 
-          <Form method="post" className="grid gap-4">
-            <input type="hidden" name="_intent" value="create" />
-            <input type="hidden" name="startDate" value={getStartDateTime()} />
-            <input type="hidden" name="endDate" value={getEndDateTime()} />
-            {showOrganizationSelector && (
-              <input type="hidden" name="organizationId" value={selectedOrganizationId} />
-            )}
-
-            <div className="grid gap-2">
-              <Label htmlFor="name">{t('common.labels.dropName')}</Label>
-              <InputGroup>
-                <InputGroupAddon>
-                  <Tag className="size-4" />
-                </InputGroupAddon>
-                <InputGroupInput
-                  id="name"
-                  name="name"
-                  type="text"
-                  placeholder={t('common.placeholders.dropName')}
-                  defaultValue={defaultOrderName}
-                  disabled={isSubmitting}
-                />
-              </InputGroup>
+          {hasNoOrganizations ? (
+            <div className="flex flex-col items-center gap-4 rounded-2xl border border-white/15 border-dashed bg-slate-950/60 p-10 text-center">
+              <Package size={32} className="text-brand-200" />
+              <div className="space-y-2">
+                <h3 className="font-semibold text-white">
+                  {t('orders.list.form.noOrganization.title')}
+                </h3>
+                <p className="text-slate-300 text-sm">
+                  {t('orders.list.form.noOrganization.description')}
+                </p>
+              </div>
+              <Link to={routes.root.profileOrganizations()}>
+                <Button>
+                  {t('orders.list.form.noOrganization.action')}
+                  <ArrowRight className="ml-2 size-4" />
+                </Button>
+              </Link>
             </div>
+          ) : (
+            <Form method="post" className="grid gap-4">
+              <input type="hidden" name="_intent" value="create" />
+              <input type="hidden" name="startDate" value={getStartDateTime()} />
+              <input type="hidden" name="endDate" value={getEndDateTime()} />
+              <input type="hidden" name="organizationId" value={selectedOrganizationId} />
 
-            {showOrganizationSelector && (
               <div className="grid gap-2">
-                <Label htmlFor="organizationId">{t('orders.list.form.labels.organization')}</Label>
-                <Select
-                  value={selectedOrganizationId || undefined}
-                  onValueChange={setSelectedOrganizationId}
-                  disabled={isSubmitting}
-                  required
-                >
-                  <SelectTrigger
-                    id="organizationId"
-                    error={actionData?.requiresOrganization}
-                    className="w-full"
-                  >
-                    <SelectValue
-                      placeholder={t('orders.list.form.placeholders.selectOrganization')}
-                    >
-                      {selectedOrganizationId &&
-                        (() => {
-                          const selectedOrg = activeOrganizations.find(
-                            (org) => org.id === selectedOrganizationId
-                          );
-                          return selectedOrg ? (
-                            <OrganizationSelectItem organization={selectedOrg} size="sm" />
-                          ) : null;
-                        })()}
-                    </SelectValue>
-                  </SelectTrigger>
-                  <SelectContent>
-                    {activeOrganizations.map((org) => (
-                      <SelectItem key={org.id} value={org.id}>
-                        <OrganizationSelectItem organization={org} size="sm" />
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {actionData?.requiresOrganization && (
-                  <p className="text-rose-400 text-xs">
-                    {t('orders.list.form.errors.organizationRequired')}
-                  </p>
-                )}
-              </div>
-            )}
-
-            <div className="space-y-4 rounded-2xl border border-white/10 bg-slate-950/60 p-4">
-              <div className="flex items-center gap-2">
-                <Calendar size={18} className="text-brand-400" />
-                <Label className="text-sm normal-case tracking-normal">
-                  {t('orders.list.form.labels.timeWindow')}
-                </Label>
-              </div>
-
-              <div className="grid gap-4">
-                <DateTimePicker
-                  label={t('orders.list.form.labels.opens')}
-                  dateValue={startDate}
-                  timeValue={startTime}
-                  onDateChange={setStartDate}
-                  onTimeChange={setStartTime}
-                  disabled={isSubmitting}
-                />
-
-                <div className="grid gap-2">
-                  <div className="flex items-center justify-end gap-1.5">
-                    <button
-                      type="button"
-                      onClick={() => setQuickDeadline(10)}
-                      disabled={isSubmitting}
-                      className="cursor-pointer rounded-full border border-brand-400/30 bg-brand-500/10 px-2.5 py-1 font-medium text-brand-100 text-xs hover:border-brand-400/50 hover:bg-brand-500/20 disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                      {getQuickDeadlineLabel(10)}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setQuickDeadline(12)}
-                      disabled={isSubmitting}
-                      className="cursor-pointer rounded-full border border-brand-400/30 bg-brand-500/10 px-2.5 py-1 font-medium text-brand-100 text-xs hover:border-brand-400/50 hover:bg-brand-500/20 disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                      {getQuickDeadlineLabel(12)}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setQuickDeadline(14)}
-                      disabled={isSubmitting}
-                      className="cursor-pointer rounded-full border border-brand-400/30 bg-brand-500/10 px-2.5 py-1 font-medium text-brand-100 text-xs hover:border-brand-400/50 hover:bg-brand-500/20 disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                      {getQuickDeadlineLabel(14)}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setQuickDeadline(17)}
-                      disabled={isSubmitting}
-                      className="cursor-pointer rounded-full border border-brand-400/30 bg-brand-500/10 px-2.5 py-1 font-medium text-brand-100 text-xs hover:border-brand-400/50 hover:bg-brand-500/20 disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                      {getQuickDeadlineLabel(17)}
-                    </button>
-                  </div>
-                  <DateTimePicker
-                    label={t('orders.list.form.labels.closes')}
-                    dateValue={endDate}
-                    timeValue={endTime}
-                    onDateChange={setEndDate}
-                    onTimeChange={setEndTime}
+                <Label htmlFor="name">{t('common.labels.dropName')}</Label>
+                <InputGroup>
+                  <InputGroupAddon>
+                    <Tag className="size-4" />
+                  </InputGroupAddon>
+                  <InputGroupInput
+                    id="name"
+                    name="name"
+                    type="text"
+                    placeholder={t('common.placeholders.dropName')}
+                    defaultValue={defaultOrderName}
                     disabled={isSubmitting}
-                    minDate={getMinDateTime().date}
+                    required
                   />
-                  <p className="text-slate-400 text-xs">
-                    {t('orders.list.form.labels.deadlineHint')}
-                  </p>
+                </InputGroup>
+              </div>
+
+              {showOrganizationSelector && (
+                <div className="grid gap-2">
+                  <Label htmlFor="organizationId">
+                    {t('orders.list.form.labels.organization')}
+                  </Label>
+                  <Select
+                    value={selectedOrganizationId || undefined}
+                    onValueChange={setSelectedOrganizationId}
+                    disabled={isSubmitting}
+                    required
+                  >
+                    <SelectTrigger
+                      id="organizationId"
+                      error={actionData?.requiresOrganization}
+                      className="w-full"
+                    >
+                      <SelectValue
+                        placeholder={t('orders.list.form.placeholders.selectOrganization')}
+                      >
+                        {selectedOrganizationId &&
+                          (() => {
+                            const selectedOrg = activeOrganizations.find(
+                              (org) => org.id === selectedOrganizationId
+                            );
+                            return selectedOrg ? (
+                              <OrganizationSelectItem organization={selectedOrg} size="sm" />
+                            ) : null;
+                          })()}
+                      </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                      {activeOrganizations.map((org) => (
+                        <SelectItem key={org.id} value={org.id}>
+                          <OrganizationSelectItem organization={org} size="sm" />
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {actionData?.requiresOrganization && (
+                    <p className="text-rose-400 text-xs">
+                      {t('orders.list.form.errors.organizationRequired')}
+                    </p>
+                  )}
+                </div>
+              )}
+
+              <div className="space-y-4 rounded-2xl border border-white/10 bg-slate-950/60 p-4">
+                <div className="flex items-center gap-2">
+                  <Calendar size={18} className="text-brand-400" />
+                  <Label className="text-sm normal-case tracking-normal">
+                    {t('orders.list.form.labels.timeWindow')}
+                  </Label>
+                </div>
+
+                <div className="grid gap-4">
+                  <DateTimePicker
+                    label={t('orders.list.form.labels.opens')}
+                    dateValue={startDate}
+                    timeValue={startTime}
+                    onDateChange={setStartDate}
+                    onTimeChange={setStartTime}
+                    disabled={isSubmitting}
+                  />
+
+                  <div className="grid gap-2">
+                    <div className="flex items-center justify-end gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => setQuickDeadline(10)}
+                        disabled={isSubmitting}
+                        className="cursor-pointer rounded-full border border-brand-400/30 bg-brand-500/10 px-2.5 py-1 font-medium text-brand-100 text-xs hover:border-brand-400/50 hover:bg-brand-500/20 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        {getQuickDeadlineLabel(10)}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setQuickDeadline(12)}
+                        disabled={isSubmitting}
+                        className="cursor-pointer rounded-full border border-brand-400/30 bg-brand-500/10 px-2.5 py-1 font-medium text-brand-100 text-xs hover:border-brand-400/50 hover:bg-brand-500/20 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        {getQuickDeadlineLabel(12)}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setQuickDeadline(14)}
+                        disabled={isSubmitting}
+                        className="cursor-pointer rounded-full border border-brand-400/30 bg-brand-500/10 px-2.5 py-1 font-medium text-brand-100 text-xs hover:border-brand-400/50 hover:bg-brand-500/20 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        {getQuickDeadlineLabel(14)}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setQuickDeadline(17)}
+                        disabled={isSubmitting}
+                        className="cursor-pointer rounded-full border border-brand-400/30 bg-brand-500/10 px-2.5 py-1 font-medium text-brand-100 text-xs hover:border-brand-400/50 hover:bg-brand-500/20 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        {getQuickDeadlineLabel(17)}
+                      </button>
+                    </div>
+                    <DateTimePicker
+                      label={t('orders.list.form.labels.closes')}
+                      dateValue={endDate}
+                      timeValue={endTime}
+                      onDateChange={setEndDate}
+                      onTimeChange={setEndTime}
+                      disabled={isSubmitting}
+                      minDate={getMinDateTime().date}
+                    />
+                    <p className="text-slate-400 text-xs">
+                      {t('orders.list.form.labels.deadlineHint')}
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {actionData?.errorKey || actionData?.errorMessage ? (
-              <Alert tone="error">
-                {actionData.errorMessage
-                  ? actionData.errorMessage
-                  : actionData.errorKey
-                    ? t(actionData.errorKey)
-                    : null}
-              </Alert>
-            ) : null}
+              {actionData?.errorKey || actionData?.errorMessage ? (
+                <Alert tone="error">
+                  {actionData.errorMessage
+                    ? actionData.errorMessage
+                    : actionData.errorKey
+                      ? t(actionData.errorKey)
+                      : null}
+                </Alert>
+              ) : null}
 
-            <Button type="submit" loading={isSubmitting} disabled={isSubmitting} fullWidth>
-              {t('orders.list.form.actions.launch')}
-            </Button>
-          </Form>
+              <Button type="submit" loading={isSubmitting} disabled={isSubmitting} fullWidth>
+                {t('orders.list.form.actions.launch')}
+              </Button>
+            </Form>
+          )}
         </section>
       </div>
     </div>

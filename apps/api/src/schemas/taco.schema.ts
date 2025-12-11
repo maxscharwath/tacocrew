@@ -16,7 +16,7 @@ export type MeatId = Id<'Meat'>;
 /**
  * Parse a string to MeatId
  */
-export const MeatIdSchema = zId<MeatId>();
+export const MeatId = zId<MeatId>();
 
 /**
  * Sauce ID type - branded string
@@ -26,7 +26,7 @@ export type SauceId = Id<'Sauce'>;
 /**
  * Parse a string to SauceId
  */
-export const SauceIdSchema = zId<SauceId>();
+export const SauceId = zId<SauceId>();
 
 /**
  * Garniture ID type - branded string
@@ -36,7 +36,7 @@ export type GarnitureId = Id<'Garniture'>;
 /**
  * Parse a string to GarnitureId
  */
-export const GarnitureIdSchema = zId<GarnitureId>();
+export const GarnitureId = zId<GarnitureId>();
 
 /**
  * Taco ID type - branded string
@@ -46,13 +46,13 @@ export type TacoId = Id<'Taco'>;
 /**
  * Parse a string to TacoId
  */
-export const TacoIdSchema = zId<TacoId>();
+export const TacoId = zId<TacoId>();
 
 /**
  * Meat ingredient schema
  */
 export const MeatSchema = z.object({
-  id: zId<MeatId>(),
+  id: MeatId,
   code: z.string(),
   name: z.string(),
   quantity: z.number().int().min(1),
@@ -64,7 +64,7 @@ export type Meat = z.infer<typeof MeatSchema>;
  * Sauce ingredient schema
  */
 export const SauceSchema = z.object({
-  id: zId<SauceId>(),
+  id: SauceId,
   code: z.string(),
   name: z.string(),
 });
@@ -75,7 +75,7 @@ export type Sauce = z.infer<typeof SauceSchema>;
  * Garniture ingredient schema
  */
 export const GarnitureSchema = z.object({
-  id: zId<GarnitureId>(),
+  id: GarnitureId,
   code: z.string(),
   name: z.string(),
 });
@@ -86,7 +86,7 @@ export type Garniture = z.infer<typeof GarnitureSchema>;
  * Taco schema using Zod
  */
 export const TacoSchema = z.object({
-  id: zId<TacoId>(),
+  id: TacoId,
   size: z.enum(TacoSize),
   meats: z.array(MeatSchema),
   sauces: z.array(SauceSchema),

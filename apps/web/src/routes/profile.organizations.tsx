@@ -1,37 +1,33 @@
 import { Building2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import {
-  type LoaderFunctionArgs,
-  Outlet,
-  useLoaderData,
-  useLocation,
-  useNavigate,
-} from 'react-router';
+import { Outlet, useLoaderData, useLocation, useNavigate } from 'react-router';
 import { OrganizationsList } from '@/components/profile/OrganizationsList';
 import { Button, Card, CardContent, EmptyState } from '@/components/ui';
 import { OrganizationApi } from '@/lib/api';
+import { routes } from '@/lib/routes';
+import type { LoaderData } from '@/lib/types/loader-types';
+import { createLoader } from '@/lib/utils/loader-factory';
 
-type LoaderData = {
-  organizations: Awaited<ReturnType<typeof OrganizationApi.getMyOrganizations>>;
-};
-
-export async function profileOrganizationsLoader(_: LoaderFunctionArgs) {
-  const organizations = await OrganizationApi.getMyOrganizations();
-  return Response.json({ organizations });
-}
+export const profileOrganizationsLoader = createLoader(
+  async () => {
+    const organizations = await OrganizationApi.getMyOrganizations();
+    return { organizations };
+  },
+  { requireAuth: true }
+);
 
 export function ProfileOrganizationsRoute() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
-  const { organizations } = useLoaderData<LoaderData>();
+  const { organizations } = useLoaderData<LoaderData<typeof profileOrganizationsLoader>>();
 
   const handleSelect = (orgId: string) => {
-    navigate(`/profile/organizations/${orgId}`);
+    navigate(routes.root.profileOrganizations.detail({ id: orgId }));
   };
 
   const handleCreateNew = () => {
-    navigate('/profile/organizations/new');
+    navigate(routes.root.profileOrganizations.new());
   };
 
   // Get selected organization ID from URL

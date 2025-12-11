@@ -5,8 +5,8 @@
 
 import { injectable } from 'tsyringe';
 import { PrismaService } from '@/infrastructure/database/prisma.service';
-import { OrderIdSchema } from '@/schemas/order.schema';
-import { OrderId, UserId } from '@/shared/types/types';
+import { OrderId } from '@/schemas/order.schema';
+import { UserId } from '@/schemas/user.schema';
 import { inject } from '@/shared/utils/inject.utils';
 
 /**
@@ -49,7 +49,7 @@ export class GetUserOrdersHistoryUseCase {
         requestedFor: string;
         createdAt: Date;
       }) => {
-        const parsedId = OrderIdSchema.parse(order.id);
+        const parsedId = OrderId.parse(order.id);
         return {
           id: parsedId,
           orderId: parsedId,

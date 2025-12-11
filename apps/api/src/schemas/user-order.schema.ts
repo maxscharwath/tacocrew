@@ -7,9 +7,9 @@ import { z } from 'zod';
 import { DessertSchema } from '@/schemas/dessert.schema';
 import { DrinkSchema } from '@/schemas/drink.schema';
 import { ExtraSchema } from '@/schemas/extra.schema';
-import type { GroupOrderId } from '@/schemas/group-order.schema';
+import { GroupOrderId } from '@/schemas/group-order.schema';
 import { TacoSchema } from '@/schemas/taco.schema';
-import type { UserId } from '@/schemas/user.schema';
+import { UserId } from '@/schemas/user.schema';
 import { UserOrderItems } from '@/shared/types/types';
 import type { Id } from '@/shared/utils/branded-ids.utils';
 import { zId } from '@/shared/utils/branded-ids.utils';
@@ -34,7 +34,7 @@ export type UserOrderId = Id<'UserOrder'>;
 /**
  * Parse a string to UserOrderId
  */
-export const UserOrderIdSchema = zId<UserOrderId>();
+export const UserOrderId = zId<UserOrderId>();
 
 /**
  * User order schema using Zod
@@ -46,26 +46,26 @@ const PaymentActorSchema = z.object({
 
 const PaymentStatusSchema = z.object({
   settled: z.boolean(),
-  settledAt: z.date().nullish(),
+  settledAt: z.coerce.date().nullish(),
   settledBy: PaymentActorSchema.nullish(),
 });
 
 const ParticipantPaymentSchema = z.object({
   paid: z.boolean(),
-  paidAt: z.date().nullish(),
+  paidAt: z.coerce.date().nullish(),
   paidBy: PaymentActorSchema.nullish(),
 });
 
 export const UserOrderSchema = z.object({
-  id: zId<UserOrderId>(),
-  groupOrderId: zId<GroupOrderId>(),
-  userId: zId<UserId>(),
+  id: UserOrderId,
+  groupOrderId: GroupOrderId,
+  userId: UserId,
   name: z.string().nullable().optional(),
   items: z.custom<UserOrderItems>(),
   reimbursement: PaymentStatusSchema,
   participantPayment: ParticipantPaymentSchema,
-  createdAt: z.date(),
-  updatedAt: z.date(),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
 });
 
 export type UserOrder = z.infer<typeof UserOrderSchema>;
@@ -80,13 +80,13 @@ export const UserOrderFromDbSchema = z.object({
   items: z.unknown(), // Prisma Json type - automatically parsed
   tacoIdsHex: z.unknown().nullish(), // Prisma Json type - array of taco IDs in hex format
   reimbursed: z.boolean(),
-  reimbursedAt: z.date().nullish(),
+  reimbursedAt: z.coerce.date().nullish(),
   reimbursedById: z.string().nullish(),
   paidByUser: z.boolean(),
-  paidByUserAt: z.date().nullish(),
+  paidByUserAt: z.coerce.date().nullish(),
   paidByUserId: z.string().nullish(),
-  createdAt: z.date(),
-  updatedAt: z.date(),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
   user: z
     .object({
       name: z.string().nullish(), // Allow null for Better Auth users
@@ -135,8 +135,8 @@ export function createUserOrderFromDb(data: z.infer<typeof UserOrderFromDbSchema
   const sortedItems = sortUserOrderIngredients(validated.items);
 
   return {
-    id: UserOrderIdSchema.parse(validated.id),
-    groupOrderId: zId<GroupOrderId>().parse(validated.groupOrderId),
+    id: UserOrderId.parse(validated.id),
+    groupOrderId: GroupOrderId.parse(validated.groupOrderId),
     userId: validated.userId as UserId, // Accept Better Auth IDs or UUIDs
     name: validated.user?.name,
     items: sortedItems,

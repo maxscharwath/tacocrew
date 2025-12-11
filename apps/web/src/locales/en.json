@@ -268,10 +268,11 @@
       "add": "New"
     },
     "form": {
+      "description": "Create a new organization to manage group orders and members",
       "name": {
         "label": "Organization Name",
         "placeholder": "Enter organization name",
-        "description": "Choose a unique name for your organization"
+        "description": "Enter a name for your organization"
       },
       "create": "Create Organization"
     },
@@ -618,6 +619,11 @@
         },
         "errors": {
           "organizationRequired": "Please select an organization for this group order"
+        },
+        "noOrganization": {
+          "title": "No organization found",
+          "description": "You need to belong to an organization to create group orders. Create or join an organization to get started.",
+          "action": "Go to Organizations"
         },
         "quickDeadlines": {
           "morning": "10am",
@@ -1040,6 +1046,7 @@
     "subtitle": "Your account information and order history.",
     "delivery": {
       "manageButton": "Manage delivery info",
+      "backToProfile": "Back to profile",
       "title": "Saved delivery details",
       "subtitle": "Store office addresses or frequent drop-off points you can reuse during submission.",
       "helper": "Create as many profiles as you need, then pick the right one when you finalize a group order.",

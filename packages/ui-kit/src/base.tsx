@@ -6,7 +6,6 @@
 import { cva, type VariantProps } from 'class-variance-authority';
 import type { ComponentPropsWithoutRef, ReactNode } from 'react';
 import { cn } from './utils';
-import { baseStyles, borders, focusRings, textColors, transitions } from './tokens';
 
 /**
  * Base props for all UI components
@@ -25,7 +24,7 @@ export function BaseContainer({
   ...props
 }: BaseProps & ComponentPropsWithoutRef<'div'>) {
   return (
-    <div className={cn(baseStyles.card, className)} {...props}>
+    <div className={cn('rounded-3xl border border-border bg-card shadow-[0_30px_90px_rgba(8,47,73,0.35)] backdrop-blur', className)} {...props}>
       {children}
     </div>
   );
@@ -37,8 +36,8 @@ export function BaseContainer({
 const inputWrapperVariants = cva('w-full', {
   variants: {
     error: {
-      true: borders.error,
-      false: borders.default,
+      true: 'border-error-500',
+      false: 'border-border',
     },
   },
   defaultVariants: {
@@ -53,7 +52,7 @@ export function BaseInputWrapper({
   ...props
 }: BaseProps & ComponentPropsWithoutRef<'div'> & VariantProps<typeof inputWrapperVariants>) {
   return (
-    <div className={cn(inputWrapperVariants({ error }), transitions.default, className)} {...props}>
+    <div className={cn(inputWrapperVariants({ error }), 'transition-colors', className)} {...props}>
       {children}
     </div>
   );
@@ -65,10 +64,10 @@ export function BaseInputWrapper({
 const textVariants = cva('', {
   variants: {
     variant: {
-      primary: textColors.primary,
-      secondary: textColors.secondary,
-      tertiary: textColors.tertiary,
-      muted: textColors.muted,
+      primary: 'text-foreground',
+      secondary: 'text-slate-200',
+      tertiary: 'text-slate-300',
+      muted: 'text-muted-foreground',
     },
     size: {
       sm: 'text-xs',
@@ -132,7 +131,7 @@ export function BaseHeading({
 
   return (
     <HeadingTag
-      className={cn(textColors.primary, headingVariants({ level }), className)}
+      className={cn('text-foreground', headingVariants({ level }), className)}
       {...props}
     >
       {children}
@@ -152,8 +151,8 @@ export function BaseInteractive({
     <button
       className={cn(
         'inline-flex items-center justify-center gap-2',
-        focusRings.default,
-        transitions.default,
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background',
+        'transition-colors',
         'disabled:cursor-not-allowed disabled:opacity-50',
         className
       )}

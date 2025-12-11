@@ -1,8 +1,8 @@
 import { X } from 'lucide-react';
 import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { cn } from './utils';
 import { Button } from './button';
+import { cn } from './utils';
 
 type ModalProps = {
   isOpen: boolean;
@@ -53,11 +53,11 @@ export function Modal({ isOpen, onClose, title, description, children, className
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
       <div
         className={cn(
-          'relative max-h-[90vh] w-full max-w-4xl overflow-hidden rounded-3xl border border-white/10 bg-linear-to-br from-slate-900/95 via-slate-900/90 to-slate-950/95 shadow-2xl',
+          'relative max-h-[90vh] w-full max-w-4xl overflow-hidden rounded-3xl border border-gray-700 bg-linear-to-br from-slate-900/95 via-slate-900/90 to-slate-950/95 shadow-2xl',
           className
         )}
       >
-        <div className="flex items-center justify-between border-white/10 border-b p-6">
+        <div className="flex items-center justify-between border-gray-700 border-b p-6">
           <div>
             <h2 className="font-semibold text-white text-xl">{title}</h2>
             {description && <p className="mt-1 text-slate-400 text-sm">{description}</p>}

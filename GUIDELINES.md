@@ -113,8 +113,8 @@ const element = document.getElementById('root') as HTMLDivElement;
 
 ```typescript
 // Good - Use validation libraries (Zod)
-const UserIdSchema = z.string().uuid();
-const userId = UserIdSchema.parse(getUserId());
+const UserId = z.string().uuid();
+const userId = UserId.parse(getUserId());
 
 // Good - Use type guards
 function isUserData(value: unknown): value is UserData {

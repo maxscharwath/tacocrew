@@ -1,5 +1,5 @@
 import { format } from 'date-fns';
-import { useEffect, useState } from 'react';
+import { type FormEvent, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button, DateTimePicker, Input, Label, Modal } from '@/components/ui';
 import { OrdersApi } from '@/lib/api';
@@ -54,7 +54,7 @@ export function EditGroupOrderDialog({
     }
   }, [isOpen, groupOrder]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
     setIsSaving(true);
@@ -188,7 +188,7 @@ export function EditGroupOrderDialog({
           <Button type="button" variant="outline" onClick={onClose} disabled={isSaving}>
             {t('common.cancel')}
           </Button>
-          <Button type="submit" variant="primary" disabled={isSaving}>
+          <Button type="submit" variant="default" disabled={isSaving}>
             {isSaving ? t('common.saving') : t('common.save')}
           </Button>
         </div>

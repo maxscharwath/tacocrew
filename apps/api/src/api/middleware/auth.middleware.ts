@@ -130,6 +130,7 @@ export function createAuthMiddleware(methods: AuthMethod[], required = true): Mi
     }
 
     // Fall back to other auth methods (bearer token, username header)
+    let lastError: Error | undefined;
     for (const method of methods) {
       const result = await method(c);
 
@@ -138,10 +139,15 @@ export function createAuthMiddleware(methods: AuthMethod[], required = true): Mi
         await next();
         return;
       }
+
+      // Track the last error for better error messages
+      if (result.error) {
+        lastError = result.error;
+      }
     }
 
     if (required) {
-      throw new UnauthorizedError();
+      throw new UnauthorizedError(lastError ? lastError.message : undefined);
     }
 
     await next();

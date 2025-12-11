@@ -903,6 +903,52 @@
     --outline-color-disabled_subtle: var(--color-border-disabled_subtle);
     --outline-color-brand_alt: var(--color-border-brand_alt);
     --outline-color-error_subtle: var(--color-border-error_subtle);
+
+    /* ========================================
+       SHADCN-STYLE SEMANTIC TOKENS
+       ======================================== */
+
+    /* Primary - Brand colors for main actions */
+    --color-primary: var(--color-brand-500);
+    --color-primary-foreground: var(--color-white);
+
+    /* Destructive - Error/delete actions */
+    --color-destructive: var(--color-error-600);
+    --color-destructive-foreground: var(--color-white);
+
+    /* Secondary - Less prominent actions */
+    --color-secondary: var(--color-gray-100);
+    --color-secondary-foreground: var(--color-gray-900);
+
+    /* Accent - Hover states and highlights */
+    --color-accent: var(--color-gray-100);
+    --color-accent-foreground: var(--color-gray-900);
+
+    /* Muted - Subtle backgrounds */
+    --color-muted: var(--color-gray-50);
+    --color-muted-foreground: var(--color-gray-600);
+
+    /* Background - Page backgrounds */
+    --color-background: var(--color-white);
+    --color-foreground: var(--color-gray-950);
+
+    /* Card - Card backgrounds */
+    --color-card: var(--color-white);
+    --color-card-foreground: var(--color-gray-950);
+
+    /* Popover - Dropdown/popover backgrounds */
+    --color-popover: var(--color-white);
+    --color-popover-foreground: var(--color-gray-950);
+
+    /* Border - Default border color (solid, no transparency) */
+    --color-border: var(--color-gray-300);
+
+    /* Input - Input field backgrounds */
+    --color-input: var(--color-white);
+    --color-input-foreground: var(--color-gray-950);
+
+    /* Ring - Focus ring color */
+    --color-ring: var(--color-brand-500);
 }
 
 @layer base {
@@ -1329,5 +1375,51 @@
         --outline-color-disabled_subtle: var(--color-border-disabled_subtle);
         --outline-color-brand_alt: var(--color-border-brand_alt);
         --outline-color-error_subtle: var(--color-border-error_subtle);
+
+        /* ========================================
+           SHADCN-STYLE SEMANTIC TOKENS (DARK MODE)
+           ======================================== */
+
+        /* Primary - Brand colors for main actions */
+        --color-primary: var(--color-brand-500);
+        --color-primary-foreground: var(--color-white);
+
+        /* Destructive - Error/delete actions */
+        --color-destructive: var(--color-error-500);
+        --color-destructive-foreground: var(--color-white);
+
+        /* Secondary - Less prominent actions */
+        --color-secondary: var(--color-gray-800);
+        --color-secondary-foreground: var(--color-gray-50);
+
+        /* Accent - Hover states and highlights */
+        --color-accent: var(--color-gray-800);
+        --color-accent-foreground: var(--color-gray-50);
+
+        /* Muted - Subtle backgrounds */
+        --color-muted: var(--color-gray-900);
+        --color-muted-foreground: var(--color-gray-400);
+
+        /* Background - Page backgrounds */
+        --color-background: var(--color-gray-950);
+        --color-foreground: var(--color-gray-50);
+
+        /* Card - Card backgrounds */
+        --color-card: var(--color-gray-900);
+        --color-card-foreground: var(--color-gray-50);
+
+        /* Popover - Dropdown/popover backgrounds */
+        --color-popover: var(--color-gray-900);
+        --color-popover-foreground: var(--color-gray-50);
+
+        /* Border - Default border color (solid, no transparency) */
+        --color-border: var(--color-gray-700);
+
+        /* Input - Input field backgrounds */
+        --color-input: var(--color-gray-900);
+        --color-input-foreground: var(--color-gray-50);
+
+        /* Ring - Focus ring color */
+        --color-ring: var(--color-brand-500);
     }
 }

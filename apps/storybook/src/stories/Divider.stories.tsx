@@ -4,22 +4,27 @@ import { Divider } from '@tacobot/ui-kit';
 const meta = {
   title: 'UI Kit/Divider',
   component: Divider,
-  parameters: { layout: 'centered' },
+  parameters: {
+    layout: 'padded',
+  },
   tags: ['autodocs'],
+  argTypes: {
+    label: {
+      control: 'text',
+      description: 'Optional label text for the divider',
+    },
+    orientation: {
+      control: 'select',
+      options: ['horizontal', 'vertical'],
+      description: 'The orientation of the divider',
+    },
+  },
 } satisfies Meta<typeof Divider>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const WithLabel: Story = {
-  args: {
-    label: 'or use password',
-    className: 'w-64',
-  },
-};
-
-export const Plain: Story = {
-  args: {
-    className: 'w-64',
-  },
+// Main story - use controls panel to explore all options
+export const Default: Story = {
+  render: (args) => <Divider {...args} className="w-64" />,
 };

@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
-import { cn } from './utils';
 import type { AvatarProps } from './avatar';
 import { Avatar } from './avatar';
+import { cn } from './utils';
 
 type AvatarLabelGroupSize = 'sm' | 'md' | 'lg';
 

@@ -23,7 +23,7 @@ export function ProfileOrganizationsNewRoute() {
         id: loadingToastId,
       });
       revalidator.revalidate();
-      navigate(`/profile/organizations/${newOrg.id}`);
+      navigate(routes.root.profileOrganizations.detail({ id: newOrg.id }));
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : t('organizations.messages.genericError');

@@ -4,12 +4,21 @@
  * @module gigatacos-client/client
  */
 
+import { CsrfError } from './errors';
+import { HttpClient } from './http-client';
+import {extractCsrfTokenFromHtml, 
+  type OrderSummary,
+  parseCategorySummaryFromTacos,
+  parseOrderSummary,
+  parseTacoCard,
+  parseTacoCards
+} from './parsers';
 import type {
-  GigatacosClientConfig,
   CartItemResponse,
   DessertFormData,
   DrinkFormData,
   ExtraFormData,
+  GigatacosClientConfig,
   Logger,
   OrderSubmissionData,
   OrderSubmissionResponse,
@@ -19,17 +28,7 @@ import type {
   Taco,
   TacoFormData,
 } from './types';
-import {
-  parseOrderSummary,
-  type OrderSummary,
-  parseCategorySummaryFromTacos,
-  parseTacoCard,
-  parseTacoCards,
-} from './parsers';
-import { HttpClient } from './http-client';
 import { noopLogger } from './utils/logger';
-import { extractCsrfTokenFromHtml } from './parsers';
-import { CsrfError } from './errors';
 
 /**
  * Gigatacos Client

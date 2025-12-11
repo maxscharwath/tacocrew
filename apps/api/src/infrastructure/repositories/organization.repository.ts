@@ -127,7 +127,7 @@ export class OrganizationRepository {
     }
   }
 
-  async getUserMembership(
+  async findMembership(
     userId: UserId,
     organizationId: OrganizationId
   ): Promise<{ role: OrganizationRole; status: OrganizationMemberStatus } | null> {
@@ -147,7 +147,30 @@ export class OrganizationRepository {
 
       return membership ? { role: membership.role, status: membership.status } : null;
     } catch (error) {
-      logger.error('Failed to get user membership', { userId, organizationId, error });
+      logger.error('Failed to find membership', { userId, organizationId, error });
+      return null;
+    }
+  }
+
+  async findActiveMembership(
+    userId: UserId,
+    organizationId: OrganizationId
+  ): Promise<{ role: OrganizationRole } | null> {
+    try {
+      const membership = await this.prisma.client.userOrganization.findFirst({
+        where: {
+          userId,
+          organizationId,
+          status: OrganizationMemberStatus.ACTIVE,
+        },
+        select: {
+          role: true,
+        },
+      });
+
+      return membership;
+    } catch (error) {
+      logger.error('Failed to find active membership', { userId, organizationId, error });
       return null;
     }
   }

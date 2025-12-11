@@ -4,7 +4,7 @@
  */
 import { isWithinInterval } from 'date-fns';
 import { z } from 'zod';
-import type { UserId } from '@/schemas/user.schema';
+import { UserId } from '@/schemas/user.schema';
 import { GroupOrderStatus } from '@/shared/types/types';
 import type { Id } from '@/shared/utils/branded-ids.utils';
 import { zId } from '@/shared/utils/branded-ids.utils';
@@ -17,23 +17,23 @@ export type GroupOrderId = Id<'GroupOrder'>;
 /**
  * Parse a string to GroupOrderId
  */
-export const GroupOrderIdSchema = zId<GroupOrderId>();
+export const GroupOrderId = zId<GroupOrderId>();
 
 /**
  * Group order schema using Zod
  */
 export const GroupOrderSchema = z.object({
-  id: zId<GroupOrderId>(),
-  leaderId: zId<UserId>(),
-  startDate: z.date(),
-  endDate: z.date(),
+  id: GroupOrderId,
+  leaderId: UserId,
+  startDate: z.coerce.date(),
+  endDate: z.coerce.date(),
   status: z.enum(GroupOrderStatus),
   name: z.string().nullish(),
   sessionId: z.string().nullish(), // Session ID for order verification
   fee: z.number().nullish(), // Difference between backend total price and computed price
   organizationId: z.string().nullish(), // Organization ID for filtering
-  createdAt: z.date().optional(),
-  updatedAt: z.date().optional(),
+  createdAt: z.coerce.date().optional(),
+  updatedAt: z.coerce.date().optional(),
 });
 
 export type GroupOrder = z.infer<typeof GroupOrderSchema>;
@@ -44,15 +44,15 @@ export type GroupOrder = z.infer<typeof GroupOrderSchema>;
 export const GroupOrderFromDbSchema = z.object({
   id: z.string(), // UUID from DB as string
   leaderId: z.string(), // UUID from DB as string
-  startDate: z.date(),
-  endDate: z.date(),
+  startDate: z.coerce.date(),
+  endDate: z.coerce.date(),
   status: z.string(),
   name: z.string().nullish(),
   sessionId: z.string().nullish(), // Session ID for order verification
   fee: z.number().nullish(), // Difference between backend total price and computed price
   organizationId: z.string().nullish(), // Organization ID for filtering
-  createdAt: z.date(),
-  updatedAt: z.date(),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
   leader: z
     .object({
       id: z.string(),
@@ -80,7 +80,7 @@ export function createGroupOrder(props: {
 }): GroupOrder {
   // Validate all fields except leaderId (which may be a Better Auth ID, not UUID)
   return {
-    id: GroupOrderIdSchema.parse(props.id),
+    id: GroupOrderId.parse(props.id),
     leaderId: props.leaderId as UserId, // Accept Better Auth IDs or UUIDs
     startDate: props.startDate,
     endDate: props.endDate,
@@ -105,7 +105,7 @@ export function createGroupOrderFromDb(data: z.infer<typeof GroupOrderFromDbSche
   // Create the group order with leaderId as-is (may be Better Auth ID or UUID)
   // We cast it to UserId to satisfy the type system, but we don't validate it as UUID
   return {
-    id: GroupOrderIdSchema.parse(validated.id),
+    id: GroupOrderId.parse(validated.id),
     leaderId: validated.leaderId as UserId, // Accept Better Auth IDs or UUIDs
     startDate: validated.startDate,
     endDate: validated.endDate,

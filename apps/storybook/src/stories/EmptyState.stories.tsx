@@ -5,7 +5,20 @@ import { Inbox } from 'lucide-react';
 const meta = {
   title: 'UI Kit/EmptyState',
   component: EmptyState,
+  parameters: {
+    layout: 'padded',
+  },
   tags: ['autodocs'],
+  argTypes: {
+    title: {
+      control: 'text',
+      description: 'Title text',
+    },
+    description: {
+      control: 'text',
+      description: 'Description text',
+    },
+  },
   args: {
     icon: Inbox,
     title: 'No group orders yet',
@@ -17,4 +30,5 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+// Main story - use controls panel to explore all options
 export const Default: Story = {};

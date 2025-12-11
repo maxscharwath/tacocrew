@@ -99,7 +99,7 @@ export function RootLayout() {
               <NotificationBell />
               <Button
                 type="button"
-                variant={isDeveloperMode ? 'primary' : 'ghost'}
+                variant={isDeveloperMode ? 'default' : 'ghost'}
                 size="sm"
                 onClick={toggleDeveloperMode}
                 className="h-9 w-9 p-0"

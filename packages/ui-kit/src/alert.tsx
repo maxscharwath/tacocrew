@@ -1,5 +1,5 @@
-import { AlertCircle, CheckCircle2, Info, XCircle } from 'lucide-react';
 import { cva, type VariantProps } from 'class-variance-authority';
+import { AlertCircle, CheckCircle2, Info, XCircle } from 'lucide-react';
 import type { ComponentPropsWithoutRef, ComponentType } from 'react';
 import { cn } from './utils';
 

@@ -1,6 +1,6 @@
-import * as React from 'react';
 import * as SelectPrimitive from '@radix-ui/react-select';
 import { CheckIcon, ChevronDownIcon, ChevronUpIcon } from 'lucide-react';
+import * as React from 'react';
 import { cn } from './utils';
 
 function Select({
@@ -55,7 +55,7 @@ function SelectTrigger({
         size === 'default' ? 'h-12' : 'h-10',
         error
           ? 'border-rose-400/50 bg-rose-500/10 focus-visible:border-rose-400 focus-visible:ring-rose-400/40'
-          : 'border-white/10',
+          : 'border-gray-700',
         className
       )}
       {...props}
@@ -80,7 +80,7 @@ function SelectContent({
       <SelectPrimitive.Content
         data-slot="select-content"
         className={cn(
-          'bg-slate-900/95 backdrop-blur-sm text-white border border-white/10 shadow-lg',
+          'bg-slate-900/95 backdrop-blur-sm text-white border border-gray-700 shadow-lg',
           'data-[state=open]:animate-in data-[state=closed]:animate-out',
           'data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
           'data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95',
@@ -223,7 +223,7 @@ const SimpleSelect = React.forwardRef<HTMLSelectElement, SimpleSelectProps>(
           size === 'default' ? 'h-12' : 'h-10',
           error
             ? 'border-rose-400/50 bg-rose-500/10 focus:border-rose-400 focus:ring-rose-400/40'
-            : 'border-white/10',
+            : 'border-gray-700',
           className
         )}
         ref={ref}
@@ -257,7 +257,7 @@ const MultiSelect = React.forwardRef<HTMLSelectElement, MultiSelectProps>(
           size === 'default' ? 'h-12' : 'h-10',
           error
             ? 'border-rose-400/50 bg-rose-500/10 focus:border-rose-400 focus:ring-rose-400/40'
-            : 'border-white/10',
+            : 'border-gray-700',
           className
         )}
         ref={ref}

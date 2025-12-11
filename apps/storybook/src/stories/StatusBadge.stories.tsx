@@ -4,7 +4,17 @@ import { StatusBadge } from '@tacobot/ui-kit';
 const meta = {
   title: 'UI Kit/StatusBadge',
   component: StatusBadge,
+  parameters: {
+    layout: 'centered',
+  },
   tags: ['autodocs'],
+  argTypes: {
+    status: {
+      control: 'select',
+      options: ['draft', 'pending', 'active', 'submitted', 'completed', 'closed'],
+      description: 'The status value',
+    },
+  },
   args: {
     status: 'submitted',
   },
@@ -13,14 +23,19 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+// Main story - use controls panel to explore all options
 export const Default: Story = {};
 
-export const Gallery: Story = {
-  render: () => (
-    <div className="flex flex-wrap gap-3">
-      {['draft', 'pending', 'active', 'submitted', 'completed', 'closed'].map((status) => (
-        <StatusBadge key={status} status={status} />
-      ))}
-    </div>
-  ),
+// Showcase story - all statuses for reference
+export const AllStatuses: Story = {
+  render: () => {
+    const statuses = ['draft', 'pending', 'active', 'submitted', 'completed', 'closed'] as const;
+    return (
+      <div className="flex flex-wrap gap-3">
+        {statuses.map((status) => (
+          <StatusBadge key={status} status={status} />
+        ))}
+      </div>
+    );
+  },
 };

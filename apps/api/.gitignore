@@ -1,6 +1,5 @@
 # Generated files
-src/generated/
-src/generated/prisma
+/src/generated/**/*
 
 # Logs
 logs/

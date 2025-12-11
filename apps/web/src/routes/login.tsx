@@ -1,5 +1,5 @@
 import { Eye, EyeOff, Lock, Mail, User } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { type FormEvent, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { type LoaderFunctionArgs, redirect, useLocation, useNavigate } from 'react-router';
 import appIcon from '@/assets/icon.png?format=webp';
@@ -81,7 +81,7 @@ export function LoginRoute() {
     }
   }, [session, navigate, redirectTo]);
 
-  const handleEmailPasswordSubmit = async (e: React.FormEvent) => {
+  const handleEmailPasswordSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
@@ -365,7 +365,7 @@ export function LoginRoute() {
 
                 {error && <Alert tone="error">{error}</Alert>}
 
-                <Button type="submit" disabled={isLoading} variant="primary" size="lg" fullWidth>
+                <Button type="submit" disabled={isLoading} variant="default" size="lg" fullWidth>
                   {submitButtonText}
                 </Button>
               </form>

@@ -1,7 +1,7 @@
 import { AlarmClock, Calendar } from 'lucide-react';
-import { cn } from './utils';
 import { InputGroup, InputGroupAddon, InputGroupInput } from './input-group';
 import { Label } from './label';
+import { cn } from './utils';
 
 type DateTimePickerProps = {
   readonly label: string;

@@ -3,10 +3,10 @@
  * @module services/resource
  */
 
-import { TacoSize } from '@tacobot/gigatacos-client';
+import { TACO_SIZE_CONFIG, TacoSize } from '@tacobot/gigatacos-client';
 import { injectable } from 'tsyringe';
 import { BackendIntegrationClient } from '@/infrastructure/api/backend-integration.client';
-import { Currency, createAmount, StockCategory, TACO_SIZE_CONFIG } from '@/shared/types/types';
+import { Currency, createAmount, StockCategory } from '@/shared/types/types';
 import { inject } from '@/shared/utils/inject.utils';
 import { deterministicUUID } from '@/shared/utils/uuid.utils';
 

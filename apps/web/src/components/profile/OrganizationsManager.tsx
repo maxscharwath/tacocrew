@@ -21,7 +21,11 @@ interface OrganizationContentProps {
   readonly userRole: 'ADMIN' | 'MEMBER' | null;
   readonly userStatus: 'ACTIVE' | 'PENDING' | null;
   readonly currentUserId: string;
-  readonly onCreateSubmit: (data: OrganizationPayload, avatarFile: File | null, backgroundColor: string | null) => Promise<void>;
+  readonly onCreateSubmit: (
+    data: OrganizationPayload,
+    avatarFile: File | null,
+    backgroundColor: string | null
+  ) => Promise<void>;
   readonly onCreateCancel: () => void;
   readonly onUpdate: (updated: Organization) => void;
   readonly onDelete: () => void;

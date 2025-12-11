@@ -95,8 +95,9 @@ export function OrderHero({
   const isReopening = isClosedManually || (isDeveloperMode && isSubmitted);
   const statusButtonConfig = isReopening
     ? {
-        variant: 'primary' as const,
-        className: 'gap-2 bg-emerald-600 text-white hover:bg-emerald-500',
+        variant: 'default' as const,
+        color: 'emerald' as const,
+        className: 'gap-2',
         icon: <LockOpen size={18} />,
         label: t('orders.detail.hero.actions.reopenOrder'),
       }
@@ -272,11 +273,7 @@ export function OrderHero({
           <div className="flex-1" />
           {canSubmit && (
             <Link to={routes.root.orderSubmit({ orderId })} className="ml-auto cursor-pointer">
-              <Button
-                variant="primary"
-                className="gap-2 bg-linear-to-r from-emerald-500 via-emerald-600 to-teal-600 font-bold text-white shadow-emerald-500/30 shadow-xl hover:from-emerald-600 hover:via-emerald-700 hover:to-teal-700"
-                size="sm"
-              >
+              <Button variant="default" color="emerald" className="gap-2 font-bold" size="sm">
                 <Send size={18} />
                 {t('orders.detail.hero.actions.submit')}
               </Button>

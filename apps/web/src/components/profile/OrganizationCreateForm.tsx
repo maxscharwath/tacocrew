@@ -1,5 +1,5 @@
 import { Building2, Check, Plus, X } from 'lucide-react';
-import { useState } from 'react';
+import { type FormEvent, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { OrganizationAvatarPicker } from '@/components/profile/OrganizationAvatarPicker';
 import {
@@ -90,7 +90,7 @@ export function OrganizationCreateForm({
     setAvatarBackgroundColor(null);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!validate() || isSubmitting) return;
 
@@ -123,7 +123,7 @@ export function OrganizationCreateForm({
           <div className="flex-1">
             <CardTitle className="text-xl">{t('organizations.form.create')}</CardTitle>
             <CardDescription className="mt-1">
-              {t('organizations.empty.description')}
+              {t('organizations.form.description')}
             </CardDescription>
           </div>
         </div>
@@ -174,20 +174,16 @@ export function OrganizationCreateForm({
                 className="text-base"
               />
             </InputGroup>
-            <p className="text-slate-400 text-xs">
-              {t('organizations.form.name.description') ||
-                'Choose a unique name for your organization'}
-            </p>
           </div>
 
           {/* Action Buttons */}
-          <div className="flex gap-3 pt-2">
+          <div className="flex justify-end gap-3 pt-2">
             <Button
               type="submit"
               loading={isSubmitting}
               disabled={disabled || isSubmitting || !form.name.trim()}
               size="lg"
-              className="flex-1 gap-2"
+              className="gap-2"
             >
               <Check size={18} />
               {t('organizations.form.create')}

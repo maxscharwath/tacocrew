@@ -1,5 +1,5 @@
 import { z } from '@hono/zod-openapi';
-import { ErrorResponseSchema, IsoDateStringSchema } from '@/api/schemas/shared.schemas';
+import { ErrorResponseSchema } from '@/api/schemas/shared.schemas';
 import { TacoSchema } from '@/api/schemas/user-order.schemas';
 
 export { jsonContent } from '@/api/schemas/shared.schemas';
@@ -11,8 +11,8 @@ const UserResponseSchema = z.object({
   phone: z.string().nullable().optional(),
   language: z.string().nullable(),
   image: z.string().nullable().optional(),
-  createdAt: IsoDateStringSchema.optional(),
-  updatedAt: IsoDateStringSchema.optional(),
+  createdAt: z.coerce.date().optional(),
+  updatedAt: z.coerce.date().optional(),
 });
 
 const UpdateUserLanguageRequestSchema = z.object({
@@ -48,8 +48,8 @@ const DeliveryProfileSchema = z.object({
   phone: z.string(),
   deliveryType: z.enum(['livraison', 'emporter']),
   address: DeliveryAddressSchema,
-  createdAt: IsoDateStringSchema,
-  updatedAt: IsoDateStringSchema,
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
 });
 
 const DeliveryProfileRequestSchema = z.object({
@@ -67,7 +67,7 @@ const UserOrderHistoryEntrySchema = z.object({
   price: z.number().nullable(),
   orderType: z.string(),
   requestedFor: z.string(),
-  createdAt: IsoDateStringSchema,
+  createdAt: z.coerce.date(),
 });
 
 const UserGroupOrderSchema = z.object({
@@ -75,9 +75,9 @@ const UserGroupOrderSchema = z.object({
   name: z.string().nullable(),
   status: z.string(),
   canAcceptOrders: z.boolean(),
-  startDate: IsoDateStringSchema,
-  endDate: IsoDateStringSchema,
-  createdAt: IsoDateStringSchema,
+  startDate: z.coerce.date(),
+  endDate: z.coerce.date(),
+  createdAt: z.coerce.date(),
   organization: z
     .object({
       id: z.string(),
@@ -101,7 +101,7 @@ const UserGroupOrderSchema = z.object({
 const PreviousOrderSchema = z.object({
   tacoID: z.string(), // base58-encoded tacoID (Bitcoin-style identifier)
   orderCount: z.number(),
-  lastOrderedAt: IsoDateStringSchema,
+  lastOrderedAt: z.coerce.date(),
   taco: TacoSchema, // Single taco with this tacoID
   recentGroupOrderName: z.string().nullable(),
 });

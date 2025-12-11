@@ -268,10 +268,11 @@
       "add": "Nouveau"
     },
     "form": {
+      "description": "Créez une nouvelle organisation pour gérer les commandes de groupe et les membres",
       "name": {
         "label": "Nom de l'organisation",
         "placeholder": "Entrez le nom de l'organisation",
-        "description": "Choisissez un nom unique pour votre organisation"
+        "description": "Entrez un nom pour votre organisation"
       },
       "create": "Créer une organisation"
     },
@@ -606,6 +607,11 @@
         },
         "errors": {
           "organizationRequired": "Veuillez sélectionner une organisation pour cette commande de groupe"
+        },
+        "noOrganization": {
+          "title": "Aucune organisation trouvée",
+          "description": "Vous devez appartenir à une organisation pour créer des commandes de groupe. Créez ou rejoignez une organisation pour commencer.",
+          "action": "Aller aux Organisations"
         },
         "quickDeadlines": {
           "morning": "10 h",
@@ -1030,6 +1036,7 @@
     "subtitle": "Vos informations de compte et historique de commandes.",
     "delivery": {
       "manageButton": "Gérer mes infos de livraison",
+      "backToProfile": "Retour au profil",
       "title": "Adresses enregistrées",
       "subtitle": "Enregistrez vos adresses de livraison habituelles pour gagner du temps lors de l'envoi.",
       "helper": "Créez plusieurs profils (bureau, maison, clients…) puis sélectionnez-les lors de la soumission.",

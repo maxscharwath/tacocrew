@@ -1,10 +1,7 @@
 import { z } from '@hono/zod-openapi';
-import {
-  AmountSchema,
-  ErrorResponseSchema,
-  IsoDateStringSchema,
-} from '@/api/schemas/shared.schemas';
+import { AmountSchema, ErrorResponseSchema } from '@/api/schemas/shared.schemas';
 import { UserOrderItemsSchema } from '@/api/schemas/user-order.schemas';
+import { OrganizationId } from '@/schemas/organization.schema';
 
 export { jsonContent } from '@/api/schemas/shared.schemas';
 
@@ -12,10 +9,10 @@ export { jsonContent } from '@/api/schemas/shared.schemas';
  * Create group order request schema
  */
 const CreateGroupOrderRequestSchema = z.object({
-  name: z.string().optional(),
-  startDate: z.iso.datetime(),
-  endDate: z.iso.datetime(),
-  organizationId: z.uuid().optional().nullable(),
+  name: z.string().min(1),
+  startDate: z.coerce.date(),
+  endDate: z.coerce.date(),
+  organizationId: OrganizationId,
 });
 
 /**
@@ -23,8 +20,8 @@ const CreateGroupOrderRequestSchema = z.object({
  */
 const UpdateGroupOrderRequestSchema = z.object({
   name: z.string().optional(),
-  startDate: z.iso.datetime().optional(),
-  endDate: z.iso.datetime().optional(),
+  startDate: z.coerce.date().optional(),
+  endDate: z.coerce.date().optional(),
   organizationId: z.uuid().optional().nullable(),
 });
 
@@ -39,14 +36,14 @@ const GroupOrderResponseSchema = z.object({
     image: z.string().nullable().optional(),
   }),
   name: z.string().nullable(),
-  startDate: IsoDateStringSchema,
-  endDate: IsoDateStringSchema,
+  startDate: z.coerce.date(),
+  endDate: z.coerce.date(),
   status: z.string(),
   canAcceptOrders: z.boolean(),
   canSubmitGroupOrder: z.boolean(),
   fee: z.number().nullable().optional(),
-  createdAt: IsoDateStringSchema.optional(),
-  updatedAt: IsoDateStringSchema.optional(),
+  createdAt: z.coerce.date().optional(),
+  updatedAt: z.coerce.date().optional(),
 });
 
 /**
@@ -61,7 +58,7 @@ const UserOrderResponseSchema = z.object({
   totalPrice: AmountSchema,
   reimbursement: z.object({
     settled: z.boolean(),
-    settledAt: IsoDateStringSchema.nullable().optional(),
+    settledAt: z.coerce.date().nullable().optional(),
     settledBy: z
       .object({
         id: z.string(),
@@ -72,7 +69,7 @@ const UserOrderResponseSchema = z.object({
   }),
   participantPayment: z.object({
     paid: z.boolean(),
-    paidAt: IsoDateStringSchema.nullable().optional(),
+    paidAt: z.coerce.date().nullable().optional(),
     paidBy: z
       .object({
         id: z.string(),
@@ -81,8 +78,8 @@ const UserOrderResponseSchema = z.object({
       .nullable()
       .optional(),
   }),
-  createdAt: IsoDateStringSchema,
-  updatedAt: IsoDateStringSchema,
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
 });
 
 /**

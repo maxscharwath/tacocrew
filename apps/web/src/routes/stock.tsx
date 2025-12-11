@@ -1,9 +1,9 @@
 import { AlertTriangle, CheckCircle2, Copy, Package } from 'lucide-react';
-import { Suspense, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { LoaderFunctionArgs } from 'react-router';
-import { Await, useLoaderData } from 'react-router';
+import { useLoaderData } from 'react-router';
 import { StatBubble } from '@/components/orders';
+import { DeferredRoute } from '@/components/shared';
 import { StockSkeleton } from '@/components/skeletons';
 import {
   Badge,
@@ -16,21 +16,17 @@ import {
 } from '@/components/ui';
 import type { StockResponse } from '@/lib/api';
 import { StockApi } from '@/lib/api';
+import type { DeferredLoaderData } from '@/lib/types/loader-types';
 import { cn } from '@/lib/utils';
-import { defer } from '@/lib/utils/defer';
-import { createDeferredWithAuth, requireSession } from '@/lib/utils/loader-helpers';
+import { createDeferredLoader } from '@/lib/utils/loader-factory';
 
-type LoaderData = {
-  stock: Awaited<ReturnType<typeof StockApi.getStock>>;
-};
-
-export async function stockLoader(_: LoaderFunctionArgs) {
-  await requireSession();
-
-  return defer({
-    stock: createDeferredWithAuth(() => StockApi.getStock()),
-  });
-}
+export const stockLoader = createDeferredLoader(
+  async () => {
+    const stock = await StockApi.getStock();
+    return { stock };
+  },
+  { requireAuth: true }
+);
 
 const STOCK_SECTIONS = [
   { key: 'meats', tone: 'rose' as const },
@@ -46,7 +42,11 @@ const STOCK_SECTIONS = [
 
 type StockSectionKey = (typeof STOCK_SECTIONS)[number]['key'];
 
-function StockContent({ stock }: Readonly<{ stock: LoaderData['stock'] }>) {
+type StockLoaderData = DeferredLoaderData<typeof stockLoader>;
+
+function StockContent({
+  stock,
+}: Readonly<{ stock: Awaited<ReturnType<typeof StockApi.getStock>> }>) {
   const { t } = useTranslation();
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
@@ -282,11 +282,11 @@ function formatPrice(amount: { value: number; currency: string }) {
 }
 
 export function StockRoute() {
-  const { stock } = useLoaderData<{ stock: Promise<LoaderData['stock']> }>();
+  const { data } = useLoaderData<StockLoaderData>();
 
   return (
-    <Suspense fallback={<StockSkeleton />}>
-      <Await resolve={stock}>{(resolvedStock) => <StockContent stock={resolvedStock} />}</Await>
-    </Suspense>
+    <DeferredRoute data={data} fallback={<StockSkeleton />}>
+      {({ stock }) => <StockContent stock={stock} />}
+    </DeferredRoute>
   );
 }

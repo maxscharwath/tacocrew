@@ -16,7 +16,7 @@ const meta = {
   title: 'UI Kit/AlertDialog',
   component: AlertDialog,
   parameters: {
-    layout: 'centered',
+    layout: 'padded',
     docs: {
       description: {
         component: 'Blocking confirmation dialog built with Radix primitives and TacoBot styles.',
@@ -29,56 +29,75 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-const DialogContent = ({ tone = 'default' }: { tone?: 'default' | 'destructive' }) => (
-  <AlertDialog>
-    <AlertDialogTrigger asChild>
-      <Button variant={tone === 'destructive' ? 'danger' : 'primary'}>
-        {tone === 'destructive' ? 'Delete group order' : 'Pause submissions'}
-      </Button>
-    </AlertDialogTrigger>
-    <AlertDialogContent>
-      <AlertDialogHeader>
-        <AlertDialogTitle>
-          {tone === 'destructive' ? 'Supprimer la commande ?' : 'Mettre en pause ?'}
-        </AlertDialogTitle>
-        <AlertDialogDescription>
-          {tone === 'destructive'
-            ? 'Cette action supprimera la commande groupée et toutes les contributions associées. '
-            : 'Les participants ne pourront plus modifier leurs commandes tant que la pause est active.'}
-        </AlertDialogDescription>
-      </AlertDialogHeader>
-      <AlertDialogFooter>
-        <AlertDialogCancel>Annuler</AlertDialogCancel>
-        <AlertDialogAction variant={tone === 'destructive' ? 'destructive' : 'default'}>
-          {tone === 'destructive' ? 'Supprimer' : 'Mettre en pause'}
-        </AlertDialogAction>
-      </AlertDialogFooter>
-    </AlertDialogContent>
-  </AlertDialog>
-);
-
+// Main story - default dialog
 export const Default: Story = {
-  render: () => <DialogContent />,
-};
-
-export const DestructiveAction: Story = {
-  render: () => <DialogContent tone="destructive" />,
-};
-
-export const InlineUsage: Story = {
   render: () => (
-    <div className="space-y-4">
-      <p className="text-slate-300 text-sm">
-        The dialog trigger can live alongside other actions. Use multiple instances for granular
-        flows.
-      </p>
-      <div className="flex flex-wrap gap-3">
-        <DialogContent />
-        <DialogContent tone="destructive" />
+    <AlertDialog>
+      <AlertDialogTrigger asChild>
+        <Button>Pause submissions</Button>
+      </AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Mettre en pause ?</AlertDialogTitle>
+          <AlertDialogDescription>
+            Les participants ne pourront plus modifier leurs commandes tant que la pause est active.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Annuler</AlertDialogCancel>
+          <AlertDialogAction>Mettre en pause</AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  ),
+};
+
+// Showcase story - different dialog types
+export const Showcase: Story = {
+  render: () => (
+    <div className="space-y-6">
+      <div className="space-y-3">
+        <h2 className="font-semibold text-lg text-white">Default Action</h2>
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button>Pause submissions</Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Mettre en pause ?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Les participants ne pourront plus modifier leurs commandes tant que la pause est
+                active.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Annuler</AlertDialogCancel>
+              <AlertDialogAction>Mettre en pause</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </div>
+
+      <div className="space-y-3">
+        <h2 className="font-semibold text-lg text-white">Destructive Action</h2>
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button variant="destructive">Delete group order</Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Supprimer la commande ?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Cette action supprimera la commande groupée et toutes les contributions associées.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Annuler</AlertDialogCancel>
+              <AlertDialogAction variant="destructive">Supprimer</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </div>
   ),
-  parameters: {
-    layout: 'padded',
-  },
 };

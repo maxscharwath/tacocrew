@@ -6,12 +6,11 @@
 import { createRoute } from '@hono/zod-openapi';
 import { z } from 'zod';
 import { jsonContent, OrganizationSchemas } from '@/api/schemas/organization.schemas';
-import { IsoDateStringSchema } from '@/api/schemas/shared.schemas';
 import { authSecurity, createAuthenticatedRouteApp } from '@/api/utils/route.utils';
 import { OrganizationMemberStatus, OrganizationRole } from '@/generated/client';
 import { UserRepository } from '@/infrastructure/repositories/user.repository';
-import { OrganizationIdSchema } from '@/schemas/organization.schema';
-import { UserIdSchema } from '@/schemas/user.schema';
+import { OrganizationId } from '@/schemas/organization.schema';
+import { UserId } from '@/schemas/user.schema';
 import { OrganizationService } from '@/services/organization/organization.service';
 import {
   buildOrganizationAvatarUrl,
@@ -75,9 +74,7 @@ function serializeUserOrganizationResponse(data: {
   };
 }
 
-async function extractFormData(
-  formData: FormData
-): Promise<{ error: string } | { name: string }> {
+function extractFormData(formData: FormData): { error: string } | { name: string } {
   const name = formData.get('name');
 
   if (!name || typeof name !== 'string' || !name.trim()) {
@@ -98,7 +95,8 @@ async function processImageFromFormData(
 
   try {
     const backgroundColor = formData.get('backgroundColor');
-    const bgColor = backgroundColor && typeof backgroundColor === 'string' ? backgroundColor : undefined;
+    const bgColor =
+      backgroundColor && typeof backgroundColor === 'string' ? backgroundColor : undefined;
     const processedImage = await processProfileImage(file, bgColor);
     return { image: processedImage };
   } catch (error) {
@@ -169,7 +167,7 @@ app.openapi(
   }),
   async (c) => {
     const { id } = c.req.valid('param');
-    const organizationId = OrganizationIdSchema.parse(id);
+    const organizationId = OrganizationId.parse(id);
     const organizationService = inject(OrganizationService);
     const organization = await organizationService.getOrganizationById(organizationId);
 
@@ -231,7 +229,7 @@ app.openapi(
 
     if (contentType.includes('multipart/form-data')) {
       const formData = await c.req.formData();
-      const nameResult = await extractFormData(formData);
+      const nameResult = extractFormData(formData);
 
       if ('error' in nameResult) {
         return c.json(buildErrorResponse('INVALID_REQUEST', nameResult.error), 400);
@@ -299,7 +297,7 @@ app.openapi(
     const userId = c.var.user.id;
     const { id } = c.req.valid('param');
     const payload = c.req.valid('json');
-    const organizationId = OrganizationIdSchema.parse(id);
+    const organizationId = OrganizationId.parse(id);
     const organizationService = inject(OrganizationService);
     const organization = await organizationService.updateOrganization(
       organizationId,
@@ -348,7 +346,7 @@ app.openapi(
   async (c) => {
     const userId = c.var.user.id;
     const { id } = c.req.valid('param');
-    const organizationId = OrganizationIdSchema.parse(id);
+    const organizationId = OrganizationId.parse(id);
     const organizationService = inject(OrganizationService);
     await organizationService.deleteOrganization(organizationId, userId);
     return c.json({ success: true }, 200);
@@ -407,7 +405,7 @@ app.openapi(
     const { email, role } = c.req.valid('json');
     const organizationService = inject(OrganizationService);
     const userRepository = inject(UserRepository);
-    const organizationId = OrganizationIdSchema.parse(id);
+    const organizationId = OrganizationId.parse(id);
 
     // Check if requester is admin
     const isAdmin = await organizationService.isUserAdmin(adminUserId, organizationId);
@@ -425,7 +423,7 @@ app.openapi(
     }
 
     // Check if user is already a member
-    const membership = await organizationService.getUserMembership(user.id, organizationId);
+    const membership = await organizationService.findMembership(user.id, organizationId);
     if (membership) {
       if (membership.status === OrganizationMemberStatus.ACTIVE) {
         return c.json(
@@ -485,11 +483,11 @@ app.openapi(
   async (c) => {
     const userId = c.var.user.id;
     const { id } = c.req.valid('param');
-    const organizationId = OrganizationIdSchema.parse(id);
+    const organizationId = OrganizationId.parse(id);
     const organizationService = inject(OrganizationService);
 
     // Check if user is an ACTIVE member - pending members cannot see members list
-    const membership = await organizationService.getUserMembership(userId, organizationId);
+    const membership = await organizationService.findMembership(userId, organizationId);
     if (!membership || membership.status !== OrganizationMemberStatus.ACTIVE) {
       return c.json(
         buildErrorResponse('FORBIDDEN', 'You must be an active member of this organization'),
@@ -541,7 +539,7 @@ app.openapi(
                 image: z.string().nullable(),
                 username: z.string().nullable(),
               }),
-              createdAt: IsoDateStringSchema,
+              createdAt: z.coerce.date(),
             })
           )
         ),
@@ -559,7 +557,7 @@ app.openapi(
   async (c) => {
     const userId = c.var.user.id;
     const { id } = c.req.valid('param');
-    const organizationId = OrganizationIdSchema.parse(id);
+    const organizationId = OrganizationId.parse(id);
     const organizationService = inject(OrganizationService);
     const isAdmin = await organizationService.isUserAdmin(userId, organizationId);
     if (!isAdmin) {
@@ -612,7 +610,7 @@ app.openapi(
   async (c) => {
     const adminUserId = c.var.user.id;
     const { id, userId } = c.req.valid('param');
-    const organizationId = OrganizationIdSchema.parse(id);
+    const organizationId = OrganizationId.parse(id);
     const organizationService = inject(OrganizationService);
     const isAdmin = await organizationService.isUserAdmin(adminUserId, organizationId);
     if (!isAdmin) {
@@ -621,7 +619,7 @@ app.openapi(
         403
       );
     }
-    const parsedUserId = UserIdSchema.parse(userId);
+    const parsedUserId = UserId.parse(userId);
     await organizationService.acceptJoinRequest(adminUserId, parsedUserId, organizationId);
     return c.json({ success: true }, 200);
   }
@@ -666,7 +664,7 @@ app.openapi(
   async (c) => {
     const adminUserId = c.var.user.id;
     const { id, userId } = c.req.valid('param');
-    const organizationId = OrganizationIdSchema.parse(id);
+    const organizationId = OrganizationId.parse(id);
     const organizationService = inject(OrganizationService);
     const isAdmin = await organizationService.isUserAdmin(adminUserId, organizationId);
     if (!isAdmin) {
@@ -675,7 +673,7 @@ app.openapi(
         403
       );
     }
-    const parsedUserId = UserIdSchema.parse(userId);
+    const parsedUserId = UserId.parse(userId);
     await organizationService.rejectJoinRequest(adminUserId, parsedUserId, organizationId);
     return c.json({ success: true }, 200);
   }
@@ -724,7 +722,7 @@ app.openapi(
     const adminUserId = c.var.user.id;
     const { id, userId } = c.req.valid('param');
     const { role } = c.req.valid('json');
-    const organizationId = OrganizationIdSchema.parse(id);
+    const organizationId = OrganizationId.parse(id);
     const organizationService = inject(OrganizationService);
     const isAdmin = await organizationService.isUserAdmin(adminUserId, organizationId);
     if (!isAdmin) {
@@ -733,7 +731,7 @@ app.openapi(
         403
       );
     }
-    const parsedUserId = UserIdSchema.parse(userId);
+    const parsedUserId = UserId.parse(userId);
     const parsedRole = OrganizationSchemas.OrganizationRoleSchema.parse(role);
     await organizationService.updateUserRole(parsedUserId, organizationId, parsedRole, adminUserId);
     return c.json({ success: true }, 200);
@@ -775,7 +773,7 @@ app.openapi(
   async (c) => {
     const userId = c.var.user.id;
     const { id, userId: targetUserId } = c.req.valid('param');
-    const organizationId = OrganizationIdSchema.parse(id);
+    const organizationId = OrganizationId.parse(id);
     const organizationService = inject(OrganizationService);
     const isAdmin = await organizationService.isUserAdmin(userId, organizationId);
     if (!isAdmin) {
@@ -784,7 +782,7 @@ app.openapi(
         403
       );
     }
-    const parsedUserId = UserIdSchema.parse(targetUserId);
+    const parsedUserId = UserId.parse(targetUserId);
     await organizationService.removeUserFromOrganization(parsedUserId, organizationId);
     return c.json({ success: true }, 200);
   }
@@ -825,7 +823,7 @@ app.openapi(
     const userId = c.var.user.id;
     const { id } = c.req.valid('param');
     const organizationService = inject(OrganizationService);
-    const organizationId = OrganizationIdSchema.parse(id);
+    const organizationId = OrganizationId.parse(id);
 
     try {
       // Check if org has any admins - if not, make this user admin (fix for old orgs)
@@ -933,7 +931,7 @@ app.openapi(
   async (c) => {
     const userId = c.var.user.id;
     const { id } = c.req.valid('param');
-    const organizationId = OrganizationIdSchema.parse(id);
+    const organizationId = OrganizationId.parse(id);
     const organizationService = inject(OrganizationService);
     const isAdmin = await organizationService.isUserAdmin(userId, organizationId);
     if (!isAdmin) {
@@ -1009,7 +1007,7 @@ app.openapi(
   async (c) => {
     const userId = c.var.user.id;
     const { id } = c.req.valid('param');
-    const organizationId = OrganizationIdSchema.parse(id);
+    const organizationId = OrganizationId.parse(id);
     const organizationService = inject(OrganizationService);
     const isAdmin = await organizationService.isUserAdmin(userId, organizationId);
     if (!isAdmin) {
@@ -1080,7 +1078,7 @@ app.openapi(
     const organizationService = inject(OrganizationService);
 
     try {
-      const organizationId = OrganizationIdSchema.parse(id);
+      const organizationId = OrganizationId.parse(id);
       const avatar = await organizationService.getOrganizationAvatar(organizationId);
 
       if (!avatar) {

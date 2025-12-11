@@ -2,13 +2,13 @@
  * User delivery profile schema
  */
 import { z } from 'zod';
-import type { UserId } from '@/schemas/user.schema';
+import { UserId } from '@/schemas/user.schema';
 import type { Id } from '@/shared/utils/branded-ids.utils';
 import { zId } from '@/shared/utils/branded-ids.utils';
 
 export type UserDeliveryProfileId = Id<'UserDeliveryProfile'>;
 
-export const UserDeliveryProfileIdSchema = zId<UserDeliveryProfileId>();
+export const UserDeliveryProfileId = zId<UserDeliveryProfileId>();
 
 export const DeliveryAddressSchema = z.object({
   road: z.string().min(1),
@@ -20,15 +20,15 @@ export const DeliveryAddressSchema = z.object({
 });
 
 export const UserDeliveryProfileSchema = z.object({
-  id: UserDeliveryProfileIdSchema,
-  userId: zId<UserId>(),
+  id: UserDeliveryProfileId,
+  userId: UserId,
   label: z.string().min(1).max(120).nullable(),
   contactName: z.string().min(1),
   phone: z.string().min(1),
   deliveryType: z.enum(['livraison', 'emporter']),
   address: DeliveryAddressSchema,
-  createdAt: z.date(),
-  updatedAt: z.date(),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
 });
 
 export type UserDeliveryProfile = z.infer<typeof UserDeliveryProfileSchema>;
@@ -46,8 +46,8 @@ export const UserDeliveryProfileFromDbSchema = z.object({
   city: z.string(),
   state: z.string().nullish(),
   country: z.string().nullish(),
-  createdAt: z.date(),
-  updatedAt: z.date(),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
 });
 
 /**
@@ -64,7 +64,7 @@ export function createUserDeliveryProfileFromDb(
   // Create the delivery profile with userId as-is (may be Better Auth ID or UUID)
   // We cast it to UserId to satisfy the type system, but we don't validate it as UUID
   return {
-    id: UserDeliveryProfileIdSchema.parse(validated.id),
+    id: UserDeliveryProfileId.parse(validated.id),
     userId: validated.userId as UserId, // Accept Better Auth IDs or UUIDs
     label: validated.label ?? null,
     contactName: validated.contactName,

@@ -11,49 +11,37 @@ const meta = {
   argTypes: {
     tone: {
       control: 'select',
-      options: ['brand', 'success', 'warning', 'neutral'],
+      options: ['brand', 'success', 'warning', 'error', 'info', 'neutral'],
+      description: 'The tone/color variant of the badge',
     },
     pill: {
       control: 'boolean',
+      description: 'Whether the badge should be pill-shaped',
     },
+  },
+  args: {
+    children: 'Badge',
   },
 } satisfies Meta<typeof Badge>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const Brand: Story = {
-  args: {
-    tone: 'brand',
-    children: 'Brand Badge',
-  },
-};
+// Main story - use controls panel to explore all options
+export const Default: Story = {};
 
-export const Success: Story = {
-  args: {
-    tone: 'success',
-    children: 'Success Badge',
-  },
-};
-
-export const Warning: Story = {
-  args: {
-    tone: 'warning',
-    children: 'Warning Badge',
-  },
-};
-
-export const Neutral: Story = {
-  args: {
-    tone: 'neutral',
-    children: 'Neutral Badge',
-  },
-};
-
-export const Pill: Story = {
-  args: {
-    tone: 'brand',
-    pill: true,
-    children: 'Pill Badge',
+// Showcase story - all tones for reference
+export const AllTones: Story = {
+  render: () => {
+    const tones = ['brand', 'success', 'warning', 'error', 'info', 'neutral'] as const;
+    return (
+      <div className="flex flex-wrap gap-3">
+        {tones.map((tone) => (
+          <Badge key={tone} tone={tone}>
+            {tone.charAt(0).toUpperCase() + tone.slice(1)}
+          </Badge>
+        ))}
+      </div>
+    );
   },
 };

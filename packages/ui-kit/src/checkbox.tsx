@@ -45,7 +45,7 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
                 'peer-focus-visible:ring-2 peer-focus-visible:ring-offset-2',
                 'peer-disabled:cursor-not-allowed peer-disabled:opacity-50',
                 'relative flex h-5 w-5 cursor-pointer items-center justify-center rounded-md border-2 transition',
-                'border-white/20 bg-slate-800/50',
+                'border-gray-700 bg-slate-800/50',
                 className
               )}
             >

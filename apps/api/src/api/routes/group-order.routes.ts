@@ -12,10 +12,10 @@ import {
   canAcceptOrders,
   canSubmitGroupOrder,
   type GroupOrder,
-  GroupOrderIdSchema,
+  GroupOrderId,
 } from '@/schemas/group-order.schema';
-import { OrganizationIdSchema } from '@/schemas/organization.schema';
-import { UserIdSchema } from '@/schemas/user.schema';
+import { OrganizationId } from '@/schemas/organization.schema';
+import { UserId } from '@/schemas/user.schema';
 import type { UserOrder } from '@/schemas/user-order.schema';
 import { CreateGroupOrderUseCase } from '@/services/group-order/create-group-order.service';
 import { DeleteGroupOrderUseCase } from '@/services/group-order/delete-group-order.service';
@@ -40,8 +40,8 @@ const UpdateGroupOrderStatusRequestSchema = z.object({
 
 const UpdateGroupOrderRequestSchema = z.object({
   name: z.string().nullable().optional(),
-  startDate: z.iso.datetime().optional(),
-  endDate: z.iso.datetime().optional(),
+  startDate: z.coerce.date().optional(),
+  endDate: z.coerce.date().optional(),
 });
 
 async function serializeGroupOrderResponse(groupOrder: GroupOrder) {
@@ -124,8 +124,8 @@ async function requireGroupOrderAccess(groupOrderId: string, userId: string): Pr
   const groupOrderRepository = inject(GroupOrderRepository);
   const organizationService = inject(OrganizationService);
 
-  const parsedGroupOrderId = GroupOrderIdSchema.parse(groupOrderId);
-  const parsedUserId = UserIdSchema.parse(userId);
+  const parsedGroupOrderId = GroupOrderId.parse(groupOrderId);
+  const parsedUserId = UserId.parse(userId);
 
   const groupOrder = await groupOrderRepository.findById(parsedGroupOrderId);
   if (!groupOrder) {
@@ -138,7 +138,7 @@ async function requireGroupOrderAccess(groupOrderId: string, userId: string): Pr
   }
 
   // Check if user is an active member of the organization
-  const parsedOrganizationId = OrganizationIdSchema.parse(groupOrder.organizationId);
+  const parsedOrganizationId = OrganizationId.parse(groupOrder.organizationId);
   const isActiveMember = await organizationService.isUserActiveMember(
     parsedUserId,
     parsedOrganizationId
@@ -168,14 +168,10 @@ app.openapi(
   }),
   async (c) => {
     const userId = c.var.user.id;
-    const body = c.req.valid('json');
+    const requestBody = c.req.valid('json');
     const createGroupOrderUseCase = inject(CreateGroupOrderUseCase);
-    const groupOrder = await createGroupOrderUseCase.execute(userId, {
-      name: body.name,
-      startDate: new Date(body.startDate),
-      endDate: new Date(body.endDate),
-      organizationId: body.organizationId ?? undefined,
-    });
+
+    const groupOrder = await createGroupOrderUseCase.execute(userId, requestBody);
 
     return c.json(await serializeGroupOrderResponse(groupOrder), 201);
   }
@@ -189,7 +185,7 @@ app.openapi(
     security: authSecurity,
     request: {
       params: z.object({
-        id: GroupOrderIdSchema,
+        id: GroupOrderId,
       }),
     },
     responses: {
@@ -228,7 +224,7 @@ app.openapi(
     security: authSecurity,
     request: {
       params: z.object({
-        id: GroupOrderIdSchema,
+        id: GroupOrderId,
       }),
       body: {
         content: jsonContent(UpdateGroupOrderStatusRequestSchema),
@@ -271,7 +267,7 @@ app.openapi(
     security: authSecurity,
     request: {
       params: z.object({
-        id: GroupOrderIdSchema,
+        id: GroupOrderId,
       }),
       body: {
         content: jsonContent(UpdateGroupOrderRequestSchema),
@@ -318,7 +314,7 @@ app.openapi(
     security: authSecurity,
     request: {
       params: z.object({
-        id: GroupOrderIdSchema,
+        id: GroupOrderId,
       }),
     },
     responses: {
@@ -397,7 +393,7 @@ app.openapi(
     security: authSecurity,
     request: {
       params: z.object({
-        id: GroupOrderIdSchema,
+        id: GroupOrderId,
       }),
     },
     responses: {
@@ -483,7 +479,7 @@ app.openapi(
     security: authSecurity,
     request: {
       params: z.object({
-        id: GroupOrderIdSchema,
+        id: GroupOrderId,
       }),
     },
     responses: {

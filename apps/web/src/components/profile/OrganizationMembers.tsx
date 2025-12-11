@@ -257,7 +257,7 @@ export function OrganizationMembers({
                     {t('common.accept')}
                   </Button>
                   <Button
-                    variant="danger"
+                    variant="destructive"
                     size="sm"
                     onClick={() => handleRejectRequest(request.userId)}
                     disabled={busy}
@@ -355,7 +355,7 @@ export function OrganizationMembers({
                   disabled={isAddingUser || !addUserEmail.trim()}
                   loading={isAddingUser}
                   className="gap-2"
-                  variant="primary"
+                  variant="default"
                 >
                   <UserPlus size={16} />
                   {t('organizations.members.addUser.button')}
@@ -441,7 +441,7 @@ export function OrganizationMembers({
                           triggerClassName="w-auto min-w-[140px]"
                         />
                         <Button
-                          variant="danger"
+                          variant="destructive"
                           size="sm"
                           onClick={() => handleRemoveMember(member.userId)}
                           disabled={busy}

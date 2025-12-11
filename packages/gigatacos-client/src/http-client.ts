@@ -3,13 +3,13 @@
  * @module gigatacos-client/http-client
  */
 
-import axios, { AxiosInstance, AxiosResponse, AxiosError, type AxiosRequestConfig } from 'axios';
+import axios, { AxiosError, AxiosInstance, type AxiosRequestConfig, AxiosResponse } from 'axios';
 import { wrapper } from 'axios-cookiejar-support';
 import { CookieJar } from 'tough-cookie';
+import { getAjaxHeaders, getRealisticBrowserHeaders } from './browser-headers';
+import { CsrfError, isCsrfError, isRateLimitError, NetworkError, RateLimitError } from './errors';
 import type { HttpClientConfig, Logger, ProxyConfig } from './types';
 import { noopLogger } from './utils/logger';
-import { CsrfError, RateLimitError, NetworkError, isCsrfError, isRateLimitError } from './errors';
-import { getRealisticBrowserHeaders, getAjaxHeaders } from './browser-headers';
 
 /**
  * Request configuration

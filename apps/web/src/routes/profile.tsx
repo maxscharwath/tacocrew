@@ -1,6 +1,6 @@
 import { Building2, Settings, Truck } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { Link, type LoaderFunctionArgs, useLoaderData } from 'react-router';
+import { Link, useLoaderData } from 'react-router';
 import { TacoCard } from '@/components/orders/TacoCard';
 import {
   Badge,
@@ -14,25 +14,25 @@ import {
 } from '@/components/ui';
 import { resolveImageUrl, UserApi } from '@/lib/api';
 import { routes } from '@/lib/routes';
+import type { LoaderData } from '@/lib/types/loader-types';
+import { createLoader } from '@/lib/utils/loader-factory';
 
-type LoaderData = {
-  profile: Awaited<ReturnType<typeof UserApi.getProfile>>;
-  previousOrders: Awaited<ReturnType<typeof UserApi.getPreviousOrders>>;
-};
+export const profileLoader = createLoader(
+  async () => {
+    const [profile, previousOrders] = await Promise.all([
+      UserApi.getProfile(),
+      UserApi.getPreviousOrders(),
+    ]);
 
-export async function profileLoader(_: LoaderFunctionArgs) {
-  const [profile, previousOrders] = await Promise.all([
-    UserApi.getProfile(),
-    UserApi.getPreviousOrders(),
-  ]);
-
-  return Response.json({ profile, previousOrders });
-}
+    return { profile, previousOrders };
+  },
+  { requireAuth: true }
+);
 
 export function ProfileRoute() {
   const { t } = useTranslation();
   const tt = (key: string, options?: Record<string, unknown>) => t(`profile.${key}`, options);
-  const { profile, previousOrders } = useLoaderData<LoaderData>();
+  const { profile, previousOrders } = useLoaderData<LoaderData<typeof profileLoader>>();
 
   const userName = profile.name || profile.username || 'User';
   const userInitials = userName.slice(0, 2).toUpperCase();

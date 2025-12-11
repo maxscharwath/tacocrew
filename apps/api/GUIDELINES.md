@@ -196,7 +196,7 @@ export type Id<T extends string = string> = Brand<string, T>;
 
 // Zod schema factory for UUID validation
 export function zId<T extends Id>() {
-  return z.string().uuid().transform((val) => val as T);
+  return z.uuid().transform((val) => val as T);
 }
 ```
 
@@ -207,15 +207,15 @@ export function zId<T extends Id>() {
 ```typescript
 // schemas/user.schema.ts
 export type UserId = Id<'User'>;
-export const UserIdSchema = zId<UserId>();
+export const UserId = zId<UserId>();
 
 // schemas/order.schema.ts
 export type OrderId = Id<'Order'>;
-export const OrderIdSchema = zId<OrderId>();
+export const OrderId = zId<OrderId>();
 
 // schemas/taco.schema.ts
 export type TacoId = Id<'Taco'>;
-export const TacoIdSchema = zId<TacoId>();
+export const TacoId = zId<TacoId>();
 ```
 
 ### Using Branded IDs
@@ -252,7 +252,7 @@ export async function getOrderRoute(c: Context) {
   const { id } = c.req.param();
 
   // Validates UUID format and creates branded type
-  const orderId = OrderIdSchema.parse(id);
+  const orderId = OrderId.parse(id);
 
   const order = await orderService.getById(orderId);
   return c.json(order);
@@ -334,7 +334,7 @@ export const OrderSchema = z.object({
   status: OrderStatusSchema,
   items: z.array(OrderItemSchema),
   total: z.number().positive(),
-  createdAt: z.date(),
+  createdAt: z.coerce.date(),
 });
 
 // 2. TypeScript types
@@ -701,15 +701,15 @@ type OrderFromDb = {
 
 // Zod schema for validation
 const OrderFromDbSchema = z.object({
-  id: z.string().uuid(),
-  userId: z.string().uuid(),
+  id: z.uuid(),
+  userId: z.uuid(),
   status: z.string(),
   total: z.number(),
-  createdAt: z.date(),
+  createdAt: z.coerce.date(),
   items: z.array(
     z.object({
-      id: z.string().uuid(),
-      tacoId: z.string().uuid(),
+      id: z.uuid(),
+      tacoId: z.uuid(),
       quantity: z.number(),
     })
   ),
@@ -721,14 +721,14 @@ export function createOrderFromDb(data: unknown): Order {
   const validated = OrderFromDbSchema.parse(data);
 
   return {
-    id: OrderIdSchema.parse(validated.id),
-    userId: UserIdSchema.parse(validated.userId),
+    id: OrderId.parse(validated.id),
+    userId: UserId.parse(validated.userId),
     status: OrderStatusSchema.parse(validated.status),
     total: validated.total,
     createdAt: validated.createdAt,
     items: validated.items.map((item) => ({
-      id: OrderItemIdSchema.parse(item.id),
-      tacoId: TacoIdSchema.parse(item.tacoId),
+      id: OrderItemId.parse(item.id),
+      tacoId: TacoId.parse(item.tacoId),
       quantity: item.quantity,
     })),
   };
@@ -794,7 +794,7 @@ const getOrderRoute = createRoute({
   path: '/orders/{id}',
   request: {
     params: z.object({
-      id: OrderIdSchema.openapi({
+      id: OrderId.openapi({
         description: 'Order ID',
         example: '123e4567-e89b-12d3-a456-426614174000',
       }),

@@ -1,27 +1,70 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import {
   Alert,
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
   Avatar,
   AvatarLabelGroup,
   Badge,
   Button,
+  ButtonGroup,
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
+  Checkbox,
+  DateTimePicker,
   Divider,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+  EmptyState,
   Input,
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+  Label,
+  Modal,
+  PhoneInput,
+  SegmentedControl,
   Select,
+  Separator,
+  Skeleton,
+  StatusBadge,
   Textarea,
+  Toaster,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+  toast,
 } from '@tacobot/ui-kit';
 import {
   BellRing,
   CheckCircle2,
   Clock3,
-  ScrollText,
-  ShieldCheck,
+  CreditCard,
+  Edit,
+  Mail,
+  MapPin,
+  MoreVertical,
+  Phone,
+  Plus,
+  Search,
+  Settings,
+  Trash2,
   Truck,
+  User,
   Users,
   Wallet,
 } from 'lucide-react';
@@ -30,7 +73,7 @@ import { useState } from 'react';
 const PlaygroundDemo = () => null;
 
 const meta = {
-  title: 'UI Kit/Playground',
+  title: 'Playground',
   component: PlaygroundDemo,
   tags: ['autodocs'],
   parameters: {
@@ -41,44 +84,6 @@ const meta = {
 
 export default meta;
 type Story = StoryObj<typeof meta>;
-
-type StatusKey = 'collecting' | 'submitted' | 'delivered';
-
-type StatusConfig = {
-  readonly label: string;
-  readonly description: string;
-  readonly badgeTone: 'warning' | 'brand' | 'success' | 'neutral';
-  readonly primaryAction: string;
-  readonly secondaryAction: string;
-  readonly Icon: typeof Clock3;
-};
-
-const STATUS_CONFIG: Record<StatusKey, StatusConfig> = {
-  collecting: {
-    label: 'Collecting orders',
-    description: 'Participants can edit their tacos, add drinks and update delivery details.',
-    badgeTone: 'warning',
-    primaryAction: 'Lock submissions',
-    secondaryAction: 'Send reminder',
-    Icon: Clock3,
-  },
-  submitted: {
-    label: 'Order submitted',
-    description: 'The restaurant confirmed the order. Track prep and delivery status here.',
-    badgeTone: 'brand',
-    primaryAction: 'Update ETA',
-    secondaryAction: 'Notify crew',
-    Icon: ShieldCheck,
-  },
-  delivered: {
-    label: 'Delivered & reimbursed',
-    description: 'Everything is paid. Mark receipts as archived once everyone is reimbursed.',
-    badgeTone: 'success',
-    primaryAction: 'Archive receipts',
-    secondaryAction: 'Export summary',
-    Icon: CheckCircle2,
-  },
-};
 
 const PARTICIPANTS = [
   {
@@ -112,169 +117,437 @@ const PARTICIPANTS = [
 ] as const;
 
 function PlaygroundContent() {
-  const [status, setStatus] = useState<StatusKey>('collecting');
-  const config = STATUS_CONFIG[status];
+  const [status, setStatus] = useState<
+    'draft' | 'pending' | 'active' | 'submitted' | 'completed' | 'closed'
+  >('active');
+  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
+  const [showModal, setShowModal] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [date, setDate] = useState('2025-03-15');
+  const [time, setTime] = useState('18:30');
+  const [phone, setPhone] = useState('');
+  const [notifications, setNotifications] = useState(true);
+  const [marketing, setMarketing] = useState(false);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 px-6 py-10 text-white">
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-8">
+    <div className="min-h-screen bg-linear-to-b from-slate-950 via-slate-900 to-slate-950 px-6 py-10 text-white">
+      <Toaster />
+      <div className="mx-auto flex w-full max-w-7xl flex-col gap-8">
+        {/* Header Section */}
         <header className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-4">
             <Avatar size="xl" variant="elevated" color="brandHero">
-              <ScrollText />
+              <Users />
             </Avatar>
             <div>
               <p className="text-slate-500 text-xs uppercase tracking-[0.4em]">Group order</p>
               <h1 className="font-semibold text-2xl text-white">Taco Tuesday crew</h1>
-              <p className="text-slate-400 text-sm">24 participants · Lausanne HQ</p>
+              <div className="mt-1 flex items-center gap-2">
+                <StatusBadge status={status} />
+                <Badge tone="brand" pill>
+                  24 participants
+                </Badge>
+              </div>
             </div>
           </div>
-          <div className="flex flex-wrap gap-3">
-            <Button variant="outline">Share link</Button>
-            <Button variant="ghost" className="border border-white/20">
-              <Wallet className="h-4 w-4" />
-              <span>Collect payments</span>
+          <ButtonGroup className="w-full max-w-md">
+            <Input placeholder="Search orders..." className="flex-1" />
+            <Button variant="outline">
+              <Search size={16} />
             </Button>
-            <Button>Payout leader</Button>
-          </div>
+          </ButtonGroup>
+          <ButtonGroup>
+            <Button variant="outline">
+              <Settings size={16} />
+            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline">
+                  <MoreVertical size={16} />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => setShowModal(true)}>
+                  <Edit size={16} />
+                  Edit Order
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <Users size={16} />
+                  Manage Participants
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => setShowDeleteDialog(true)}>
+                  <Trash2 size={16} />
+                  Delete Order
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <Button color="emerald">
+              <Plus size={16} />
+              Submit
+            </Button>
+          </ButtonGroup>
         </header>
 
-        <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
-          <Card>
-            <CardHeader>
-              <CardTitle>Order status</CardTitle>
-              <CardDescription>Switch state to preview badges and CTA pairings.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-wrap items-center gap-3">
-                <Badge tone={config.badgeTone} pill className="text-[10px]">
-                  <config.Icon className="h-3 w-3" />
-                  {config.label}
-                </Badge>
-                <Select
-                  value={status}
-                  onChange={(event) => setStatus(event.target.value as StatusKey)}
-                  className="max-w-xs"
-                >
-                  <option value="collecting">Collecting orders</option>
-                  <option value="submitted">Submitted</option>
-                  <option value="delivered">Delivered</option>
-                </Select>
-              </div>
-              <p className="text-slate-300 text-sm">{config.description}</p>
-              <Divider />
-              <div className="flex flex-wrap gap-3">
-                <Button>{config.primaryAction}</Button>
-                <Button variant="outline">{config.secondaryAction}</Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Participants</CardTitle>
-              <CardDescription>Badges update when leader confirms reimbursement.</CardDescription>
-            </CardHeader>
-            <CardContent className="gap-4">
-              {PARTICIPANTS.map((participant) => (
-                <div key={participant.id} className="flex items-center justify-between gap-3">
-                  <AvatarLabelGroup
-                    size="md"
-                    color={participant.color}
-                    title={participant.name}
-                    subtitle={participant.subtitle}
-                  >
-                    {participant.name
-                      .split(' ')
-                      .map((segment) => segment[0])
-                      .slice(0, 2)
-                      .join('')}
-                  </AvatarLabelGroup>
-                  <Badge tone={participant.status === 'Paid' ? 'success' : 'warning'} pill>
-                    {participant.status}
-                  </Badge>
-                </div>
-              ))}
-              <Divider />
-              <Button
-                variant="ghost"
-                className="justify-center border border-white/20 border-dashed"
-              >
-                <Users className="h-4 w-4" />
-                Add participant
-              </Button>
-            </CardContent>
-          </Card>
+        {/* Alerts Section */}
+        <div className="grid gap-4 md:grid-cols-2">
+          <Alert tone="info" title="Delivery ETA">
+            Kitchen prepping at 12:15 · Driver leaves at 12:40.
+          </Alert>
+          <Alert tone="success" title="Payment Complete">
+            All participants have been reimbursed successfully.
+          </Alert>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2">
-          <Card>
-            <CardHeader>
-              <CardTitle>Delivery preferences</CardTitle>
-              <CardDescription>Inline form controls from the UI kit.</CardDescription>
-            </CardHeader>
-            <CardContent className="gap-4">
-              <Input placeholder="Team contact (Slack handle or phone)" />
-              <Select defaultValue="pickup">
-                <option value="pickup">Pickup at Lausanne HQ</option>
-                <option value="delivery">Deliver to Avenue d'Echallens 82</option>
-              </Select>
-              <Textarea rows={4} placeholder="Notes for the driver" />
-              <Divider label="Reminders" />
-              <div className="flex flex-wrap gap-3">
-                <Button variant="ghost" className="border border-white/15">
-                  <BellRing className="h-4 w-4" />
-                  Slack reminder
-                </Button>
-                <Button variant="ghost" className="border border-white/15">
-                  <Truck className="h-4 w-4" />
-                  Schedule courier
-                </Button>
-              </div>
-              <Button fullWidth>Save preferences</Button>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Summary & alerts</CardTitle>
-              <CardDescription>Combine alerts, badges and action buttons.</CardDescription>
-            </CardHeader>
-            <CardContent className="gap-5">
-              <Alert tone="info" title="Delivery ETA">
-                Kitchen prepping at 12:15 · Driver leaves at 12:40.
-              </Alert>
-              <Divider />
-              <div className="space-y-3 text-slate-300 text-sm">
-                <div className="flex justify-between">
-                  <span>Tacos & bowls</span>
-                  <span className="text-white">CHF 182.00</span>
+        {/* Main Content Grid */}
+        <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
+          {/* Left Column */}
+          <div className="space-y-6">
+            {/* Order Status Card */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Order Status</CardTitle>
+                <CardDescription>Manage order lifecycle and participant actions.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <Label>Status</Label>
+                  <Select
+                    value={status}
+                    onChange={(e) => setStatus(e.target.value as typeof status)}
+                    className="flex-1"
+                  >
+                    <option value="draft">Draft</option>
+                    <option value="pending">Pending</option>
+                    <option value="active">Active</option>
+                    <option value="submitted">Submitted</option>
+                    <option value="completed">Completed</option>
+                    <option value="closed">Closed</option>
+                  </Select>
                 </div>
-                <div className="flex justify-between">
-                  <span>Drinks & extras</span>
-                  <span className="text-white">CHF 42.00</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Delivery fee</span>
-                  <span className="text-white">CHF 18.00</span>
+                <Separator />
+                <div className="flex items-center gap-3">
+                  <Label>View Mode</Label>
+                  <SegmentedControl
+                    value={viewMode}
+                    onValueChange={(value) => setViewMode(value as typeof viewMode)}
+                    options={[
+                      { value: 'list', label: 'List' },
+                      { value: 'grid', label: 'Grid' },
+                    ]}
+                  />
                 </div>
                 <Divider />
-                <div className="flex justify-between font-semibold text-base text-white">
-                  <span>Total due</span>
-                  <span>CHF 242.00</span>
+                <div className="flex flex-wrap gap-3">
+                  <Button>Lock Submissions</Button>
+                  <Button variant="outline">Send Reminder</Button>
+                  <Button variant="ghost">Export Data</Button>
                 </div>
-              </div>
-              <Badge tone="brand" pill className="justify-center">
-                <Wallet className="h-3 w-3" />
-                18 CHF split between 24 people
-              </Badge>
-              <Button fullWidth variant="ghost" className="border border-white/15">
-                Export detailed receipt
-              </Button>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+
+            {/* Participants Card */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Participants</CardTitle>
+                <CardDescription>Manage team members and their orders.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {PARTICIPANTS.map((participant) => (
+                  <div key={participant.id} className="flex items-center justify-between gap-3">
+                    <AvatarLabelGroup
+                      size="md"
+                      color={participant.color}
+                      title={participant.name}
+                      subtitle={participant.subtitle}
+                    >
+                      {participant.name
+                        .split(' ')
+                        .map((segment) => segment[0])
+                        .slice(0, 2)
+                        .join('')}
+                    </AvatarLabelGroup>
+                    <div className="flex items-center gap-2">
+                      <Badge tone={participant.status === 'Paid' ? 'success' : 'warning'} pill>
+                        {participant.status}
+                      </Badge>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button variant="ghost" size="icon-xs">
+                            <MoreVertical size={14} />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>More options</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </div>
+                  </div>
+                ))}
+                <Separator />
+                <Button variant="ghost" className="w-full border border-white/20 border-dashed">
+                  <Users size={16} />
+                  Add participant
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Form Section */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Delivery Preferences</CardTitle>
+                <CardDescription>
+                  Configure delivery settings and contact information.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="contact" required>
+                    Team Contact
+                  </Label>
+                  <InputGroup>
+                    <InputGroupAddon>
+                      <Mail size={16} />
+                    </InputGroupAddon>
+                    <InputGroupInput id="contact" placeholder="Slack handle or email" />
+                  </InputGroup>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="phone" required>
+                    Phone Number
+                  </Label>
+                  <PhoneInput id="phone" value={phone} onChange={setPhone} defaultCountry="CH" />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="delivery-type">Delivery Type</Label>
+                  <Select id="delivery-type" defaultValue="pickup">
+                    <option value="pickup">Pickup at Lausanne HQ</option>
+                    <option value="delivery">Deliver to Avenue d'Echallens 82</option>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="pickup-time">Pickup Window</Label>
+                  <DateTimePicker
+                    id="pickup-time"
+                    label=""
+                    dateValue={date}
+                    timeValue={time}
+                    onDateChange={setDate}
+                    onTimeChange={setTime}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="address">Delivery Address</Label>
+                  <InputGroup>
+                    <InputGroupAddon>
+                      <MapPin size={16} />
+                    </InputGroupAddon>
+                    <InputGroupInput id="address" placeholder="Street address" />
+                  </InputGroup>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="search-participant">Search Participant</Label>
+                  <ButtonGroup className="w-full">
+                    <Input id="search-participant" placeholder="Type to search..." />
+                    <Button variant="outline">
+                      <Search size={16} />
+                    </Button>
+                  </ButtonGroup>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="notes">Notes for Driver</Label>
+                  <Textarea id="notes" rows={4} placeholder="Special instructions..." />
+                </div>
+
+                <Divider label="Preferences" />
+
+                <div className="space-y-3">
+                  <Checkbox
+                    label="Enable notifications"
+                    defaultChecked={notifications}
+                    onChange={(e) => setNotifications(e.target.checked)}
+                  />
+                  <Checkbox
+                    label="Receive marketing emails"
+                    defaultChecked={marketing}
+                    onChange={(e) => setMarketing(e.target.checked)}
+                  />
+                </div>
+
+                <Button fullWidth color="emerald">
+                  Save Preferences
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Right Column */}
+          <div className="space-y-6">
+            {/* Summary Card */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Order Summary</CardTitle>
+                <CardDescription>Financial breakdown and payment status.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-3 text-slate-300 text-sm">
+                  <div className="flex justify-between">
+                    <span>Tacos & bowls</span>
+                    <span className="font-semibold text-white">CHF 182.00</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Drinks & extras</span>
+                    <span className="font-semibold text-white">CHF 42.00</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Delivery fee</span>
+                    <span className="font-semibold text-white">CHF 18.00</span>
+                  </div>
+                  <Separator />
+                  <div className="flex justify-between font-semibold text-base text-white">
+                    <span>Total due</span>
+                    <span>CHF 242.00</span>
+                  </div>
+                </div>
+                <Badge tone="brand" pill className="w-full justify-center">
+                  <Wallet size={14} />
+                  18 CHF split between 24 people
+                </Badge>
+                <Button fullWidth variant="outline">
+                  <CreditCard size={16} />
+                  Collect Payments
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Quick Actions */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Quick Actions</CardTitle>
+                <CardDescription>Common tasks and shortcuts.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <Button
+                  fullWidth
+                  variant="ghost"
+                  className="justify-start border border-white/15"
+                  onClick={() => toast.info('Reminder sent to all participants')}
+                >
+                  <BellRing size={16} />
+                  Send Reminder
+                </Button>
+                <Button
+                  fullWidth
+                  variant="ghost"
+                  className="justify-start border border-white/15"
+                  onClick={() => toast.success('Receipt exported successfully')}
+                >
+                  <Truck size={16} />
+                  Export Receipt
+                </Button>
+                <Button
+                  fullWidth
+                  variant="ghost"
+                  className="justify-start border border-white/15"
+                  onClick={() => toast.warning('Schedule courier feature coming soon')}
+                >
+                  <Clock3 size={16} />
+                  Schedule Courier
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Empty State Example */}
+            <Card>
+              <CardContent className="pt-6">
+                <EmptyState
+                  icon={CheckCircle2}
+                  title="All caught up!"
+                  description="No pending actions required at this time."
+                  action={
+                    <Button variant="outline" size="sm">
+                      View History
+                    </Button>
+                  }
+                />
+              </CardContent>
+            </Card>
+
+            {/* Skeleton Loading Example */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Loading State</CardTitle>
+                <CardDescription>Example of skeleton loaders.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <Skeleton className="h-12 w-full" />
+                <Skeleton className="h-12 w-full" />
+                <Skeleton variant="circular" className="h-10 w-10" />
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
+
+      {/* Modal Example */}
+      <Modal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        title="Edit Group Order"
+        description="Update order details and settings."
+      >
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="order-name" required>
+              Order Name
+            </Label>
+            <Input id="order-name" defaultValue="Taco Tuesday crew" />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="order-description">Description</Label>
+            <Textarea id="order-description" rows={3} placeholder="Optional description..." />
+          </div>
+          <div className="flex justify-end gap-3 pt-4">
+            <Button variant="ghost" onClick={() => setShowModal(false)}>
+              Cancel
+            </Button>
+            <Button onClick={() => setShowModal(false)}>Save Changes</Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Alert Dialog Example */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Group Order?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the group order and all
+              associated data.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              variant="destructive"
+              onClick={() => {
+                setShowDeleteDialog(false);
+                toast.error('Order deleted');
+              }}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

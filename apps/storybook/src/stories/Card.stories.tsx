@@ -4,14 +4,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@taco
 const meta = {
   title: 'UI Kit/Card',
   component: Card,
-  parameters: { layout: 'centered' },
+  parameters: {
+    layout: 'padded',
+  },
   tags: ['autodocs'],
 } satisfies Meta<typeof Card>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const Basic: Story = {
+// Main story - use controls panel to explore all options
+export const Default: Story = {
   render: () => (
     <Card className="max-w-md">
       <CardHeader>

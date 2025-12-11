@@ -163,12 +163,17 @@ export class ForbiddenError extends ApiError {
  * Unauthorized error
  */
 export class UnauthorizedError extends ApiError {
-  constructor() {
+  constructor(message?: string) {
     super({
       errorCode: ErrorCodes.UNAUTHORIZED,
       statusCode: 401,
     });
     this.name = 'UnauthorizedError';
+
+    // Override message if provided
+    if (message) {
+      this.message = message;
+    }
   }
 }
 

@@ -13,6 +13,7 @@ import {
   TagIcon,
   Users,
 } from 'lucide-react';
+import type { ComponentType, ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
 import appIcon from '@/assets/icon.png?format=webp';
@@ -57,7 +58,7 @@ function SocialButton({
 }: {
   href: string;
   title: string;
-  children: React.ReactNode;
+  children: ReactNode;
   variant?: 'default' | 'bluesky' | 'github' | 'email' | 'website';
 }) {
   const isExternal = !href.startsWith('mailto:');
@@ -160,7 +161,7 @@ function BuildInfoItem({
   value,
   mono = false,
 }: {
-  icon: React.ComponentType<{ size?: number; className?: string }>;
+  icon: ComponentType<{ size?: number; className?: string }>;
   label: string;
   value: string | null | undefined;
   mono?: boolean;

@@ -5,55 +5,58 @@ const meta = {
   title: 'UI Kit/Alert',
   component: Alert,
   parameters: {
-    layout: 'centered',
+    layout: 'padded',
   },
   tags: ['autodocs'],
   argTypes: {
     tone: {
       control: 'select',
       options: ['error', 'success', 'warning', 'info'],
+      description: 'The tone/color variant of the alert',
     },
+    title: {
+      control: 'text',
+      description: 'Optional title for the alert',
+    },
+  },
+  args: {
+    tone: 'info',
+    title: 'Information',
+    children: 'This is an alert message.',
   },
 } satisfies Meta<typeof Alert>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const Info: Story = {
-  args: {
-    tone: 'info',
-    title: 'Information',
-    children: 'This is an informational alert message.',
-  },
-};
+// Main story - use controls panel to explore all options
+export const Default: Story = {};
 
-export const Success: Story = {
-  args: {
-    tone: 'success',
-    title: 'Success',
-    children: 'Operation completed successfully!',
-  },
-};
+// Showcase story - all tones for reference
+export const AllTones: Story = {
+  render: () => {
+    const tones = ['error', 'success', 'warning', 'info'] as const;
+    const titles = {
+      error: 'Error',
+      success: 'Success',
+      warning: 'Warning',
+      info: 'Information',
+    };
+    const messages = {
+      error: 'An error has occurred. Please try again.',
+      success: 'Operation completed successfully!',
+      warning: 'Please review this warning message.',
+      info: 'This is an informational alert message.',
+    };
 
-export const Warning: Story = {
-  args: {
-    tone: 'warning',
-    title: 'Warning',
-    children: 'Please review this warning message.',
-  },
-};
-
-export const ErrorState: Story = {
-  args: {
-    tone: 'error',
-    title: 'Error',
-    children: 'An error has occurred. Please try again.',
-  },
-};
-
-export const WithoutTitle: Story = {
-  args: {
-    tone: 'info',
-    children: 'This alert has no title.',
+    return (
+      <div className="space-y-4">
+        {tones.map((tone) => (
+          <Alert key={tone} tone={tone} title={titles[tone]}>
+            {messages[tone]}
+          </Alert>
+        ))}
+      </div>
+    );
   },
 };

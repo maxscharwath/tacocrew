@@ -1,5 +1,5 @@
 import { Camera, Check, Plus, RotateCcw, Trash2, X } from 'lucide-react';
-import { useEffect, useId, useRef, useState } from 'react';
+import { type ChangeEvent, type DragEvent, useEffect, useId, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Alert,
@@ -255,27 +255,27 @@ export function ImageUploader({ currentImage, onImageUpdate }: ImageUploaderProp
     }
   };
 
-  const handleDragOver = (e: React.DragEvent) => {
+  const handleDragOver = (e: DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
     setIsDragging(true);
   };
 
-  const handleDragLeave = (e: React.DragEvent) => {
+  const handleDragLeave = (e: DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
     setIsDragging(false);
   };
 
-  const handleDrop = (e: React.DragEvent) => {
+  const handleDrop = (e: DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
     setIsDragging(false);
-    const file = e.dataTransfer.files[0];
+    const file = e.dataTransfer?.files[0];
     if (file) handleFileSelect(file);
   };
 
-  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
     if (file) handleFileSelect(file);
     if (fileInputRef.current) {
@@ -509,7 +509,7 @@ export function ImageUploader({ currentImage, onImageUpdate }: ImageUploaderProp
             </Button>
             <Button
               type="button"
-              variant="primary"
+              variant="default"
               size="sm"
               onClick={handleConfirmUpload}
               disabled={isUploading}

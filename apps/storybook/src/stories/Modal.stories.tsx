@@ -5,14 +5,27 @@ import { useState } from 'react';
 const meta = {
   title: 'UI Kit/Modal',
   component: Modal,
-  parameters: { layout: 'centered' },
+  parameters: {
+    layout: 'padded',
+  },
   tags: ['autodocs'],
+  argTypes: {
+    title: {
+      control: 'text',
+      description: 'Modal title',
+    },
+    description: {
+      control: 'text',
+      description: 'Modal description',
+    },
+  },
 } satisfies Meta<typeof Modal>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-const ModalDemo = () => {
+// Interactive story - use controls panel to explore all options
+const ModalDemo = (args: typeof meta.args) => {
   const [open, setOpen] = useState(false);
   return (
     <div className="space-y-4">
@@ -20,8 +33,8 @@ const ModalDemo = () => {
       <Modal
         isOpen={open}
         onClose={() => setOpen(false)}
-        title="Schedule delivery"
-        description="Pick a time slot for your crew."
+        title={args.title || 'Schedule delivery'}
+        description={args.description || 'Pick a time slot for your crew.'}
       >
         <p className="text-slate-300 text-sm">
           11:30 AM - 1:00 PM slots usually fill up fast on Fridays. Consider earlier pickup if you
@@ -38,6 +51,10 @@ const ModalDemo = () => {
   );
 };
 
-export const Interactive: Story = {
-  render: () => <ModalDemo />,
+export const Default: Story = {
+  render: (args) => <ModalDemo {...args} />,
+  args: {
+    title: 'Schedule delivery',
+    description: 'Pick a time slot for your crew.',
+  },
 };

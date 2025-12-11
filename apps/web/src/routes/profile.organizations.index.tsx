@@ -1,28 +1,30 @@
 import { Building2 } from 'lucide-react';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { type LoaderFunctionArgs, useLoaderData, useNavigate } from 'react-router';
+import { useLoaderData, useNavigate } from 'react-router';
 import { Card, CardContent, EmptyState } from '@/components/ui';
 import { OrganizationApi } from '@/lib/api';
+import { routes } from '@/lib/routes';
+import type { LoaderData } from '@/lib/types/loader-types';
+import { createLoader } from '@/lib/utils/loader-factory';
 
-type LoaderData = {
-  organizations: Awaited<ReturnType<typeof OrganizationApi.getMyOrganizations>>;
-};
-
-export async function profileOrganizationsIndexLoader(_: LoaderFunctionArgs) {
-  const organizations = await OrganizationApi.getMyOrganizations();
-  return Response.json({ organizations });
-}
+export const profileOrganizationsIndexLoader = createLoader(
+  async () => {
+    const organizations = await OrganizationApi.getMyOrganizations();
+    return { organizations };
+  },
+  { requireAuth: true }
+);
 
 export function ProfileOrganizationsIndexRoute() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { organizations } = useLoaderData<LoaderData>();
+  const { organizations } = useLoaderData<LoaderData<typeof profileOrganizationsIndexLoader>>();
 
   // Redirect to first organization if available
   useEffect(() => {
     if (organizations.length > 0) {
-      navigate(`/profile/organizations/${organizations[0].id}`, {
+      navigate(routes.root.profileOrganizations.detail({ id: organizations[0].id }), {
         replace: true,
       });
     }

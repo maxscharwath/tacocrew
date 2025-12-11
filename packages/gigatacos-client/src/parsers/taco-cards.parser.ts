@@ -9,6 +9,7 @@ import { TacoSize } from '../types';
 import { noopLogger } from '../utils/logger';
 import { deterministicUUID } from '../utils/uuid';
 import {
+  type CheerioSelection,
   extractValueAfterColonFromParagraph,
   findIdByName,
   findLabeledParagraph,
@@ -16,7 +17,6 @@ import {
   isSansEntry,
   nameToSlug,
   parseListFromLabeledParagraph,
-  type CheerioSelection,
 } from './shared.utils';
 
 /**

@@ -1,8 +1,8 @@
 import { cva, type VariantProps } from 'class-variance-authority';
-import { cn } from './utils';
 import { Button } from './button';
 import { Input } from './input';
 import { Textarea } from './textarea';
+import { cn } from './utils';
 
 function InputGroup({ className, ...props }: React.ComponentProps<'div'>) {
   return (
@@ -10,7 +10,7 @@ function InputGroup({ className, ...props }: React.ComponentProps<'div'>) {
       data-slot="input-group"
       role="group"
       className={cn(
-        'group/input-group relative flex w-full items-center rounded-2xl border border-white/10 bg-slate-950/60 backdrop-blur-sm transition-colors outline-none',
+        'group/input-group relative flex w-full items-center rounded-2xl border border-gray-700 bg-slate-950/60 backdrop-blur-sm shadow-xs transition-[color,box-shadow] outline-none',
         'min-h-12 has-[>textarea]:h-auto',
         // Variants based on alignment.
         'has-[>[data-align=inline-start]]:[&>input]:pl-2',
@@ -18,9 +18,9 @@ function InputGroup({ className, ...props }: React.ComponentProps<'div'>) {
         'has-[>[data-align=block-start]]:h-auto has-[>[data-align=block-start]]:flex-col has-[>[data-align=block-start]]:[&>input]:pb-3',
         'has-[>[data-align=block-end]]:h-auto has-[>[data-align=block-end]]:flex-col has-[>[data-align=block-end]]:[&>input]:pt-3',
         // Focus state.
-        'has-[[data-slot=input-group-control]:focus-visible]:border-brand-400 focus-visible:ring-2 focus-visible:ring-brand-400/40',
+        'has-[[data-slot=input-group-control]:focus-visible]:relative has-[[data-slot=input-group-control]:focus-visible]:z-10 has-[[data-slot=input-group-control]:focus-visible]:border-brand-400 focus-visible:ring-[3px] focus-visible:ring-brand-400/40 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950',
         // Error state.
-        'has-[[data-slot][aria-invalid=true]]:border-rose-400/50 has-[[data-slot][aria-invalid=true]]:bg-rose-500/10 has-[[data-slot][aria-invalid=true]]:focus-within:border-rose-400 has-[[data-slot][aria-invalid=true]]:focus-within:ring-rose-400/40',
+        'has-[[data-slot][aria-invalid=true]]:border-rose-400/50 has-[[data-slot][aria-invalid=true]]:bg-rose-500/10 has-[[data-slot][aria-invalid=true]]:focus-within:border-rose-400 has-[[data-slot][aria-invalid=true]]:focus-within:ring-[3px] has-[[data-slot][aria-invalid=true]]:focus-within:ring-rose-400/40 has-[[data-slot][aria-invalid=true]]:focus-within:ring-offset-2 has-[[data-slot][aria-invalid=true]]:focus-within:ring-offset-slate-950',
         className
       )}
       {...props}

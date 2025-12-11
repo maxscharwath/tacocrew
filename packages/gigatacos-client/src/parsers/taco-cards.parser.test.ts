@@ -2,10 +2,10 @@
  * Unit tests for taco cards parser
  */
 
-import { describe, expect, it } from 'vitest';
-import { parseTacoCard, parseTacoCards } from './taco-cards.parser';
-import { TacoSize } from '../types';
 import { v4 as randomUUID } from 'uuid';
+import { describe, expect, it } from 'vitest';
+import { TacoSize } from '../types';
+import { parseTacoCard, parseTacoCards } from './taco-cards.parser';
 
 describe('Taco Cards Parser', () => {
   describe('parseTacoCard', () => {

@@ -14,33 +14,6 @@ import { UserId } from '@/schemas/user.schema';
 import { UserOrderId } from '@/schemas/user-order.schema';
 import { TimeSlot } from '@/shared/types/time-slot';
 
-// Re-export enums and config from gigatacos-client for convenience
-// These are external enums used for API communication
-export {
-  OrderStatus,
-  OrderType,
-  TACO_SIZE_CONFIG,
-  TacoSize,
-  type TacoSizeConfig,
-} from '@tacobot/gigatacos-client';
-export type { CartId } from '@/schemas/cart.schema';
-export type { Dessert, DessertId } from '@/schemas/dessert.schema';
-export { DessertIdSchema } from '@/schemas/dessert.schema';
-export type { Drink, DrinkId } from '@/schemas/drink.schema';
-export { DrinkIdSchema } from '@/schemas/drink.schema';
-export type { Extra, ExtraId, FreeSauce } from '@/schemas/extra.schema';
-export { ExtraIdSchema } from '@/schemas/extra.schema';
-export type { GroupOrderId } from '@/schemas/group-order.schema';
-export type { OrderId } from '@/schemas/order.schema';
-export type { SessionId } from '@/schemas/session.schema';
-export type {
-  Garniture,
-  Meat,
-  Sauce,
-  Taco,
-} from '@/schemas/taco.schema';
-export type { UserId } from '@/schemas/user.schema';
-export type { UserOrderId } from '@/schemas/user-order.schema';
 export * from '@/shared/types/api';
 export * from '@/shared/types/session';
 
@@ -88,25 +61,6 @@ export interface Amount {
 export function createAmount(value: number, currency: CurrencyCode = Currency.CHF): Amount {
   return { value, currency };
 }
-
-/**
- * Request to add a taco to cart
- */
-export interface AddTacoRequest {
-  size: TacoSize;
-  meats: Array<{ id: string; quantity: number }>;
-  sauces: string[];
-  garnitures: string[];
-  note?: string;
-}
-
-/**
- * Request to update a taco
- */
-export interface UpdateTacoRequest extends AddTacoRequest {
-  id: string;
-}
-
 // Extra, Drink, and Dessert types are now exported from their respective domain schemas
 
 /**
@@ -247,56 +201,6 @@ export interface DeliveryInfo {
 }
 
 /**
- * Order creation request
- */
-export interface CreateOrderRequest {
-  customer: Customer;
-  delivery: DeliveryInfo;
-}
-
-// OrderData moved to api.ts (backend API type)
-// For application use, prefer the Order domain schema from @/schemas/order.schema
-
-/**
- * Time slot with demand information
- */
-export interface TimeSlotWithDemand {
-  time: string;
-  available: boolean;
-  highDemand: boolean;
-}
-
-/**
- * Delivery demand information
- */
-export interface DeliveryDemand {
-  time: string;
-  isHighDemand: boolean;
-  message?: string;
-}
-
-// CsrfTokenResponse moved to api.ts (backend API type)
-
-/**
- * API error response
- */
-export interface ApiError {
-  id: string;
-  code: string;
-  key: string;
-  details?: Record<string, unknown>;
-}
-
-/**
- * Standard API response wrapper
- */
-export interface ApiResponse<T> {
-  success: boolean;
-  data?: T;
-  error?: ApiError;
-}
-
-/**
  * Group order status
  */
 export enum GroupOrderStatus {
@@ -350,37 +254,6 @@ export interface GroupOrder {
   status: GroupOrderStatus;
   createdAt: Date;
   updatedAt: Date;
-}
-
-/**
- * Group order with user orders
- */
-export interface GroupOrderWithUserOrders extends GroupOrder {
-  userOrders: UserOrder[];
-}
-
-/**
- * Create group order request
- */
-export interface CreateGroupOrderRequest {
-  name?: string;
-  startDate: string; // ISO date string
-  endDate: string; // ISO date string
-}
-
-/**
- * Update user order request
- */
-export interface UpdateUserOrderRequest {
-  items: UserOrderItems;
-}
-
-/**
- * Submit group order request
- */
-export interface SubmitGroupOrderRequest {
-  customer: Customer;
-  delivery: DeliveryInfo;
 }
 
 /**

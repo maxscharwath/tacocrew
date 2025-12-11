@@ -1,4 +1,5 @@
 import { CheckCircle2 } from 'lucide-react';
+import type { ComponentType } from 'react';
 import { Badge } from '@/components/ui';
 
 /**
@@ -8,7 +9,7 @@ import { Badge } from '@/components/ui';
 type OrderSectionProps = {
   readonly title: string;
   readonly items: string[] | Array<{ name: string; quantity?: number }>;
-  readonly icon: React.ComponentType<{ size?: number; className?: string }>;
+  readonly icon: ComponentType<{ size?: number; className?: string }>;
   readonly emptyText?: string;
   readonly showQuantity?: boolean;
 };

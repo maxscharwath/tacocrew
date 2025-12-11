@@ -22,11 +22,11 @@ import { profileLoader } from '@/routes/profile';
 import { accountLoader } from '@/routes/profile.account';
 import { profileDeliveryLoader } from '@/routes/profile.delivery';
 import { profileOrganizationsLoader } from '@/routes/profile.organizations';
+import { profileOrganizationsDetailLoader } from '@/routes/profile.organizations.detail';
 import {
   ProfileOrganizationsIndexRoute,
   profileOrganizationsIndexLoader,
-} from '@/routes/profile.organizations._index';
-import { profileOrganizationsDetailLoader } from '@/routes/profile.organizations.$id';
+} from '@/routes/profile.organizations.index';
 import { ProfileOrganizationsNewRoute } from '@/routes/profile.organizations.new';
 import { releasesLoader } from '@/routes/releases';
 import { RootErrorBoundary, RootLayout } from '@/routes/root';
@@ -34,7 +34,7 @@ import { rootAction, rootLoader } from '@/routes/root.loader';
 import { StockRoute, stockLoader } from '@/routes/stock';
 
 const orderParams = z.object({ orderId: z.string().min(1) });
-const organizationParams = z.object({ id: z.string().uuid() });
+const organizationParams = z.object({ id: z.uuid() });
 const loginSearch = z.object({ redirect: z.string().optional() });
 const orderCreateSearch = z.object({
   orderId: z.string().optional(),
@@ -98,7 +98,6 @@ export const { routes, routerConfig } = defineRoutes({
         path: 'orders/:orderId',
         params: orderParams,
         element: {
-          type: 'lazy',
           importFn: () =>
             import('@/routes/orders.detail').then((module) => ({
               default: module.OrderDetailRoute,
@@ -115,7 +114,6 @@ export const { routes, routerConfig } = defineRoutes({
         params: orderParams,
         search: orderCreateSearch,
         element: {
-          type: 'lazy',
           importFn: () =>
             import('@/routes/orders.create').then((module) => ({
               default: module.OrderCreateRoute,
@@ -130,7 +128,6 @@ export const { routes, routerConfig } = defineRoutes({
         path: 'orders/:orderId/submit',
         params: orderParams,
         element: {
-          type: 'lazy',
           importFn: () =>
             import('@/routes/orders.submit').then((module) => ({
               default: module.OrderSubmitRoute,
@@ -150,7 +147,6 @@ export const { routes, routerConfig } = defineRoutes({
       profile: {
         path: 'profile',
         element: {
-          type: 'lazy',
           importFn: () =>
             import('@/routes/profile').then((module) => ({
               default: module.ProfileRoute,
@@ -163,7 +159,6 @@ export const { routes, routerConfig } = defineRoutes({
       profileDelivery: {
         path: 'profile/delivery',
         element: {
-          type: 'lazy',
           importFn: () =>
             import('@/routes/profile.delivery').then((module) => ({
               default: module.ProfileDeliveryRoute,
@@ -176,7 +171,6 @@ export const { routes, routerConfig } = defineRoutes({
       profileAccount: {
         path: 'profile/account',
         element: {
-          type: 'lazy',
           importFn: () =>
             import('@/routes/profile.account').then((module) => ({
               default: module.AccountRoute,
@@ -189,7 +183,6 @@ export const { routes, routerConfig } = defineRoutes({
       profileOrganizations: {
         path: 'profile/organizations',
         element: {
-          type: 'lazy',
           importFn: () =>
             import('@/routes/profile.organizations').then((module) => ({
               default: module.ProfileOrganizationsRoute,
@@ -215,7 +208,7 @@ export const { routes, routerConfig } = defineRoutes({
             element: {
               type: 'lazy',
               importFn: () =>
-                import('@/routes/profile.organizations.$id').then((module) => ({
+                import('@/routes/profile.organizations.detail').then((module) => ({
                   default: module.ProfileOrganizationsDetailRoute,
                 })),
               fallback: ProfileSkeleton,
@@ -234,7 +227,6 @@ export const { routes, routerConfig } = defineRoutes({
       releases: {
         path: 'releases',
         element: {
-          type: 'lazy',
           importFn: () =>
             import('@/routes/releases').then((module) => ({
               default: module.ReleasesRoute,

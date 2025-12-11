@@ -61,7 +61,7 @@ apps/web/src/components/Button.tsx:23:5
 ## 🔧 Suggested Fixes
 
 1. TypeScript errors:
-   - Use UserIdSchema.parse() to create branded UserId
+   - Use UserId.parse() to create branded UserId
    - Add onClick to ButtonProps type
 
 2. Biome issues:

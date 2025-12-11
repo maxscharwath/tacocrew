@@ -15,13 +15,13 @@ export type DessertId = Id<'Dessert'>;
 /**
  * Parse a string to DessertId
  */
-export const DessertIdSchema = zId<DessertId>();
+export const DessertId = zId<DessertId>();
 
 /**
  * Dessert schema using Zod
  */
 export const DessertSchema = z.object({
-  id: zId<DessertId>(),
+  id: DessertId,
   code: z.string(),
   name: z.string(),
   price: z.number().min(0),

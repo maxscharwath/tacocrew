@@ -268,6 +268,7 @@
       "add": "Neu"
     },
     "form": {
+      "description": "Erstellen Sie eine neue Organisation, um Gruppenbestellungen und Mitglieder zu verwalten",
       "name": {
         "label": "Organisationsname",
         "placeholder": "Organisationsname eingeben",
@@ -604,6 +605,11 @@
         "errors": {
           "organizationRequired": "Bitte wählen Sie eine Organisation für diese Gruppenbestellung aus"
         },
+        "noOrganization": {
+          "title": "Keine Organisation gefunden",
+          "description": "Sie müssen einer Organisation angehören, um Gruppenbestellungen zu erstellen. Erstellen oder treten Sie einer Organisation bei, um loszulegen.",
+          "action": "Zu Organisationen gehen"
+        },
         "quickDeadlines": {
           "morning": "10 Uhr",
           "noon": "12 Uhr",
@@ -842,6 +848,15 @@
           "drinks_other": "{{count}} Getränke",
           "desserts_one": "{{count}} Dessert",
           "desserts_other": "{{count}} Desserts"
+        },
+        "itemCount_one": "{{count}} Position",
+        "itemCount_other": "{{count}} Positionen",
+        "reimbursement": {
+          "reimbursed": "Erstattet",
+          "pending": "Rückerstattung ausstehend",
+          "markPaid": "Als erstattet markieren",
+          "markPending": "Als ausstehend markieren",
+          "error": "Rückerstattung konnte nicht aktualisiert werden. Bitte versuche es erneut."
         }
       },
       "errors": {
@@ -1025,6 +1040,7 @@
     "subtitle": "Deine Kontoinformationen und Bestellhistorie.",
     "delivery": {
       "manageButton": "Lieferadressen verwalten",
+      "backToProfile": "Zurück zum Profil",
       "title": "Gespeicherte Adressen",
       "subtitle": "Speichere häufig genutzte Lieferorte, damit du Bestellungen schneller abschließen kannst.",
       "helper": "Lege mehrere Profile an (Büro, Zuhause, Kunde) und wähle sie später beim Abschicken aus.",

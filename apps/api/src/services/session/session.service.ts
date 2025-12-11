@@ -7,7 +7,7 @@ import type { SessionContext } from '@tacobot/gigatacos-client';
 import { injectable } from 'tsyringe';
 import { BackendIntegrationClient } from '@/infrastructure/api/backend-integration.client';
 import { PrismaService } from '@/infrastructure/database/prisma.service';
-import { SessionIdSchema } from '@/schemas/session.schema';
+import { SessionId } from '@/schemas/session.schema';
 import { CreateSessionOptions, SessionData, SessionStats } from '@/shared/types/session';
 import { inject } from '@/shared/utils/inject.utils';
 import { logger } from '@/shared/utils/logger.utils';
@@ -34,7 +34,7 @@ export class SessionService {
    */
   async createSession(options: CreateSessionOptions = {}): Promise<SessionData> {
     const rawSessionId = options.sessionId || randomUUID();
-    const sessionId = SessionIdSchema.parse(rawSessionId);
+    const sessionId = SessionId.parse(rawSessionId);
 
     logger.info('Creating new session', { sessionId });
 
@@ -68,7 +68,7 @@ export class SessionService {
    */
   async getSession(sessionId: string): Promise<SessionData | null> {
     logger.debug('Getting session', { sessionId });
-    const parsedSessionId = SessionIdSchema.parse(sessionId);
+    const parsedSessionId = SessionId.parse(sessionId);
 
     const cart = await this.prisma.client.cart.findUnique({
       where: { id: parsedSessionId },
@@ -85,7 +85,7 @@ export class SessionService {
     });
 
     return {
-      sessionId: SessionIdSchema.parse(cart.id),
+      sessionId: SessionId.parse(cart.id),
       csrfToken: cart.csrfToken,
       cookies: JSON.parse(cart.cookies),
       createdAt: cart.createdAt,
@@ -112,7 +112,7 @@ export class SessionService {
    */
   async updateSession(sessionId: string, updates: Partial<SessionData>): Promise<void> {
     const session = await this.getSessionOrThrow(sessionId);
-    const parsedSessionId = SessionIdSchema.parse(sessionId);
+    const parsedSessionId = SessionId.parse(sessionId);
 
     const updatedSession: SessionData = {
       ...session,
@@ -188,7 +188,7 @@ export class SessionService {
    */
   async deleteSession(sessionId: string): Promise<void> {
     logger.info('Deleting session', { sessionId });
-    const parsedSessionId = SessionIdSchema.parse(sessionId);
+    const parsedSessionId = SessionId.parse(sessionId);
     await this.prisma.client.cart.delete({
       where: { id: parsedSessionId },
     });
@@ -198,7 +198,7 @@ export class SessionService {
    * Check if session exists
    */
   async hasSession(sessionId: string): Promise<boolean> {
-    const parsedSessionId = SessionIdSchema.parse(sessionId);
+    const parsedSessionId = SessionId.parse(sessionId);
     const cart = await this.prisma.client.cart.findUnique({
       where: { id: parsedSessionId },
       select: { id: true },
@@ -215,7 +215,7 @@ export class SessionService {
     });
 
     return carts.map((cart) => ({
-      sessionId: SessionIdSchema.parse(cart.id),
+      sessionId: SessionId.parse(cart.id),
       csrfToken: cart.csrfToken,
       cookies: JSON.parse(cart.cookies),
       createdAt: cart.createdAt,

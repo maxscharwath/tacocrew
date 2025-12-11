@@ -4,11 +4,7 @@
  */
 
 import { z } from '@hono/zod-openapi';
-import {
-  ErrorResponseSchema,
-  IsoDateStringSchema,
-  jsonContent,
-} from '@/api/schemas/shared.schemas';
+import { ErrorResponseSchema, jsonContent } from '@/api/schemas/shared.schemas';
 
 // Define enums first before they are used
 const OrganizationRoleSchema = z.enum(['ADMIN', 'MEMBER']);
@@ -18,8 +14,8 @@ const OrganizationResponseSchema = z.object({
   id: z.string(),
   name: z.string(),
   image: z.string().nullable().optional(),
-  createdAt: IsoDateStringSchema.optional(),
-  updatedAt: IsoDateStringSchema.optional(),
+  createdAt: z.coerce.date().optional(),
+  updatedAt: z.coerce.date().optional(),
 });
 
 const UserOrganizationResponseSchema = z.object({
@@ -28,8 +24,8 @@ const UserOrganizationResponseSchema = z.object({
   image: z.string().nullable().optional(),
   role: OrganizationRoleSchema,
   status: OrganizationMemberStatusSchema,
-  createdAt: IsoDateStringSchema.optional(),
-  updatedAt: IsoDateStringSchema.optional(),
+  createdAt: z.coerce.date().optional(),
+  updatedAt: z.coerce.date().optional(),
 });
 
 const CreateOrganizationRequestSchema = z.object({
@@ -42,17 +38,17 @@ const AddUserToOrganizationRequestSchema = z.object({
 });
 
 const OrganizationMemberResponseSchema = z.object({
-  userId: z.string().uuid(),
+  userId: z.uuid(),
   role: OrganizationRoleSchema,
   status: OrganizationMemberStatusSchema,
   user: z.object({
-    id: z.string().uuid(),
+    id: z.uuid(),
     name: z.string(),
     email: z.string(),
     image: z.string().nullable(),
     username: z.string().nullable(),
   }),
-  createdAt: IsoDateStringSchema,
+  createdAt: z.coerce.date(),
 });
 
 const UpdateUserRoleRequestSchema = z.object({

@@ -1,22 +1,11 @@
-import {
-  Bell,
-  Check,
-  Edit,
-  Globe,
-  Key,
-  Laptop,
-  Lock,
-  Mail,
-  Phone,
-  RefreshCw,
-  User,
-  X,
-} from 'lucide-react';
+import { Edit, Globe, Key, Laptop, Lock, Mail, Phone, User } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { type LoaderFunctionArgs, redirect } from 'react-router';
+import type { LoaderFunctionArgs } from 'react-router';
 import { LanguageSwitcher } from '@/components/language-switcher';
 import { ImageUploader } from '@/components/profile/ImageUploader';
+import { PushNotificationManager } from '@/components/profile/PushNotificationManager';
+import { EditActionButtons } from '@/components/shared';
 import {
   Alert,
   AlertDialog,
@@ -40,18 +29,11 @@ import {
   PhoneInput,
   toast,
 } from '@/components/ui';
-import { usePushNotifications } from '@/hooks';
-import {
-  deletePushSubscription,
-  getPushSubscriptions,
-  type PushSubscriptionInfo,
-  sendTestNotification,
-} from '@/lib/api/push-notifications';
 import type { UserProfile } from '@/lib/api/types';
 import { getProfile, updateUserPhone } from '@/lib/api/user';
 import { authClient, useSession } from '@/lib/auth-client';
 import { ENV } from '@/lib/env';
-import { routes } from '@/lib/routes';
+import { createLoader } from '@/lib/utils/loader-factory';
 import { formatPhoneNumber } from '@/utils/phone-formatter';
 
 // Reusable hook for editable field logic
@@ -97,54 +79,6 @@ function useEditableField<T extends string | null | undefined>(
     handleCancel,
     startEditing,
   };
-}
-
-// Reusable edit action buttons
-function EditActionButtons({
-  isSaving,
-  onSave,
-  onCancel,
-  saveDisabled,
-  size = 'sm',
-}: Readonly<{
-  isSaving: boolean;
-  onSave: () => void;
-  onCancel: () => void;
-  saveDisabled?: boolean;
-  size?: 'sm' | 'xs';
-}>) {
-  const { t } = useTranslation();
-  const buttonClass = size === 'sm' ? 'h-11 w-11 p-0' : 'h-9 w-9 p-0';
-  const iconSize = size === 'sm' ? 16 : 14;
-
-  return (
-    <>
-      <Button
-        onClick={onSave}
-        disabled={isSaving || saveDisabled}
-        variant="primary"
-        size="sm"
-        className={buttonClass}
-        title={isSaving ? t('account.saving') : t('account.save')}
-      >
-        {isSaving ? (
-          <RefreshCw size={iconSize} className="animate-spin" />
-        ) : (
-          <Check size={iconSize} />
-        )}
-      </Button>
-      <Button
-        onClick={onCancel}
-        disabled={isSaving}
-        variant="outline"
-        size="sm"
-        className={buttonClass}
-        title={t('account.cancel')}
-      >
-        <X size={iconSize} />
-      </Button>
-    </>
-  );
 }
 
 function PhoneEditor({
@@ -374,13 +308,11 @@ type Passkey = {
   createdAt: string;
 };
 
-export async function accountLoader(_: LoaderFunctionArgs) {
-  const session = await authClient.getSession();
-  if (!session?.data) {
-    throw redirect(routes.signin());
-  }
-  return null;
-}
+export const accountLoader = createLoader(
+  // No data to load - this route only requires authentication
+  (_: LoaderFunctionArgs) => Promise.resolve({}),
+  { requireAuth: true }
+);
 
 export function AccountRoute() {
   const { t } = useTranslation();
@@ -389,25 +321,8 @@ export function AccountRoute() {
   const [passkeys, setPasskeys] = useState<Passkey[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRegistering, setIsRegistering] = useState(false);
-  const [isTestingNotification, setIsTestingNotification] = useState(false);
-  const [pushSubscriptions, setPushSubscriptions] = useState<PushSubscriptionInfo[]>([]);
-  const [isLoadingSubscriptions, setIsLoadingSubscriptions] = useState(false);
   const isLoadingRef = useRef(false);
   const [showDeletePasskeyDialog, setShowDeletePasskeyDialog] = useState<string | null>(null);
-  const [showDeleteSubscriptionDialog, setShowDeleteSubscriptionDialog] = useState<string | null>(
-    null
-  );
-
-  const {
-    isSupported: isPushSupported,
-    isSubscribed: isPushSubscribed,
-    isSubscribing: isPushSubscribing,
-    permission: pushPermission,
-    error: pushError,
-    subscribe: pushSubscribe,
-    unsubscribe: pushUnsubscribe,
-    refresh: refreshPushStatus,
-  } = usePushNotifications();
 
   const loadData = async () => {
     // Prevent concurrent calls
@@ -436,31 +351,10 @@ export function AccountRoute() {
     }
   };
 
-  const loadPushSubscriptions = async () => {
-    if (!isPushSubscribed) {
-      setPushSubscriptions([]);
-      return;
-    }
-
-    try {
-      setIsLoadingSubscriptions(true);
-      const subscriptions = await getPushSubscriptions();
-      setPushSubscriptions(subscriptions);
-    } catch (err) {
-      console.error('Failed to load push subscriptions:', err);
-    } finally {
-      setIsLoadingSubscriptions(false);
-    }
-  };
-
   useEffect(() => {
     void loadData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Only run once on mount
-
-  useEffect(() => {
-    void loadPushSubscriptions();
-  }, [isPushSubscribed]);
 
   const handleRegisterPasskey = async () => {
     try {
@@ -508,7 +402,6 @@ export function AccountRoute() {
 
     setShowDeletePasskeyDialog(null);
 
-    // Better Auth doesn't expose delete/update as client methods, use fetch with Better Auth's fetchOptions pattern
     try {
       const response = await fetch(`${ENV.apiBaseUrl}/api/auth/passkey/delete-passkey`, {
         method: 'POST',
@@ -520,27 +413,22 @@ export function AccountRoute() {
       });
 
       const result = await response.json();
-      // Better Auth returns 200 with null result on success, or error object on failure
-      // Check for explicit errors first
+
       if (!response.ok) {
         const errorMessage = result?.error?.message || t('account.passkeys.deleteFailed');
         toast.error(errorMessage);
         return;
       }
 
-      // If response is OK but has an error object, treat as failure
       if (result && typeof result === 'object' && result.error) {
         const errorMessage = result.error.message || t('account.passkeys.deleteFailed');
         toast.error(errorMessage);
         return;
       }
 
-      // If response is OK and result is null or success is true, treat as success
-      // Better Auth returns null on successful deletion
       if (response.ok && (result === null || result.success !== false)) {
         toast.success(t('account.passkeys.deleteSuccess'));
       } else {
-        // Fallback: if we get here, something unexpected happened
         toast.error(t('account.passkeys.deleteFailed'));
         return;
       }
@@ -555,26 +443,7 @@ export function AccountRoute() {
     }
   };
 
-  const handleConfirmDeleteSubscription = async () => {
-    const subscriptionId = showDeleteSubscriptionDialog;
-    if (!subscriptionId) return;
-
-    setShowDeleteSubscriptionDialog(null);
-    try {
-      await deletePushSubscription(subscriptionId);
-      toast.success(t('account.pushNotifications.devices.deleteSuccess'));
-      await loadPushSubscriptions();
-      // If this was the current device, refresh subscription status
-      await refreshPushStatus();
-    } catch (err) {
-      toast.error(
-        err instanceof Error ? err.message : t('account.pushNotifications.devices.deleteFailed')
-      );
-    }
-  };
-
   const handleUpdatePasskeyName = async (passkeyId: string, newName: string) => {
-    // Better Auth doesn't expose delete/update as client methods, use fetch with Better Auth's fetchOptions pattern
     try {
       const response = await fetch(`${ENV.apiBaseUrl}/api/auth/passkey/update-passkey`, {
         method: 'POST',
@@ -599,25 +468,6 @@ export function AccountRoute() {
     } catch (err) {
       toast.error(err instanceof Error ? err.message : t('account.passkeys.updateFailed'));
     }
-  };
-
-  const parseUserAgent = (userAgent: string): string => {
-    if (userAgent.includes('Chrome')) {
-      return userAgent.includes('Mobile') ? 'Chrome Mobile' : 'Chrome';
-    }
-    if (userAgent.includes('Firefox')) {
-      return userAgent.includes('Mobile') ? 'Firefox Mobile' : 'Firefox';
-    }
-    if (userAgent.includes('Safari') && !userAgent.includes('Chrome')) {
-      return userAgent.includes('Mobile') ? 'Safari Mobile' : 'Safari';
-    }
-    if (userAgent.includes('Edge')) {
-      return 'Edge';
-    }
-    if (userAgent.includes('Opera')) {
-      return 'Opera';
-    }
-    return t('account.pushNotifications.devices.unknownDevice');
   };
 
   const getDeviceIcon = (deviceType: string) => {
@@ -756,7 +606,7 @@ export function AccountRoute() {
             <Button
               onClick={handleRegisterPasskey}
               disabled={isRegistering}
-              variant="primary"
+              variant="default"
               size="sm"
               loading={isRegistering}
               className="w-full sm:w-auto"
@@ -804,7 +654,7 @@ export function AccountRoute() {
                     <div className="flex shrink-0 items-center gap-2 sm:ml-2">
                       <Button
                         onClick={() => handleDeletePasskey(passkey.id)}
-                        variant="danger"
+                        variant="destructive"
                         size="sm"
                         className="w-full sm:w-auto"
                       >
@@ -823,242 +673,7 @@ export function AccountRoute() {
       </Card>
 
       {/* Push Notifications */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle>{t('account.pushNotifications.title')}</CardTitle>
-              <CardDescription>{t('account.pushNotifications.description')}</CardDescription>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {!isPushSupported ? (
-              <Alert tone="warning">{t('account.pushNotifications.notSupported')}</Alert>
-            ) : (
-              <>
-                <div className="space-y-3">
-                  <div className="flex flex-col gap-3 rounded-xl border border-white/10 bg-slate-800/40 p-4 sm:flex-row sm:items-center sm:justify-between">
-                    <div className="flex min-w-0 flex-1 items-center gap-3">
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-slate-700/50">
-                        <Bell className="h-5 w-5 text-slate-300" />
-                      </div>
-                      <div className="min-w-0 flex-1 overflow-hidden">
-                        <div className="font-medium text-white">
-                          {t('account.pushNotifications.status')}
-                        </div>
-                        <div className="mt-1 text-slate-400 text-sm">
-                          {isPushSubscribed
-                            ? t('account.pushNotifications.subscribed')
-                            : t('account.pushNotifications.notSubscribed')}
-                          {pushPermission && (
-                            <span className="ml-2">
-                              • {t(`account.pushNotifications.permission.${pushPermission}`)}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex shrink-0 items-center gap-2 sm:ml-2">
-                      {isPushSubscribed ? (
-                        <Button
-                          onClick={async () => {
-                            try {
-                              await pushUnsubscribe();
-                              toast.success(t('account.pushNotifications.unsubscribeSuccess'));
-                              await refreshPushStatus();
-                              await loadPushSubscriptions();
-                            } catch (err) {
-                              toast.error(
-                                err instanceof Error
-                                  ? err.message
-                                  : t('account.pushNotifications.unsubscribeFailed')
-                              );
-                            }
-                          }}
-                          disabled={isPushSubscribing}
-                          variant="danger"
-                          size="sm"
-                          loading={isPushSubscribing}
-                          className="w-full sm:w-auto"
-                        >
-                          {t('account.pushNotifications.disable')}
-                        </Button>
-                      ) : (
-                        <Button
-                          onClick={async () => {
-                            try {
-                              await pushSubscribe();
-                              toast.success(t('account.pushNotifications.subscribeSuccess'));
-                              await refreshPushStatus();
-                              await loadPushSubscriptions();
-                            } catch (err) {
-                              toast.error(
-                                err instanceof Error
-                                  ? err.message
-                                  : t('account.pushNotifications.subscribeFailed')
-                              );
-                            }
-                          }}
-                          disabled={isPushSubscribing}
-                          variant="primary"
-                          size="sm"
-                          loading={isPushSubscribing}
-                          className="w-full sm:w-auto"
-                        >
-                          {t('account.pushNotifications.enable')}
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-
-                  {isPushSubscribed && (
-                    <div className="flex flex-col gap-3 rounded-xl border border-white/10 bg-slate-800/40 p-4 sm:flex-row sm:items-center sm:justify-between">
-                      <div className="flex min-w-0 flex-1 items-center gap-3">
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-slate-700/50">
-                          <RefreshCw className="h-5 w-5 text-slate-300" />
-                        </div>
-                        <div className="min-w-0 flex-1 overflow-hidden">
-                          <div className="font-medium text-white">
-                            {t('account.pushNotifications.test.title')}
-                          </div>
-                          <div className="mt-1 text-slate-400 text-sm">
-                            {t('account.pushNotifications.test.description')}
-                          </div>
-                        </div>
-                      </div>
-                      <Button
-                        onClick={async () => {
-                          try {
-                            setIsTestingNotification(true);
-                            const result = await sendTestNotification();
-                            if (result.success) {
-                              toast.success(t('account.pushNotifications.test.success'));
-                            } else {
-                              toast.error(t('account.pushNotifications.test.failed'));
-                            }
-                          } catch (err) {
-                            toast.error(
-                              err instanceof Error
-                                ? err.message
-                                : t('account.pushNotifications.test.failed')
-                            );
-                          } finally {
-                            setIsTestingNotification(false);
-                          }
-                        }}
-                        disabled={isTestingNotification}
-                        variant="outline"
-                        size="sm"
-                        loading={isTestingNotification}
-                        className="w-full shrink-0 sm:ml-2 sm:w-auto"
-                      >
-                        {t('account.pushNotifications.test.button')}
-                      </Button>
-                    </div>
-                  )}
-
-                  {pushError && (
-                    <Alert tone="error">
-                      {pushError}
-                      {pushPermission === 'denied' && (
-                        <div className="mt-2 text-sm">
-                          {t('account.pushNotifications.permissionDeniedHelp')}
-                        </div>
-                      )}
-                    </Alert>
-                  )}
-
-                  {/* Registered Devices */}
-                  {isPushSubscribed && (
-                    <div className="mt-4 space-y-3 border-white/10 border-t pt-4">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <h3 className="font-medium text-white">
-                            {t('account.pushNotifications.devices.title')}
-                          </h3>
-                          <p className="mt-1 text-slate-400 text-sm">
-                            {t('account.pushNotifications.devices.description')}
-                          </p>
-                        </div>
-                      </div>
-
-                      {isLoadingSubscriptions ? (
-                        <div className="py-4 text-center text-slate-400">
-                          {t('account.loading')}
-                        </div>
-                      ) : pushSubscriptions.length === 0 ? (
-                        <EmptyState
-                          icon={Bell}
-                          title={t('account.pushNotifications.devices.emptyState.title')}
-                          description={t(
-                            'account.pushNotifications.devices.emptyState.description'
-                          )}
-                        />
-                      ) : (
-                        <div className="space-y-2">
-                          {pushSubscriptions.map((subscription) => {
-                            const deviceName = subscription.userAgent
-                              ? parseUserAgent(subscription.userAgent)
-                              : t('account.pushNotifications.devices.unknownDevice');
-                            return (
-                              <div
-                                key={subscription.id}
-                                className="flex flex-col gap-3 rounded-xl border border-white/10 bg-slate-800/40 p-4 sm:flex-row sm:items-center sm:justify-between"
-                              >
-                                <div className="flex min-w-0 flex-1 items-center gap-3">
-                                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-slate-700/50">
-                                    <Laptop className="h-5 w-5 text-slate-300" />
-                                  </div>
-                                  <div className="min-w-0 flex-1 overflow-hidden">
-                                    <div className="truncate font-medium text-white">
-                                      {deviceName}
-                                    </div>
-                                    <div className="mt-1 text-slate-400 text-sm">
-                                      {t('account.pushNotifications.devices.registered')}{' '}
-                                      {new Date(subscription.createdAt).toLocaleDateString()}
-                                    </div>
-                                    {subscription.userAgent && (
-                                      <div className="mt-1 truncate text-slate-500 text-xs">
-                                        {subscription.userAgent}
-                                      </div>
-                                    )}
-                                  </div>
-                                </div>
-                                <div className="flex shrink-0 items-center gap-2 sm:ml-2">
-                                  <Button
-                                    onClick={() => {
-                                      setShowDeleteSubscriptionDialog(subscription.id);
-                                    }}
-                                    variant="danger"
-                                    size="sm"
-                                    className="w-full sm:w-auto"
-                                  >
-                                    {t('account.pushNotifications.devices.delete')}
-                                  </Button>
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-
-                <Alert
-                  tone="info"
-                  title={t('account.pushNotifications.about.title')}
-                  className="mt-4"
-                >
-                  {t('account.pushNotifications.about.description')}
-                </Alert>
-              </>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+      <PushNotificationManager />
 
       {/* Delete Passkey Confirmation Dialog */}
       <AlertDialog
@@ -1074,27 +689,6 @@ export function AccountRoute() {
             <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
             <AlertDialogAction variant="destructive" onClick={handleConfirmDeletePasskey}>
               {t('account.passkeys.delete')}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      {/* Delete Subscription Confirmation Dialog */}
-      <AlertDialog
-        open={showDeleteSubscriptionDialog !== null}
-        onOpenChange={(open) => !open && setShowDeleteSubscriptionDialog(null)}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{t('account.pushNotifications.devices.delete')}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {t('account.pushNotifications.devices.deleteConfirm')}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
-            <AlertDialogAction variant="destructive" onClick={handleConfirmDeleteSubscription}>
-              {t('account.pushNotifications.devices.delete')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

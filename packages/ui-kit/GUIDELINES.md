@@ -356,7 +356,7 @@ export function Button({ children, ...props }: ButtonProps) {
  * @example
  * ```tsx
  * // Primary button
- * <Button variant="primary" color="brand">
+ * <Button variant="default" color="brand">
  *   Submit Order
  * </Button>
  *
@@ -492,7 +492,7 @@ export const Primary: Story = {
 export const Variants: Story = {
   render: () => (
     <div className="flex gap-4">
-      <Button variant="primary">Primary</Button>
+      <Button variant="default">Primary</Button>
       <Button variant="secondary">Secondary</Button>
       <Button variant="outline">Outline</Button>
       <Button variant="ghost">Ghost</Button>
@@ -565,7 +565,7 @@ export const RealWorld: Story = {
         <Button variant="outline" color="slate">
           Cancel
         </Button>
-        <Button variant="primary" color="brand">
+        <Button variant="default" color="brand">
           Submit Order
         </Button>
       </div>

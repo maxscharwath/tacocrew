@@ -16,7 +16,7 @@ import {
   Wallet,
   XCircle,
 } from 'lucide-react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { type MouseEvent, useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 import { Button, EmptyState, SegmentedControl } from '@/components/ui';
@@ -84,7 +84,7 @@ function NotificationItem({
   const [isArchiving, setIsArchiving] = useState(false);
   const { icon: Icon, color } = NOTIFICATION_ICONS[notification.type] ?? DEFAULT_ICON;
 
-  const handleArchive = async (e: React.MouseEvent) => {
+  const handleArchive = async (e: MouseEvent) => {
     e.stopPropagation();
     setIsArchiving(true);
     await new Promise((r) => setTimeout(r, 200)); // Animation delay
@@ -112,7 +112,7 @@ function NotificationItem({
           <div className="flex items-start justify-between gap-2">
             <p
               className={cn(
-                'text-sm',
+                'truncate text-sm',
                 notification.read ? 'text-slate-300' : 'font-semibold text-white'
               )}
             >

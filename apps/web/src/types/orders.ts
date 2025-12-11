@@ -1,5 +1,6 @@
+import type { TacoSize } from '@tacobot/gigatacos-client';
+import type { ComponentType } from 'react';
 import type { StockResponse } from '@/lib/api';
-
 /**
  * Shared types for order-related components and hooks
  */
@@ -18,7 +19,7 @@ export type ProgressStep = {
   key: string;
   completed: boolean;
   label: string;
-  icon: React.ComponentType<{ size?: number; className?: string }>;
+  icon: ComponentType<{ size?: number; className?: string }>;
   description: string;
 };
 
@@ -34,6 +35,18 @@ export type OrderFormState = {
 };
 
 export type TacoSizeItem = StockResponse['tacos'][number];
+
+/**
+ * Taco customization state for the taco builder
+ */
+export type TacoCustomization = {
+  size: TacoSize;
+  meats: MeatSelection[];
+  sauces: string[];
+  garnitures: string[];
+  note: string;
+  selectedTacoSize: TacoSizeItem | null;
+};
 
 export type StockItem =
   | StockResponse['meats'][number]

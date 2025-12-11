@@ -2,6 +2,8 @@
  * Unit tests for auth middleware
  */
 
+// Load test environment variables first
+import '@/test-setup';
 import 'reflect-metadata';
 import { beforeEach, describe, expect, test as it, mock } from 'bun:test';
 import type { Context, Next } from 'hono';
@@ -30,6 +32,11 @@ describe('createAuthMiddleware', () => {
     mockContext = {
       var: {},
       set: mock(),
+      req: {
+        raw: {
+          headers: new Headers(),
+        },
+      },
     } as unknown as Context;
 
     mockNext = mock().mockResolvedValue(undefined);
@@ -196,6 +203,9 @@ describe('authMiddleware', () => {
       var: {},
       req: {
         header: mock(),
+        raw: {
+          headers: new Headers(),
+        },
       },
       set: mock(),
     } as unknown as Context;
@@ -224,6 +234,9 @@ describe('optionalAuthMiddleware', () => {
       var: {},
       req: {
         header: mock(),
+        raw: {
+          headers: new Headers(),
+        },
       },
       set: mock(),
     } as unknown as Context;

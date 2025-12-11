@@ -7,7 +7,7 @@ export function Card({ className, ...props }: Readonly<CardProps>) {
   return (
     <div
       className={cn(
-        'rounded-3xl border border-white/10 bg-slate-900/70 shadow-[0_30px_90px_rgba(8,47,73,0.35)] backdrop-blur',
+        'rounded-3xl border border-gray-700 bg-slate-900/70 shadow-[0_30px_90px_rgba(8,47,73,0.35)] backdrop-blur',
         className
       )}
       {...props}

@@ -9,6 +9,7 @@ import { beforeEach, describe, expect, test as it, mock } from 'bun:test';
 import { container } from 'tsyringe';
 import { OrganizationMemberStatus, OrganizationRole } from '@/generated/client';
 import { OrganizationRepository } from '@/infrastructure/repositories/organization.repository';
+// Import UserRepository after other dependencies to avoid initialization order issues
 import { UserRepository } from '@/infrastructure/repositories/user.repository';
 import { createOrganizationFromDb } from '@/schemas/organization.schema';
 import { NotificationService } from '@/services/notification/notification.service';
@@ -32,7 +33,7 @@ describe('OrganizationService', () => {
     findByUserId: mock(),
     create: mock(),
     addUserToOrganization: mock(),
-    getUserMembership: mock(),
+    findMembership: mock(),
     getUserRole: mock(),
     isUserAdmin: mock(),
     listAll: mock(),
@@ -153,7 +154,7 @@ describe('OrganizationService', () => {
 
   describe('addUserToOrganization', () => {
     it('should add user with ACTIVE status and send notification', async () => {
-      mockOrganizationRepository.getUserMembership.mockResolvedValue(null);
+      mockOrganizationRepository.findMembership.mockResolvedValue(null);
       mockOrganizationRepository.addUserToOrganization.mockResolvedValue(undefined);
       mockOrganizationRepository.findById.mockResolvedValue(mockOrganization);
       mockNotificationService.sendToUser.mockResolvedValue(undefined);
@@ -176,7 +177,7 @@ describe('OrganizationService', () => {
     });
 
     it('should not send notification if user was previously pending', async () => {
-      mockOrganizationRepository.getUserMembership.mockResolvedValue({
+      mockOrganizationRepository.findMembership.mockResolvedValue({
         role: OrganizationRole.MEMBER,
         status: OrganizationMemberStatus.PENDING,
       });
@@ -194,7 +195,7 @@ describe('OrganizationService', () => {
 
   describe('requestToJoinOrganization', () => {
     it('should create pending membership and notify admins', async () => {
-      mockOrganizationRepository.getUserMembership.mockResolvedValue(null);
+      mockOrganizationRepository.findMembership.mockResolvedValue(null);
       mockOrganizationRepository.addUserToOrganization.mockResolvedValue(undefined);
       mockOrganizationRepository.findById.mockResolvedValue(mockOrganization);
       mockOrganizationRepository.getOrganizationMembers.mockResolvedValue([
@@ -234,7 +235,7 @@ describe('OrganizationService', () => {
     });
 
     it('should throw error if user is already a member', async () => {
-      mockOrganizationRepository.getUserMembership.mockResolvedValue({
+      mockOrganizationRepository.findMembership.mockResolvedValue({
         role: OrganizationRole.MEMBER,
         status: OrganizationMemberStatus.ACTIVE,
       });
@@ -246,7 +247,7 @@ describe('OrganizationService', () => {
     });
 
     it('should throw error if user already has pending request', async () => {
-      mockOrganizationRepository.getUserMembership.mockResolvedValue({
+      mockOrganizationRepository.findMembership.mockResolvedValue({
         role: OrganizationRole.MEMBER,
         status: OrganizationMemberStatus.PENDING,
       });
@@ -443,7 +444,7 @@ describe('OrganizationService', () => {
 
   describe('isUserActiveMember', () => {
     it('should return true if user is active member', async () => {
-      mockOrganizationRepository.getUserMembership.mockResolvedValue({
+      mockOrganizationRepository.findMembership.mockResolvedValue({
         role: OrganizationRole.MEMBER,
         status: OrganizationMemberStatus.ACTIVE,
       });
@@ -455,7 +456,7 @@ describe('OrganizationService', () => {
     });
 
     it('should return false if user is not active member', async () => {
-      mockOrganizationRepository.getUserMembership.mockResolvedValue({
+      mockOrganizationRepository.findMembership.mockResolvedValue({
         role: OrganizationRole.MEMBER,
         status: OrganizationMemberStatus.PENDING,
       });
@@ -467,7 +468,7 @@ describe('OrganizationService', () => {
     });
 
     it('should return false if user has no membership', async () => {
-      mockOrganizationRepository.getUserMembership.mockResolvedValue(null);
+      mockOrganizationRepository.findMembership.mockResolvedValue(null);
 
       const service = container.resolve(OrganizationService);
       const result = await service.isUserActiveMember(userId, organizationId);

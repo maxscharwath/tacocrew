@@ -12,8 +12,7 @@ import {
 import { UserRepository } from '@/infrastructure/repositories/user.repository';
 import { t } from '@/lib/i18n';
 import type { Organization, OrganizationId } from '@/schemas/organization.schema';
-import type { UserId } from '@/schemas/user.schema';
-import { UserIdSchema } from '@/schemas/user.schema';
+import { UserId } from '@/schemas/user.schema';
 import { NotificationService } from '@/services/notification/notification.service';
 import { inject } from '@/shared/utils/inject.utils';
 import { logger } from '@/shared/utils/logger.utils';
@@ -61,7 +60,7 @@ export class OrganizationService {
     options?: MembershipOptions
   ): Promise<void> {
     // Check if user already has a membership
-    const existingMembership = await this.organizationRepository.getUserMembership(
+    const existingMembership = await this.organizationRepository.findMembership(
       userId,
       organizationId
     );
@@ -99,7 +98,7 @@ export class OrganizationService {
 
   async requestToJoinOrganization(userId: UserId, organizationId: OrganizationId): Promise<void> {
     // Check if user is already a member or has a pending request
-    const membership = await this.organizationRepository.getUserMembership(userId, organizationId);
+    const membership = await this.organizationRepository.findMembership(userId, organizationId);
 
     if (membership) {
       if (membership.status === OrganizationMemberStatus.ACTIVE) {
@@ -128,7 +127,7 @@ export class OrganizationService {
 
       const notificationPromises = admins.map(async (admin) => {
         try {
-          const adminUserId = UserIdSchema.parse(admin.userId);
+          const adminUserId = UserId.parse(admin.userId);
           await this.notificationService.sendToUser(adminUserId, {
             type: 'organization_join_request',
             title: t('notifications.organization.joinRequest.title'),
@@ -283,14 +282,14 @@ export class OrganizationService {
     return this.organizationRepository.getUserRole(userId, organizationId);
   }
 
-  getUserMembership(
+  findMembership(
     userId: UserId,
     organizationId: OrganizationId
   ): Promise<{
     role: OrganizationRole;
     status: OrganizationMemberStatus;
   } | null> {
-    return this.organizationRepository.getUserMembership(userId, organizationId);
+    return this.organizationRepository.findMembership(userId, organizationId);
   }
 
   isUserAdmin(userId: UserId, organizationId: OrganizationId): Promise<boolean> {
@@ -302,7 +301,7 @@ export class OrganizationService {
    * Returns true if user is an active member, false otherwise
    */
   async isUserActiveMember(userId: UserId, organizationId: OrganizationId): Promise<boolean> {
-    const membership = await this.organizationRepository.getUserMembership(userId, organizationId);
+    const membership = await this.organizationRepository.findMembership(userId, organizationId);
     return membership?.status === OrganizationMemberStatus.ACTIVE;
   }
 

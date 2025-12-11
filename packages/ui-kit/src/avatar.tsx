@@ -1,6 +1,6 @@
+import { cva, type VariantProps } from 'class-variance-authority';
 import type { ComponentPropsWithoutRef, ReactElement } from 'react';
 import { cloneElement, isValidElement, useEffect, useState } from 'react';
-import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from './utils';
 
 const avatarVariants = cva('flex items-center justify-center font-semibold', {
@@ -12,7 +12,7 @@ const avatarVariants = cva('flex items-center justify-center font-semibold', {
         indigo: 'border-indigo-400/30 bg-linear-to-br from-indigo-400/20 to-blue-500/20 text-indigo-300',
         brand: 'border-brand-400/30 bg-linear-to-br from-brand-400/20 to-sky-500/20 text-brand-300',
         brandHero: 'bg-linear-to-br from-brand-400 via-brand-500 to-sky-500 text-white',
-        neutral: 'border-white/10 bg-white/15 text-white',
+        neutral: 'border-gray-700 bg-white/15 text-white',
         rose: 'border-rose-400/30 bg-linear-to-br from-rose-400/20 to-pink-500/20 text-rose-300',
         amber: 'border-amber-400/30 bg-linear-to-br from-amber-400/20 to-yellow-500/20 text-amber-300',
         violet: 'border-violet-400/30 bg-linear-to-br from-violet-400/20 to-purple-500/20 text-violet-300',

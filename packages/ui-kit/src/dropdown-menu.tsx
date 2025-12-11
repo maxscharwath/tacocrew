@@ -67,7 +67,7 @@ const DropdownMenuSubContent = forwardRef<
   <DropdownMenuPrimitive.SubContent
     ref={ref}
     className={cn(
-      'z-50 min-w-[12rem] overflow-hidden rounded-xl border border-white/10 bg-slate-900/95 p-1.5 backdrop-blur-xl',
+      'z-50 min-w-[12rem] overflow-hidden rounded-xl border border-gray-700 bg-slate-900/95 p-1.5 backdrop-blur-xl',
       'shadow-[0_40px_120px_rgba(8,47,73,0.35)]',
       'data-[state=open]:animate-in data-[state=closed]:animate-out',
       'data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
@@ -90,7 +90,7 @@ const DropdownMenuContent = forwardRef<
       ref={ref}
       sideOffset={sideOffset}
       className={cn(
-        'z-50 min-w-[12rem] overflow-hidden rounded-xl border border-white/10 bg-slate-900/95 p-1.5 backdrop-blur-xl',
+        'z-50 min-w-[12rem] overflow-hidden rounded-xl border border-gray-700 bg-slate-900/95 p-1.5 backdrop-blur-xl',
         'shadow-[0_40px_120px_rgba(8,47,73,0.35)]',
         'data-[state=open]:animate-in data-[state=closed]:animate-out',
         'data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',

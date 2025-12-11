@@ -6,8 +6,7 @@
  * Each cart has a unique ID that serves as its session identifier.
  */
 
-import type { CartId } from '@/schemas/cart.schema';
-
+import { CartId } from '@/schemas/cart.schema';
 /**
  * Session ID type - an alias for CartId since sessions are carts
  * @see CartId
@@ -17,4 +16,4 @@ export type SessionId = CartId;
 /**
  * Parse a string to SessionId (which is the same as CartId)
  */
-export { CartIdSchema as SessionIdSchema } from '@/schemas/cart.schema';
+export const SessionId = CartId;

@@ -5,19 +5,19 @@ const meta = {
   title: 'UI Kit/Button',
   component: Button,
   parameters: {
-    layout: 'centered',
+    layout: 'padded',
   },
   tags: ['autodocs'],
   argTypes: {
     variant: {
       control: 'select',
-      options: ['primary', 'secondary', 'outline', 'ghost', 'danger', 'tab'],
+      options: ['default', 'destructive', 'secondary', 'outline', 'ghost', 'link', 'tab'],
       description: 'The visual style variant of the button',
     },
     color: {
       control: 'select',
       options: ['brand', 'rose', 'amber', 'emerald', 'violet', 'sky', 'cyan'],
-      description: 'Color theme (works with tab variant)',
+      description: 'Color theme for the button',
     },
     size: {
       control: 'select',
@@ -47,355 +47,127 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const Primary: Story = {
+// Main story - use controls panel to explore all options
+export const Default: Story = {
   args: {
-    variant: 'primary',
-    children: 'Primary Button',
+    variant: 'default',
+    children: 'Button',
   },
-};
-
-export const Secondary: Story = {
-  args: {
-    variant: 'secondary',
-    children: 'Secondary Button',
-  },
-};
-
-export const Outline: Story = {
-  args: {
-    variant: 'outline',
-    children: 'Outline Button',
-  },
-};
-
-export const Ghost: Story = {
-  args: {
-    variant: 'ghost',
-    children: 'Ghost Button',
-  },
-};
-
-export const Danger: Story = {
-  args: {
-    variant: 'danger',
-    children: 'Danger Button',
-  },
-};
-
-export const Tab: Story = {
-  args: {
-    variant: 'tab',
-    children: 'Tab Button',
-  },
-};
-
-export const TabWithColor: Story = {
-  render: () => (
-    <div className="flex flex-wrap gap-3">
-      <Button variant="tab" color="brand">
-        Brand
-      </Button>
-      <Button variant="tab" color="rose">
-        Rose
-      </Button>
-      <Button variant="tab" color="amber">
-        Amber
-      </Button>
-      <Button variant="tab" color="emerald">
-        Emerald
-      </Button>
-      <Button variant="tab" color="violet">
-        Violet
-      </Button>
-      <Button variant="tab" color="sky">
-        Sky
-      </Button>
-      <Button variant="tab" color="cyan">
-        Cyan
-      </Button>
+  render: (args) => (
+    <div className="w-full max-w-md">
+      <Button {...args} />
     </div>
   ),
 };
 
-export const PillVsRounded: Story = {
-  render: () => (
-    <div className="space-y-6">
-      <div>
-        <h3 className="mb-3 font-semibold text-sm text-white">Pill Shape (rounded-full)</h3>
-        <div className="flex flex-wrap gap-3">
-          <Button variant="primary" pill>
-            Primary Pill
-          </Button>
-          <Button variant="secondary" pill>
-            Secondary Pill
-          </Button>
-          <Button variant="outline" pill>
-            Outline Pill
-          </Button>
+// Showcase story - all variants and colors for reference
+export const AllVariantsAndColors: Story = {
+  render: () => {
+    const colors = ['brand', 'rose', 'amber', 'emerald', 'violet', 'sky', 'cyan'] as const;
+
+    return (
+      <div className="space-y-8">
+        {/* Default Variant */}
+        <div className="space-y-3">
+          <h2 className="font-semibold text-lg text-white">Default Variant</h2>
+          <p className="text-slate-400 text-sm">
+            Default action buttons with gradient backgrounds. All colors available.
+          </p>
+          <div className="flex flex-wrap gap-3">
+            <Button variant="default">Default</Button>
+            {colors.map((color) => (
+              <Button key={color} variant="default" color={color}>
+                {color.charAt(0).toUpperCase() + color.slice(1)}
+              </Button>
+            ))}
+          </div>
+        </div>
+
+        {/* Destructive Variant */}
+        <div className="space-y-3">
+          <h2 className="font-semibold text-lg text-white">Destructive Variant</h2>
+          <p className="text-slate-400 text-sm">For dangerous or destructive actions.</p>
+          <div className="flex flex-wrap gap-3">
+            <Button variant="destructive">Delete</Button>
+          </div>
+        </div>
+
+        {/* Secondary Variant */}
+        <div className="space-y-3">
+          <h2 className="font-semibold text-lg text-white">Secondary Variant</h2>
+          <p className="text-slate-400 text-sm">
+            Secondary actions with subtle backgrounds. All colors available.
+          </p>
+          <div className="flex flex-wrap gap-3">
+            <Button variant="secondary">Default</Button>
+            {colors.map((color) => (
+              <Button key={color} variant="secondary" color={color}>
+                {color.charAt(0).toUpperCase() + color.slice(1)}
+              </Button>
+            ))}
+          </div>
+        </div>
+
+        {/* Outline Variant */}
+        <div className="space-y-3">
+          <h2 className="font-semibold text-lg text-white">Outline Variant</h2>
+          <p className="text-slate-400 text-sm">
+            Outlined buttons with transparent backgrounds. Color affects border and text. All colors
+            available.
+          </p>
+          <div className="flex flex-wrap gap-3">
+            <Button variant="outline">Default</Button>
+            {colors.map((color) => (
+              <Button key={color} variant="outline" color={color}>
+                {color.charAt(0).toUpperCase() + color.slice(1)}
+              </Button>
+            ))}
+          </div>
+        </div>
+
+        {/* Ghost Variant */}
+        <div className="space-y-3">
+          <h2 className="font-semibold text-lg text-white">Ghost Variant</h2>
+          <p className="text-slate-400 text-sm">
+            Minimal buttons with subtle hover effects. All colors available.
+          </p>
+          <div className="flex flex-wrap gap-3">
+            <Button variant="ghost">Default</Button>
+            {colors.map((color) => (
+              <Button key={color} variant="ghost" color={color}>
+                {color.charAt(0).toUpperCase() + color.slice(1)}
+              </Button>
+            ))}
+          </div>
+        </div>
+
+        {/* Tab Variant */}
+        <div className="space-y-3">
+          <h2 className="font-semibold text-lg text-white">Tab Variant</h2>
+          <p className="text-slate-400 text-sm">
+            Tab-style buttons, typically used in navigation. All colors available.
+          </p>
+          <div className="flex flex-wrap gap-3">
+            <Button variant="tab">Default</Button>
+            {colors.map((color) => (
+              <Button key={color} variant="tab" color={color}>
+                {color.charAt(0).toUpperCase() + color.slice(1)}
+              </Button>
+            ))}
+          </div>
+        </div>
+
+        {/* Link Variant */}
+        <div className="space-y-3">
+          <h2 className="font-semibold text-lg text-white">Link Variant</h2>
+          <p className="text-slate-400 text-sm">Text link styled as a button.</p>
+          <div className="flex flex-wrap gap-3">
+            <Button variant="link">Link Button</Button>
+          </div>
         </div>
       </div>
-      <div>
-        <h3 className="mb-3 font-semibold text-sm text-white">Rounded Shape (rounded-xl)</h3>
-        <div className="flex flex-wrap gap-3">
-          <Button variant="primary" pill={false}>
-            Primary Rounded
-          </Button>
-          <Button variant="secondary" pill={false}>
-            Secondary Rounded
-          </Button>
-          <Button variant="outline" pill={false}>
-            Outline Rounded
-          </Button>
-        </div>
-      </div>
-    </div>
-  ),
-  parameters: {
-    layout: 'padded',
+    );
   },
-};
-
-export const Sizes: Story = {
-  render: () => (
-    <div className="flex items-center gap-4">
-      <Button size="sm">Small</Button>
-      <Button size="md">Medium</Button>
-      <Button size="lg">Large</Button>
-    </div>
-  ),
-};
-
-export const States: Story = {
-  render: () => (
-    <div className="flex flex-wrap items-center gap-4">
-      <Button>Default</Button>
-      <Button loading>Loading</Button>
-      <Button disabled>Disabled</Button>
-    </div>
-  ),
-};
-
-export const FullWidth: Story = {
-  args: {
-    fullWidth: true,
-    children: 'Full Width Button',
-  },
-  parameters: {
-    layout: 'padded',
-  },
-};
-
-export const AllVariants: Story = {
-  render: () => (
-    <div className="space-y-4">
-      <div className="flex flex-wrap gap-3">
-        <Button variant="primary">Primary</Button>
-        <Button variant="secondary">Secondary</Button>
-        <Button variant="outline">Outline</Button>
-        <Button variant="ghost">Ghost</Button>
-        <Button variant="danger">Danger</Button>
-        <Button variant="tab">Tab</Button>
-      </div>
-    </div>
-  ),
-};
-
-export const OutlineWithColors: Story = {
-  render: () => (
-    <div className="space-y-4">
-      <h3 className="mb-3 font-semibold text-sm text-white">
-        Outline Variant - Color Only Affects Border & Text
-      </h3>
-      <div className="flex flex-wrap gap-3">
-        <Button variant="outline">Default</Button>
-        <Button variant="outline" color="brand">
-          Brand
-        </Button>
-        <Button variant="outline" color="rose">
-          Rose
-        </Button>
-        <Button variant="outline" color="amber">
-          Amber
-        </Button>
-        <Button variant="outline" color="emerald">
-          Emerald
-        </Button>
-        <Button variant="outline" color="violet">
-          Violet
-        </Button>
-        <Button variant="outline" color="sky">
-          Sky
-        </Button>
-        <Button variant="outline" color="cyan">
-          Cyan
-        </Button>
-      </div>
-    </div>
-  ),
-  parameters: {
-    layout: 'padded',
-  },
-};
-
-export const SecondaryWithColors: Story = {
-  render: () => (
-    <div className="space-y-4">
-      <h3 className="mb-3 font-semibold text-sm text-white">Secondary Variant with Colors</h3>
-      <div className="flex flex-wrap gap-3">
-        <Button variant="secondary">Default</Button>
-        <Button variant="secondary" color="brand">
-          Brand
-        </Button>
-        <Button variant="secondary" color="rose">
-          Rose
-        </Button>
-        <Button variant="secondary" color="amber">
-          Amber
-        </Button>
-        <Button variant="secondary" color="emerald">
-          Emerald
-        </Button>
-        <Button variant="secondary" color="violet">
-          Violet
-        </Button>
-        <Button variant="secondary" color="sky">
-          Sky
-        </Button>
-        <Button variant="secondary" color="cyan">
-          Cyan
-        </Button>
-      </div>
-    </div>
-  ),
-  parameters: {
-    layout: 'padded',
-  },
-};
-
-export const GhostWithColors: Story = {
-  render: () => (
-    <div className="space-y-4">
-      <h3 className="mb-3 font-semibold text-sm text-white">Ghost Variant with Colors</h3>
-      <div className="flex flex-wrap gap-3">
-        <Button variant="ghost">Default</Button>
-        <Button variant="ghost" color="brand">
-          Brand
-        </Button>
-        <Button variant="ghost" color="rose">
-          Rose
-        </Button>
-        <Button variant="ghost" color="amber">
-          Amber
-        </Button>
-        <Button variant="ghost" color="emerald">
-          Emerald
-        </Button>
-        <Button variant="ghost" color="violet">
-          Violet
-        </Button>
-        <Button variant="ghost" color="sky">
-          Sky
-        </Button>
-        <Button variant="ghost" color="cyan">
-          Cyan
-        </Button>
-      </div>
-    </div>
-  ),
-  parameters: {
-    layout: 'padded',
-  },
-};
-
-export const PrimaryWithColors: Story = {
-  render: () => (
-    <div className="space-y-4">
-      <h3 className="mb-3 font-semibold text-sm text-white">Primary Variant with Colors</h3>
-      <div className="flex flex-wrap gap-3">
-        <Button variant="primary">Default</Button>
-        <Button variant="primary" color="brand">
-          Brand
-        </Button>
-        <Button variant="primary" color="rose">
-          Rose
-        </Button>
-        <Button variant="primary" color="amber">
-          Amber
-        </Button>
-        <Button variant="primary" color="emerald">
-          Emerald
-        </Button>
-        <Button variant="primary" color="violet">
-          Violet
-        </Button>
-        <Button variant="primary" color="sky">
-          Sky
-        </Button>
-        <Button variant="primary" color="cyan">
-          Cyan
-        </Button>
-      </div>
-    </div>
-  ),
-  parameters: {
-    layout: 'padded',
-  },
-};
-
-export const TabButtons: Story = {
-  render: () => (
-    <div className="space-y-6">
-      <div>
-        <h3 className="mb-3 font-semibold text-sm text-white">Inactive Tab Buttons</h3>
-        <div className="flex flex-wrap gap-2">
-          <Button variant="tab" pill size="sm" className="uppercase tracking-[0.2em]">
-            Meats
-          </Button>
-          <Button variant="tab" pill size="sm" className="uppercase tracking-[0.2em]">
-            Sauces
-          </Button>
-          <Button variant="tab" pill size="sm" className="uppercase tracking-[0.2em]">
-            Garnishes
-          </Button>
-        </div>
-      </div>
-      <div>
-        <h3 className="mb-3 font-semibold text-sm text-white">Active Tab Buttons with Colors</h3>
-        <div className="flex flex-wrap gap-2">
-          <Button variant="tab" color="rose" pill size="sm" className="uppercase tracking-[0.2em]">
-            Meats
-          </Button>
-          <Button variant="tab" color="amber" pill size="sm" className="uppercase tracking-[0.2em]">
-            Sauces
-          </Button>
-          <Button
-            variant="tab"
-            color="emerald"
-            pill
-            size="sm"
-            className="uppercase tracking-[0.2em]"
-          >
-            Garnishes
-          </Button>
-          <Button
-            variant="tab"
-            color="violet"
-            pill
-            size="sm"
-            className="uppercase tracking-[0.2em]"
-          >
-            Extras
-          </Button>
-          <Button variant="tab" color="sky" pill size="sm" className="uppercase tracking-[0.2em]">
-            Drinks
-          </Button>
-          <Button variant="tab" color="cyan" pill size="sm" className="uppercase tracking-[0.2em]">
-            Desserts
-          </Button>
-        </div>
-      </div>
-    </div>
-  ),
   parameters: {
     layout: 'padded',
   },

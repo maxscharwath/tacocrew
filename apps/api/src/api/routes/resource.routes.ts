@@ -4,11 +4,11 @@
  */
 
 import { createRoute } from '@hono/zod-openapi';
+import { TacoSize } from '@tacobot/gigatacos-client';
 import { z } from 'zod';
 import { AmountSchema, jsonContent } from '@/api/schemas/shared.schemas';
 import { createRouteApp } from '@/api/utils/route.utils';
 import { ResourceService } from '@/services/resource/resource.service';
-import { TacoSize } from '@/shared/types/types';
 import { inject } from '@/shared/utils/inject.utils';
 
 const app = createRouteApp();

@@ -1,5 +1,5 @@
 import { CheckCircle2, Copy } from 'lucide-react';
-import { useState } from 'react';
+import { type ReactNode, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Avatar, Badge, Button, Card, CardContent, CardHeader } from '@/components/ui';
 import type { TacoOrder } from '@/lib/api/types';
@@ -8,8 +8,8 @@ import { cn } from '@/lib/utils';
 
 type TacoCardProps = {
   readonly taco: TacoOrder;
-  readonly badge?: React.ReactNode;
-  readonly footer?: React.ReactNode;
+  readonly badge?: ReactNode;
+  readonly footer?: ReactNode;
   readonly showTacoID?: boolean;
   readonly className?: string;
 };

@@ -1,9 +1,8 @@
 import { Activity, ArrowUpRight, TrendingUp, Users } from 'lucide-react';
-import { Suspense } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
-import type { LoaderFunctionArgs } from 'react-router';
-import { Await, Link, useLoaderData } from 'react-router';
+import { Link, useLoaderData } from 'react-router';
 import { OrderListItem, StatBubble } from '@/components/orders';
+import { DeferredRoute } from '@/components/shared';
 import { DashboardSkeleton } from '@/components/skeletons';
 import {
   Badge,
@@ -17,45 +16,51 @@ import {
 import { useDateFormat } from '@/hooks/useDateFormat';
 import { UserApi } from '@/lib/api';
 import { routes } from '@/lib/routes';
+import type { DeferredLoaderData } from '@/lib/types/loader-types';
 import { toDate } from '@/lib/utils/date';
-import { defer } from '@/lib/utils/defer';
-import { createDeferredWithAuth, requireSession } from '@/lib/utils/loader-helpers';
+import { createDeferredLoader } from '@/lib/utils/loader-factory';
 
-async function loadDashboard() {
-  const [groupOrders, orderHistory] = await Promise.all([
-    createDeferredWithAuth(() => UserApi.getGroupOrders()),
-    createDeferredWithAuth(() => UserApi.getOrderHistory()),
-  ]);
+export const dashboardLoader = createDeferredLoader(
+  async () => {
+    const [groupOrders, orderHistory] = await Promise.all([
+      UserApi.getGroupOrders(),
+      UserApi.getOrderHistory(),
+    ]);
 
-  const now = new Date();
-  const activeOrders = groupOrders.filter((order) => toDate(order.endDate) > now);
-  const pendingOrders = groupOrders.filter((order) => order.canAcceptOrders);
-  const historyCount = orderHistory.length;
+    const now = new Date();
+    const activeOrders = groupOrders.filter((order) => toDate(order.endDate) > now);
+    const pendingOrders = groupOrders.filter((order) => order.canAcceptOrders);
+    const historyCount = orderHistory.length;
 
-  return {
-    metrics: {
-      activeOrders: activeOrders.length,
-      pendingOrders: pendingOrders.length,
-      historyCount,
-    },
-    groupOrders,
-    orderHistory: orderHistory.slice(0, 5),
+    return {
+      metrics: {
+        activeOrders: activeOrders.length,
+        pendingOrders: pendingOrders.length,
+        historyCount,
+      },
+      groupOrders,
+      orderHistory: orderHistory.slice(0, 5),
+    };
+  },
+  { requireAuth: true }
+);
+
+type DashboardData = {
+  metrics: {
+    activeOrders: number;
+    pendingOrders: number;
+    historyCount: number;
   };
-}
+  groupOrders: Awaited<ReturnType<typeof UserApi.getGroupOrders>>;
+  orderHistory: Awaited<ReturnType<typeof UserApi.getOrderHistory>>;
+};
 
-type DashboardLoaderData = Awaited<ReturnType<typeof loadDashboard>>;
+type DashboardLoaderData = DeferredLoaderData<typeof dashboardLoader>;
 
-export async function dashboardLoader(_: LoaderFunctionArgs) {
-  await requireSession();
-
-  return defer({
-    data: loadDashboard(),
-  });
-}
-
-function DashboardContent({ data }: Readonly<{ data: DashboardLoaderData }>) {
+function DashboardContent({ data }: Readonly<{ data: DashboardData }>) {
   const { t } = useTranslation();
   const { formatDateTime, formatDateTimeRange, formatDayName } = useDateFormat();
+
   const { metrics, groupOrders, orderHistory } = data;
   const currentDay = formatDayName();
 
@@ -207,11 +212,11 @@ function DashboardContent({ data }: Readonly<{ data: DashboardLoaderData }>) {
 }
 
 export function DashboardRoute() {
-  const { data } = useLoaderData<{ data: Promise<DashboardLoaderData> }>();
+  const { data } = useLoaderData<DashboardLoaderData>();
 
   return (
-    <Suspense fallback={<DashboardSkeleton />}>
-      <Await resolve={data}>{(resolvedData) => <DashboardContent data={resolvedData} />}</Await>
-    </Suspense>
+    <DeferredRoute data={data} fallback={<DashboardSkeleton />}>
+      {(resolvedData) => <DashboardContent data={resolvedData} />}
+    </DeferredRoute>
   );
 }

@@ -1,20 +1,21 @@
-import { forwardRef, useState, useRef, useEffect } from 'react';
-import { parsePhoneNumberFromString, type CountryCode, AsYouType, getCountryCallingCode, getExampleNumber } from 'libphonenumber-js';
+import { AsYouType, type CountryCode, getCountryCallingCode, getExampleNumber, parsePhoneNumberFromString } from 'libphonenumber-js';
 import { getCountries } from 'libphonenumber-js/core';
 import metadata from 'libphonenumber-js/metadata.min.json';
 import examples from 'libphonenumber-js/mobile/examples';
-import { cn } from './utils';
-import { InputGroup, InputGroupAddon, InputGroupInput } from './input-group';
+import { ChevronDown } from 'lucide-react';
+import { forwardRef, useEffect, useRef, useState } from 'react';
 import { Button } from './button';
+import { ButtonGroup } from './button-group';
+import { CountryFlag } from './components/country-flag';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from './dropdown-menu';
-import { ChevronDown } from 'lucide-react';
 import { useCountryName } from './hooks/use-country-name';
-import { CountryFlag } from './components/country-flag';
+import { Input } from './input';
+import { cn } from './utils';
 
 type PhoneInputProps = Omit<React.InputHTMLAttributes<HTMLInputElement>, 'type' | 'value' | 'onChange' | 'placeholder'> & {
   value?: string;
@@ -49,7 +50,7 @@ function formatPhoneForDisplay(value: string, country: CountryCode): string {
 }
 
 export const PhoneInput = forwardRef<HTMLInputElement, PhoneInputProps>(
-  ({ className, value = '', onChange, defaultCountry = 'CH', error, ...props }, ref) => {
+  ({ className, value = '', onChange, defaultCountry = 'CH', error, disabled, ...props }, ref) => {
     // Initialize country from value if available, otherwise use default
     const getInitialCountry = (): CountryCode => {
       if (value) {
@@ -151,48 +152,48 @@ export const PhoneInput = forwardRef<HTMLInputElement, PhoneInputProps>(
     const placeholder = examplePhoneNumber?.formatNational() || `+${getCountryCallingCode(selectedCountry)} 123 456 7890`;
 
     return (
-      <InputGroup className={cn(error && 'has-[[data-slot][aria-invalid=true]]:border-rose-400/50', className)}>
-        <InputGroupAddon>
-          <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
-            <DropdownMenuTrigger asChild>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="h-auto w-auto gap-1.5 p-0 hover:bg-transparent"
+      <ButtonGroup className={cn('w-full', className)}>
+        <DropdownMenu open={isOpen} onOpenChange={disabled ? undefined : setIsOpen}>
+          <DropdownMenuTrigger asChild>
+            <Button
+              type="button"
+              variant="outline"
+              size="md"
+              className="gap-1.5 px-3"
+              disabled={disabled}
+            >
+              <CountryFlag countryCode={selectedCountry.toUpperCase()} />
+              <ChevronDown className="size-3 text-slate-400" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="max-h-[300px] overflow-y-auto">
+            {countries.map((country) => (
+              <DropdownMenuItem
+                key={country}
+                onClick={() => handleCountrySelect(country)}
+                className={cn(
+                  'flex items-center gap-2',
+                  selectedCountry === country && 'bg-brand-500/10'
+                )}
               >
-                <CountryFlag countryCode={selectedCountry.toUpperCase()} />
-                <ChevronDown className="size-3 text-slate-400" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="max-h-[300px] overflow-y-auto">
-              {countries.map((country) => (
-                <DropdownMenuItem
-                  key={country}
-                  onClick={() => handleCountrySelect(country)}
-                  className={cn(
-                    'flex items-center gap-2',
-                    selectedCountry === country && 'bg-brand-500/10'
-                  )}
-                >
-                  <CountryFlag countryCode={country} size="sm" />
-                  <span className="flex-1">{getCountryName(country)}</span>
-                  <span className="text-slate-400 text-xs">+{getCountryCallingCode(country)}</span>
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </InputGroupAddon>
-        <InputGroupInput
+                <CountryFlag countryCode={country} size="sm" />
+                <span className="flex-1">{getCountryName(country)}</span>
+                <span className="text-slate-400 text-xs">+{getCountryCallingCode(country)}</span>
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+        <Input
           ref={ref || inputRef}
           type="tel"
           value={phoneNumber}
           onChange={handleInputChange}
           aria-invalid={error}
+          disabled={disabled}
           {...props}
           placeholder={placeholder}
         />
-      </InputGroup>
+      </ButtonGroup>
     );
   }
 );

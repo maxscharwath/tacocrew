@@ -6,6 +6,7 @@
 import '@/test-setup';
 import 'reflect-metadata';
 import { beforeEach, describe, expect, test as it, mock } from 'bun:test';
+import { TacoSize } from '@tacobot/gigatacos-client';
 import { addHours, subMinutes } from 'date-fns';
 import { container } from 'tsyringe';
 import type { CreateUserOrderRequestDto } from '@/api/schemas/user-order.schemas';
@@ -16,12 +17,7 @@ import { createUserOrderFromDb } from '@/schemas/user-order.schema';
 import { ResourceService } from '@/services/resource/resource.service';
 import { UserService } from '@/services/user/user.service';
 import { CreateUserOrderUseCase } from '@/services/user-order/create-user-order.service';
-import {
-  GroupOrderStatus,
-  StockCategory,
-  TacoSize,
-  UserOrderItems,
-} from '@/shared/types/types';
+import { GroupOrderStatus, StockCategory, UserOrderItems } from '@/shared/types/types';
 import { deterministicUUID, randomUUID } from '@/shared/utils/uuid.utils';
 
 describe('CreateUserOrderUseCase', () => {

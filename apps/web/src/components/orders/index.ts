@@ -22,6 +22,7 @@ export { SelectionGroup } from './SelectionGroup';
 export { ShareButton } from './ShareButton';
 export { StackedAvatars } from './StackedAvatars';
 export { StatBubble } from './StatBubble';
+export { TacoBuilder } from './TacoBuilder';
 export { TacoCard } from './TacoCard';
 export { TacoHashSearch } from './TacoHashSearch';
 export { TacoSizeSelector } from './TacoSizeSelector';

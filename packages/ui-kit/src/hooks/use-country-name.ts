@@ -1,5 +1,5 @@
-import { useTranslation } from 'react-i18next';
 import type { CountryCode } from 'libphonenumber-js';
+import { useTranslation } from 'react-i18next';
 
 export function useCountryName() {
   const { i18n } = useTranslation();

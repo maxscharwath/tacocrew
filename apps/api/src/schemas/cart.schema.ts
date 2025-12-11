@@ -16,13 +16,13 @@ export type CartId = Id<'Cart'>;
 /**
  * Parse a string to CartId
  */
-export const CartIdSchema = zId<CartId>();
+export const CartId = zId<CartId>();
 
 /**
  * Cart schema using Zod
  */
 export const CartSchema = z.object({
-  id: zId<CartId>(),
+  id: CartId,
   metadata: z.custom<CartMetadata>(),
 });
 

@@ -9,10 +9,11 @@ import {
   Sparkles,
   Tag,
 } from 'lucide-react';
-import { Suspense, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Markdown from 'react-markdown';
-import { Await, Link, type LoaderFunctionArgs, useLoaderData } from 'react-router';
+import { Link, useLoaderData } from 'react-router';
+import { DeferredRoute } from '@/components/shared';
 import {
   Badge,
   Button,
@@ -26,7 +27,8 @@ import {
 } from '@/components/ui';
 import { useDateFormat } from '@/hooks/useDateFormat';
 import { routes } from '@/lib/routes';
-import { defer } from '@/lib/utils/defer';
+import type { DeferredLoaderData } from '@/lib/types/loader-types';
+import { createDeferredLoader } from '@/lib/utils/loader-factory';
 
 type GitHubRelease = {
   id: number;
@@ -73,11 +75,12 @@ async function fetchGitHubReleases(): Promise<GitHubRelease[]> {
   }
 }
 
-export function releasesLoader(_: LoaderFunctionArgs) {
-  return defer({
-    releases: fetchGitHubReleases(),
-  });
-}
+export const releasesLoader = createDeferredLoader(async () => {
+  const releases = await fetchGitHubReleases();
+  return { releases };
+});
+
+type ReleasesLoaderData = DeferredLoaderData<typeof releasesLoader>;
 
 function formatBytes(bytes: number): string {
   if (bytes === 0) return '0 B';
@@ -322,7 +325,7 @@ function ReleasesList({ releases }: { releases: GitHubRelease[] }) {
 
 export function ReleasesRoute() {
   const { t } = useTranslation();
-  const { releases } = useLoaderData<{ releases: Promise<GitHubRelease[]> }>();
+  const { data } = useLoaderData<ReleasesLoaderData>();
 
   return (
     <div className="space-y-8">
@@ -357,11 +360,9 @@ export function ReleasesRoute() {
       </section>
 
       {/* Releases */}
-      <Suspense fallback={<ReleasesListSkeleton />}>
-        <Await resolve={releases}>
-          {(resolvedReleases) => <ReleasesList releases={resolvedReleases} />}
-        </Await>
-      </Suspense>
+      <DeferredRoute data={data} fallback={<ReleasesListSkeleton />}>
+        {({ releases }) => <ReleasesList releases={releases} />}
+      </DeferredRoute>
     </div>
   );
 }

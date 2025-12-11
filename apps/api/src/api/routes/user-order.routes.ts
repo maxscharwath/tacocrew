@@ -4,6 +4,7 @@
  */
 
 import { createRoute } from '@hono/zod-openapi';
+import { OrderType } from '@tacobot/gigatacos-client';
 import { z } from 'zod';
 import { AmountSchema, ErrorResponseSchema, jsonContent } from '@/api/schemas/shared.schemas';
 import {
@@ -12,11 +13,11 @@ import {
 } from '@/api/schemas/user-order.schemas';
 import { authSecurity, createAuthenticatedRouteApp } from '@/api/utils/route.utils';
 import { GroupOrderRepository } from '@/infrastructure/repositories/group-order.repository';
-import { GroupOrderIdSchema } from '@/schemas/group-order.schema';
-import { OrganizationIdSchema } from '@/schemas/organization.schema';
-import { UserIdSchema } from '@/schemas/user.schema';
+import { GroupOrderId } from '@/schemas/group-order.schema';
+import { OrganizationId } from '@/schemas/organization.schema';
+import { UserId } from '@/schemas/user.schema';
 import type { UserOrder } from '@/schemas/user-order.schema';
-import { UserOrderIdSchema } from '@/schemas/user-order.schema';
+import { UserOrderId } from '@/schemas/user-order.schema';
 import { SubmitGroupOrderUseCase } from '@/services/group-order/submit-group-order.service';
 import { SendPaymentReminderService } from '@/services/notification/send-payment-reminder.service';
 import { OrganizationService } from '@/services/organization/organization.service';
@@ -26,7 +27,7 @@ import { GetUserOrderUseCase } from '@/services/user-order/get-user-order.servic
 import { UpdateUserOrderReimbursementStatusUseCase } from '@/services/user-order/update-user-order-reimbursement.service';
 import { UpdateUserOrderUserPaymentStatusUseCase } from '@/services/user-order/update-user-order-user-payment.service';
 import { TimeSlotSchema } from '@/shared/types/time-slot';
-import { Currency, OrderType } from '@/shared/types/types';
+import { Currency } from '@/shared/types/types';
 import { ForbiddenError, NotFoundError } from '@/shared/utils/errors.utils';
 import { inject } from '@/shared/utils/inject.utils';
 import { calculateUserOrderPrice } from '@/shared/utils/order-price.utils';
@@ -169,7 +170,7 @@ app.openapi(
     security: authSecurity,
     request: {
       params: z.object({
-        id: GroupOrderIdSchema,
+        id: GroupOrderId,
       }),
       body: {
         content: jsonContent(CreateUserOrderRequestSchema),
@@ -206,8 +207,8 @@ app.openapi(
 
     // If group order has an organization, verify user is an active member
     if (groupOrder.organizationId) {
-      const parsedOrganizationId = OrganizationIdSchema.parse(groupOrder.organizationId);
-      const parsedUserId = UserIdSchema.parse(userId);
+      const parsedOrganizationId = OrganizationId.parse(groupOrder.organizationId);
+      const parsedUserId = UserId.parse(userId);
       const isActiveMember = await organizationService.isUserActiveMember(
         parsedUserId,
         parsedOrganizationId
@@ -232,7 +233,7 @@ app.openapi(
     security: authSecurity,
     request: {
       params: z.object({
-        id: GroupOrderIdSchema,
+        id: GroupOrderId,
         itemId: z.string(), // Order ID, not userId
       }),
     },
@@ -260,7 +261,7 @@ app.openapi(
     security: authSecurity,
     request: {
       params: z.object({
-        id: GroupOrderIdSchema,
+        id: GroupOrderId,
         itemId: z.string(), // Order ID, not userId
       }),
     },
@@ -288,7 +289,7 @@ app.openapi(
     security: authSecurity,
     request: {
       params: z.object({
-        id: GroupOrderIdSchema,
+        id: GroupOrderId,
         itemId: z.string(),
       }),
       body: {
@@ -306,7 +307,7 @@ app.openapi(
     const requesterId = c.var.user.id;
     const { id: groupOrderId, itemId } = c.req.valid('param');
     const body = c.req.valid('json');
-    const userOrderId = UserOrderIdSchema.parse(itemId);
+    const userOrderId = UserOrderId.parse(itemId);
     const updateReimbursementUseCase = inject(UpdateUserOrderReimbursementStatusUseCase);
     const userOrder = await updateReimbursementUseCase.execute(
       groupOrderId,
@@ -327,7 +328,7 @@ app.openapi(
     security: authSecurity,
     request: {
       params: z.object({
-        id: GroupOrderIdSchema,
+        id: GroupOrderId,
         itemId: z.string(),
       }),
       body: {
@@ -345,7 +346,7 @@ app.openapi(
     const requesterId = c.var.user.id;
     const { id: groupOrderId, itemId } = c.req.valid('param');
     const body = c.req.valid('json');
-    const userOrderId = UserOrderIdSchema.parse(itemId);
+    const userOrderId = UserOrderId.parse(itemId);
     const updatePaymentUseCase = inject(UpdateUserOrderUserPaymentStatusUseCase);
     const userOrder = await updatePaymentUseCase.execute(
       groupOrderId,
@@ -367,7 +368,7 @@ app.openapi(
     security: authSecurity,
     request: {
       params: z.object({
-        id: GroupOrderIdSchema,
+        id: GroupOrderId,
         itemId: z.string(),
       }),
     },
@@ -381,7 +382,7 @@ app.openapi(
   async (c) => {
     const requesterId = c.var.user.id;
     const { id: groupOrderId, itemId } = c.req.valid('param');
-    const userOrderId = UserOrderIdSchema.parse(itemId);
+    const userOrderId = UserOrderId.parse(itemId);
     const sendReminderService = inject(SendPaymentReminderService);
     const result = await sendReminderService.execute(groupOrderId, userOrderId, requesterId);
     return c.json(result, 200);
@@ -423,7 +424,7 @@ app.openapi(
     security: authSecurity,
     request: {
       params: z.object({
-        id: GroupOrderIdSchema,
+        id: GroupOrderId,
       }),
       body: {
         content: jsonContent(SubmitGroupOrderRequestSchema),
@@ -468,8 +469,8 @@ app.openapi(
 
     // If group order has an organization, verify user is an active member
     if (groupOrder.organizationId) {
-      const parsedOrganizationId = OrganizationIdSchema.parse(groupOrder.organizationId);
-      const parsedUserId = UserIdSchema.parse(userId);
+      const parsedOrganizationId = OrganizationId.parse(groupOrder.organizationId);
+      const parsedUserId = UserId.parse(userId);
       const isActiveMember = await organizationService.isUserActiveMember(
         parsedUserId,
         parsedOrganizationId

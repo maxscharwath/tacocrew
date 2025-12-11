@@ -1,5 +1,12 @@
-// routes/core.ts
-import React, { lazy } from 'react';
+import {
+  type ComponentType,
+  createElement,
+  isValidElement,
+  lazy,
+  type ReactElement,
+  type ReactNode,
+  Suspense,
+} from 'react';
 import {
   type ActionFunctionArgs,
   generatePath,
@@ -11,18 +18,17 @@ import { z } from 'zod';
 
 type ZodLike = z.ZodTypeAny;
 
-export type LazyImport = () => Promise<{ default: React.ComponentType<unknown> }>;
+export type LazyImport = () => Promise<{ default: ComponentType<unknown> }>;
 
 export type LazyRouteElement = {
-  type: 'lazy';
   importFn: LazyImport;
-  fallback?: React.ComponentType<unknown>;
+  fallback?: ComponentType<unknown>;
 };
 
 export type RouteElement =
-  | React.ComponentType<unknown>
-  | React.ReactElement
-  | React.ReactNode
+  | ComponentType<unknown>
+  | ReactElement
+  | ReactNode
   | LazyRouteElement
   | null;
 
@@ -153,62 +159,6 @@ const stripToBuilderDefs = <T extends DefsConstraint>(defs: T): BuilderDefs<T> =
   return result;
 };
 
-export type AsyncLoader = (args: LoaderFunctionArgs) => Promise<unknown>;
-export type AsyncAction = (args: ActionFunctionArgs) => Promise<unknown>;
-
-export type LazyRouteHandles = {
-  element?: React.ComponentType<unknown>;
-  loader?: AsyncLoader;
-  action?: AsyncAction;
-};
-
-export type LazyRouteOptions<Module> = {
-  component?: (module: Module) => React.ComponentType<unknown>;
-  loader?: (module: Module) => (args: LoaderFunctionArgs) => unknown | Promise<unknown>;
-  action?: (module: Module) => (args: ActionFunctionArgs) => unknown | Promise<unknown>;
-  fallback?: React.ReactNode;
-};
-
-export function createLazyRoute<Module>(
-  importer: () => Promise<Module>,
-  { component, loader, action, fallback = null }: LazyRouteOptions<Module>
-): LazyRouteHandles {
-  let modPromise: Promise<Module> | undefined;
-  const loadModule = () => (modPromise ??= importer());
-
-  const resolvedLoader: AsyncLoader | undefined = loader
-    ? async (args: LoaderFunctionArgs) => {
-        const mod = await loadModule();
-        return loader(mod)(args);
-      }
-    : undefined;
-
-  const resolvedAction: AsyncAction | undefined = action
-    ? async (args: ActionFunctionArgs) => {
-        const mod = await loadModule();
-        return action(mod)(args);
-      }
-    : undefined;
-
-  let element: React.ComponentType<unknown> | undefined;
-  if (component) {
-    const LazyComponent = lazy(async () => {
-      const mod = await loadModule();
-      return { default: component(mod) };
-    });
-
-    // Create a component that wraps the lazy component with Suspense
-    element = () =>
-      React.createElement(React.Suspense, { fallback }, React.createElement(LazyComponent));
-  }
-
-  return {
-    ...(element ? { element } : {}),
-    ...(resolvedLoader ? { loader: resolvedLoader } : {}),
-    ...(resolvedAction ? { action: resolvedAction } : {}),
-  };
-}
-
 const qs = (obj: Record<string, unknown>) => {
   const usp = new URLSearchParams();
   for (const [k, v] of Object.entries(obj)) {
@@ -292,41 +242,35 @@ export function createRouteBuilders<const T extends Record<string, AnyRouteDef>>
 }
 
 // Create a lazy wrapper that returns a React element
-const createLazyElement = (lazyImport: LazyImport, fallback?: React.ComponentType<unknown>) => {
+const createLazyElement = (lazyImport: LazyImport, fallback?: ComponentType<unknown>) => {
   const LazyComponent = lazy(lazyImport);
-  return React.createElement(
-    React.Suspense,
-    { fallback: fallback ? React.createElement(fallback) : null },
-    React.createElement(LazyComponent)
+  return createElement(
+    Suspense,
+    { fallback: fallback ? createElement(fallback) : null },
+    createElement(LazyComponent)
   );
 };
 
-const createElementFromRouteElement = (element: RouteElement): React.ReactNode => {
+const createElementFromRouteElement = (element: RouteElement): ReactNode => {
   if (element === null || element === undefined) return element;
-  if (React.isValidElement(element)) return element;
+  if (isValidElement(element)) return element;
 
   // Check if this is a lazy route element
-  if (
-    typeof element === 'object' &&
-    element !== null &&
-    'type' in element &&
-    element.type === 'lazy'
-  ) {
-    const lazyElement = element as LazyRouteElement;
-    return createLazyElement(lazyElement.importFn, lazyElement.fallback);
+  if (typeof element === 'object' && 'importFn' in element) {
+    return createLazyElement(element.importFn, element.fallback);
   }
 
   if (typeof element === 'function') {
     // This is a component constructor
     // Create a React element without instantiating the component
-    return React.createElement(element);
+    return createElement(element);
   }
 
   return element;
 };
 
 const toRouteObject = (def: AnyRouteDef): RouteObject => {
-  const node: RouteObject & { hydrateFallback?: React.ReactNode } = {
+  const node: RouteObject & { hydrateFallback?: ReactNode } = {
     index: def.index,
     path: def.index ? undefined : def.path,
     loader: def.loader,
@@ -335,7 +279,7 @@ const toRouteObject = (def: AnyRouteDef): RouteObject => {
     errorElement: createElementFromRouteElement(def.errorElement),
   };
   if (def.hydrateFallback) {
-    (node as RouteObject & { hydrateFallback: React.ReactNode }).hydrateFallback =
+    (node as RouteObject & { hydrateFallback: ReactNode }).hydrateFallback =
       createElementFromRouteElement(def.hydrateFallback);
   }
   if (def.children) node.children = Object.values(def.children).map(toRouteObject);

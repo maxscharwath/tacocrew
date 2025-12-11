@@ -15,20 +15,20 @@ export type UserId = Id<'User'>;
 /**
  * Parse a string to UserId
  */
-export const UserIdSchema = zId<UserId>();
+export const UserId = zId<UserId>();
 
 /**
  * User schema using Zod
  */
 export const UserSchema = z.object({
-  id: zId<UserId>(),
+  id: UserId,
   username: z.string().nullable(),
   name: z.string().nullable(),
   phone: z.string().nullable(),
   language: z.string().nullable(),
   hasImage: z.boolean().optional(),
-  createdAt: z.date().optional(),
-  updatedAt: z.date().optional(),
+  createdAt: z.coerce.date().optional(),
+  updatedAt: z.coerce.date().optional(),
 });
 
 export type User = z.infer<typeof UserSchema>;
@@ -48,8 +48,8 @@ export const UserFromDbSchema = z.object({
   phone: z.string().nullable(),
   language: z.string().nullable(),
   image: DbImageSchema,
-  createdAt: z.date(),
-  updatedAt: z.date(),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
 });
 
 /**

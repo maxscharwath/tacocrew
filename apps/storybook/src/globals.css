@@ -1,4 +1,4 @@
-@import "tailwindcss" source("..");
+@import "tailwindcss";
 @source "../../../packages/ui-kit/src";
 @import "./theme.css";
 
@@ -6,19 +6,17 @@
 @plugin "tailwindcss-react-aria-components";
 
 @custom-variant dark (&:where(.dark-mode, .dark-mode *));
-@custom-variant label (& [data-label]);
+@custom-variant label (&:where([data-label] *));
 @custom-variant focus-input-within (&:has(input:focus));
 
 @utility scrollbar-hide {
-    /* For Webkit-based browsers (Chrome, Safari and Opera) */
     &::-webkit-scrollbar {
         display: none;
         -webkit-appearance: none;
     }
 
-    /* For IE, Edge and Firefox */
-    -ms-overflow-style: none; /* IE and Edge */
-    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none;
+    scrollbar-width: none;
 }
 
 @utility transition-inherit-all {
@@ -36,31 +34,27 @@ body {
     font-variant-ligatures: contextual;
     -webkit-font-kerning: normal;
     font-kerning: normal;
+    background-color: rgb(2 6 23);
 }
 
-/* Hide the default expand arrow on Safari.  */
 details summary::-webkit-details-marker {
     display: none;
 }
 
-/* Hide default arrows from number inputs. */
-/* Chrome, Safari, Edge, Opera */
 input::-webkit-outer-spin-button,
 input::-webkit-inner-spin-button {
     -webkit-appearance: none;
     margin: 0;
 }
-/* Firefox */
+
 input[type="number"] {
     -moz-appearance: textfield;
 }
 
-/* Hide the default clear button (X) from search inputs. */
 input[type="search"]::-webkit-search-cancel-button {
     -webkit-appearance: none;
 }
 
-/* Skeleton shimmer animation - smooth and visible */
 @keyframes shimmer {
     0% {
         transform: translateX(-100%) skewX(-20deg);
@@ -75,9 +69,9 @@ input[type="search"]::-webkit-search-cancel-button {
     }
 }
 
-/* Skeleton pulse animation - subtle opacity change */
 @keyframes skeleton-pulse {
-    0%, 100% {
+    0%,
+    100% {
         opacity: 1;
     }
     50% {
@@ -85,7 +79,6 @@ input[type="search"]::-webkit-search-cancel-button {
     }
 }
 
-/* Skeleton fade-in animation for staggered items */
 @keyframes skeleton-fade-in {
     0% {
         opacity: 0;
@@ -95,4 +88,23 @@ input[type="search"]::-webkit-search-cancel-button {
         opacity: 1;
         transform: translateY(0) scale(1);
     }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+img {
+    -webkit-user-drag: none;
+    user-select: none;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
 }

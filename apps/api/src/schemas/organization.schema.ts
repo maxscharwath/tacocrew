@@ -15,17 +15,17 @@ export type OrganizationId = Id<'Organization'>;
 /**
  * Parse a string to OrganizationId
  */
-export const OrganizationIdSchema = zId<OrganizationId>();
+export const OrganizationId = zId<OrganizationId>();
 
 /**
  * Organization schema using Zod
  */
 export const OrganizationSchema = z.object({
-  id: zId<OrganizationId>(),
+  id: OrganizationId,
   name: z.string(),
   image: z.string().nullable().optional(),
-  createdAt: z.date().optional(),
-  updatedAt: z.date().optional(),
+  createdAt: z.coerce.date().optional(),
+  updatedAt: z.coerce.date().optional(),
 });
 
 export type Organization = z.infer<typeof OrganizationSchema>;
@@ -37,8 +37,8 @@ export const OrganizationFromDbSchema = z.object({
   id: z.string(), // UUID from DB as string
   name: z.string(),
   image: z.string().nullable().optional(),
-  createdAt: z.date(),
-  updatedAt: z.date(),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
 });
 
 /**
@@ -48,7 +48,7 @@ export function createOrganizationFromDb(
   db: z.infer<typeof OrganizationFromDbSchema>
 ): Organization {
   return {
-    id: OrganizationIdSchema.parse(db.id),
+    id: OrganizationId.parse(db.id),
     name: db.name,
     image: db.image ?? null,
     createdAt: db.createdAt,

@@ -9,7 +9,7 @@ import { jsonContent, UserSchemas } from '@/api/schemas/user.schemas';
 import { authSecurity, createAuthenticatedRouteApp } from '@/api/utils/route.utils';
 import type { User, UserId } from '@/schemas/user.schema';
 import type { UserDeliveryProfile } from '@/schemas/user-delivery-profile.schema';
-import { UserDeliveryProfileIdSchema } from '@/schemas/user-delivery-profile.schema';
+import { UserDeliveryProfileId } from '@/schemas/user-delivery-profile.schema';
 import { UserService } from '@/services/user/user.service';
 import { Currency } from '@/shared/types/types';
 import {
@@ -304,7 +304,7 @@ app.openapi(
   async (c) => {
     const userId = c.var.user.id;
     const { profileId: rawProfileId } = c.req.valid('param');
-    const profileId = UserDeliveryProfileIdSchema.parse(rawProfileId);
+    const profileId = UserDeliveryProfileId.parse(rawProfileId);
     const payload = c.req.valid('json');
     const profile = await inject(UserService).updateDeliveryProfile(userId, profileId, payload);
     return c.json(serializeDeliveryProfile(profile), 200);
@@ -329,7 +329,7 @@ app.openapi(
   async (c) => {
     const userId = c.var.user.id;
     const { profileId: rawProfileId } = c.req.valid('param');
-    const profileId = UserDeliveryProfileIdSchema.parse(rawProfileId);
+    const profileId = UserDeliveryProfileId.parse(rawProfileId);
     await inject(UserService).deleteDeliveryProfile(userId, profileId);
     return c.body(null, 204);
   }

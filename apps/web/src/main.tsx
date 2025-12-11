@@ -1,5 +1,5 @@
 import { Toaster } from '@tacobot/ui-kit';
-import React from 'react';
+import { StrictMode } from 'react';
 import ReactDOM from 'react-dom/client';
 import { RouterProvider } from 'react-router';
 import { router } from './router';
@@ -14,8 +14,8 @@ if (!root) {
 
 // Render immediately - this is a client-side only app
 ReactDOM.createRoot(root).render(
-  <React.StrictMode>
+  <StrictMode>
     <RouterProvider router={router} />
     <Toaster position="bottom-right" />
-  </React.StrictMode>
+  </StrictMode>
 );

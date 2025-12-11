@@ -15,13 +15,13 @@ export type DrinkId = Id<'Drink'>;
 /**
  * Parse a string to DrinkId
  */
-export const DrinkIdSchema = zId<DrinkId>();
+export const DrinkId = zId<DrinkId>();
 
 /**
  * Drink schema using Zod
  */
 export const DrinkSchema = z.object({
-  id: zId<DrinkId>(),
+  id: DrinkId,
   code: z.string(),
   name: z.string(),
   price: z.number().min(0),

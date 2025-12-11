@@ -42,7 +42,7 @@ const AlertDialogContent = forwardRef<
       ref={ref}
       className={cn(
         'fixed top-[50%] left-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-6',
-        'rounded-2xl border border-white/10 bg-slate-900/95 p-8 backdrop-blur-xl',
+        'rounded-2xl border border-gray-700 bg-slate-900/95 p-8 backdrop-blur-xl',
         'shadow-[0_40px_120px_rgba(8,47,73,0.45)]',
         'data-[state=open]:animate-in data-[state=closed]:animate-out',
         'data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
@@ -122,7 +122,7 @@ const AlertDialogCancel = forwardRef<
   <AlertDialogPrimitive.Cancel
     ref={ref}
     className={cn(
-      'inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-white/20 px-6 font-semibold text-slate-100 text-sm transition-all cursor-pointer',
+      'inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-gray-700 px-6 font-semibold text-slate-100 text-sm transition-all cursor-pointer',
       'hover:border-brand-400/60 hover:text-brand-50',
       'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950',
       'disabled:pointer-events-none disabled:opacity-50 disabled:cursor-not-allowed',

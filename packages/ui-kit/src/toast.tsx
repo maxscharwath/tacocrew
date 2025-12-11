@@ -6,7 +6,8 @@
 
 import { CheckCircle2, Info, Loader2, OctagonX, TriangleAlert } from 'lucide-react';
 import { Toaster as Sonner, type ToasterProps } from 'sonner';
-export { toast, type ToasterProps, type ExternalToast } from 'sonner';
+
+export { type ExternalToast, type ToasterProps, toast } from 'sonner';
 
 const Toaster = ({ ...props }: ToasterProps) => {
   return (
@@ -17,7 +18,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
       toastOptions={{
         classNames: {
           toast:
-            'group toast group-[.toaster]:bg-slate-900/70 group-[.toaster]:backdrop-blur group-[.toaster]:text-slate-100 group-[.toaster]:border group-[.toaster]:border-white/10 group-[.toaster]:shadow-[0_30px_90px_rgba(8,47,73,0.35)] group-[.toaster]:rounded-2xl group-[.toaster]:px-4 group-[.toaster]:py-3',
+            'group toast group-[.toaster]:bg-slate-900/70 group-[.toaster]:backdrop-blur group-[.toaster]:text-slate-100 group-[.toaster]:border group-[.toaster]:border-gray-700 group-[.toaster]:shadow-[0_30px_90px_rgba(8,47,73,0.35)] group-[.toaster]:rounded-2xl group-[.toaster]:px-4 group-[.toaster]:py-3',
           title: 'group-[.toast]:text-white group-[.toast]:font-semibold group-[.toast]:text-sm',
           description: 'group-[.toast]:text-slate-300 group-[.toast]:text-sm',
           actionButton:
@@ -25,7 +26,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
           cancelButton:
             'group-[.toast]:bg-slate-800 group-[.toast]:text-slate-300 group-[.toast]:rounded-xl group-[.toast]:text-xs group-[.toast]:h-8 group-[.toast]:px-3',
           closeButton:
-            'group-[.toast]:bg-slate-800/80 group-[.toast]:border-white/10 group-[.toast]:text-slate-400 group-[.toast]:hover:bg-slate-700 group-[.toast]:hover:text-white group-[.toast]:transition-colors',
+            'group-[.toast]:bg-slate-800/80 group-[.toast]:border-gray-700 group-[.toast]:text-slate-400 group-[.toast]:hover:bg-slate-700 group-[.toast]:hover:text-white group-[.toast]:transition-colors',
           success:
             'group-[.toaster]:border-emerald-400/40 group-[.toaster]:bg-emerald-500/10 [&>svg]:text-emerald-400 group-[.toaster]:text-emerald-100',
           error:

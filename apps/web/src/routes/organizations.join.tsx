@@ -1,7 +1,7 @@
 import { Loader2 } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { type LoaderFunctionArgs, useLoaderData, useNavigate } from 'react-router';
+import { useLoaderData, useNavigate } from 'react-router';
 import { OrganizationAvatar } from '@/components/shared/OrganizationAvatar';
 import {
   Alert,
@@ -16,32 +16,21 @@ import {
 import { OrganizationApi } from '@/lib/api';
 import { ApiError } from '@/lib/api/http';
 import { routes } from '@/lib/routes';
-import { requireSession, withAuthErrorHandling } from '@/lib/utils/loader-helpers';
+import type { LoaderData } from '@/lib/types/loader-types';
+import { createLoader } from '@/lib/utils/loader-factory';
+import { requireParam } from '@/lib/utils/param-validators';
 
-type LoaderData = {
-  organization: Awaited<ReturnType<typeof OrganizationApi.getOrganizationById>>;
-};
-
-export async function organizationJoinLoader({ params, request }: LoaderFunctionArgs) {
-  // Require authentication - redirects to login if not authenticated
-  await requireSession(request);
-
-  const organizationId = params.id;
-  if (!organizationId) {
-    throw new Response('Organization ID is required', { status: 400 });
-  }
-
-  // Fetch organization with auth error handling (redirects on 401)
-  const organization = await withAuthErrorHandling(
-    () => OrganizationApi.getOrganizationById(organizationId),
-    request
-  );
-
-  return Response.json({ organization });
-}
+export const organizationJoinLoader = createLoader(
+  async ({ params }) => {
+    const organizationId = requireParam(params, 'id', 'Organization ID is required');
+    const organization = await OrganizationApi.getOrganizationById(organizationId);
+    return { organization };
+  },
+  { requireAuth: true }
+);
 
 export function OrganizationJoinRoute() {
-  const { organization } = useLoaderData<LoaderData>();
+  const { organization } = useLoaderData<LoaderData<typeof organizationJoinLoader>>();
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [busy, setBusy] = useState(false);
@@ -153,7 +142,7 @@ export function OrganizationJoinRoute() {
                   onClick={handleJoin}
                   disabled={busy}
                   className="group relative w-full gap-2 overflow-hidden transition-all hover:scale-[1.02] active:scale-[0.98]"
-                  variant="primary"
+                  variant="default"
                   size="lg"
                 >
                   <div className="-translate-x-full absolute inset-0 bg-linear-to-r from-transparent via-white/10 to-transparent transition-transform group-hover:translate-x-full" />

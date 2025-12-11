@@ -4,21 +4,32 @@ import { Checkbox } from '@tacobot/ui-kit';
 const meta = {
   title: 'UI Kit/Checkbox',
   component: Checkbox,
+  parameters: {
+    layout: 'centered',
+  },
   tags: ['autodocs'],
+  argTypes: {
+    label: {
+      control: 'text',
+      description: 'Label text for the checkbox',
+    },
+    defaultChecked: {
+      control: 'boolean',
+      description: 'Whether the checkbox is checked by default',
+    },
+    disabled: {
+      control: 'boolean',
+      description: 'Whether the checkbox is disabled',
+    },
+  },
   args: {
     label: 'Include chips',
-    defaultChecked: true,
+    defaultChecked: false,
   },
 } satisfies Meta<typeof Checkbox>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+// Main story - use controls panel to explore all options
 export const Default: Story = {};
-
-export const Disabled: Story = {
-  args: {
-    label: 'Unavailable option',
-    disabled: true,
-  },
-};

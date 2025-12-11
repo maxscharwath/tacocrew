@@ -17,9 +17,9 @@ type SegmentedControlProps<T extends string = string> = {
 };
 
 const containerVariants: Record<'primary' | 'secondary', string> = {
-  primary: 'flex gap-2 rounded-xl border border-white/10 bg-slate-800/40 p-1',
+  primary: 'flex gap-2 rounded-xl border border-gray-700 bg-slate-800/40 p-1',
   secondary:
-    'group relative flex items-center gap-2.5 rounded-xl border border-white/10 bg-linear-to-br from-slate-900/90 via-slate-900/80 to-slate-900/70 px-3 py-1.5 shadow-lg backdrop-blur-sm transition-all duration-300 hover:border-white/20 hover:shadow-xl',
+    'group relative flex items-center gap-2.5 rounded-xl border border-gray-700 bg-linear-to-br from-slate-900/90 via-slate-900/80 to-slate-900/70 px-3 py-1.5 shadow-lg backdrop-blur-sm transition-all duration-300 hover:border-gray-600 hover:shadow-xl',
 };
 
 const baseButtonClasses: Record<'primary' | 'secondary', string> = {

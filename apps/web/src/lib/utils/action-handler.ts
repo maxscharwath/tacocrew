@@ -153,7 +153,12 @@ function processZodIssues(issues: unknown[]): {
   const messages: string[] = [];
 
   for (const issue of issues) {
-    if (typeof issue !== 'object' || issue === null || !('path' in issue) || !('message' in issue)) {
+    if (
+      typeof issue !== 'object' ||
+      issue === null ||
+      !('path' in issue) ||
+      !('message' in issue)
+    ) {
       continue;
     }
 
@@ -174,10 +179,7 @@ function processZodIssues(issues: unknown[]): {
 /**
  * Build user-friendly validation message
  */
-function buildValidationMessage(
-  fieldErrors: Record<string, string>,
-  messages: string[]
-): string {
+function buildValidationMessage(fieldErrors: Record<string, string>, messages: string[]): string {
   if (Object.keys(fieldErrors).length > 0) {
     return `Validation failed: ${Object.entries(fieldErrors)
       .map(([field, msg]) => `${field}: ${msg}`)

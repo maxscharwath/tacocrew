@@ -13,7 +13,7 @@ const badgeVariants = cva(
           'border-emerald-400/50 bg-emerald-500/15 text-emerald-50 shadow-[0_10px_30px_rgba(16,185,129,0.25)]',
         warning:
           'border-amber-400/50 bg-amber-500/15 text-amber-50 shadow-[0_10px_30px_rgba(251,191,36,0.25)]',
-        neutral: 'border-white/15 bg-slate-800/80 text-slate-200',
+        neutral: 'border-gray-700 bg-slate-800/80 text-slate-200',
       },
       pill: {
         true: 'rounded-full',

@@ -1,4 +1,5 @@
-import { ArrowLeft, Droplets, FileText, Leaf, Sliders } from 'lucide-react';
+import { TacoSize } from '@tacobot/gigatacos-client';
+import { ArrowLeft } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import {
   Form,
@@ -14,41 +15,24 @@ import {
 } from 'react-router';
 import {
   ExtrasSection,
-  MeatSelector,
   OrderCreateHero,
   OrderSummary,
   PreviousTacos,
-  SelectionGroup,
+  TacoBuilder,
   TacoSizeSelector,
 } from '@/components/orders';
-import {
-  Alert,
-  Avatar,
-  Badge,
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-  Textarea,
-} from '@/components/ui';
+import { Alert } from '@/components/ui';
 import { useOrderForm } from '@/hooks/useOrderForm';
 import { useOrderValidation } from '@/hooks/useOrderValidation';
 import { useProgressSteps } from '@/hooks/useProgressSteps';
 import { OrdersApi, StockApi, UserApi } from '@/lib/api';
-import { ApiError } from '@/lib/api/http';
 import type { UpsertUserOrderBody } from '@/lib/api/orders';
 import { authClient } from '@/lib/auth-client';
 import { routes } from '@/lib/routes';
 import { createActionHandler } from '@/lib/utils/action-handler';
+import { createLoader } from '@/lib/utils/loader-factory';
+import { requireParam } from '@/lib/utils/param-validators';
 import { getSummaryBreakdown } from '@/utils/order-helpers';
-
-type LoaderData = {
-  groupOrder: Awaited<ReturnType<typeof OrdersApi.getGroupOrderWithOrders>>['groupOrder'];
-  myOrder?: Awaited<ReturnType<typeof OrdersApi.getGroupOrderWithOrders>>['userOrders'][number];
-  stock: Awaited<ReturnType<typeof StockApi.getStock>>;
-  previousOrders: Awaited<ReturnType<typeof UserApi.getPreviousOrders>>;
-};
 
 type ActionData = {
   errorKey?: string;
@@ -87,22 +71,15 @@ async function fetchPrefillOrder(
   }
 }
 
-export async function orderCreateLoader({
-  params,
-  request,
-}: LoaderFunctionArgs): Promise<Response> {
-  const groupOrderId = params.orderId;
-  if (!groupOrderId) {
-    throw new Response('Order not found', { status: 404 });
-  }
+export const orderCreateLoader = createLoader(
+  async ({ params, request }: LoaderFunctionArgs) => {
+    const groupOrderId = requireParam(params, 'orderId', 'Order not found');
+    const userId = await getUserSession();
 
-  const userId = await getUserSession();
+    const url = new URL(request.url);
+    const orderId = url.searchParams.get('orderId');
+    const duplicateId = url.searchParams.get('duplicate');
 
-  const url = new URL(request.url);
-  const orderId = url.searchParams.get('orderId');
-  const duplicateId = url.searchParams.get('duplicate');
-
-  try {
     const [groupOrderWithUsers, stock, previousOrders] = await Promise.all([
       OrdersApi.getGroupOrderWithOrders(groupOrderId),
       StockApi.getStock(),
@@ -112,7 +89,7 @@ export async function orderCreateLoader({
     const groupOrder = groupOrderWithUsers.groupOrder;
 
     if (!groupOrder.canAcceptOrders) {
-      return redirect(routes.root.orderDetail({ orderId: groupOrderId }));
+      throw redirect(routes.root.orderDetail({ orderId: groupOrderId }));
     }
 
     const isLeader = groupOrder.leader.id === userId;
@@ -122,19 +99,22 @@ export async function orderCreateLoader({
       ? await fetchPrefillOrder(groupOrderId, prefillOrderId, userId, isLeader, !!orderId)
       : undefined;
 
-    return Response.json({
+    return {
       groupOrder,
       myOrder,
       stock,
       previousOrders,
-    });
-  } catch (error) {
-    if (error instanceof ApiError && error.status === 401) {
-      throw redirect(routes.signin());
-    }
-    throw error;
-  }
-}
+    };
+  },
+  { requireAuth: true }
+);
+
+type LoaderData = {
+  groupOrder: Awaited<ReturnType<typeof OrdersApi.getGroupOrderWithOrders>>['groupOrder'];
+  myOrder?: Awaited<ReturnType<typeof OrdersApi.getGroupOrderWithOrders>>['userOrders'][number];
+  stock: Awaited<ReturnType<typeof StockApi.getStock>>;
+  previousOrders: Awaited<ReturnType<typeof UserApi.getPreviousOrders>>;
+};
 
 /**
  * Parse meats with quantities from form data
@@ -237,18 +217,19 @@ export const orderCreateAction = createActionHandler({
 
       await OrdersApi.upsertUserOrder(groupOrderId, {
         items: {
-          tacos: hasTaco
-            ? [
-                {
-                  size: size!,
-                  meats,
-                  sauces,
-                  garnitures,
-                  note,
-                  quantity: 1,
-                },
-              ]
-            : [],
+          tacos:
+            hasTaco && size
+              ? [
+                  {
+                    size,
+                    meats,
+                    sauces,
+                    garnitures,
+                    note,
+                    quantity: 1,
+                  },
+                ]
+              : [],
           extras,
           drinks,
           desserts,
@@ -276,7 +257,7 @@ export function OrderCreateRoute() {
   const isSubmitting = navigation.state === 'submitting';
 
   const isDuplicating = searchParams.has('duplicate');
-  const editOrderId = !isDuplicating ? searchParams.get('orderId') : null;
+  const editOrderId = isDuplicating ? null : searchParams.get('orderId');
 
   // Use custom hooks for form state and validation
   const {
@@ -367,112 +348,25 @@ export function OrderCreateRoute() {
           />
 
           {size && (
-            <div className="space-y-4 rounded-2xl border border-white/10 bg-slate-900/50 p-4 sm:space-y-6 sm:rounded-3xl sm:p-6">
-              <div className="flex items-center gap-2 border-white/10 border-b pb-3 sm:gap-3 sm:pb-4">
-                <Avatar color="orange" size="sm" className="sm:size-md">
-                  <Sliders />
-                </Avatar>
-                <div>
-                  <h2 className="font-semibold text-base text-white sm:text-lg">
-                    {t('orders.create.customizeSection.title')}
-                  </h2>
-                  <p className="text-slate-400 text-xs">
-                    {t('orders.create.customizeSection.subtitle')}
-                  </p>
-                </div>
-              </div>
-
-              <MeatSelector
-                meats={meats}
-                stock={stock}
-                selectedTacoSize={selectedTacoSize}
-                size={size}
-                currency={currency}
-                isSubmitting={isSubmitting}
-                updateMeatQuantity={updateMeatQuantity}
-              />
-
-              <Card className="border-white/10 bg-slate-800/30">
-                <CardHeader className="gap-2">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Droplets size={18} className="text-brand-400" />
-                      <CardTitle className="text-sm text-white normal-case tracking-normal">
-                        {t('common.labels.sauces')}
-                        <span className="ml-1 text-rose-400">*</span>
-                      </CardTitle>
-                    </div>
-                    {selectedTacoSize?.maxSauces !== undefined && (
-                      <Badge tone="brand" className="text-xs">
-                        {sauces.length}/{selectedTacoSize.maxSauces}
-                      </Badge>
-                    )}
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <SelectionGroup
-                    items={stock.sauces}
-                    selected={sauces}
-                    onToggle={(id) =>
-                      toggleSelection(id, sauces, setSauces, selectedTacoSize?.maxSauces)
-                    }
-                    maxSelections={selectedTacoSize?.maxSauces}
-                    disabled={!size}
-                  />
-                  {sauces.map((id) => (
-                    <input key={id} type="hidden" name="sauces" value={id} />
-                  ))}
-                </CardContent>
-              </Card>
-
-              {selectedTacoSize && selectedTacoSize.allowGarnitures && (
-                <Card className="border-white/10 bg-slate-800/30">
-                  <CardHeader className="gap-2">
-                    <div className="flex items-center gap-2">
-                      <Leaf size={18} className="text-brand-400" />
-                      <CardTitle className="text-sm text-white normal-case tracking-normal">
-                        {t('common.labels.garnishes')}
-                      </CardTitle>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <SelectionGroup
-                      items={stock.garnishes}
-                      selected={garnitures}
-                      onToggle={(id) => toggleSelection(id, garnitures, setGarnitures)}
-                      disabled={!size}
-                    />
-                    {garnitures.map((id) => (
-                      <input key={id} type="hidden" name="garnitures" value={id} />
-                    ))}
-                  </CardContent>
-                </Card>
-              )}
-            </div>
-          )}
-
-          {size && (
-            <Card className="border-white/10 bg-slate-800/30">
-              <CardHeader className="gap-2">
-                <div className="flex items-center gap-2">
-                  <FileText size={18} className="text-brand-400" />
-                  <CardTitle className="text-white">{t('orders.create.notes.title')}</CardTitle>
-                </div>
-                <CardDescription>{t('orders.create.notes.subtitle')}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Textarea
-                  name="note"
-                  placeholder={t('common.placeholders.specialInstructions')}
-                  value={note}
-                  onChange={(e) => setNote(e.target.value)}
-                  disabled={isSubmitting}
-                  rows={3}
-                  className="resize-none"
-                />
-                <input type="hidden" name="note" value={note} />
-              </CardContent>
-            </Card>
+            <TacoBuilder
+              taco={{
+                size: size as TacoSize,
+                meats,
+                sauces,
+                garnitures,
+                note,
+                selectedTacoSize: selectedTacoSize ?? null,
+              }}
+              stock={stock}
+              currency={currency}
+              isSubmitting={isSubmitting}
+              onUpdateMeatQuantity={updateMeatQuantity}
+              onToggleSauce={(id) =>
+                toggleSelection(id, sauces, setSauces, selectedTacoSize?.maxSauces)
+              }
+              onToggleGarniture={(id) => toggleSelection(id, garnitures, setGarnitures)}
+              onNoteChange={setNote}
+            />
           )}
 
           <ExtrasSection
@@ -511,7 +405,7 @@ export function OrderCreateRoute() {
             currency={currency}
             summaryBreakdown={summaryBreakdown}
             hasTaco={!!hasTaco}
-            hasOtherItems={!!hasOtherItems}
+            hasOtherItems={hasOtherItems}
             canSubmit={canSubmit}
             validationMessages={validationMessages}
             stock={stock}

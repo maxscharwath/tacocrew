@@ -1,5 +1,5 @@
 import { Building2, Copy, Pencil, Save, Trash2, Upload, X } from 'lucide-react';
-import { useRef, useState } from 'react';
+import { type ChangeEvent, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { OrganizationMembers } from '@/components/profile/OrganizationMembers';
 import { OrganizationAvatar } from '@/components/shared/OrganizationAvatar';
@@ -14,14 +14,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   Button,
+  ButtonGroup,
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-  InputGroup,
-  InputGroupAddon,
-  InputGroupInput,
+  Input,
   Label,
   toast,
 } from '@/components/ui';
@@ -160,7 +159,7 @@ export function OrganizationDetails({
     }
   };
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       handleAvatarUpload(file);
@@ -183,55 +182,45 @@ export function OrganizationDetails({
             </div>
             <div className="min-w-0 flex-1">
               {isEditing && isAdmin ? (
-                <div className="space-y-2">
-                  <InputGroup>
-                    <InputGroupAddon>
-                      <Building2 className="size-4" />
-                    </InputGroupAddon>
-                    <InputGroupInput
-                      value={form.name}
-                      onChange={(e) => setForm({ name: e.target.value })}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' && !e.shiftKey) {
-                          e.preventDefault();
-                          handleSave();
-                        }
-                        if (e.key === 'Escape') {
-                          setIsEditing(false);
-                          setForm({ name: organization.name });
-                        }
-                      }}
-                      placeholder={t('organizations.form.name.placeholder')}
-                      disabled={busy || disabled}
-                      autoFocus
-                    />
-                  </InputGroup>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => {
+                <ButtonGroup className="w-full">
+                  <Input
+                    value={form.name}
+                    onChange={(e) => setForm({ name: e.target.value })}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        handleSave();
+                      }
+                      if (e.key === 'Escape') {
                         setIsEditing(false);
                         setForm({ name: organization.name });
-                      }}
-                      disabled={busy || disabled}
-                      className="gap-2"
-                    >
-                      <X size={16} />
-                      {t('common.cancel')}
-                    </Button>
-                    <Button
-                      size="sm"
-                      onClick={handleSave}
-                      loading={busy}
-                      disabled={busy || disabled}
-                      className="gap-2"
-                    >
-                      <Save size={16} />
-                      {t('common.save')}
-                    </Button>
-                  </div>
-                </div>
+                      }
+                    }}
+                    placeholder={t('organizations.form.name.placeholder')}
+                    disabled={busy || disabled}
+                    autoFocus
+                  />
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setIsEditing(false);
+                      setForm({ name: organization.name });
+                    }}
+                    disabled={busy || disabled}
+                    aria-label={t('common.cancel')}
+                  >
+                    <X size={16} />
+                  </Button>
+                  <Button
+                    variant="default"
+                    onClick={handleSave}
+                    loading={busy}
+                    disabled={busy || disabled}
+                    aria-label={t('common.save')}
+                  >
+                    <Save size={16} />
+                  </Button>
+                </ButtonGroup>
               ) : (
                 <>
                   <div className="flex items-center gap-3">
@@ -281,7 +270,7 @@ export function OrganizationDetails({
                           : t('organizations.join.copyLink')}
                       </Button>
                       <Button
-                        variant="danger"
+                        variant="destructive"
                         size="sm"
                         onClick={() => setShowDeleteDialog(true)}
                         disabled={busy || disabled}
@@ -335,7 +324,7 @@ export function OrganizationDetails({
                 </Button>
                 {organization.image && (
                   <Button
-                    variant="danger"
+                    variant="destructive"
                     onClick={() => setShowDeleteAvatarDialog(true)}
                     disabled={busy || disabled}
                     className="gap-2"

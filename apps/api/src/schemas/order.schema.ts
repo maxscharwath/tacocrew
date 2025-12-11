@@ -5,8 +5,8 @@
 
 import { OrderStatus, OrderType } from '@tacobot/gigatacos-client';
 import { z } from 'zod';
-import type { CartId } from '@/schemas/cart.schema';
-import type { UserId } from '@/schemas/user.schema';
+import { CartId } from '@/schemas/cart.schema';
+import { UserId } from '@/schemas/user.schema';
 import type { Id } from '@/shared/utils/branded-ids.utils';
 import { zId } from '@/shared/utils/branded-ids.utils';
 
@@ -18,14 +18,14 @@ export type OrderId = Id<'Order'>;
 /**
  * Parse a string to OrderId
  */
-export const OrderIdSchema = zId<OrderId>();
+export const OrderId = zId<OrderId>();
 
 /**
  * Order schema using Zod
  */
 export const OrderSchema = z.object({
-  id: zId<OrderId>(),
-  cartId: zId<CartId>(),
+  id: OrderId,
+  cartId: CartId,
   customerName: z.string(),
   customerPhone: z.string(),
   orderType: z.enum(OrderType),
@@ -33,9 +33,9 @@ export const OrderSchema = z.object({
   status: z.enum(OrderStatus),
   price: z.number().optional(),
   address: z.string().optional(),
-  userId: zId<UserId>().optional(),
-  createdAt: z.date().optional(),
-  updatedAt: z.date().optional(),
+  userId: UserId.optional(),
+  createdAt: z.coerce.date().optional(),
+  updatedAt: z.coerce.date().optional(),
 });
 
 export type Order = z.infer<typeof OrderSchema>;

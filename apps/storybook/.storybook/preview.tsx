@@ -65,6 +65,11 @@ const preview: Preview = {
       'storybook/docs/panel': { hidden: true },
       canvas: { title: 'Playground' },
     },
+    options: {
+      storySort: {
+        order: ['UI Kit', ['Playground', '*']],
+      },
+    },
   },
 
   globalTypes: {

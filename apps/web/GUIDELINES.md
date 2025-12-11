@@ -106,7 +106,7 @@ import { Button, Card, CardHeader, CardContent, CardTitle } from '@/components/u
 // Good - Use ui-kit Button
 function CreateOrderButton() {
   return (
-    <Button variant="primary" color="brand" size="md">
+    <Button variant="default" color="brand" size="md">
       Create Order
     </Button>
   );
@@ -240,7 +240,7 @@ import { Button, Card } from '@/components/ui';
 
 // Good - Extend with className
 <Button
-  variant="primary"
+  variant="default"
   color="brand"
   className="w-full shadow-lg"
 >
@@ -811,7 +811,7 @@ function ImageUploader() {
   const [preview, setPreview] = useState<string | null>(null);
   const [file, setFile] = useState<File | null>(null);
 
-  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = (event: ChangeEvent<HTMLInputElement>) => {
     const selectedFile = event.target.files?.[0];
     if (!selectedFile) return;
 
@@ -1156,6 +1156,15 @@ describe('OrderForm', () => {
 
 ## Code Review Checklist
 
+### Route Patterns
+- [ ] Loader uses `createLoader` or `createDeferredLoader` pattern
+- [ ] Route parameters validated with `requireParam`
+- [ ] Loader data typed with `LoaderData` helper or explicit type
+- [ ] Actions use `createActionHandler` pattern
+- [ ] Large routes (>400 LOC) broken into components
+- [ ] Complex form state extracted to custom hooks
+- [ ] Shared components used (`BackButton`, `PageHero`, etc.)
+
 ### UI-Kit Usage
 - [ ] UI-kit components used for all basic UI elements
 - [ ] No custom buttons, cards, inputs unless necessary
@@ -1188,4 +1197,6 @@ describe('OrderForm', () => {
 - [ ] Expensive operations debounced
 - [ ] No unnecessary re-renders
 
-**Next**: See [UI-Kit Guidelines](../../packages/ui-kit/GUIDELINES.md) for component development.
+**See Also**:
+- [Route Patterns Guide](./docs/ROUTE_PATTERNS.md) for routing best practices
+- [UI-Kit Guidelines](../../packages/ui-kit/GUIDELINES.md) for component development

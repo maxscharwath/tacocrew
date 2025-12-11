@@ -7,16 +7,11 @@ import { injectable } from 'tsyringe';
 import type { CreateUserOrderRequestDto } from '@/api/schemas/user-order.schemas';
 import { GroupOrderRepository } from '@/infrastructure/repositories/group-order.repository';
 import { UserOrderRepository } from '@/infrastructure/repositories/user-order.repository';
-import { DessertIdSchema } from '@/schemas/dessert.schema';
-import { DrinkIdSchema } from '@/schemas/drink.schema';
-import { ExtraIdSchema } from '@/schemas/extra.schema';
+import { DessertId } from '@/schemas/dessert.schema';
+import { DrinkId } from '@/schemas/drink.schema';
+import { ExtraId } from '@/schemas/extra.schema';
 import { canGroupOrderBeModified, type GroupOrderId } from '@/schemas/group-order.schema';
-import {
-  GarnitureIdSchema,
-  MeatIdSchema,
-  SauceIdSchema,
-  TacoIdSchema,
-} from '@/schemas/taco.schema';
+import { GarnitureId, MeatId, SauceId, TacoId } from '@/schemas/taco.schema';
 import type { UserId } from '@/schemas/user.schema';
 import type { UserOrder } from '@/schemas/user-order.schema';
 import { ResourceService } from '@/services/resource/resource.service';
@@ -139,7 +134,7 @@ export class CreateUserOrderUseCase {
             throw new ValidationError({ message: `Meat not found: ${simpleMeat.id}` });
           }
           return {
-            id: MeatIdSchema.parse(meat.id),
+            id: MeatId.parse(meat.id),
             code: meat.code,
             name: meat.name,
             quantity: simpleMeat.quantity,
@@ -152,7 +147,7 @@ export class CreateUserOrderUseCase {
             throw new ValidationError({ message: `Sauce not found: ${simpleSauce.id}` });
           }
           return {
-            id: SauceIdSchema.parse(sauce.id),
+            id: SauceId.parse(sauce.id),
             code: sauce.code,
             name: sauce.name,
           };
@@ -167,7 +162,7 @@ export class CreateUserOrderUseCase {
               throw new ValidationError({ message: `Garniture not found: ${simpleGarniture.id}` });
             }
             return {
-              id: GarnitureIdSchema.parse(garniture.id),
+              id: GarnitureId.parse(garniture.id),
               code: garniture.code,
               name: garniture.name,
             };
@@ -184,7 +179,7 @@ export class CreateUserOrderUseCase {
         const price = baseSizePrice + meatPrice;
 
         const taco = {
-          id: TacoIdSchema.parse(
+          id: TacoId.parse(
             deterministicUUID(`${simpleTaco.size}-${Date.now()}`, StockCategory.Meats)
           ),
           size: simpleTaco.size,
@@ -206,7 +201,7 @@ export class CreateUserOrderUseCase {
           throw new ValidationError({ message: `Extra not found: ${simpleExtra.id}` });
         }
         return {
-          id: ExtraIdSchema.parse(extra.id),
+          id: ExtraId.parse(extra.id),
           code: extra.code,
           name: extra.name,
           price: extra.price?.value ?? 0,
@@ -219,7 +214,7 @@ export class CreateUserOrderUseCase {
           throw new ValidationError({ message: `Drink not found: ${simpleDrink.id}` });
         }
         return {
-          id: DrinkIdSchema.parse(drink.id),
+          id: DrinkId.parse(drink.id),
           code: drink.code,
           name: drink.name,
           price: drink.price?.value ?? 0,
@@ -232,7 +227,7 @@ export class CreateUserOrderUseCase {
           throw new ValidationError({ message: `Dessert not found: ${simpleDessert.id}` });
         }
         return {
-          id: DessertIdSchema.parse(dessert.id),
+          id: DessertId.parse(dessert.id),
           code: dessert.code,
           name: dessert.name,
           price: dessert.price?.value ?? 0,
@@ -251,28 +246,28 @@ export class CreateUserOrderUseCase {
         ...taco,
         meats: taco.meats.map((meat) => ({
           ...meat,
-          id: MeatIdSchema.parse(deterministicUUID(meat.code, StockCategory.Meats)),
+          id: MeatId.parse(deterministicUUID(meat.code, StockCategory.Meats)),
         })),
         sauces: taco.sauces.map((sauce) => ({
           ...sauce,
-          id: SauceIdSchema.parse(deterministicUUID(sauce.code, StockCategory.Sauces)),
+          id: SauceId.parse(deterministicUUID(sauce.code, StockCategory.Sauces)),
         })),
         garnitures: taco.garnitures.map((garniture) => ({
           ...garniture,
-          id: GarnitureIdSchema.parse(deterministicUUID(garniture.code, StockCategory.Garnishes)),
+          id: GarnitureId.parse(deterministicUUID(garniture.code, StockCategory.Garnishes)),
         })),
       })),
       extras: items.extras.map((extra) => ({
         ...extra,
-        id: ExtraIdSchema.parse(deterministicUUID(extra.code, StockCategory.Extras)),
+        id: ExtraId.parse(deterministicUUID(extra.code, StockCategory.Extras)),
       })),
       drinks: items.drinks.map((drink) => ({
         ...drink,
-        id: DrinkIdSchema.parse(deterministicUUID(drink.code, StockCategory.Drinks)),
+        id: DrinkId.parse(deterministicUUID(drink.code, StockCategory.Drinks)),
       })),
       desserts: items.desserts.map((dessert) => ({
         ...dessert,
-        id: DessertIdSchema.parse(deterministicUUID(dessert.code, StockCategory.Desserts)),
+        id: DessertId.parse(deterministicUUID(dessert.code, StockCategory.Desserts)),
       })),
     };
   }

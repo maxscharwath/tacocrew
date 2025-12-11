@@ -3,8 +3,8 @@
  * This must be imported first in test files that need config
  */
 
-import dotenv from 'dotenv';
 import { resolve } from 'node:path';
+import dotenv from 'dotenv';
 
 // Load test.env file if it exists, otherwise use .env
 const testEnvPath = resolve(process.cwd(), 'test.env');

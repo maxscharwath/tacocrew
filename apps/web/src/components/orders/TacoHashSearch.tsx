@@ -1,5 +1,5 @@
 import { ArrowRight, Link } from 'lucide-react';
-import { useState } from 'react';
+import { type KeyboardEvent, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button, Input } from '@/components/ui';
 import { TacosApi } from '@/lib/api';
@@ -38,7 +38,7 @@ export function TacoHashSearch({ onSelectTaco, disabled }: TacoHashSearchProps) 
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyPress = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && !isLoading && !disabled) {
       handleSearch();
     }
