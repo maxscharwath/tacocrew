@@ -10,10 +10,13 @@ export function isMultipleOrganizationsError(error: unknown): boolean {
   if (error.errorCode !== 'VALIDATION_ERROR') {
     return false;
   }
-  if (!error.details || typeof error.details !== 'object') {
+  if (!error.details || Array.isArray(error.details)) {
     return false;
   }
-  if (!('message' in error.details) || typeof error.details.message !== 'string') {
+  const isString = (value: unknown): value is string => {
+    return value !== null && value !== undefined && (value as string).constructor === String;
+  };
+  if (!('message' in error.details) || !isString(error.details.message)) {
     return false;
   }
   return error.details.message.includes('multiple organizations');
@@ -23,12 +26,15 @@ export function isMultipleOrganizationsError(error: unknown): boolean {
  * Extract error message from ApiError details
  */
 export function extractErrorMessage(error: unknown): string | undefined {
+  const isString = (value: unknown): value is string => {
+    return value !== null && value !== undefined && (value as string).constructor === String;
+  };
   if (
     error instanceof ApiError &&
     error.details &&
-    typeof error.details === 'object' &&
+    !Array.isArray(error.details) &&
     'message' in error.details &&
-    typeof error.details.message === 'string'
+    isString(error.details.message)
   ) {
     return error.details.message;
   }

@@ -83,14 +83,12 @@ async function extractDynamicKeyPatterns(files: string[]): Promise<DynamicKeyPat
           const line = lines[lineNum]!;
 
           // Match patterns like t(`prefix.${variable}`) or t(`prefix.${variable}.suffix`)
-          const dynamicPattern = /\bt\(`([^`]*?)\$\{[^}]+\}([^`]*?)`/g;
+          const dynamicPattern = /\bt\(`([^`]*?)\$\{[^}]+}([^`]*?)`/g;
           const matches = Array.from(line.matchAll(dynamicPattern));
 
           for (const match of matches) {
             const fullMatch = match[0]!;
             const prefixPart = match[1] || '';
-            const _suffixPart = match[2] || '';
-
             // Extract the prefix (everything before ${variable})
             const prefix = prefixPart.trim().replace(/\.$/, '');
 
@@ -187,8 +185,7 @@ async function loadLocaleFiles(localeDir: string): Promise<Record<string, unknow
     localeFiles.map(async (file) => {
       const lang = file.replace('.json', '');
       const fileContent = Bun.file(join(localeDir, file));
-      const content = await fileContent.json();
-      locales[lang] = content;
+      locales[lang] = await fileContent.json();
     })
   );
 
@@ -296,8 +293,14 @@ function buildErrorMessages(
 
 describe('Frontend Translation Keys', () => {
   it('should have all translation keys present in all locale files', async () => {
-    const webSrc = resolve(process.cwd(), 'apps/web/src');
-    const localeDir = resolve(process.cwd(), 'apps/web/src/locales');
+    // Determine paths based on whether we're running from project root or apps/web
+    const isInWebDir = process.cwd().endsWith('apps/web');
+    const webSrc = isInWebDir
+      ? resolve(process.cwd(), 'src')
+      : resolve(process.cwd(), 'apps/web/src');
+    const localeDir = isInWebDir
+      ? resolve(process.cwd(), 'src/locales')
+      : resolve(process.cwd(), 'apps/web/src/locales');
 
     // Find all TypeScript/TSX files using Bun's glob
     const globPattern = join(webSrc, '**/*.{ts,tsx}');

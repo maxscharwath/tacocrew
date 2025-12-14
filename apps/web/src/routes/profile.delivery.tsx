@@ -1,9 +1,9 @@
+import { Badge, Card, CardContent, CardDescription, CardHeader, CardTitle } from '@tacocrew/ui-kit';
 import { Lock, Truck } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useLoaderData } from 'react-router';
 import { DeliveryProfilesManager } from '@/components/profile/DeliveryProfilesManager';
 import { BackButton, PageHero } from '@/components/shared';
-import { Badge, Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui';
 import { UserApi } from '@/lib/api';
 import { routes } from '@/lib/routes';
 import type { LoaderData } from '@/lib/types/loader-types';

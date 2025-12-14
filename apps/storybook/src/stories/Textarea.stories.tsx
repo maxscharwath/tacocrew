@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { Textarea } from '@tacobot/ui-kit';
+import { Textarea } from '@tacocrew/ui-kit';
 
 const meta = {
   title: 'UI Kit/Textarea',

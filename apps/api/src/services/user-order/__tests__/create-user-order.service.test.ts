@@ -6,7 +6,7 @@
 import '@/test-setup';
 import 'reflect-metadata';
 import { beforeEach, describe, expect, test as it, mock } from 'bun:test';
-import { TacoSize } from '@tacobot/gigatacos-client';
+import { TacoSize } from '@tacocrew/gigatacos-client';
 import { addHours, subMinutes } from 'date-fns';
 import { container } from 'tsyringe';
 import type { CreateUserOrderRequestDto } from '@/api/schemas/user-order.schemas';

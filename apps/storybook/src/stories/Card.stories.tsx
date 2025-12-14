@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@tacobot/ui-kit';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@tacocrew/ui-kit';
 
 const meta = {
   title: 'UI Kit/Card',

@@ -1,5 +1,5 @@
+import { Badge, Checkbox } from '@tacocrew/ui-kit';
 import { useTranslation } from 'react-i18next';
-import { Badge, Checkbox } from '@/components/ui';
 import type { Amount } from '@/lib/api/types';
 import { cn } from '@/lib/utils';
 
@@ -56,7 +56,7 @@ export function SelectionGroup({
               <span
                 className={cn(
                   'block truncate font-medium text-sm',
-                  item.in_stock === false ? 'text-slate-500 line-through' : 'text-white'
+                  !item.in_stock ? 'text-slate-500 line-through' : 'text-white'
                 )}
               >
                 {item.name}

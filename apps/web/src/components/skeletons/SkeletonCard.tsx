@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, Skeleton, SkeletonText } from '../ui';
+import { Card, CardContent, CardHeader, Skeleton, SkeletonText } from '@tacocrew/ui-kit';
 
 type SkeletonCardProps = {
   readonly showHeader?: boolean;

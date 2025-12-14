@@ -24,7 +24,9 @@
  * ```
  */
 export type LoaderData<T> = T extends (...args: never[]) => Promise<Response>
-  ? Awaited<ReturnType<Awaited<ReturnType<T>>['json']>>
+  ? Awaited<ReturnType<T>> extends Response
+    ? Awaited<ReturnType<Awaited<ReturnType<T>>['json']>>
+    : never
   : never;
 
 /**

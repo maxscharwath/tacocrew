@@ -1,10 +1,3 @@
-import { AlertTriangle, CheckCircle2, Copy, Package } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { useLoaderData } from 'react-router';
-import { StatBubble } from '@/components/orders';
-import { DeferredRoute } from '@/components/shared';
-import { StockSkeleton } from '@/components/skeletons';
 import {
   Badge,
   Button,
@@ -13,7 +6,14 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui';
+} from '@tacocrew/ui-kit';
+import { AlertTriangle, CheckCircle2, Copy, Package } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useLoaderData } from 'react-router';
+import { StatBubble } from '@/components/orders';
+import { DeferredRoute } from '@/components/shared';
+import { StockSkeleton } from '@/components/skeletons';
 import type { StockResponse } from '@/lib/api';
 import { StockApi } from '@/lib/api';
 import type { DeferredLoaderData } from '@/lib/types/loader-types';

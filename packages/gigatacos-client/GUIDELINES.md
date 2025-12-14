@@ -1,6 +1,6 @@
 # Gigatacos Client Package Coding Guidelines
 
-> **Package**: @tacobot/gigatacos-client
+> **Package**: @tacocrew/gigatacos-client
 > **Purpose**: Type-safe client for external taco ordering API
 > **Framework**: TypeScript + Axios + Cheerio
 

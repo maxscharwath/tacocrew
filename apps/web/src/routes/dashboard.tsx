@@ -1,9 +1,3 @@
-import { Activity, ArrowUpRight, TrendingUp, Users } from 'lucide-react';
-import { Trans, useTranslation } from 'react-i18next';
-import { Link, useLoaderData } from 'react-router';
-import { OrderListItem, StatBubble } from '@/components/orders';
-import { DeferredRoute } from '@/components/shared';
-import { DashboardSkeleton } from '@/components/skeletons';
 import {
   Badge,
   Card,
@@ -12,7 +6,13 @@ import {
   CardHeader,
   CardTitle,
   StatusBadge,
-} from '@/components/ui';
+} from '@tacocrew/ui-kit';
+import { Activity, ArrowUpRight, TrendingUp, Users } from 'lucide-react';
+import { Trans, useTranslation } from 'react-i18next';
+import { Link, useLoaderData } from 'react-router';
+import { OrderListItem, StatBubble } from '@/components/orders';
+import { DeferredRoute } from '@/components/shared';
+import { DashboardSkeleton } from '@/components/skeletons';
 import { useDateFormat } from '@/hooks/useDateFormat';
 import { UserApi } from '@/lib/api';
 import { routes } from '@/lib/routes';

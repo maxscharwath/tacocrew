@@ -1,4 +1,4 @@
-import { Avatar, type AvatarProps } from '@/components/ui';
+import { Avatar, AvatarFallback, AvatarImage, type AvatarProps } from '@tacocrew/ui-kit';
 import { getAvatarSizePixels } from '@/lib/api/image-utils';
 import { getOrganizationAvatarUrl } from '@/lib/api/organization';
 
@@ -10,7 +10,6 @@ type OrganizationAvatarProps = {
   readonly color?: AvatarProps['color'];
   readonly className?: string;
   readonly alt?: string;
-  readonly hasImage?: boolean;
 };
 
 /**
@@ -37,23 +36,13 @@ export function OrganizationAvatar({
   color = 'brand',
   className,
   alt,
-  hasImage,
 }: OrganizationAvatarProps) {
   const avatarSize = size ? getAvatarSizePixels(size) : 48;
-  const avatarUrl = hasImage
-    ? getOrganizationAvatarUrl(organizationId, { size: avatarSize })
-    : undefined;
-
+  const avatarUrl = getOrganizationAvatarUrl(organizationId, { size: avatarSize });
   return (
-    <Avatar
-      src={avatarUrl}
-      alt={alt ?? name}
-      size={size}
-      variant={variant}
-      color={color}
-      className={className}
-    >
-      {getOrganizationInitials(name)}
+    <Avatar size={size} variant={variant} color={color} className={className}>
+      <AvatarImage src={avatarUrl} alt={alt ?? name} />
+      <AvatarFallback>{getOrganizationInitials(name)}</AvatarFallback>
     </Avatar>
   );
 }

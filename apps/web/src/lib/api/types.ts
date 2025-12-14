@@ -1,5 +1,6 @@
-import { TacoSize } from '@tacobot/gigatacos-client';
+import { TacoSize } from '@tacocrew/gigatacos-client';
 import type { DeliveryType } from '@/components/orders';
+import type { SwissCanton } from '@/constants/location.ts';
 
 /**
  * Currency namespace with common ISO 4217 currency codes
@@ -118,8 +119,8 @@ export interface DeliveryAddress {
   houseNumber?: string;
   postcode: string;
   city: string;
-  state?: string;
-  country?: string;
+  state: SwissCanton;
+  country: string;
 }
 
 export interface DeliveryProfile {

@@ -6,7 +6,7 @@ import {
   TACO_SIZE_CONFIG as BASE_TACO_SIZE_CONFIG,
   type TacoSizeConfig as BaseTacoSizeConfig,
   TacoSize,
-} from '@tacobot/gigatacos-client';
+} from '@tacocrew/gigatacos-client';
 
 /**
  * Frontend-specific taco size config with emoji

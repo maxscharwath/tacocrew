@@ -15,7 +15,7 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["../web/src/*"],
-      "@tacobot/ui-kit": ["../ui-kit/src"]
+      "@tacocrew/ui-kit": ["../ui-kit/src"]
     }
   },
   "include": ["src/**/*", ".storybook/**/*"],

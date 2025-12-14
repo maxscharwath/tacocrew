@@ -4,7 +4,7 @@
  */
 
 import { createRoute } from '@hono/zod-openapi';
-import { OrderType } from '@tacobot/gigatacos-client';
+import { OrderType } from '@tacocrew/gigatacos-client';
 import { z } from 'zod';
 import { AmountSchema, ErrorResponseSchema, jsonContent } from '@/api/schemas/shared.schemas';
 import {

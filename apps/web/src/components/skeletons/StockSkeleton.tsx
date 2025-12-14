@@ -1,5 +1,5 @@
-import { Card, CardContent, CardHeader, Skeleton, SkeletonText } from '../ui';
-import { SkeletonHero } from './SkeletonHero';
+import { Card, CardContent, CardHeader, Skeleton, SkeletonText } from '@tacocrew/ui-kit';
+import { SkeletonHero } from '@/components/skeletons/SkeletonHero.tsx';
 
 export function StockSkeleton() {
   return (

@@ -1,3 +1,17 @@
+import {
+  Alert,
+  Button,
+  DateTimePicker,
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+  Label,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@tacocrew/ui-kit';
 import { addHours, format, setHours, setMinutes } from 'date-fns';
 import { ArrowRight, Calendar, Package, Tag, Truck } from 'lucide-react';
 import { Suspense, useEffect, useState } from 'react';
@@ -15,20 +29,6 @@ import {
 import { OrderListItem, StatBubble } from '@/components/orders';
 import { OrganizationSelectItem } from '@/components/shared/OrganizationSelectItem';
 import { OrdersSkeleton } from '@/components/skeletons';
-import {
-  Alert,
-  Button,
-  DateTimePicker,
-  InputGroup,
-  InputGroupAddon,
-  InputGroupInput,
-  Label,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui';
 import { useDateFormat } from '@/hooks/useDateFormat';
 import { OrdersApi, OrganizationApi, UserApi } from '@/lib/api';
 import { routes } from '@/lib/routes';
@@ -385,7 +385,7 @@ function OrdersContent({
           </div>
         </section>
 
-        <section className="space-y-4 rounded-3xl border border-white/10 bg-slate-900/80 p-3 shadow-[0_30px_80px_rgba(8,47,73,0.28)] backdrop-blur-sm sm:space-y-6 sm:p-6">
+        <section className="sticky top-4 h-fit space-y-4 rounded-3xl border border-white/10 bg-slate-900/80 p-3 shadow-[0_30px_80px_rgba(8,47,73,0.28)] backdrop-blur-sm sm:space-y-6 sm:p-6">
           <header className="space-y-1">
             <h2 className="font-semibold text-lg text-white">{t('orders.list.form.title')}</h2>
             <p className="text-slate-300 text-sm">{t('orders.list.form.subtitle')}</p>
@@ -452,17 +452,7 @@ function OrdersContent({
                     >
                       <SelectValue
                         placeholder={t('orders.list.form.placeholders.selectOrganization')}
-                      >
-                        {selectedOrganizationId &&
-                          (() => {
-                            const selectedOrg = activeOrganizations.find(
-                              (org) => org.id === selectedOrganizationId
-                            );
-                            return selectedOrg ? (
-                              <OrganizationSelectItem organization={selectedOrg} size="sm" />
-                            ) : null;
-                          })()}
-                      </SelectValue>
+                      />
                     </SelectTrigger>
                     <SelectContent>
                       {activeOrganizations.map((org) => (

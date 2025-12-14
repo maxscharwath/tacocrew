@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { Separator } from '@tacobot/ui-kit';
+import { Separator } from '@tacocrew/ui-kit';
 
 const meta = {
   title: 'UI Kit/Separator',

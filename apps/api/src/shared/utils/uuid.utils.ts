@@ -6,7 +6,7 @@
 import { NIL, v4, v5, validate } from 'uuid';
 
 /**
- * Default namespace for deterministic UUID generation (tacobot domain)
+ * Default namespace for deterministic UUID generation (tacocrew domain)
  */
 const DEFAULT_NAMESPACE = NIL;
 

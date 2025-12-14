@@ -1,8 +1,15 @@
+import {
+  Button,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@tacocrew/ui-kit';
 import { Link } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { routes } from '../../lib/routes';
-import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui';
+import { routes } from '@/lib/routes.ts';
 
 interface ShareButtonProps {
   readonly groupOrderId: string;

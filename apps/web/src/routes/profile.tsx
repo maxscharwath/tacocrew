@@ -1,7 +1,3 @@
-import { Building2, Settings, Truck } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
-import { Link, useLoaderData } from 'react-router';
-import { TacoCard } from '@/components/orders/TacoCard';
 import {
   Badge,
   Button,
@@ -11,7 +7,11 @@ import {
   CardHeader,
   CardTitle,
   EmptyState,
-} from '@/components/ui';
+} from '@tacocrew/ui-kit';
+import { Building2, Settings, Truck } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { Link, useLoaderData } from 'react-router';
+import { TacoCard } from '@/components/orders/TacoCard';
 import { resolveImageUrl, UserApi } from '@/lib/api';
 import { routes } from '@/lib/routes';
 import type { LoaderData } from '@/lib/types/loader-types';
@@ -82,7 +82,11 @@ export function ProfileRoute() {
                   <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-left text-white shadow-black/30 shadow-lg">
                     <p className="text-slate-400 text-xs uppercase tracking-[0.3em]">Orders</p>
                     <p className="font-bold text-3xl text-white">
-                      {previousOrders.reduce((sum, order) => sum + order.orderCount, 0)}
+                      {previousOrders.reduce(
+                        (sum: number, order: (typeof previousOrders)[number]) =>
+                          sum + order.orderCount,
+                        0
+                      )}
                     </p>
                   </div>
                 </div>
@@ -136,7 +140,7 @@ export function ProfileRoute() {
             />
           ) : (
             <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-3">
-              {previousOrders.map((order) => (
+              {previousOrders.map((order: (typeof previousOrders)[number]) => (
                 <TacoCard
                   key={order.tacoID}
                   taco={order.taco}

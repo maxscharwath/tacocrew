@@ -1,5 +1,3 @@
-import { Tag } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
 import {
   Alert,
   Button,
@@ -12,7 +10,9 @@ import {
   InputGroupAddon,
   InputGroupInput,
   Label,
-} from '@/components/ui';
+} from '@tacocrew/ui-kit';
+import { Tag } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import type { DeliveryProfile } from '@/lib/api/types';
 import { formatPhoneNumber } from '@/utils/phone-formatter';
 

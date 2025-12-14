@@ -1,7 +1,7 @@
+import { Button } from '@tacocrew/ui-kit';
 import { CheckCircle2, Copy, Edit, Tag, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { Form, Link } from 'react-router';
-import { Button } from '@/components/ui';
 import { routes } from '@/lib/routes';
 
 type OrderCardActionsProps = {

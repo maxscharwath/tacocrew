@@ -1,9 +1,9 @@
+import { Button, Modal } from '@tacocrew/ui-kit';
 import { CheckCircle2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import Confetti from 'react-confetti';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
-import { Button, Modal } from '@/components/ui';
 
 type OrderConfirmationModalProps = {
   readonly isOpen: boolean;

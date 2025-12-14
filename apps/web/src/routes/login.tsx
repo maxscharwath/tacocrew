@@ -1,29 +1,36 @@
-import { Eye, EyeOff, Lock, Mail, User } from 'lucide-react';
-import { type FormEvent, useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { type LoaderFunctionArgs, redirect, useLocation, useNavigate } from 'react-router';
-import appIcon from '@/assets/icon.png?format=webp';
-import { LanguageSwitcher } from '@/components/language-switcher';
+import { zodResolver } from '@hookform/resolvers/zod';
 import {
   Alert,
   Avatar,
+  AvatarImage,
   Button,
   Card,
   CardContent,
   CardHeader,
   CardTitle,
   Divider,
+  Field,
+  FieldError,
+  FieldLabel,
   InputGroup,
   InputGroupAddon,
   InputGroupButton,
   InputGroupInput,
-  Label,
   SegmentedControl,
-} from '@/components/ui';
+  SegmentedControlItem,
+} from '@tacocrew/ui-kit';
+import { Eye, EyeOff, Lock, Mail, User } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Controller, useForm } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
+import { type LoaderFunctionArgs, redirect, useLocation, useNavigate } from 'react-router';
+import appIcon from '@/assets/icon.png?format=webp&img';
+import { LanguageSwitcher } from '@/components/language-switcher';
 import { UserApi } from '@/lib/api';
 import { ApiError } from '@/lib/api/http';
 import { authClient, useSession } from '@/lib/auth-client';
 import { routes } from '@/lib/routes';
+import { type LoginFormData, loginSchema, type SignupFormData, signupSchema } from '@/lib/schemas';
 
 /**
  * Authentication loader for both signin and signup pages
@@ -65,10 +72,16 @@ export function LoginRoute() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-    name: '',
+
+  // React Hook Form with dynamic schema based on mode
+  const form = useForm<SignupFormData | LoginFormData>({
+    resolver: zodResolver(isSignUp ? signupSchema : loginSchema),
+    defaultValues: {
+      email: '',
+      password: '',
+      ...(isSignUp && { name: '' }),
+    },
+    mode: 'onBlur',
   });
 
   // Use Better Auth's useSession hook for reactive, cached session data
@@ -81,24 +94,25 @@ export function LoginRoute() {
     }
   }, [session, navigate, redirectTo]);
 
-  const handleEmailPasswordSubmit = async (e: FormEvent) => {
-    e.preventDefault();
+  const handleEmailPasswordSubmit = async (data: LoginFormData | SignupFormData) => {
     setIsLoading(true);
     setError(null);
 
     try {
       if (isSignUp) {
-        const result = await authClient.signUp.email(formData);
+        const signupData = data as SignupFormData;
+        const result = await authClient.signUp.email({
+          email: signupData.email,
+          password: signupData.password,
+          name: signupData.name || '',
+        });
 
         if (result.error) {
           setError(result.error.message || t('login.signUpFailed'));
           return;
         }
       } else {
-        const result = await authClient.signIn.email({
-          email: formData.email,
-          password: formData.password,
-        });
+        const result = await authClient.signIn.email(data as LoginFormData);
 
         if (result.error) {
           setError(result.error.message || t('login.signInFailed'));
@@ -246,7 +260,9 @@ export function LoginRoute() {
           <Card className="relative overflow-hidden border-white/10 bg-slate-900/60 shadow-[0_40px_120px_rgba(8,47,73,0.35)] backdrop-blur">
             <CardHeader className="text-center">
               <div className="mx-auto mb-4">
-                <Avatar color="brandHero" size="xl" variant="elevated" src={appIcon} />
+                <Avatar color="brandHero" size="xl" variant="elevated">
+                  <AvatarImage src={appIcon} alt="TacoCrew" />
+                </Avatar>
               </div>
               <CardTitle className="text-3xl">
                 {isSignUp ? t('login.signUp.title') : t('login.title')}
@@ -267,11 +283,12 @@ export function LoginRoute() {
                     navigate(routes.signin());
                   }
                 }}
-                options={[
-                  { value: 'signin', label: t('login.signIn') },
-                  { value: 'signup', label: t('login.signUpButton') },
-                ]}
-              />
+              >
+                <SegmentedControlItem value="signin">{t('login.signIn')}</SegmentedControlItem>
+                <SegmentedControlItem value="signup">
+                  {t('login.signUpButton')}
+                </SegmentedControlItem>
+              </SegmentedControl>
 
               {/* Passkey Sign In Button (only for sign in mode) */}
               {!isSignUp && (
@@ -292,76 +309,102 @@ export function LoginRoute() {
               )}
 
               {/* Email/Password form */}
-              <form onSubmit={handleEmailPasswordSubmit} className="space-y-4">
+              <form onSubmit={form.handleSubmit(handleEmailPasswordSubmit)} className="space-y-4">
                 {isSignUp && (
-                  <div className="space-y-2">
-                    <Label htmlFor="name">{t('login.name.label')}</Label>
-                    <InputGroup>
-                      <InputGroupAddon>
-                        <User className="size-4" />
-                      </InputGroupAddon>
-                      <InputGroupInput
-                        id="name"
-                        type="text"
-                        value={formData.name}
-                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                        placeholder={t('login.name.placeholder')}
-                        disabled={isLoading}
-                        autoComplete="name"
-                      />
-                    </InputGroup>
-                  </div>
+                  <Controller
+                    name="name"
+                    control={form.control}
+                    render={({ field, fieldState }) => (
+                      <Field data-invalid={fieldState.invalid}>
+                        <FieldLabel htmlFor="name">{t('login.name.label')}</FieldLabel>
+                        <InputGroup>
+                          <InputGroupAddon>
+                            <User className="size-4" />
+                          </InputGroupAddon>
+                          <InputGroupInput
+                            {...field}
+                            id="name"
+                            type="text"
+                            placeholder={t('login.name.placeholder')}
+                            disabled={isLoading}
+                            autoComplete="name"
+                            aria-invalid={fieldState.invalid}
+                          />
+                        </InputGroup>
+                        {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                      </Field>
+                    )}
+                  />
                 )}
 
-                <div className="space-y-2">
-                  <Label htmlFor="email">{t('login.email.label')}</Label>
-                  <InputGroup>
-                    <InputGroupAddon>
-                      <Mail className="size-4" />
-                    </InputGroupAddon>
-                    <InputGroupInput
-                      id="email"
-                      type="email"
-                      value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      placeholder={t('login.email.placeholder')}
-                      required
-                      disabled={isLoading}
-                      autoComplete="email"
-                    />
-                  </InputGroup>
-                </div>
+                <Controller
+                  name="email"
+                  control={form.control}
+                  render={({ field, fieldState }) => (
+                    <Field data-invalid={fieldState.invalid}>
+                      <FieldLabel htmlFor="email" required>
+                        {t('login.email.label')}
+                      </FieldLabel>
+                      <InputGroup>
+                        <InputGroupAddon>
+                          <Mail className="size-4" />
+                        </InputGroupAddon>
+                        <InputGroupInput
+                          {...field}
+                          id="email"
+                          type="email"
+                          placeholder={t('login.email.placeholder')}
+                          disabled={isLoading}
+                          autoComplete="email"
+                          aria-invalid={fieldState.invalid}
+                        />
+                      </InputGroup>
+                      {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                    </Field>
+                  )}
+                />
 
-                <div className="space-y-2">
-                  <Label htmlFor="password">{t('login.password.label')}</Label>
-                  <InputGroup>
-                    <InputGroupAddon>
-                      <Lock className="size-4" />
-                    </InputGroupAddon>
-                    <InputGroupInput
-                      id="password"
-                      type={showPassword ? 'text' : 'password'}
-                      value={formData.password}
-                      onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                      placeholder={t('login.password.placeholder')}
-                      required
-                      disabled={isLoading}
-                      minLength={8}
-                      autoComplete={isSignUp ? 'new-password' : 'current-password'}
-                    />
-                    <InputGroupAddon align="inline-end">
-                      <InputGroupButton
-                        type="button"
-                        size="icon-xs"
-                        variant="ghost"
-                        onClick={() => setShowPassword(!showPassword)}
-                        aria-label={showPassword ? 'Hide password' : 'Show password'}
-                      >
-                        {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
-                      </InputGroupButton>
-                    </InputGroupAddon>
-                  </InputGroup>
-                </div>
+                <Controller
+                  name="password"
+                  control={form.control}
+                  render={({ field, fieldState }) => (
+                    <Field data-invalid={fieldState.invalid}>
+                      <FieldLabel htmlFor="password" required>
+                        {t('login.password.label')}
+                      </FieldLabel>
+                      <InputGroup>
+                        <InputGroupAddon>
+                          <Lock className="size-4" />
+                        </InputGroupAddon>
+                        <InputGroupInput
+                          {...field}
+                          id="password"
+                          type={showPassword ? 'text' : 'password'}
+                          placeholder={t('login.password.placeholder')}
+                          disabled={isLoading}
+                          autoComplete={isSignUp ? 'new-password' : 'current-password'}
+                          aria-invalid={fieldState.invalid}
+                        />
+                        <InputGroupAddon align="inline-end">
+                          <InputGroupButton
+                            type="button"
+                            size="icon-xs"
+                            variant="ghost"
+                            onClick={() => setShowPassword(!showPassword)}
+                            aria-label={showPassword ? 'Hide password' : 'Show password'}
+                          >
+                            {showPassword ? (
+                              <EyeOff className="size-4" />
+                            ) : (
+                              <Eye className="size-4" />
+                            )}
+                          </InputGroupButton>
+                        </InputGroupAddon>
+                      </InputGroup>
+                      {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                    </Field>
+                  )}
+                />
 
                 {error && <Alert tone="error">{error}</Alert>}
 

@@ -6,7 +6,7 @@ import {
   InputGroupButton,
   InputGroupInput,
   Label,
-} from '@tacobot/ui-kit';
+} from '@tacocrew/ui-kit';
 import { Eye, EyeOff, Lock } from 'lucide-react';
 import { useState } from 'react';
 

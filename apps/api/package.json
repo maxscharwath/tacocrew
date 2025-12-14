@@ -1,5 +1,5 @@
 {
-  "name": "@tacobot/api",
+  "name": "@tacocrew/api",
   "private": true,
   "version": "0.2512.1",
   "type": "module",
@@ -31,7 +31,7 @@
     "@hono/zod-openapi": "^1.1.5",
     "@prisma/adapter-pg": "^7.0.1",
     "@prisma/client": "^7.0.1",
-    "@tacobot/gigatacos-client": "workspace:*",
+    "@tacocrew/gigatacos-client": "workspace:*",
     "axios": "^1.13.2",
     "better-auth": "^1.3.34",
     "bs58": "^6.0.0",

@@ -14,12 +14,12 @@
   },
   "scripts": {
     "dev": "turbo run dev --parallel",
-    "dev:api": "bun --filter @tacobot/api dev",
-    "dev:web": "bun --filter @tacobot/web dev",
-    "dev:storybook": "bun --filter @tacobot/storybook dev",
+    "dev:api": "bun --filter @tacocrew/api dev",
+    "dev:web": "bun --filter @tacocrew/web dev",
+    "dev:storybook": "bun --filter @tacocrew/storybook dev",
     "build": "turbo run build",
-    "build:ui-kit": "bun --filter @tacobot/ui-kit build",
-    "db:setup": "bun --filter @tacobot/api db:setup",
+    "build:ui-kit": "bun --filter @tacocrew/ui-kit build",
+    "db:setup": "bun --filter @tacocrew/api db:setup",
     "test": "turbo run test",
     "check": "turbo run check",
     "lint:fix": "biome check --write .",
@@ -28,5 +28,10 @@
   "module": "index.ts",
   "peerDependencies": {
     "typescript": "^5"
+  },
+  "dependencies": {
+    "@hookform/resolvers": "^5.2.2",
+    "react-hook-form": "^7.68.0",
+    "zod": "^4.1.13"
   }
 }

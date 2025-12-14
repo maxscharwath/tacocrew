@@ -9,7 +9,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
   Avatar,
   AvatarLabelGroup,
   Badge,
@@ -48,7 +47,7 @@ import {
   TooltipContent,
   TooltipTrigger,
   toast,
-} from '@tacobot/ui-kit';
+} from '@tacocrew/ui-kit';
 import {
   BellRing,
   CheckCircle2,
@@ -58,13 +57,11 @@ import {
   Mail,
   MapPin,
   MoreVertical,
-  Phone,
   Plus,
   Search,
   Settings,
   Trash2,
   Truck,
-  User,
   Users,
   Wallet,
 } from 'lucide-react';

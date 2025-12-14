@@ -1,6 +1,6 @@
+import { Button } from '@tacocrew/ui-kit';
 import { Check, RefreshCw, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { Button } from '@/components/ui';
 
 type EditActionButtonsProps = {
   readonly isSaving: boolean;

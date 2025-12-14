@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { Avatar } from '@tacobot/ui-kit';
+import { Avatar, AvatarFallback, AvatarImage } from '@tacocrew/ui-kit';
 import { User } from 'lucide-react';
 
 const COLOR_OPTIONS = [
@@ -27,7 +27,6 @@ const meta = {
     color: 'brand' as (typeof COLOR_OPTIONS)[number],
     size: 'md' as (typeof SIZE_OPTIONS)[number],
     variant: 'default',
-    children: 'TL',
   },
   argTypes: {
     color: {
@@ -38,16 +37,12 @@ const meta = {
     size: {
       control: { type: 'radio' },
       options: SIZE_OPTIONS,
-      description: 'Avatar size – icons resize automatically.',
+      description: 'Avatar size.',
     },
     variant: {
       control: { type: 'inline-radio' },
       options: ['default', 'elevated'],
       description: 'Default = bordered tile, Elevated = soft shadow tile.',
-    },
-    children: {
-      control: 'text',
-      description: 'Supports text initials, emoji or an icon element.',
     },
     className: { control: false },
   },
@@ -60,7 +55,23 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 // Main story - use controls panel to explore all options
-export const Default: Story = {};
+export const Default: Story = {
+  render: (args) => (
+    <Avatar {...args}>
+      <AvatarFallback>TL</AvatarFallback>
+    </Avatar>
+  ),
+};
+
+// With image example
+export const WithImage: Story = {
+  render: () => (
+    <Avatar color="brand" size="lg">
+      <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
+      <AvatarFallback>SC</AvatarFallback>
+    </Avatar>
+  ),
+};
 
 // Showcase story - all options for reference
 export const Showcase: Story = {
@@ -72,7 +83,9 @@ export const Showcase: Story = {
           {SIZE_OPTIONS.map((size) => (
             <div key={size} className="flex flex-col items-center gap-2 text-slate-400 text-xs">
               <Avatar size={size} color="brand">
-                <User />
+                <AvatarFallback>
+                  <User />
+                </AvatarFallback>
               </Avatar>
               <span>{size.toUpperCase()}</span>
             </div>
@@ -86,7 +99,9 @@ export const Showcase: Story = {
           {COLOR_OPTIONS.map((color) => (
             <div key={color} className="flex flex-col items-center gap-2 text-slate-400 text-xs">
               <Avatar color={color}>
-                <User />
+                <AvatarFallback>
+                  <User />
+                </AvatarFallback>
               </Avatar>
               <span className="uppercase tracking-wide">{color}</span>
             </div>
@@ -100,13 +115,13 @@ export const Showcase: Story = {
           <div className="text-slate-400 text-xs">
             <p className="mb-2 font-semibold text-white">Default</p>
             <Avatar variant="default" color="brand">
-              TL
+              <AvatarFallback>TL</AvatarFallback>
             </Avatar>
           </div>
           <div className="text-slate-400 text-xs">
             <p className="mb-2 font-semibold text-white">Elevated</p>
             <Avatar variant="elevated" color="brandHero">
-              TL
+              <AvatarFallback>TL</AvatarFallback>
             </Avatar>
           </div>
         </div>

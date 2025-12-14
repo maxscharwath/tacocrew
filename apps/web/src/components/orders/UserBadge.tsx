@@ -1,4 +1,4 @@
-import { Avatar, Badge } from '@/components/ui';
+import { Avatar, AvatarFallback, AvatarImage, Badge } from '@tacocrew/ui-kit';
 import { getAvatarUrl } from '@/lib/api/user';
 import { getAvatarSizeClass, getAvatarSizePixels, getUserInitials } from './user-utils';
 
@@ -40,10 +40,10 @@ export function UserBadge({
         color="brandHero"
         size={size === 'md' ? 'md' : 'sm'}
         variant="default"
-        src={avatarUrl}
         className={`${avatarSizeClass} border-0`}
       >
-        {getUserInitials(name)}
+        <AvatarImage src={avatarUrl} alt={name} />
+        <AvatarFallback>{getUserInitials(name)}</AvatarFallback>
       </Avatar>
       {badgeText}
     </Badge>

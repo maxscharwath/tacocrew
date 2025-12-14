@@ -1,11 +1,3 @@
-import { Edit, Globe, Key, Laptop, Lock, Mail, Phone, User } from 'lucide-react';
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import type { LoaderFunctionArgs } from 'react-router';
-import { LanguageSwitcher } from '@/components/language-switcher';
-import { ImageUploader } from '@/components/profile/ImageUploader';
-import { PushNotificationManager } from '@/components/profile/PushNotificationManager';
-import { EditActionButtons } from '@/components/shared';
 import {
   Alert,
   AlertDialog,
@@ -28,7 +20,15 @@ import {
   Input,
   PhoneInput,
   toast,
-} from '@/components/ui';
+} from '@tacocrew/ui-kit';
+import { Edit, Globe, Key, Laptop, Lock, Mail, Phone, User } from 'lucide-react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import type { LoaderFunctionArgs } from 'react-router';
+import { LanguageSwitcher } from '@/components/language-switcher';
+import { ImageUploader } from '@/components/profile/ImageUploader';
+import { PushNotificationManager } from '@/components/profile/PushNotificationManager';
+import { EditActionButtons } from '@/components/shared';
 import type { UserProfile } from '@/lib/api/types';
 import { getProfile, updateUserPhone } from '@/lib/api/user';
 import { authClient, useSession } from '@/lib/auth-client';
@@ -47,7 +47,7 @@ function useEditableField<T extends string | null | undefined>(
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
-    setValue((currentValue ?? defaultValue) as string);
+    setValue(currentValue ?? defaultValue);
   }, [currentValue, defaultValue]);
 
   const handleSave = useCallback(
@@ -64,7 +64,7 @@ function useEditableField<T extends string | null | undefined>(
   );
 
   const handleCancel = useCallback(() => {
-    setValue((currentValue ?? defaultValue) as string);
+    setValue(currentValue ?? defaultValue);
     setIsEditing(false);
   }, [currentValue, defaultValue]);
 

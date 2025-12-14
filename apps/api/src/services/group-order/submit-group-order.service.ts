@@ -3,7 +3,7 @@
  * @module services/group-order
  */
 
-import { PaymentMethod } from '@tacobot/gigatacos-client';
+import { PaymentMethod } from '@tacocrew/gigatacos-client';
 import { injectable } from 'tsyringe';
 import { GroupOrderRepository } from '@/infrastructure/repositories/group-order.repository';
 import { UserOrderRepository } from '@/infrastructure/repositories/user-order.repository';
@@ -26,7 +26,7 @@ type SubmissionResult = {
   transactionId: string;
   orderData: unknown;
   sessionId: string;
-  orderSummary: import('@tacobot/gigatacos-client').OrderSummary | null;
+  orderSummary: import('@tacocrew/gigatacos-client').OrderSummary | null;
   dryRun?: boolean;
 };
 

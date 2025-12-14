@@ -34,7 +34,7 @@ export const auth: ReturnType<typeof betterAuth> = betterAuth({
   plugins: [
     passkey({
       rpID: process.env['PASSKEY_RP_ID'] || 'localhost',
-      rpName: process.env['PASSKEY_RP_NAME'] || 'TacoBot',
+      rpName: process.env['PASSKEY_RP_NAME'] || 'TacoCrew',
       origin: process.env['FRONTEND_URL'] || 'http://localhost:5173',
     }),
   ],

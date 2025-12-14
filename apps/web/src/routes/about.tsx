@@ -2,6 +2,8 @@ import * as git from '@build/git';
 import * as pkg from '@build/package';
 import buildTime from '@build/time';
 import { SiBluesky, SiGithub } from '@icons-pack/react-simple-icons';
+import { Badge, Button, Card, CardContent, CardHeader, CardTitle } from '@tacocrew/ui-kit';
+import { cva, type VariantProps } from 'class-variance-authority';
 import {
   AtSignIcon,
   Calendar,
@@ -16,10 +18,10 @@ import {
 import type { ComponentType, ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
-import appIcon from '@/assets/icon.png?format=webp';
-import { Badge, Button, Card, CardContent, CardHeader, CardTitle } from '@/components/ui';
+import appIcon from '@/assets/icon.png?format=webp&img';
 import { useDateFormat } from '@/hooks/useDateFormat';
 import { routes } from '@/lib/routes';
+import { cn } from '@/lib/utils';
 
 type Contributor = {
   name: string;
@@ -32,7 +34,7 @@ type Contributor = {
 function parseContributor(contributor: string | Contributor): Contributor {
   if (typeof contributor === 'string') {
     // Use more specific regex to avoid ReDoS: limit whitespace repetition
-    const match = contributor.match(/^([^<(]+?)(?:\s?<([^>]+)>)?(?:\s?\(([^)]+)\))?$/);
+    const match = new RegExp(/^([^<(]+?)(?:\s?<([^>]+)>)?(?:\s?\(([^)]+)\))?$/).exec(contributor);
     if (match) {
       return {
         name: match[1].trim(),
@@ -46,41 +48,48 @@ function parseContributor(contributor: string | Contributor): Contributor {
 }
 
 function getGitHubUsername(githubUrl: string): string | null {
-  const match = githubUrl.match(/github\.com\/([^/]+)/);
+  const match = new RegExp(/github\.com\/([^/]+)/).exec(githubUrl);
   return match ? match[1] : null;
 }
 
-function SocialButton({
-  href,
-  title,
-  children,
-  variant = 'default',
-}: {
-  href: string;
-  title: string;
-  children: ReactNode;
-  variant?: 'default' | 'bluesky' | 'github' | 'email' | 'website';
-}) {
+const socialButtonVariants = cva(
+  'grid h-10 w-10 place-items-center rounded-xl border transition-all duration-200 hover:scale-105',
+  {
+    variants: {
+      variant: {
+        default:
+          'border-white/10 bg-white/5 text-slate-400 hover:border-white/20 hover:bg-white/10 hover:text-white',
+        sky: 'border-sky-500/20 bg-sky-500/15 text-sky-400 hover:border-sky-500/30 hover:bg-sky-500/25 hover:text-sky-200',
+        slate:
+          'border-slate-700/30 bg-slate-800/30 text-slate-200 hover:border-slate-600/40 hover:bg-slate-800/40 hover:text-white',
+        orange:
+          'border-orange-500/20 bg-orange-500/15 text-orange-400 hover:border-orange-500/30 hover:bg-orange-500/25 hover:text-orange-300',
+        emerald:
+          'border-emerald-500/20 bg-emerald-500/15 text-emerald-400 hover:border-emerald-500/30 hover:bg-emerald-500/25 hover:text-emerald-300',
+      },
+    },
+    defaultVariants: {
+      variant: 'default',
+    },
+  }
+);
+
+type SocialButtonProps = {
+  readonly href: string;
+  readonly title: string;
+  readonly children: ReactNode;
+  readonly className?: string;
+} & VariantProps<typeof socialButtonVariants>;
+
+function SocialButton({ href, title, children, variant, className }: SocialButtonProps) {
   const isExternal = !href.startsWith('mailto:');
-  const variantClasses = {
-    default:
-      'bg-white/5 text-slate-400 hover:bg-white/10 hover:text-white border-white/10 hover:border-white/20',
-    bluesky:
-      'bg-sky-500/15 text-sky-400 hover:bg-sky-500/25 hover:text-sky-200 border-sky-500/20 hover:border-sky-500/30',
-    github:
-      'bg-slate-800/30 text-slate-200 hover:bg-slate-800/40 hover:text-white border-slate-700/30 hover:border-slate-600/40',
-    email:
-      'bg-orange-500/15 text-orange-400 hover:bg-orange-500/25 hover:text-orange-300 border-orange-500/20 hover:border-orange-500/30',
-    website:
-      'bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25 hover:text-emerald-300 border-emerald-500/20 hover:border-emerald-500/30',
-  };
 
   return (
     <a
       href={href}
       target={isExternal ? '_blank' : undefined}
       rel={isExternal ? 'noopener noreferrer' : undefined}
-      className={`grid h-10 w-10 place-items-center rounded-xl border transition-all duration-200 hover:scale-105 ${variantClasses[variant]}`}
+      className={cn(socialButtonVariants({ variant }), className)}
       title={title}
     >
       {children}
@@ -88,7 +97,7 @@ function SocialButton({
   );
 }
 
-function ContributorCard({ contributor }: { contributor: Contributor }) {
+function ContributorCard({ contributor }: { readonly contributor: Contributor }) {
   const initials = contributor.name
     .split(' ')
     .map((n) => n[0])
@@ -125,12 +134,12 @@ function ContributorCard({ contributor }: { contributor: Contributor }) {
           <h3 className="font-semibold text-lg text-white">{contributor.name}</h3>
           <div className="mt-3 flex flex-wrap items-center gap-2">
             {contributor.github && (
-              <SocialButton href={contributor.github} title="GitHub" variant="github">
+              <SocialButton href={contributor.github} title="GitHub" variant="slate">
                 <SiGithub size={16} />
               </SocialButton>
             )}
             {contributor.bluesky && (
-              <SocialButton href={contributor.bluesky} title="Bluesky" variant="bluesky">
+              <SocialButton href={contributor.bluesky} title="Bluesky" variant="sky">
                 <SiBluesky size={16} />
               </SocialButton>
             )}
@@ -138,13 +147,13 @@ function ContributorCard({ contributor }: { contributor: Contributor }) {
               <SocialButton
                 href={`mailto:${contributor.email}`}
                 title={contributor.email}
-                variant="email"
+                variant="orange"
               >
                 <AtSignIcon size={16} />
               </SocialButton>
             )}
             {contributor.url && (
-              <SocialButton href={contributor.url} title="Website" variant="website">
+              <SocialButton href={contributor.url} title="Website" variant="emerald">
                 <GlobeIcon size={16} />
               </SocialButton>
             )}
@@ -161,10 +170,10 @@ function BuildInfoItem({
   value,
   mono = false,
 }: {
-  icon: ComponentType<{ size?: number; className?: string }>;
-  label: string;
-  value: string | null | undefined;
-  mono?: boolean;
+  readonly icon: ComponentType<{ size?: number; className?: string }>;
+  readonly label: string;
+  readonly value: string | null | undefined;
+  readonly mono?: boolean;
 }) {
   if (!value) return null;
 

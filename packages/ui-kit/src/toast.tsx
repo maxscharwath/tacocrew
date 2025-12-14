@@ -1,7 +1,7 @@
 /**
  * Toast Component
  * A composable toast/notification system built on Sonner
- * Styled to match the TacoBot design system
+ * Styled to match the TacoCrew design system
  */
 
 import { CheckCircle2, Info, Loader2, OctagonX, TriangleAlert } from 'lucide-react';

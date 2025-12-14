@@ -1,8 +1,8 @@
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@tacocrew/ui-kit';
 import { Bell } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui';
 import { usePolling } from '@/hooks';
 import { getUnreadCount } from '@/lib/api/notifications';
 import { NotificationDropdown } from './NotificationDropdown';
@@ -13,11 +13,11 @@ function useIsMobile() {
 
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.matchMedia('(max-width: 640px)').matches);
+      setIsMobile(globalThis.matchMedia('(max-width: 640px)').matches);
     };
 
     checkMobile();
-    const mediaQuery = window.matchMedia('(max-width: 640px)');
+    const mediaQuery = globalThis.matchMedia('(max-width: 640px)');
     mediaQuery.addEventListener('change', checkMobile);
 
     return () => mediaQuery.removeEventListener('change', checkMobile);

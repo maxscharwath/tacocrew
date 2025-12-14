@@ -1,60 +1,150 @@
 {
-  "common": {
-    "signIn": "Anmelden",
-    "signOut": "Abmelden",
-    "signingIn": "Anmeldung läuft…",
-    "username": "Benutzername",
-    "loggedInAs": "Angemeldet als",
-    "open": "Öffnen",
-    "loading": "Laden",
-    "error": "Fehler",
-    "save": "Speichern",
-    "saving": "Speichern…",
+  "about": {
+    "branch": "Branch",
+    "buildDate": "Build-Datum",
+    "buildInfo": "Build-Informationen",
+    "byTeam": "vom TacoCrew-Team",
+    "commit": "Commit",
+    "contributors": "Mitwirkende",
+    "latestCommit": "Neuester Commit",
+    "latestTag": "Neuester Tag",
+    "madeWith": "Gemacht mit",
+    "noCommitMessage": "Keine Commit-Nachricht verfügbar",
+    "releaseNotes": "Versionshinweise",
+    "version": "Version"
+  },
+  "account": {
+    "avatar": {
+      "backgroundColor": "Hintergrundfarbe",
+      "cancel": "Abbrechen",
+      "chooseAvatar": "Avatar auswählen",
+      "confirm": "Upload bestätigen",
+      "confirmHint": "Überprüfe dein Bild und klicke dann auf „Upload bestätigen“, um es zu speichern.",
+      "customColor": "Benutzerdefinierte Farbe",
+      "delete": "Löschen",
+      "deleteConfirm": "Möchtest du dein Profilbild wirklich löschen?",
+      "deleteFailed": "Bild konnte nicht gelöscht werden. Bitte versuche es erneut.",
+      "description": "Lade ein Profilbild hoch, um dein Konto zu personalisieren",
+      "dragDrop": "Ziehe ein Bild hierher oder klicke oben auf „Bild auswählen“",
+      "dropHere": "Bild hier ablegen",
+      "fileTooLarge": "Datei ist zu groß. Maximal 5 MB.",
+      "hint": "JPG, PNG, WebP oder GIF. Max. 5 MB. Das Bild wird auf 512×512 px verkleinert und in WebP konvertiert.",
+      "invalidType": "Ungültiger Dateityp. Es sind nur Bilder erlaubt.",
+      "retry": "Erneut versuchen",
+      "select": "Bild auswählen",
+      "selectPredefined": "Wähle einen vordefinierten Avatar",
+      "supportedFormats": "JPG, PNG, WebP, GIF bis 5 MB",
+      "title": "Profilbild",
+      "uploadCustom": "Eigenes Bild hochladen",
+      "uploadFailed": "Bild konnte nicht hochgeladen werden. Bitte versuche es erneut.",
+      "uploadSuccess": "Profilbild erfolgreich hochgeladen!",
+      "uploading": "Wird hochgeladen..."
+    },
     "cancel": "Abbrechen",
-    "delete": "Löschen",
-    "remove": "Entfernen",
-    "ok": "OK",
     "edit": "Bearbeiten",
-    "submit": "Absenden",
-    "back": "Zurück",
+    "loadFailed": "Kontodaten konnten nicht geladen werden",
+    "loading": "Laden...",
+    "nameUpdate": {
+      "failed": "Name konnte nicht aktualisiert werden",
+      "success": "Name erfolgreich aktualisiert"
+    },
+    "passkeys": {
+      "about": {
+        "description": "Passkeys ermöglichen es dir, dich sicher mit den Biometriedaten deines Geräts (Fingerabdruck, Gesichtserkennung) oder einem Sicherheitsschlüssel anzumelden. Sie sind sicherer als Passwörter und können nicht durch Phishing gestohlen werden. Du kannst mehrere Passkeys für verschiedene Geräte registrieren.",
+        "title": "Über Passkeys"
+      },
+      "addButton": "+ Passkey hinzufügen",
+      "delete": "Löschen",
+      "deleteConfirm": "Möchtest du diesen Passkey wirklich löschen?",
+      "deleteFailed": "Passkey-Löschung fehlgeschlagen",
+      "deleteSuccess": "Passkey erfolgreich gelöscht",
+      "description": "Passwortlose Authentifizierung mit deinem Gerät",
+      "deviceNamePrefix": "Gerät",
+      "emptyState": {
+        "description": "Füge einen Passkey hinzu, um die passwortlose Anmeldung mit den Biometriedaten deines Geräts oder einem Sicherheitsschlüssel zu aktivieren. Du kannst mehrere Passkeys für verschiedene Geräte registrieren.",
+        "title": "Keine Passkeys registriert"
+      },
+      "registerFailed": "Passkey-Registrierung fehlgeschlagen",
+      "registerSuccess": "Passkey erfolgreich registriert!",
+      "registered": "Registriert",
+      "registering": "Wird registriert...",
+      "rename": "Umbenennen",
+      "title": "Passkeys",
+      "unnamed": "Unbenannter Passkey",
+      "updateFailed": "Passkey-Aktualisierung fehlgeschlagen",
+      "updateNameFailed": "Passkey-Name konnte nicht aktualisiert werden",
+      "updateSuccess": "Passkey-Name aktualisiert"
+    },
+    "phoneUpdate": {
+      "failed": "Telefonnummer konnte nicht aktualisiert werden",
+      "success": "Telefonnummer erfolgreich aktualisiert"
+    },
+    "profile": {
+      "description": "Deine Kontodaten",
+      "email": "E-Mail",
+      "language": "Sprache",
+      "name": "Name",
+      "phone": "Telefonnummer",
+      "phoneNotSet": "Nicht festgelegt",
+      "phonePlaceholder": "+41 XX XXX XX XX",
+      "title": "Profilinformationen",
+      "unverified": "Nicht verifiziert",
+      "verified": "Verifiziert"
+    },
+    "pushNotifications": {
+      "about": {
+        "description": "Aktivieren Sie Push-Benachrichtigungen, um Echtzeit-Updates zu erhalten, wenn jemand seine Bestellung als bezahlt markiert oder wenn sich Ihr Rückerstattungsstatus ändert. Benachrichtigungen funktionieren auch, wenn die App geschlossen ist.",
+        "title": "Über Push-Benachrichtigungen"
+      },
+      "description": "Erhalten Sie Benachrichtigungen über Bestellaktualisierungen",
+      "devices": {
+        "delete": "Entfernen",
+        "deleteConfirm": "Möchten Sie dieses Gerät wirklich entfernen?",
+        "deleteFailed": "Gerät konnte nicht entfernt werden",
+        "deleteSuccess": "Gerät erfolgreich entfernt",
+        "description": "Verwalten Sie Geräte, die Push-Benachrichtigungen erhalten",
+        "emptyState": {
+          "description": "Wenn Sie Benachrichtigungen auf einem Gerät aktivieren, wird es hier angezeigt.",
+          "title": "Keine Geräte registriert"
+        },
+        "registered": "Registriert",
+        "title": "Registrierte Geräte",
+        "unknownDevice": "Unbekanntes Gerät"
+      },
+      "disable": "Benachrichtigungen deaktivieren",
+      "enable": "Benachrichtigungen aktivieren",
+      "notSubscribed": "Nicht abonniert",
+      "notSupported": "Push-Benachrichtigungen werden in Ihrem Browser nicht unterstützt",
+      "permission": {
+        "default": "Berechtigung nicht angefordert",
+        "denied": "Berechtigung verweigert",
+        "granted": "Berechtigung erteilt"
+      },
+      "permissionDeniedHelp": "Bitte aktivieren Sie Benachrichtigungen in Ihren Browsereinstellungen, um Push-Benachrichtigungen zu erhalten.",
+      "status": "Benachrichtigungsstatus",
+      "subscribeFailed": "Push-Benachrichtigungen konnten nicht aktiviert werden",
+      "subscribeSuccess": "Push-Benachrichtigungen erfolgreich aktiviert!",
+      "subscribed": "Abonniert",
+      "test": {
+        "button": "Test senden",
+        "description": "Senden Sie eine Test-Benachrichtigung, um zu überprüfen, ob alles funktioniert",
+        "failed": "Test-Benachrichtigung konnte nicht gesendet werden",
+        "success": "Test-Benachrichtigung gesendet! Überprüfen Sie Ihre Benachrichtigungen.",
+        "title": "Test-Benachrichtigung"
+      },
+      "title": "Push-Benachrichtigungen",
+      "unsubscribeFailed": "Push-Benachrichtigungen konnten nicht deaktiviert werden",
+      "unsubscribeSuccess": "Push-Benachrichtigungen erfolgreich deaktiviert"
+    },
+    "save": "Speichern",
+    "saving": "Wird gespeichert...",
+    "subtitle": "Verwalte dein Konto und Passkeys",
+    "title": "Kontoeinstellungen"
+  },
+  "common": {
     "accept": "Akzeptieren",
-    "reject": "Ablehnen",
-    "you": "Du",
-    "outOfStock": "Nicht verfügbar",
-    "labels": {
-      "dropName": "Bestellname",
-      "timeWindow": "Zeitfenster",
-      "opens": "Öffnet",
-      "closes": "Schließt (Deadline)",
-      "quantity": "Menge",
-      "meats": "Fleisch",
-      "sauces": "Soßen",
-      "garnishes": "Beilagen",
-      "extras": "Extras",
-      "drinks": "Getränke",
-      "desserts": "Desserts",
-      "addMeat": "Fleisch hinzufügen"
-    },
-    "close": "Schließen",
-    "placeholders": {
-      "dropName": "Freitag Mittagessen",
-      "specialInstructions": "z.B. Keine Zwiebeln, extra scharf, Soße extra..."
-    },
-    "status": {
-      "open": "Offen",
-      "pending": "Ausstehend",
-      "submitted": "Abgesendet",
-      "completed": "Abgeschlossen",
-      "closed": "Geschlossen",
-      "draft": "Entwurf",
-      "active": "Aktiv"
-    },
-    "currency": {
-      "chf": "CHF"
-    },
-    "country": {
-      "switzerland": "Schweiz"
-    },
+    "back": "Zurück",
+    "cancel": "Abbrechen",
     "cantons": {
       "AG": "Aargau",
       "AI": "Appenzell Innerrhoden",
@@ -83,456 +173,315 @@
       "ZG": "Zug",
       "ZH": "Zürich"
     },
+    "close": "Schließen",
+    "country": {
+      "switzerland": "Schweiz"
+    },
+    "currency": {
+      "chf": "CHF"
+    },
     "dateShortcuts": {
+      "nextWeek": "Nächste Woche",
       "quickSelect": "Schnellauswahl",
       "today": "Heute",
-      "tomorrow": "Morgen",
-      "nextWeek": "Nächste Woche"
-    }
-  },
-  "navigation": {
-    "dashboard": "Dashboard",
-    "orders": "Bestellungen",
-    "stock": "Lager",
-    "profile": "Profil",
-    "settings": "Einstellungen",
-    "about": "Über"
-  },
-  "login": {
-    "title": "TacoCrew",
-    "subtitle": "Erstelle dein Konto, um Gruppenbestellungen beizutreten oder eigene zu erstellen.",
-    "usernamePlaceholder": "chef-del-taco",
-    "usernameRequired": "Benutzername ist erforderlich",
-    "unexpectedError": "Unerwarteter Fehler. Bitte versuche es erneut.",
-    "signUp": {
-      "title": "Registrieren",
-      "subtitle": "Erstelle dein Konto, um loszulegen"
+      "tomorrow": "Morgen"
     },
-    "signIn": "Anmelden",
-    "signUpButton": "Registrieren",
-    "signInWithPasskey": "Mit Passkey anmelden",
-    "orUsePassword": "Oder Passwort verwenden",
-    "name": {
-      "label": "Name",
-      "placeholder": "Dein Name"
-    },
-    "email": {
-      "label": "E-Mail",
-      "placeholder": "email@beispiel.com"
-    },
-    "password": {
-      "label": "Passwort",
-      "placeholder": "••••••••"
-    },
-    "pleaseWait": "Bitte warten...",
-    "signInFailed": "Anmeldung fehlgeschlagen",
-    "signUpFailed": "Registrierung fehlgeschlagen",
-    "passkeySignInFailed": "Passkey-Anmeldung fehlgeschlagen",
-    "passkeyAuthFailed": "Passkey-Authentifizierung fehlgeschlagen",
-    "alreadyHaveAccount": "Hast du bereits ein Konto?",
-    "noAccount": "Hast du noch kein Konto?"
-  },
-  "account": {
-    "title": "Kontoeinstellungen",
-    "subtitle": "Verwalte dein Konto und Passkeys",
-    "profile": {
-      "title": "Profilinformationen",
-      "description": "Deine Kontodaten",
-      "name": "Name",
-      "email": "E-Mail",
-      "phone": "Telefonnummer",
-      "phonePlaceholder": "+41 XX XXX XX XX",
-      "phoneNotSet": "Nicht festgelegt",
-      "language": "Sprache",
-      "verified": "Verifiziert",
-      "unverified": "Nicht verifiziert"
-    },
-    "passkeys": {
-      "title": "Passkeys",
-      "description": "Passwortlose Authentifizierung mit deinem Gerät",
-      "addButton": "+ Passkey hinzufügen",
-      "registering": "Wird registriert...",
-      "deviceNamePrefix": "Gerät",
-      "emptyState": {
-        "title": "Keine Passkeys registriert",
-        "description": "Füge einen Passkey hinzu, um die passwortlose Anmeldung mit den Biometriedaten deines Geräts oder einem Sicherheitsschlüssel zu aktivieren. Du kannst mehrere Passkeys für verschiedene Geräte registrieren."
-      },
-      "rename": "Umbenennen",
-      "delete": "Löschen",
-      "registered": "Registriert",
-      "about": {
-        "title": "Über Passkeys",
-        "description": "Passkeys ermöglichen es dir, dich sicher mit den Biometriedaten deines Geräts (Fingerabdruck, Gesichtserkennung) oder einem Sicherheitsschlüssel anzumelden. Sie sind sicherer als Passwörter und können nicht durch Phishing gestohlen werden. Du kannst mehrere Passkeys für verschiedene Geräte registrieren."
-      },
-      "registerSuccess": "Passkey erfolgreich registriert!",
-      "deleteSuccess": "Passkey erfolgreich gelöscht",
-      "updateSuccess": "Passkey-Name aktualisiert",
-      "registerFailed": "Passkey-Registrierung fehlgeschlagen",
-      "deleteFailed": "Passkey-Löschung fehlgeschlagen",
-      "updateFailed": "Passkey-Aktualisierung fehlgeschlagen",
-      "deleteConfirm": "Möchtest du diesen Passkey wirklich löschen?",
-      "updateNameFailed": "Passkey-Name konnte nicht aktualisiert werden",
-      "unnamed": "Unbenannter Passkey"
-    },
-    "nameUpdate": {
-      "success": "Name erfolgreich aktualisiert",
-      "failed": "Name konnte nicht aktualisiert werden"
-    },
-    "phoneUpdate": {
-      "success": "Telefonnummer erfolgreich aktualisiert",
-      "failed": "Telefonnummer konnte nicht aktualisiert werden"
-    },
-    "pushNotifications": {
-      "title": "Push-Benachrichtigungen",
-      "description": "Erhalten Sie Benachrichtigungen über Bestellaktualisierungen",
-      "status": "Benachrichtigungsstatus",
-      "subscribed": "Abonniert",
-      "notSubscribed": "Nicht abonniert",
-      "enable": "Benachrichtigungen aktivieren",
-      "disable": "Benachrichtigungen deaktivieren",
-      "subscribeSuccess": "Push-Benachrichtigungen erfolgreich aktiviert!",
-      "unsubscribeSuccess": "Push-Benachrichtigungen erfolgreich deaktiviert",
-      "subscribeFailed": "Push-Benachrichtigungen konnten nicht aktiviert werden",
-      "unsubscribeFailed": "Push-Benachrichtigungen konnten nicht deaktiviert werden",
-      "notSupported": "Push-Benachrichtigungen werden in Ihrem Browser nicht unterstützt",
-      "permission": {
-        "default": "Berechtigung nicht angefordert",
-        "granted": "Berechtigung erteilt",
-        "denied": "Berechtigung verweigert"
-      },
-      "permissionDeniedHelp": "Bitte aktivieren Sie Benachrichtigungen in Ihren Browsereinstellungen, um Push-Benachrichtigungen zu erhalten.",
-      "test": {
-        "title": "Test-Benachrichtigung",
-        "description": "Senden Sie eine Test-Benachrichtigung, um zu überprüfen, ob alles funktioniert",
-        "button": "Test senden",
-        "success": "Test-Benachrichtigung gesendet! Überprüfen Sie Ihre Benachrichtigungen.",
-        "failed": "Test-Benachrichtigung konnte nicht gesendet werden"
-      },
-      "about": {
-        "title": "Über Push-Benachrichtigungen",
-        "description": "Aktivieren Sie Push-Benachrichtigungen, um Echtzeit-Updates zu erhalten, wenn jemand seine Bestellung als bezahlt markiert oder wenn sich Ihr Rückerstattungsstatus ändert. Benachrichtigungen funktionieren auch, wenn die App geschlossen ist."
-      },
-      "devices": {
-        "title": "Registrierte Geräte",
-        "description": "Verwalten Sie Geräte, die Push-Benachrichtigungen erhalten",
-        "registered": "Registriert",
-        "unknownDevice": "Unbekanntes Gerät",
-        "delete": "Entfernen",
-        "deleteConfirm": "Möchten Sie dieses Gerät wirklich entfernen?",
-        "deleteSuccess": "Gerät erfolgreich entfernt",
-        "deleteFailed": "Gerät konnte nicht entfernt werden",
-        "emptyState": {
-          "title": "Keine Geräte registriert",
-          "description": "Wenn Sie Benachrichtigungen auf einem Gerät aktivieren, wird es hier angezeigt."
-        }
-      }
-    },
-    "avatar": {
-      "title": "Profilbild",
-      "description": "Lade ein Profilbild hoch, um dein Konto zu personalisieren",
-      "customColor": "Benutzerdefinierte Farbe",
-      "invalidType": "Ungültiger Dateityp. Es sind nur Bilder erlaubt.",
-      "fileTooLarge": "Datei ist zu groß. Maximal 5 MB.",
-      "uploadFailed": "Bild konnte nicht hochgeladen werden. Bitte versuche es erneut.",
-      "deleteConfirm": "Möchtest du dein Profilbild wirklich löschen?",
-      "deleteFailed": "Bild konnte nicht gelöscht werden. Bitte versuche es erneut.",
-      "uploading": "Wird hochgeladen...",
-      "confirm": "Upload bestätigen",
-      "cancel": "Abbrechen",
-      "confirmHint": "Überprüfe dein Bild und klicke dann auf „Upload bestätigen“, um es zu speichern.",
-      "select": "Bild auswählen",
-      "delete": "Löschen",
-      "hint": "JPG, PNG, WebP oder GIF. Max. 5 MB. Das Bild wird auf 512×512 px verkleinert und in WebP konvertiert.",
-      "dragDrop": "Ziehe ein Bild hierher oder klicke oben auf „Bild auswählen“",
-      "dropHere": "Bild hier ablegen",
-      "supportedFormats": "JPG, PNG, WebP, GIF bis 5 MB",
-      "uploadSuccess": "Profilbild erfolgreich hochgeladen!",
-      "retry": "Erneut versuchen",
-      "chooseAvatar": "Avatar auswählen",
-      "uploadCustom": "Eigenes Bild hochladen",
-      "backgroundColor": "Hintergrundfarbe",
-      "selectPredefined": "Wähle einen vordefinierten Avatar"
-    },
-    "loading": "Laden...",
-    "loadFailed": "Kontodaten konnten nicht geladen werden",
+    "delete": "Löschen",
     "edit": "Bearbeiten",
-    "saving": "Wird gespeichert...",
+    "error": "Fehler",
+    "labels": {
+      "addMeat": "Fleisch hinzufügen",
+      "closes": "Schließt (Deadline)",
+      "desserts": "Desserts",
+      "drinks": "Getränke",
+      "dropName": "Bestellname",
+      "extras": "Extras",
+      "garnishes": "Beilagen",
+      "meats": "Fleisch",
+      "opens": "Öffnet",
+      "quantity": "Menge",
+      "sauces": "Soßen",
+      "timeWindow": "Zeitfenster"
+    },
+    "loading": "Laden",
+    "loggedInAs": "Angemeldet als",
+    "ok": "OK",
+    "open": "Öffnen",
+    "outOfStock": "Nicht verfügbar",
+    "placeholders": {
+      "dropName": "Freitag Mittagessen",
+      "specialInstructions": "z.B. Keine Zwiebeln, extra scharf, Soße extra..."
+    },
+    "reject": "Ablehnen",
+    "remove": "Entfernen",
     "save": "Speichern",
-    "cancel": "Abbrechen"
-  },
-  "organizations": {
-    "title": "Organisationen",
-    "description": "Verwalten Sie Ihre Organisationen und sehen Sie, welche Gruppenbestellungen zu welcher Organisation gehören",
-    "list": {
-      "title": "Organisationen",
-      "add": "Neu"
+    "saving": "Speichern…",
+    "signIn": "Anmelden",
+    "signOut": "Abmelden",
+    "signingIn": "Anmeldung läuft…",
+    "status": {
+      "active": "Aktiv",
+      "closed": "Geschlossen",
+      "completed": "Abgeschlossen",
+      "draft": "Entwurf",
+      "open": "Offen",
+      "pending": "Ausstehend",
+      "submitted": "Abgesendet"
     },
-    "form": {
-      "description": "Erstellen Sie eine neue Organisation, um Gruppenbestellungen und Mitglieder zu verwalten",
-      "name": {
-        "label": "Organisationsname",
-        "placeholder": "Organisationsname eingeben",
-        "description": "Wählen Sie einen eindeutigen Namen für Ihre Organisation"
-      },
-      "create": "Organisation erstellen"
-    },
-    "details": {
-      "avatar": {
-        "title": "Organisations-Avatar",
-        "description": "Laden Sie ein Avatar-Bild für diese Organisation hoch",
-        "upload": "Avatar hochladen",
-        "change": "Avatar ändern",
-        "delete": "Avatar löschen",
-        "deleteTitle": "Avatar löschen",
-        "deleteDescription": "Sind Sie sicher, dass Sie den Avatar dieser Organisation löschen möchten?"
-      },
-      "created": "Erstellt am {{date}}",
-      "rename": "Organisation umbenennen",
-      "delete": "Organisation löschen",
-      "deleteTitle": "Organisation löschen",
-      "deleteDescription": "Sind Sie sicher, dass Sie \"{{name}}\" löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden und entfernt alle Mitglieder und Daten, die mit dieser Organisation verbunden sind."
-    },
-    "empty": {
-      "title": "Keine Organisationen",
-      "description": "Sie gehören noch keiner Organisation an. Erstellen Sie eine, um zu beginnen.",
-      "createButton": "Organisation erstellen",
-      "select": "Organisation auswählen",
-      "selectDescription": "Wählen Sie eine Organisation aus der Liste aus, um Details anzuzeigen und zu verwalten."
-    },
-    "messages": {
-      "creating": "Organisation wird erstellt...",
-      "created": "Organisation erfolgreich erstellt",
-      "createdWithName": "Organisation \"{{name}}\" erfolgreich erstellt",
-      "createFailed": "Fehler beim Erstellen der Organisation: {{error}}",
-      "updating": "Organisation wird aktualisiert...",
-      "updated": "Organisation erfolgreich aktualisiert",
-      "updateFailed": "Fehler beim Aktualisieren der Organisation: {{error}}",
-      "deleting": "Organisation wird gelöscht...",
-      "deleted": "Organisation erfolgreich gelöscht",
-      "deleteFailed": "Fehler beim Löschen der Organisation: {{error}}",
-      "avatarUploaded": "Avatar erfolgreich hochgeladen",
-      "uploadingAvatar": "Avatar wird hochgeladen...",
-      "avatarUploadFailed": "Fehler beim Hochladen des Avatars: {{error}}",
-      "avatarDeleted": "Avatar erfolgreich gelöscht",
-      "deletingAvatar": "Avatar wird gelöscht...",
-      "avatarDeleteFailed": "Fehler beim Löschen des Avatars: {{error}}",
-      "missingName": "Organisationsname ist erforderlich",
-      "missingEmail": "Benutzer-E-Mail ist erforderlich",
-      "userLookupNotImplemented": "Benutzersuche per E-Mail ist noch nicht implementiert",
-      "genericError": "Ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut."
-    },
-    "roles": {
-      "admin": "Administrator",
-      "member": "Mitglied"
-    },
-    "join": {
-      "description": "Anfrage zum Beitritt zu dieser Organisation und Zusammenarbeit mit Teammitgliedern",
-      "infoTitle": "So funktioniert es",
-      "info": "Klicken Sie auf die Schaltfläche unten, um eine Beitrittsanfrage zu senden. Ein Administrator wird Ihre Anfrage prüfen und genehmigen. Nach der Genehmigung können Sie Gruppenbestellungen einsehen und daran teilnehmen.",
-      "button": "Beitrittsanfrage senden",
-      "requesting": "Anfrage wird gesendet...",
-      "success": "Beitrittsanfrage erfolgreich gesendet",
-      "error": "Beitrittsanfrage konnte nicht gesendet werden",
-      "requestSent": "Beitrittsanfrage erfolgreich gesendet!",
-      "waitingApproval": "Warten auf Genehmigung durch einen Administrator. Sie werden benachrichtigt, sobald Ihre Anfrage geprüft wurde.",
-      "pendingInfo": "Ihre Anfrage ist ausstehend. Ein Administrator wird sie in Kürze prüfen.",
-      "backToOrganizations": "Zurück zu Organisationen",
-      "copyLink": "Beitrittslink kopieren",
-      "linkCopied": "Link kopiert!"
-    },
-    "members": {
-      "title": "Mitglieder",
-      "description": "Verwalten Sie Organisationsmitglieder und ihre Rollen",
-      "pendingRequests": "Ausstehende Anfragen",
-      "pendingDescription": "Benutzer, die angefragt haben, dieser Organisation beizutreten",
-      "notMember": "Sie sind kein Mitglied dieser Organisation",
-      "requestPending": "Ihre Beitrittsanfrage wartet auf Genehmigung durch einen Administrator",
-      "requestToJoin": "Anfrage zum Beitritt zu dieser Organisation, um Gruppenbestellungen einzusehen und zusammenzuarbeiten",
-      "requestJoin": "Beitrittsanfrage senden",
-      "requestAccepted": "Beitrittsanfrage akzeptiert",
-      "requestAcceptedWithName": "Die Beitrittsanfrage von {{name}} wurde akzeptiert",
-      "requestRejected": "Beitrittsanfrage abgelehnt",
-      "requestRejectedWithName": "Die Beitrittsanfrage von {{name}} wurde abgelehnt",
-      "requestAcceptFailed": "Beitrittsanfrage konnte nicht akzeptiert werden: {{error}}",
-      "requestRejectFailed": "Beitrittsanfrage konnte nicht abgelehnt werden: {{error}}",
-      "roleUpdated": "Mitgliedsrolle erfolgreich aktualisiert",
-      "roleUpdatedWithDetails": "Die Rolle von {{name}} wurde auf {{role}} aktualisiert",
-      "roleUpdateFailed": "Rolle konnte nicht aktualisiert werden: {{error}}",
-      "memberRemoved": "Mitglied aus Organisation entfernt",
-      "memberRemovedWithName": "{{name}} wurde aus der Organisation entfernt",
-      "memberRemoveFailed": "Mitglied konnte nicht entfernt werden: {{error}}",
-      "confirmRemove": "Sind Sie sicher, dass Sie dieses Mitglied aus der Organisation entfernen möchten?",
-      "confirmRemoveWithName": "Sind Sie sicher, dass Sie {{name}} aus der Organisation entfernen möchten?",
-      "joinRequested": "Beitrittsanfrage erfolgreich gesendet",
-      "joinRequestFailed": "Beitrittsanfrage konnte nicht gesendet werden: {{error}}",
-      "user": "Benutzer",
-      "empty": "Keine Mitglieder",
-      "emptyDescription": "Diese Organisation hat noch keine Mitglieder",
-      "viewOnly": "Sie haben nur Lesezugriff. Nur Administratoren können Organisationseinstellungen verwalten.",
-      "addUser": {
-        "title": "Mitglied hinzufügen",
-        "description": "Fügen Sie einen Benutzer zu dieser Organisation per E-Mail hinzu. Er wird sofort ohne Bestätigung hinzugefügt.",
-        "emailLabel": "E-Mail",
-        "emailPlaceholder": "benutzer@beispiel.com",
-        "roleLabel": "Rolle",
-        "emailRequired": "E-Mail ist erforderlich",
-        "button": "Hinzufügen",
-        "success": "Benutzer {{email}} wurde zur Organisation hinzugefügt",
-        "failed": "Benutzer konnte nicht hinzugefügt werden: {{error}}"
-      }
-    },
-    "delete": {
-      "title": "Organisation löschen",
-      "description": "Sind Sie sicher, dass Sie {{name}} löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden."
-    }
+    "submit": "Absenden",
+    "username": "Benutzername",
+    "you": "Du"
   },
   "dashboard": {
-    "kitchenPulse": "Deine Bestellungen",
     "hero": {
-      "title": "Willkommen zurück! Bereit für <StyledDay>{{day}}</StyledDay> Tacos?",
-      "subtitle": "Sieh deine aktiven Gruppenbestellungen, prüfe wer teilnimmt und verfolge anstehende Deadlines. Alles was du brauchst, um Team-Bestellungen zu organisieren."
+      "subtitle": "Sieh deine aktiven Gruppenbestellungen, prüfe wer teilnimmt und verfolge anstehende Deadlines. Alles was du brauchst, um Team-Bestellungen zu organisieren.",
+      "title": "Willkommen zurück! Bereit für <StyledDay>{{day}}</StyledDay> Tacos?"
+    },
+    "kitchenPulse": "Deine Bestellungen",
+    "latestSubmissions": {
+      "description": "Bestellungen, die du erfolgreich mit deinem Team aufgegeben hast.",
+      "emptyState": "Noch keine Bestellhistorie.",
+      "requestedFor": "Angefordert für {{name}}",
+      "submitted": "Abgesendet {{date}}",
+      "title": "Neueste Bestellungen"
     },
     "metrics": {
       "activeOrders": "Aktive Bestellungen",
       "awaitingSubmission": "Bereit zum Absenden",
-      "ordersOnRecord": "Erfasste Bestellungen",
-      "open": "Offen",
       "drafts": "Entwürfe",
-      "nextDispatch": "Nächster Versand {{time}}"
+      "nextDispatch": "Nächster Versand {{time}}",
+      "open": "Offen",
+      "ordersOnRecord": "Erfasste Bestellungen"
     },
     "recentGroupOrders": {
-      "title": "Aktuelle Gruppenbestellungen",
       "description": "Deine aktuellen und kommenden Gruppenbestellungen. Teile sie mit deinem Team, damit alle bestellen können.",
-      "manageAll": "Alle verwalten",
       "emptyState": "Noch keine Gruppenbestellung. Erstelle deine erste Freitagsbestellung und lade dein Team ein!",
       "launchFirstCycle": "Ersten Zyklus starten",
+      "manageAll": "Alle verwalten",
+      "title": "Aktuelle Gruppenbestellungen",
       "untitledOrder": "Unbenannte Gruppenbestellung"
-    },
-    "latestSubmissions": {
-      "title": "Neueste Bestellungen",
-      "description": "Bestellungen, die du erfolgreich mit deinem Team aufgegeben hast.",
-      "emptyState": "Noch keine Bestellhistorie.",
-      "requestedFor": "Angefordert für {{name}}",
-      "submitted": "Abgesendet {{date}}"
-    }
-  },
-  "root": {
-    "appSubtitle": "Bestelle French Tacos zusammen mit deinem Team. Erstelle Gruppenbestellungen, lade Kollegen ein und gebe eine große Bestellung auf.",
-    "tacobot": "TacoCrew",
-    "errors": {
-      "applicationError": "Anwendungsfehler",
-      "unknownError": "Unbekannter Fehler",
-      "somethingWrong": "Etwas ist schiefgelaufen."
     }
   },
   "errors": {
+    "application": {
+      "description": "Etwas ist schief gelaufen. Bitte versuchen Sie es erneut oder kontaktieren Sie den Support, wenn das Problem weiterhin besteht.",
+      "goHome": "Zur Startseite",
+      "reload": "Seite neu laden",
+      "title": "Anwendungsfehler"
+    },
+    "auth": {
+      "emailInUse": "Diese E-Mail wird bereits verwendet. Bitte melden Sie sich an oder verwenden Sie eine andere E-Mail.",
+      "invalidCredentials": "Ungültige E-Mail oder Passwort. Bitte überprüfen Sie Ihre Anmeldedaten und versuchen Sie es erneut.",
+      "invalidToken": "Ungültiges oder abgelaufenes Token. Bitte versuchen Sie es erneut.",
+      "passkey": {
+        "challengeNotFound": "Authentifizierungs-Challenge nicht gefunden. Bitte aktualisieren Sie die Seite und versuchen Sie es erneut.",
+        "notFound": "Passkey nicht gefunden. Bitte versuchen Sie es erneut oder verwenden Sie eine andere Authentifizierungsmethode.",
+        "registrationNotAllowed": "Sie sind nicht berechtigt, diesen Passkey zu registrieren.",
+        "verificationFailed": "Passkey-Registrierung konnte nicht verifiziert werden. Bitte versuchen Sie es erneut."
+      },
+      "userNotFound": "Benutzer nicht gefunden. Bitte überprüfen Sie Ihre E-Mail oder registrieren Sie sich für ein neues Konto."
+    },
+    "badRequest": {
+      "goBack": "Zurück",
+      "title": "Ungültige Anfrage"
+    },
     "csrf": {
       "invalid": "CSRF-Token ist ungültig oder abgelaufen. Bitte aktualisieren Sie die Seite."
     },
-    "rateLimit": {
-      "exceeded": "Zu viele Anfragen. Bitte warten Sie einen Moment und versuchen Sie es erneut."
+    "forbidden": {
+      "description": "Sie haben keine Berechtigung, auf diese Ressource zuzugreifen.",
+      "generic": "Sie haben keine Berechtigung, diese Aktion auszuführen.",
+      "goHome": "Zur Startseite",
+      "title": "Zugriff verweigert"
+    },
+    "http": {
+      "description": "Beim Verarbeiten Ihrer Anfrage ist ein Fehler aufgetreten.",
+      "goHome": "Zur Startseite",
+      "title": "Fehler {{status}}"
+    },
+    "network": {
+      "failed": "Netzwerkanfrage fehlgeschlagen. Bitte überprüfen Sie Ihre Verbindung und versuchen Sie es erneut."
+    },
+    "notFound": {
+      "description": "Die gesuchte Seite existiert nicht oder wurde verschoben.",
+      "generic": "{{resource}} wurde nicht gefunden.",
+      "generic_id": "{{resource}} mit der ID {{identifier}} wurde nicht gefunden.",
+      "generic_shareCode": "{{resource}} mit dem Freigabecode {{identifier}} wurde nicht gefunden.",
+      "generic_tacoID": "{{resource}} mit der tacoID {{identifier}} wurde nicht gefunden.",
+      "goBack": "Zurück",
+      "goHome": "Zur Startseite",
+      "resource": "Ressource",
+      "title": "Seite nicht gefunden"
     },
     "order": {
       "duplicate": "Diese Bestellung existiert bereits.",
       "notFound": "Bestellung nicht gefunden."
     },
     "orders": {
-      "submit": {
-        "noUserOrders": "Gruppenbestellung kann nicht ohne Benutzerbestellungen eingereicht werden. Bitte fügen Sie mindestens eine Bestellung hinzu, bevor Sie einreichen.",
-        "invalidStatus": "Gruppenbestellung kann nicht eingereicht werden. Der Bestellstatus ist {{status}}.",
-        "expired": "Gruppenbestellung kann nicht eingereicht werden. Die Bestellperiode ist abgelaufen.",
-        "emptyUserOrder": "Gruppenbestellung kann nicht eingereicht werden. Eine oder mehrere Benutzerbestellungen sind leer."
-      },
       "modify": {
         "invalidStatus": "Benutzerbestellung kann nicht geändert werden. Der Gruppenbestellstatus erlaubt keine Änderungen."
+      },
+      "reimbursement": {
+        "leaderOnly": "Nur der Gruppenleiter kann den Rückerstattungsstatus aktualisieren."
+      },
+      "submit": {
+        "emptyUserOrder": "Gruppenbestellung kann nicht eingereicht werden. Eine oder mehrere Benutzerbestellungen sind leer.",
+        "expired": "Gruppenbestellung kann nicht eingereicht werden. Die Bestellperiode ist abgelaufen.",
+        "invalidStatus": "Gruppenbestellung kann nicht eingereicht werden. Der Bestellstatus ist {{status}}.",
+        "noUserOrders": "Gruppenbestellung kann nicht ohne Benutzerbestellungen eingereicht werden. Bitte fügen Sie mindestens eine Bestellung hinzu, bevor Sie einreichen."
       }
     },
-    "validation": {
-      "failed": "Validierung fehlgeschlagen. Bitte überprüfen Sie Ihre Eingabe und versuchen Sie es erneut."
+    "organization": {
+      "badRequest": {
+        "description": "Die Organisations-ID fehlt oder ist ungültig.",
+        "goToOrganizations": "Zu Organisationen",
+        "title": "Ungültige Anfrage"
+      },
+      "forbidden": {
+        "description": "Sie haben keine Berechtigung, auf diese Organisation zuzugreifen.",
+        "goBack": "Zurück",
+        "goToOrganizations": "Zu Organisationen",
+        "title": "Zugriff verweigert"
+      },
+      "generic": {
+        "description": "Beim Laden der Organisation ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
+        "goBack": "Zurück",
+        "goToOrganizations": "Zu Organisationen",
+        "title": "Fehler beim Laden der Organisation"
+      },
+      "notFound": {
+        "description": "Diese Organisation konnte nicht gefunden werden. Sie wurde möglicherweise gelöscht, der Link könnte falsch sein, oder Sie sind möglicherweise kein Mitglied dieser Organisation. Bitte überprüfen Sie die Organisations-ID oder kehren Sie zu Ihrer Organisationsliste zurück.",
+        "goBack": "Zurück",
+        "goToOrganizations": "Zu Organisationen",
+        "title": "Organisation nicht gefunden"
+      }
+    },
+    "rateLimit": {
+      "exceeded": "Zu viele Anfragen. Bitte warten Sie einen Moment und versuchen Sie es erneut."
+    },
+    "session": {
+      "expired": "Ihre Sitzung ist abgelaufen. Bitte melden Sie sich erneut an.",
+      "notFound": "Sitzung nicht gefunden. Bitte melden Sie sich erneut an."
     },
     "stock": {
       "outOfStock": "Ein oder mehrere Artikel sind nicht vorrätig. Bitte aktualisieren Sie Ihre Bestellung."
     },
-    "notFound": {
-      "title": "Seite nicht gefunden",
-      "description": "Die gesuchte Seite existiert nicht oder wurde verschoben.",
-      "goHome": "Zur Startseite",
-      "goBack": "Zurück",
-      "generic": "{{resource}} wurde nicht gefunden.",
-      "generic_id": "{{resource}} mit der ID {{identifier}} wurde nicht gefunden.",
-      "generic_tacoID": "{{resource}} mit der tacoID {{identifier}} wurde nicht gefunden.",
-      "generic_shareCode": "{{resource}} mit dem Freigabecode {{identifier}} wurde nicht gefunden.",
-      "resource": "Ressource"
-    },
-    "network": {
-      "failed": "Netzwerkanfrage fehlgeschlagen. Bitte überprüfen Sie Ihre Verbindung und versuchen Sie es erneut."
-    },
-    "session": {
-      "notFound": "Sitzung nicht gefunden. Bitte melden Sie sich erneut an.",
-      "expired": "Ihre Sitzung ist abgelaufen. Bitte melden Sie sich erneut an."
-    },
-    "unknown": {
-      "generic": "Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es erneut."
-    },
-    "forbidden": {
-      "title": "Zugriff verweigert",
-      "description": "Sie haben keine Berechtigung, auf diese Ressource zuzugreifen.",
-      "goHome": "Zur Startseite",
-      "generic": "Sie haben keine Berechtigung, diese Aktion auszuführen."
-    },
-    "badRequest": {
-      "title": "Ungültige Anfrage",
-      "goBack": "Zurück"
-    },
-    "http": {
-      "title": "Fehler {{status}}",
-      "description": "Beim Verarbeiten Ihrer Anfrage ist ein Fehler aufgetreten.",
-      "goHome": "Zur Startseite"
-    },
-    "application": {
-      "title": "Anwendungsfehler",
-      "description": "Etwas ist schief gelaufen. Bitte versuchen Sie es erneut oder kontaktieren Sie den Support, wenn das Problem weiterhin besteht.",
-      "goHome": "Zur Startseite",
-      "reload": "Seite neu laden"
-    },
-    "unknown": {
-      "title": "Unbekannter Fehler",
-      "description": "Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es erneut.",
-      "goHome": "Zur Startseite",
-      "generic": "Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es erneut."
-    },
-    "organization": {
-      "notFound": {
-        "title": "Organisation nicht gefunden",
-        "description": "Diese Organisation konnte nicht gefunden werden. Sie wurde möglicherweise gelöscht, der Link könnte falsch sein, oder Sie sind möglicherweise kein Mitglied dieser Organisation. Bitte überprüfen Sie die Organisations-ID oder kehren Sie zu Ihrer Organisationsliste zurück.",
-        "goToOrganizations": "Zu Organisationen",
-        "goBack": "Zurück"
-      },
-      "forbidden": {
-        "title": "Zugriff verweigert",
-        "description": "Sie haben keine Berechtigung, auf diese Organisation zuzugreifen.",
-        "goToOrganizations": "Zu Organisationen",
-        "goBack": "Zurück"
-      },
-      "badRequest": {
-        "title": "Ungültige Anfrage",
-        "description": "Die Organisations-ID fehlt oder ist ungültig.",
-        "goToOrganizations": "Zu Organisationen"
-      },
-      "generic": {
-        "title": "Fehler beim Laden der Organisation",
-        "description": "Beim Laden der Organisation ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
-        "goToOrganizations": "Zu Organisationen",
-        "goBack": "Zurück"
-      }
-    },
     "unauthorized": {
       "generic": "Sie müssen angemeldet sein, um diese Aktion auszuführen."
+    },
+    "unknown": {
+      "description": "Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es erneut.",
+      "generic": "Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es erneut.",
+      "goHome": "Zur Startseite",
+      "title": "Unbekannter Fehler"
+    },
+    "validation": {
+      "failed": "Validierung fehlgeschlagen. Bitte überprüfen Sie Ihre Eingabe und versuchen Sie es erneut."
     }
+  },
+  "languageSwitcher": {
+    "ariaLabel": "Wechseln zu {{language}}",
+    "languages": {
+      "de": {
+        "label": "Deutsch",
+        "name": "Deutsch",
+        "short": "DE"
+      },
+      "en": {
+        "label": "Englisch",
+        "name": "Englisch",
+        "short": "EN"
+      },
+      "fr": {
+        "label": "Französisch",
+        "name": "Französisch",
+        "short": "FR"
+      }
+    }
+  },
+  "login": {
+    "alreadyHaveAccount": "Hast du bereits ein Konto?",
+    "email": {
+      "label": "E-Mail",
+      "placeholder": "email@beispiel.com"
+    },
+    "name": {
+      "label": "Name",
+      "placeholder": "Dein Name"
+    },
+    "noAccount": "Hast du noch kein Konto?",
+    "orUsePassword": "Oder Passwort verwenden",
+    "passkeyAuthFailed": "Passkey-Authentifizierung fehlgeschlagen",
+    "passkeySignInFailed": "Passkey-Anmeldung fehlgeschlagen",
+    "password": {
+      "label": "Passwort",
+      "placeholder": "••••••••"
+    },
+    "pleaseWait": "Bitte warten...",
+    "signIn": "Anmelden",
+    "signInFailed": "Anmeldung fehlgeschlagen",
+    "signInWithPasskey": "Mit Passkey anmelden",
+    "signUp": {
+      "subtitle": "Erstelle dein Konto, um loszulegen",
+      "title": "Registrieren"
+    },
+    "signUpButton": "Registrieren",
+    "signUpFailed": "Registrierung fehlgeschlagen",
+    "subtitle": "Erstelle dein Konto, um Gruppenbestellungen beizutreten oder eigene zu erstellen.",
+    "title": "TacoCrew",
+    "unexpectedError": "Unerwarteter Fehler. Bitte versuche es erneut.",
+    "usernamePlaceholder": "chef-del-taco",
+    "usernameRequired": "Benutzername ist erforderlich"
+  },
+  "navigation": {
+    "about": "Über",
+    "dashboard": "Dashboard",
+    "orders": "Bestellungen",
+    "profile": "Profil",
+    "settings": "Einstellungen",
+    "stock": "Lager"
+  },
+  "notifications": {
+    "archive": "Archivieren",
+    "archiveAll": "Alle archivieren",
+    "close": "Schließen",
+    "empty": "Alles erledigt!",
+    "emptyArchive": "Keine archivierten Benachrichtigungen",
+    "emptyArchiveHint": "Archivierte Benachrichtigungen erscheinen hier",
+    "emptyHint": "Neue Benachrichtigungen erscheinen hier",
+    "markAllRead": "Alle als gelesen markieren",
+    "tabs": {
+      "archive": "Archiv",
+      "inbox": "Posteingang"
+    },
+    "timeAgo": {
+      "days": "Vor {{count}}T",
+      "hours": "Vor {{count}}h",
+      "justNow": "Gerade eben",
+      "minutes": "Vor {{count}}m"
+    },
+    "title": "Benachrichtigungen"
   },
   "orders": {
     "common": {
-      "unnamedDrop": "Unbenannte Bestellung",
+      "cookies": {
+        "cookies": "Cookies",
+        "csrfToken": "CSRF-Token",
+        "description": "Session-Cookies und Details zur Bestellverifizierung",
+        "error": "Cookies konnten nicht abgerufen werden. Stelle sicher, dass die Bestellung abgesendet wurde.",
+        "loading": "Cookies werden geladen...",
+        "orderId": "Bestell-ID",
+        "orderInfo": "Bestellinformationen",
+        "sessionId": "Session-ID",
+        "title": "Session-Cookies",
+        "transaction": "Transaktion"
+      },
+      "errors": {
+        "api": "Die Anfrage konnte nicht abgeschlossen werden ({{message}})."
+      },
+      "labels": {
+        "shortId": "ID {{id}}"
+      },
       "randomNames": [
         "{{day}} Mittagessen",
         "Team Bestellung {{date}}",
@@ -550,660 +499,774 @@
         "Team Tacos {{date}}",
         "{{day}} Mittagessen Runde"
       ],
-      "labels": {
-        "shortId": "ID {{id}}"
-      },
-      "errors": {
-        "api": "Die Anfrage konnte nicht abgeschlossen werden ({{message}})."
-      },
-      "cookies": {
-        "title": "Session-Cookies",
-        "description": "Session-Cookies und Details zur Bestellverifizierung",
-        "loading": "Cookies werden geladen...",
-        "error": "Cookies konnten nicht abgerufen werden. Stelle sicher, dass die Bestellung abgesendet wurde.",
-        "orderInfo": "Bestellinformationen",
-        "orderId": "Bestell-ID",
-        "transaction": "Transaktion",
-        "sessionId": "Session-ID",
-        "cookies": "Cookies",
-        "csrfToken": "CSRF-Token"
-      }
-    },
-    "list": {
-      "hero": {
-        "badge": "Team-Bestellungen einfach gemacht",
-        "title": "Organisiere Gruppenbestellungen für dein Team",
-        "subtitle": "Erstelle eine Gruppenbestellung, teile sie mit deinen Kollegen und jeder kann seine Tacos hinzufügen. Wenn fertig, gebe eine große Bestellung für das ganze Team auf.",
-        "metrics": {
-          "activeCycles": "Aktive Zyklen",
-          "totalBatches": "Gesamt Batches",
-          "nextDispatch": "Nächster Versand"
-        }
-      },
-      "queue": {
-        "title": "Deine Gruppenbestellungen",
-        "subtitle": "Alle Gruppenbestellungen, die du erstellt oder beigetreten bist.",
-        "scheduled_one": "{{count}} geplant",
-        "scheduled_other": "{{count}} geplant",
-        "empty": "Noch keine Gruppenbestellung. Erstelle deine erste und lade dein Team ein!",
-        "createdMeta": "Erstellt von {{name}} • {{date}}",
-        "unknownLeader": "Unbekannter Leiter"
-      },
-      "form": {
-        "title": "Neue Gruppenbestellung erstellen",
-        "subtitle": "Gib einen Namen, wähle wann Bestellungen schließen und teile mit deinem Team. Jeder kann seine Tacos hinzufügen!",
-        "labels": {
-          "timeWindow": "Zeitfenster",
-          "opens": "Öffnet",
-          "closes": "Schließt (Deadline)",
-          "deadlineHint": "Bestellungen müssen vor dieser Zeit abgesendet werden",
-          "organization": "Organisation"
-        },
-        "placeholders": {
-          "selectOrganization": "Organisation auswählen"
-        },
-        "errors": {
-          "organizationRequired": "Bitte wählen Sie eine Organisation für diese Gruppenbestellung aus"
-        },
-        "noOrganization": {
-          "title": "Keine Organisation gefunden",
-          "description": "Sie müssen einer Organisation angehören, um Gruppenbestellungen zu erstellen. Erstellen oder treten Sie einer Organisation bei, um loszulegen.",
-          "action": "Zu Organisationen gehen"
-        },
-        "quickDeadlines": {
-          "morning": "10 Uhr",
-          "noon": "12 Uhr",
-          "afternoon": "14 Uhr",
-          "evening": "17 Uhr"
-        },
-        "actions": {
-          "launch": "Gruppenbestellung erstellen"
-        }
-      },
-      "errors": {
-        "datesRequired": "Start- und Enddatum sind erforderlich.",
-        "invalidDates": "Ungültige Daten angegeben.",
-        "endBeforeStart": "Enddatum muss nach Startdatum liegen.",
-        "unexpected": "Gruppenbestellung konnte nicht erstellt werden."
-      }
+      "unnamedDrop": "Unbenannte Bestellung"
     },
     "create": {
-      "navigation": {
-        "back": "Zurück",
-        "backToOrder": "Zurück zur Bestellung"
+      "actions": {
+        "save": "Meine Bestellung speichern",
+        "update": "Bestellung aktualisieren"
       },
-      "navigation": {
-        "back": "Zurück",
-        "backToOrder": "Zurück zur Bestellung"
+      "customizeSection": {
+        "meatTypesSelected_one": "{{count}} Sorte",
+        "meatTypesSelected_other": "{{count}} Sorten",
+        "meatsLimit": "{{count}}/{{max}} insgesamt",
+        "subtitle": "Wähle dein Fleisch, Soßen und Beilagen",
+        "title": "Personalisieren deinen Taco"
+      },
+      "errors": {
+        "garnishNotAvailable": "Beilagen sind für diese Taco-Größe nicht verfügbar.",
+        "missingFillings": "Wenn du einen Taco wählst, wähle bitte mindestens ein Fleisch und eine Soße.",
+        "missingSelection": "Bitte wähle mindestens einen Taco oder einige Extras/Getränke/Desserts.",
+        "unexpected": "Ein unerwarteter Fehler ist aufgetreten."
+      },
+      "extrasSection": {
+        "subtitle": "Vervollständige deine Mahlzeit mit Beilagen und Getränken",
+        "title": "Extras hinzufügen"
+      },
+      "hashSearch": {
+        "description": "Gib eine tacoID ein, um das Rezept von jemand anderem zu verwenden",
+        "errors": {
+          "empty": "Bitte gib eine tacoID ein",
+          "notFound": "Taco nicht gefunden. Bitte überprüfe die tacoID und versuche es erneut."
+        },
+        "placeholder": "tacoID eingeben (z.B. 3xK9mP2...)",
+        "title": "Taco nach tacoID finden"
       },
       "hero": {
-        "title": "Baue deinen perfekten Taco",
-        "subtitle": "Wähle deine Größe, Fleisch, Soßen und füge Extras hinzu. Mach es genau wie du es magst!"
+        "subtitle": "Wähle deine Größe, Fleisch, Soßen und füge Extras hinzu. Mach es genau wie du es magst!",
+        "title": "Baue deinen perfekten Taco"
+      },
+      "navigation": {
+        "back": "Zurück",
+        "backToOrder": "Zurück zur Bestellung"
+      },
+      "notes": {
+        "subtitle": "Irgendwelche besonderen Wünsche?",
+        "title": "Besondere Anweisungen"
+      },
+      "previousTacos": {
+        "description": "Aus deinen Favoriten hinzufügen oder nach tacoID suchen",
+        "openModal": "Favoriten durchsuchen",
+        "orderedTimes_one": "{{count}} Mal bestellt",
+        "orderedTimes_other": "{{count}} Mal bestellt",
+        "showing": "Zeige {{count}} von {{total}}",
+        "title": "Taco wiederverwenden"
+      },
+      "progress": {
+        "garnishes": {
+          "empty": "Beilagen hinzufügen (optional)",
+          "selected_one": "{{count}} ausgewählt",
+          "selected_other": "{{count}} ausgewählt"
+        },
+        "meats": {
+          "empty": "Fleisch hinzufügen",
+          "selectedWithMax_one": "{{count}} ausgewählt (max {{max}})",
+          "selectedWithMax_other": "{{count}} ausgewählt (max {{max}})",
+          "selected_one": "{{count}} ausgewählt",
+          "selected_other": "{{count}} ausgewählt"
+        },
+        "sauces": {
+          "empty": "Soßen hinzufügen",
+          "selectedWithMax_one": "{{count}} ausgewählt (max {{max}})",
+          "selectedWithMax_other": "{{count}} ausgewählt (max {{max}})",
+          "selected_one": "{{count}} ausgewählt",
+          "selected_other": "{{count}} ausgewählt"
+        },
+        "size": {
+          "empty": "Größe wählen",
+          "label": "Größe"
+        }
       },
       "sizeSection": {
-        "title": "Wähle deine Größe",
         "description": "Wähle die perfekte Größe für deinen Taco",
+        "limitSummary": "{{meats}} · {{sauces}}",
         "limits": {
           "meats_one": "{{count}} Fleisch",
           "meats_other": "{{count}} Fleisch",
           "sauces_one": "{{count}} Soße",
           "sauces_other": "{{count}} Soßen"
         },
-        "limitSummary": "{{meats}} · {{sauces}}"
-      },
-      "customizeSection": {
-        "title": "Personalisieren deinen Taco",
-        "subtitle": "Wähle dein Fleisch, Soßen und Beilagen",
-        "meatsLimit": "{{count}}/{{max}} insgesamt",
-        "meatTypesSelected_one": "{{count}} Sorte",
-        "meatTypesSelected_other": "{{count}} Sorten"
-      },
-      "extrasSection": {
-        "title": "Extras hinzufügen",
-        "subtitle": "Vervollständige deine Mahlzeit mit Beilagen und Getränken"
-      },
-      "notes": {
-        "title": "Besondere Anweisungen",
-        "subtitle": "Irgendwelche besonderen Wünsche?"
-      },
-      "actions": {
-        "update": "Bestellung aktualisieren",
-        "save": "Meine Bestellung speichern"
+        "title": "Wähle deine Größe"
       },
       "summary": {
-        "title": "Bestellübersicht",
+        "breakdown": {
+          "desserts_one": "{{count}} Dessert",
+          "desserts_other": "{{count}} Desserts",
+          "drinks_one": "{{count}} Getränk",
+          "drinks_other": "{{count}} Getränke",
+          "extras_one": "{{count}} Extra",
+          "extras_other": "{{count}} Extras",
+          "noTaco": "Kein Taco",
+          "tacos_one": "{{count}} Taco",
+          "tacos_other": "{{count}} Tacos"
+        },
+        "emptyState": "Wähle eine Taco-Größe, um deine Bestellübersicht zu sehen",
+        "specialInstructions": "Besondere Anweisungen",
         "subtitle": "Überprüfe deine Auswahl",
         "tags": {
+          "desserts_one": "{{count}} Dessert",
+          "desserts_other": "{{count}} Desserts",
+          "drinks_one": "{{count}} Getränk",
+          "drinks_other": "{{count}} Getränke",
+          "extras_one": "{{count}} Extra",
+          "extras_other": "{{count}} Extras",
+          "garnishes_one": "{{count}} Beilage",
+          "garnishes_other": "{{count}} Beilagen",
           "meats_one": "{{count}} Fleisch",
           "meats_other": "{{count}} Fleisch",
           "sauces_one": "{{count}} Soße",
-          "sauces_other": "{{count}} Soßen",
-          "garnishes_one": "{{count}} Beilage",
-          "garnishes_other": "{{count}} Beilagen",
-          "extras_one": "{{count}} Extra",
-          "extras_other": "{{count}} Extras",
-          "drinks_one": "{{count}} Getränk",
-          "drinks_other": "{{count}} Getränke",
-          "desserts_one": "{{count}} Dessert",
-          "desserts_other": "{{count}} Desserts"
+          "sauces_other": "{{count}} Soßen"
         },
-        "specialInstructions": "Besondere Anweisungen",
-        "emptyState": "Wähle eine Taco-Größe, um deine Bestellübersicht zu sehen",
-        "totalLabel": "Gesamt",
-        "breakdown": {
-          "noTaco": "Kein Taco",
-          "tacos_one": "{{count}} Taco",
-          "tacos_other": "{{count}} Tacos",
-          "extras_one": "{{count}} Extra",
-          "extras_other": "{{count}} Extras",
-          "drinks_one": "{{count}} Getränk",
-          "drinks_other": "{{count}} Getränke",
-          "desserts_one": "{{count}} Dessert",
-          "desserts_other": "{{count}} Desserts"
-        }
-      },
-      "progress": {
-        "size": {
-          "label": "Größe",
-          "empty": "Größe wählen"
-        },
-        "meats": {
-          "selectedWithMax_one": "{{count}} ausgewählt (max {{max}})",
-          "selectedWithMax_other": "{{count}} ausgewählt (max {{max}})",
-          "selected_one": "{{count}} ausgewählt",
-          "selected_other": "{{count}} ausgewählt",
-          "empty": "Fleisch hinzufügen"
-        },
-        "sauces": {
-          "selectedWithMax_one": "{{count}} ausgewählt (max {{max}})",
-          "selectedWithMax_other": "{{count}} ausgewählt (max {{max}})",
-          "selected_one": "{{count}} ausgewählt",
-          "selected_other": "{{count}} ausgewählt",
-          "empty": "Soßen hinzufügen"
-        },
-        "garnishes": {
-          "selected_one": "{{count}} ausgewählt",
-          "selected_other": "{{count}} ausgewählt",
-          "empty": "Beilagen hinzufügen (optional)"
-        }
+        "title": "Bestellübersicht",
+        "totalLabel": "Gesamt"
       },
       "validation": {
+        "missingGarnish": "Wähle mindestens eine Beilage.",
         "missingMeat": "Wähle mindestens ein Fleisch.",
         "missingSauce": "Wähle mindestens eine Soße.",
-        "missingGarnish": "Wähle mindestens eine Beilage.",
         "missingSelection": "Wähle mindestens einen Taco oder einige Extras/Getränke/Desserts."
-      },
-      "previousTacos": {
-        "title": "Taco wiederverwenden",
-        "description": "Aus deinen Favoriten hinzufügen oder nach tacoID suchen",
-        "openModal": "Favoriten durchsuchen",
-        "orderedTimes_one": "{{count}} Mal bestellt",
-        "orderedTimes_other": "{{count}} Mal bestellt",
-        "showing": "Zeige {{count}} von {{total}}"
-      },
-      "hashSearch": {
-        "title": "Taco nach tacoID finden",
-        "description": "Gib eine tacoID ein, um das Rezept von jemand anderem zu verwenden",
-        "placeholder": "tacoID eingeben (z.B. 3xK9mP2...)",
-        "errors": {
-          "empty": "Bitte gib eine tacoID ein",
-          "notFound": "Taco nicht gefunden. Bitte überprüfe die tacoID und versuche es erneut."
-        }
-      },
-      "errors": {
-        "missingSelection": "Bitte wähle mindestens einen Taco oder einige Extras/Getränke/Desserts.",
-        "missingFillings": "Wenn du einen Taco wählst, wähle bitte mindestens ein Fleisch und eine Soße.",
-        "garnishNotAvailable": "Beilagen sind für diese Taco-Größe nicht verfügbar.",
-        "unexpected": "Ein unerwarteter Fehler ist aufgetreten."
       }
     },
     "detail": {
-      "hero": {
-        "badge": "Gruppenbestellung",
-        "participants": {
-          "label": "Teilnehmer",
-          "count_one": "{{count}} Bestellung",
-          "count_other": "{{count}} Bestellungen"
-        },
-        "total": {
-          "label": "Gesamtpreis",
-          "caption": "Alle Bestellungen"
-        },
-        "actions": {
-          "create": "Neue Bestellung erstellen",
-          "closedReasons": {
-            "open": "Bestellzeitraum abgelaufen",
-            "expired": "Bestellzeitraum abgelaufen",
-            "notStarted": "Bestellzeitraum noch nicht gestartet",
-            "closed": "Bestellung geschlossen",
-            "submitted": "Bestellung abgesendet",
-            "completed": "Bestellung abgeschlossen"
-          },
-          "submit": "Bestellung aufgeben",
-          "submit": "Bestellung aufgeben",
-          "moreOptions": "Weitere Optionen",
-          "editOrder": "Bestellung bearbeiten",
-          "closeOrder": "Bestellung schließen",
-          "reopenOrder": "Bestellung öffnen",
-          "deleteOrder": "Bestellung löschen",
-          "deleteConfirmation": "Möchten Sie \"{{orderName}}\" wirklich löschen? Dadurch werden die Gruppenbestellung und alle zugehörigen Benutzerbestellungen dauerhaft gelöscht. Diese Aktion kann nicht rückgängig gemacht werden.",
-          "deleteError": "Die Gruppenbestellung konnte nicht gelöscht werden. Bitte versuchen Sie es erneut."
-        },
-        "leaderInfo": {
-          "label": "Gruppenleiter",
-          "unknown": "Unbekannter Leiter",
-          "you": "(du)"
-        },
-        "share": {
-          "title": "Diese Bestellung teilen",
-          "description": "Lade dein Team ein, dieser Gruppenbestellung beizutreten",
-          "copyLink": "Link kopieren",
-          "copyCode": "Code kopieren",
-          "codeLabel": "Beitrittscode",
-          "qrCode": "Scannen zum Beitreten",
-          "linkCopied": "Link kopiert!",
-          "codeCopied": "Code kopiert!",
-          "inviteInstructions": "Teile diesen Link oder Code mit deinem Team, um dieser Bestellung beizutreten."
-        }
-      },
       "edit": {
-        "title": "Gruppenbestellung bearbeiten",
         "description": "Aktualisiere den Bestellnamen und das Zeitfenster.",
         "error": {
           "endDateBeforeStart": "Das Enddatum muss am oder nach dem Startdatum liegen.",
           "endDateTimeBeforeStart": "Das Enddatum und die Endzeit müssen nach dem Startdatum und der Startzeit liegen.",
           "endTimeBeforeStart": "Die Endzeit muss nach der Startzeit liegen, wenn dasselbe Datum verwendet wird.",
           "generic": "Aktualisierung der Gruppenbestellung fehlgeschlagen. Bitte versuche es erneut."
+        },
+        "title": "Gruppenbestellung bearbeiten"
+      },
+      "errors": {
+        "missingCustomerDetails": "Alle Felder für Kunde, Lieferart, Adresse und gewünschte Zeit sind erforderlich.",
+        "missingIdentifier": "Bestellungs-ID fehlt.",
+        "missingSelection": "Bitte wähle mindestens ein Fleisch, eine Soße und eine Beilage.",
+        "unexpected": "Ein unerwarteter Fehler ist aufgetreten."
+      },
+      "hero": {
+        "actions": {
+          "closeOrder": "Bestellung schließen",
+          "closedReasons": {
+            "closed": "Bestellung geschlossen",
+            "completed": "Bestellung abgeschlossen",
+            "expired": "Bestellzeitraum abgelaufen",
+            "notStarted": "Bestellzeitraum noch nicht gestartet",
+            "open": "Bestellzeitraum abgelaufen",
+            "submitted": "Bestellung abgesendet"
+          },
+          "create": "Neue Bestellung erstellen",
+          "deleteConfirmation": "Möchten Sie \"{{orderName}}\" wirklich löschen? Dadurch werden die Gruppenbestellung und alle zugehörigen Benutzerbestellungen dauerhaft gelöscht. Diese Aktion kann nicht rückgängig gemacht werden.",
+          "deleteError": "Die Gruppenbestellung konnte nicht gelöscht werden. Bitte versuchen Sie es erneut.",
+          "deleteOrder": "Bestellung löschen",
+          "editOrder": "Bestellung bearbeiten",
+          "moreOptions": "Weitere Optionen",
+          "reopenOrder": "Bestellung öffnen",
+          "submit": "Bestellung aufgeben"
+        },
+        "badge": "Gruppenbestellung",
+        "leaderInfo": {
+          "label": "Gruppenleiter",
+          "unknown": "Unbekannter Leiter",
+          "you": "(du)"
+        },
+        "participants": {
+          "count_one": "{{count}} Bestellung",
+          "count_other": "{{count}} Bestellungen",
+          "label": "Teilnehmer"
+        },
+        "share": {
+          "codeCopied": "Code kopiert!",
+          "codeLabel": "Beitrittscode",
+          "copyCode": "Code kopieren",
+          "copyLink": "Link kopieren",
+          "description": "Lade dein Team ein, dieser Gruppenbestellung beizutreten",
+          "inviteInstructions": "Teile diesen Link oder Code mit deinem Team, um dieser Bestellung beizutreten.",
+          "linkCopied": "Link kopiert!",
+          "qrCode": "Scannen zum Beitreten",
+          "title": "Diese Bestellung teilen"
+        },
+        "total": {
+          "caption": "Alle Bestellungen",
+          "label": "Gesamtpreis"
         }
       },
       "list": {
-        "title": "Alle Bestellungen",
         "description": "Alle Bestellungen in dieser Gruppenbestellung anzeigen",
-        "myOrderBadge": "MEINE BESTELLUNG",
-        "unknownUser": "Unbekannt",
-        "extrasOnly": "Nur Extras",
-        "itemCount_one": "{{count}} Artikel",
-        "itemCount_other": "{{count}} Artikel",
         "emptyState": {
-          "title": "Noch keine Bestellung",
+          "cta": "Meine Bestellung erstellen",
           "description": {
+            "closed": "Diese Bestellung wurde geschlossen.",
             "default": "Erstelle deinen perfekten Taco, um dieser Gruppenbestellung beizutreten.",
             "expired": "Die Bestellzeit ist abgelaufen.",
-            "notStarted": "Die Bestellzeit hat noch nicht begonnen.",
-            "closed": "Diese Bestellung wurde geschlossen.",
-            "finalized": "Diese Bestellung wurde finalisiert."
+            "finalized": "Diese Bestellung wurde finalisiert.",
+            "notStarted": "Die Bestellzeit hat noch nicht begonnen."
           },
-          "cta": "Meine Bestellung erstellen"
+          "title": "Noch keine Bestellung"
         },
+        "extrasOnly": "Nur Extras",
         "footer": {
           "backToOrders": "← Zurück zu Bestellungen",
           "orderId": "Bestell-ID:"
         },
-        "tagCounts": {
-          "tacos_one": "{{count}} Taco",
-          "tacos_other": "{{count}} Tacos",
-          "extras_one": "{{count}} Extra",
-          "extras_other": "{{count}} Extras",
-          "drinks_one": "{{count}} Getränk",
-          "drinks_other": "{{count}} Getränke",
-          "desserts_one": "{{count}} Dessert",
-          "desserts_other": "{{count}} Desserts"
-        },
         "itemCount_one": "{{count}} Position",
         "itemCount_other": "{{count}} Positionen",
+        "myOrderBadge": "MEINE BESTELLUNG",
         "reimbursement": {
-          "reimbursed": "Erstattet",
-          "pending": "Rückerstattung ausstehend",
+          "error": "Rückerstattung konnte nicht aktualisiert werden. Bitte versuche es erneut.",
           "markPaid": "Als erstattet markieren",
           "markPending": "Als ausstehend markieren",
-          "error": "Rückerstattung konnte nicht aktualisiert werden. Bitte versuche es erneut."
-        }
-      },
-      "errors": {
-        "missingSelection": "Bitte wähle mindestens ein Fleisch, eine Soße und eine Beilage.",
-        "missingIdentifier": "Bestellungs-ID fehlt.",
-        "missingCustomerDetails": "Alle Felder für Kunde, Lieferart, Adresse und gewünschte Zeit sind erforderlich.",
-        "unexpected": "Ein unerwarteter Fehler ist aufgetreten."
+          "pending": "Rückerstattung ausstehend",
+          "reimbursed": "Erstattet"
+        },
+        "tagCounts": {
+          "desserts_one": "{{count}} Dessert",
+          "desserts_other": "{{count}} Desserts",
+          "drinks_one": "{{count}} Getränk",
+          "drinks_other": "{{count}} Getränke",
+          "extras_one": "{{count}} Extra",
+          "extras_other": "{{count}} Extras",
+          "tacos_one": "{{count}} Taco",
+          "tacos_other": "{{count}} Tacos"
+        },
+        "title": "Alle Bestellungen",
+        "unknownUser": "Unbekannt"
       },
       "receipts": {
+        "actions": {
+          "confirmReceipt": "Bestätigen",
+          "markSelfPaid": "Ich habe bezahlt",
+          "reopenReceipt": "Bestätigung zurücknehmen",
+          "sendReminder": "Erinnerung senden",
+          "unmarkSelfPaid": "Ich habe nicht bezahlt"
+        },
         "badge": "Belege & Rückzahlungen",
-        "subtitle": "Hier siehst du Zahlungs- und Erstattungsstatus.",
-        "header": "SAMMELBELEG",
-        "guest": "Gast",
-        "unknownGuest": "Gast",
-        "items": "Positionen",
-        "subtotal": "Zwischensumme",
         "deliveryFee": "Lieferkosten-Anteil",
         "deliveryFeeShare": "Lieferkosten-Anteil",
         "feeExplanation": "Aufteilung: {{total}} ÷ {{count}} = {{share}} pro Person.",
-        "total": "Gesamt",
         "footer": "Danke!",
-        "status": {
-          "awaitingParticipant": "Nicht bezahlt",
-          "awaitingConfirmation": "Zahlung ausstehend",
-          "settled": "Bezahlt",
-          "leader": "Organisator bezahlt"
-        },
-        "actions": {
-          "markSelfPaid": "Ich habe bezahlt",
-          "unmarkSelfPaid": "Ich habe nicht bezahlt",
-          "confirmReceipt": "Bestätigen",
-          "reopenReceipt": "Bestätigung zurücknehmen",
-          "sendReminder": "Erinnerung senden"
-        },
-        "toast": {
-          "reminderSent": "Zahlungserinnerung gesendet!",
-          "reminderFailed": "Erinnerung konnte nicht gesendet werden. Bitte erneut versuchen."
-        },
-        "summaryBadge": "Gruppenübersicht",
-        "summaryTitle": "Rückzahlungsübersicht",
-        "summarySubtitle": "Teile diese Übersicht, damit alle abrechnen können.",
-        "summaryFood": "Summe Essen",
-        "summaryFee": "Lieferkosten",
-        "summaryPerPerson": "Pro Person ({{count}})",
-        "summaryTotal": "Gesamtbetrag",
+        "guest": "Gast",
+        "header": "SAMMELBELEG",
+        "items": "Positionen",
         "leaderPhone": {
-          "title": "Via Twint zurückzahlen",
           "description": "Sende deine Zahlung an den Teamleiter",
+          "title": "Via Twint zurückzahlen",
           "twint": "Twint"
-        }
+        },
+        "status": {
+          "awaitingConfirmation": "Zahlung ausstehend",
+          "awaitingParticipant": "Nicht bezahlt",
+          "leader": "Organisator bezahlt",
+          "settled": "Bezahlt"
+        },
+        "subtitle": "Hier siehst du Zahlungs- und Erstattungsstatus.",
+        "subtotal": "Zwischensumme",
+        "summaryBadge": "Gruppenübersicht",
+        "summaryFee": "Lieferkosten",
+        "summaryFood": "Summe Essen",
+        "summaryPerPerson": "Pro Person ({{count}})",
+        "summarySubtitle": "Teile diese Übersicht, damit alle abrechnen können.",
+        "summaryTitle": "Rückzahlungsübersicht",
+        "summaryTotal": "Gesamtbetrag",
+        "toast": {
+          "reminderFailed": "Erinnerung konnte nicht gesendet werden. Bitte erneut versuchen.",
+          "reminderSent": "Zahlungserinnerung gesendet!"
+        },
+        "total": "Gesamt",
+        "unknownGuest": "Gast"
+      }
+    },
+    "list": {
+      "errors": {
+        "datesRequired": "Start- und Enddatum sind erforderlich.",
+        "endBeforeStart": "Enddatum muss nach Startdatum liegen.",
+        "invalidDates": "Ungültige Daten angegeben.",
+        "unexpected": "Gruppenbestellung konnte nicht erstellt werden."
+      },
+      "form": {
+        "actions": {
+          "launch": "Gruppenbestellung erstellen"
+        },
+        "errors": {
+          "organizationRequired": "Bitte wählen Sie eine Organisation für diese Gruppenbestellung aus"
+        },
+        "labels": {
+          "closes": "Schließt (Deadline)",
+          "deadlineHint": "Bestellungen müssen vor dieser Zeit abgesendet werden",
+          "opens": "Öffnet",
+          "organization": "Organisation",
+          "timeWindow": "Zeitfenster"
+        },
+        "noOrganization": {
+          "action": "Zu Organisationen gehen",
+          "description": "Sie müssen einer Organisation angehören, um Gruppenbestellungen zu erstellen. Erstellen oder treten Sie einer Organisation bei, um loszulegen.",
+          "title": "Keine Organisation gefunden"
+        },
+        "placeholders": {
+          "selectOrganization": "Organisation auswählen"
+        },
+        "quickDeadlines": {
+          "afternoon": "14 Uhr",
+          "evening": "17 Uhr",
+          "morning": "10 Uhr",
+          "noon": "12 Uhr"
+        },
+        "subtitle": "Gib einen Namen, wähle wann Bestellungen schließen und teile mit deinem Team. Jeder kann seine Tacos hinzufügen!",
+        "title": "Neue Gruppenbestellung erstellen"
+      },
+      "hero": {
+        "badge": "Team-Bestellungen einfach gemacht",
+        "metrics": {
+          "activeCycles": "Aktive Zyklen",
+          "nextDispatch": "Nächster Versand",
+          "totalBatches": "Gesamt Batches"
+        },
+        "subtitle": "Erstelle eine Gruppenbestellung, teile sie mit deinen Kollegen und jeder kann seine Tacos hinzufügen. Wenn fertig, gebe eine große Bestellung für das ganze Team auf.",
+        "title": "Organisiere Gruppenbestellungen für dein Team"
+      },
+      "queue": {
+        "createdMeta": "Erstellt von {{name}} • {{date}}",
+        "empty": "Noch keine Gruppenbestellung. Erstelle deine erste und lade dein Team ein!",
+        "scheduled_one": "{{count}} geplant",
+        "scheduled_other": "{{count}} geplant",
+        "subtitle": "Alle Gruppenbestellungen, die du erstellt oder beigetreten bist.",
+        "title": "Deine Gruppenbestellungen",
+        "unknownLeader": "Unbekannter Leiter"
       }
     },
     "submit": {
-      "navigation": {
-        "back": "Zurück zur Bestellung"
-      },
-      "hero": {
-        "title": "Bestellung aufgeben",
-        "description": "Bereit zu bestellen? Überprüfe die Details unten und sende ab. Dies wird die Bestellung finalisieren und an das Restaurant senden.",
-        "participants": {
-          "label": "Teilnehmer",
-          "none": "Noch keine Teilnehmer",
-          "count_one": "{{count}} Teilnehmer in dieser Bestellung",
-          "count_other": "{{count}} Teilnehmer in dieser Bestellung"
-        }
-      },
-      "form": {
-        "title": "Lieferinformationen",
-        "description": "Wohin sollen wir diese Bestellung liefern? Fülle die Details unten aus.",
-        "fields": {
-          "customerName": "Kundenname",
-          "customerPhone": "Telefon",
-          "paymentMethod": "Zahlungsmethode",
-          "deliveryType": "Lieferart",
-          "street": "Straße",
-          "houseNumber": "Nummer",
-          "postcode": "Postleitzahl",
-          "city": "Stadt",
-          "state": "Bundesland",
-          "country": "Land",
-          "requestedTime": "Gewünschte Zeit",
-          "requestedFor": "Gewünschte Zeit",
-          "requestedForPlaceholder": "Zeit auswählen",
-          "asSoonAsPossible": "So schnell wie möglich",
-          "noTimeSlotsAvailable": "Keine Zeitslots für heute verfügbar"
-        },
-        "deliveryTypes": {
-          "livraison": "Lieferung",
-          "emporter": "Abholung"
-        },
-        "paymentMethods": {
-          "especes": "Bar",
-          "carte": "Karte",
-          "twint": "TWINT"
-        },
-        "sections": {
-          "address": {
-            "title": "Lieferdetails",
-            "description": "Kontaktdaten, Lieferart und Adresse."
-          },
-          "preferences": {
-            "title": "Zeit & Zahlung",
-            "description": "Wähle Wunschzeit und Zahlungsmethode."
-          }
-        },
-        "actions": {
-          "cancel": "Abbrechen",
-          "submit": "Bestellung aufgeben"
-        }
-      },
-      "saved": {
-        "title": "Gespeicherte Adressen",
-        "description": "Wähle eine gespeicherte Adresse oder speichere diese Angaben für später.",
-        "selectLabel": "Gespeicherte Profile",
-        "selectPlaceholder": "Manuelle Eingabe",
-        "selectedLabel": "Kein Profil ausgewählt",
-        "emptyState": "Noch keine gespeicherten Lieferprofile vorhanden.",
-        "labelField": "Profilname",
-        "inputPlaceholder": "Profilname (z. B. Büro, Zuhause)",
-        "unnamedProfile": "Ohne Namen",
-        "actions": {
-          "clear": "Auswahl löschen",
-          "save": "Neu speichern",
-          "update": "Profil aktualisieren",
-          "delete": "Löschen"
-        },
-        "form": {
-          "addDescription": "Speichere oft verwendete Lieferinformationen.",
-          "editDescription": "Aktualisiere die ausgewählte Adresse."
-        },
-        "messages": {
-          "saved": "Lieferadresse gespeichert.",
-          "updated": "Lieferadresse aktualisiert.",
-          "deleted": "Lieferadresse gelöscht.",
-          "missingFields": "Bitte Name, Telefon, Straße, PLZ und Stadt ausfüllen, bevor du speicherst.",
-          "missingLabel": "Gib einen Namen an, um diese Adresse zu erkennen.",
-          "selectProfile": "Wähle zuerst eine gespeicherte Adresse.",
-          "genericError": "Adresse konnte nicht gespeichert werden. Bitte versuche es erneut."
-        },
-        "confirmDelete": "Diese gespeicherte Adresse löschen?",
-        "delete": "Löschen"
-      },
-      "reminder": {
-        "title": "Letzter Schritt",
-        "body": "Nach dem Absenden wird die Bestellung finalisiert und gesendet. Teilnehmer können ihre Bestellungen nicht mehr ändern. Stelle sicher, dass alle ihre Tacos hinzugefügt haben!"
-      },
       "confirmation": {
-        "title": "Bestellung bestätigt!",
-        "successTitle": "Bestellung erfolgreich übermittelt",
+        "closeButton": "Bestelldetails anzeigen",
         "successMessage": "Ihre Bestellung wurde bestätigt und an das Restaurant gesendet. Sie werden zur Bestelldetailseite weitergeleitet.",
-        "closeButton": "Bestelldetails anzeigen"
+        "successTitle": "Bestellung erfolgreich übermittelt",
+        "title": "Bestellung bestätigt!"
       },
       "errors": {
         "missingFields": "Alle Felder für Kunde, Lieferart, Adresse und gewünschte Zeit sind erforderlich.",
         "unexpected": "Ein unerwarteter Fehler ist aufgetreten."
+      },
+      "form": {
+        "actions": {
+          "cancel": "Abbrechen",
+          "submit": "Bestellung aufgeben"
+        },
+        "deliveryTypes": {
+          "emporter": "Abholung",
+          "livraison": "Lieferung"
+        },
+        "description": "Wohin sollen wir diese Bestellung liefern? Fülle die Details unten aus.",
+        "fields": {
+          "asSoonAsPossible": "So schnell wie möglich",
+          "city": "Stadt",
+          "country": "Land",
+          "customerName": "Kundenname",
+          "customerPhone": "Telefon",
+          "deliveryType": "Lieferart",
+          "houseNumber": "Nummer",
+          "noTimeSlotsAvailable": "Keine Zeitslots für heute verfügbar",
+          "paymentMethod": "Zahlungsmethode",
+          "postcode": "Postleitzahl",
+          "requestedFor": "Gewünschte Zeit",
+          "requestedForPlaceholder": "Zeit auswählen",
+          "requestedTime": "Gewünschte Zeit",
+          "state": "Bundesland",
+          "street": "Straße"
+        },
+        "paymentMethods": {
+          "carte": "Karte",
+          "especes": "Bar",
+          "twint": "TWINT"
+        },
+        "sections": {
+          "address": {
+            "description": "Kontaktdaten, Lieferart und Adresse.",
+            "title": "Lieferdetails"
+          },
+          "preferences": {
+            "description": "Wähle Wunschzeit und Zahlungsmethode.",
+            "title": "Zeit & Zahlung"
+          }
+        },
+        "title": "Lieferinformationen"
+      },
+      "hero": {
+        "description": "Bereit zu bestellen? Überprüfe die Details unten und sende ab. Dies wird die Bestellung finalisieren und an das Restaurant senden.",
+        "participants": {
+          "count_one": "{{count}} Teilnehmer in dieser Bestellung",
+          "count_other": "{{count}} Teilnehmer in dieser Bestellung",
+          "label": "Teilnehmer",
+          "none": "Noch keine Teilnehmer"
+        },
+        "title": "Bestellung aufgeben"
+      },
+      "navigation": {
+        "back": "Zurück zur Bestellung"
+      },
+      "reminder": {
+        "body": "Nach dem Absenden wird die Bestellung finalisiert und gesendet. Teilnehmer können ihre Bestellungen nicht mehr ändern. Stelle sicher, dass alle ihre Tacos hinzugefügt haben!",
+        "title": "Letzter Schritt"
+      },
+      "saved": {
+        "actions": {
+          "clear": "Auswahl löschen",
+          "delete": "Löschen",
+          "save": "Neu speichern",
+          "update": "Profil aktualisieren"
+        },
+        "confirmDelete": "Diese gespeicherte Adresse löschen?",
+        "delete": "Löschen",
+        "description": "Wähle eine gespeicherte Adresse oder speichere diese Angaben für später.",
+        "emptyState": "Noch keine gespeicherten Lieferprofile vorhanden.",
+        "form": {
+          "addDescription": "Speichere oft verwendete Lieferinformationen.",
+          "editDescription": "Aktualisiere die ausgewählte Adresse."
+        },
+        "inputPlaceholder": "Profilname (z. B. Büro, Zuhause)",
+        "labelField": "Profilname",
+        "messages": {
+          "deleted": "Lieferadresse gelöscht.",
+          "genericError": "Adresse konnte nicht gespeichert werden. Bitte versuche es erneut.",
+          "missingFields": "Bitte Name, Telefon, Straße, PLZ und Stadt ausfüllen, bevor du speicherst.",
+          "missingLabel": "Gib einen Namen an, um diese Adresse zu erkennen.",
+          "saved": "Lieferadresse gespeichert.",
+          "selectProfile": "Wähle zuerst eine gespeicherte Adresse.",
+          "updated": "Lieferadresse aktualisiert."
+        },
+        "selectLabel": "Gespeicherte Profile",
+        "selectPlaceholder": "Manuelle Eingabe",
+        "selectedLabel": "Kein Profil ausgewählt",
+        "title": "Gespeicherte Adressen",
+        "unnamedProfile": "Ohne Namen"
       }
     }
   },
-  "languageSwitcher": {
-    "languages": {
-      "en": {
-        "label": "Englisch",
-        "short": "EN",
-        "name": "Englisch"
+  "organizations": {
+    "delete": {
+      "description": "Sind Sie sicher, dass Sie {{name}} löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
+      "title": "Organisation löschen"
+    },
+    "description": "Verwalten Sie Ihre Organisationen und sehen Sie, welche Gruppenbestellungen zu welcher Organisation gehören",
+    "details": {
+      "avatar": {
+        "change": "Avatar ändern",
+        "delete": "Avatar löschen",
+        "deleteDescription": "Sind Sie sicher, dass Sie den Avatar dieser Organisation löschen möchten?",
+        "deleteTitle": "Avatar löschen",
+        "description": "Laden Sie ein Avatar-Bild für diese Organisation hoch",
+        "title": "Organisations-Avatar",
+        "upload": "Avatar hochladen"
       },
-      "fr": {
-        "label": "Französisch",
-        "short": "FR",
-        "name": "Französisch"
-      },
-      "de": {
-        "label": "Deutsch",
-        "short": "DE",
-        "name": "Deutsch"
+      "created": "Erstellt am {{date}}",
+      "delete": "Organisation löschen",
+      "deleteDescription": "Sind Sie sicher, dass Sie \"{{name}}\" löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden und entfernt alle Mitglieder und Daten, die mit dieser Organisation verbunden sind.",
+      "deleteTitle": "Organisation löschen",
+      "rename": "Organisation umbenennen"
+    },
+    "empty": {
+      "createButton": "Organisation erstellen",
+      "description": "Sie gehören noch keiner Organisation an. Erstellen Sie eine, um zu beginnen.",
+      "select": "Organisation auswählen",
+      "selectDescription": "Wählen Sie eine Organisation aus der Liste aus, um Details anzuzeigen und zu verwalten.",
+      "title": "Keine Organisationen"
+    },
+    "form": {
+      "create": "Organisation erstellen",
+      "description": "Erstellen Sie eine neue Organisation, um Gruppenbestellungen und Mitglieder zu verwalten",
+      "name": {
+        "description": "Wählen Sie einen eindeutigen Namen für Ihre Organisation",
+        "label": "Organisationsname",
+        "placeholder": "Organisationsname eingeben"
       }
     },
-    "ariaLabel": "Wechseln zu {{language}}"
+    "join": {
+      "backToOrganizations": "Zurück zu Organisationen",
+      "button": "Beitrittsanfrage senden",
+      "copyLink": "Beitrittslink kopieren",
+      "description": "Anfrage zum Beitritt zu dieser Organisation und Zusammenarbeit mit Teammitgliedern",
+      "error": "Beitrittsanfrage konnte nicht gesendet werden",
+      "info": "Klicken Sie auf die Schaltfläche unten, um eine Beitrittsanfrage zu senden. Ein Administrator wird Ihre Anfrage prüfen und genehmigen. Nach der Genehmigung können Sie Gruppenbestellungen einsehen und daran teilnehmen.",
+      "infoTitle": "So funktioniert es",
+      "linkCopied": "Link kopiert!",
+      "pendingInfo": "Ihre Anfrage ist ausstehend. Ein Administrator wird sie in Kürze prüfen.",
+      "requestSent": "Beitrittsanfrage erfolgreich gesendet!",
+      "requesting": "Anfrage wird gesendet...",
+      "success": "Beitrittsanfrage erfolgreich gesendet",
+      "waitingApproval": "Warten auf Genehmigung durch einen Administrator. Sie werden benachrichtigt, sobald Ihre Anfrage geprüft wurde."
+    },
+    "list": {
+      "add": "Neu",
+      "title": "Organisationen"
+    },
+    "members": {
+      "addUser": {
+        "button": "Hinzufügen",
+        "description": "Fügen Sie einen Benutzer zu dieser Organisation per E-Mail hinzu. Er wird sofort ohne Bestätigung hinzugefügt.",
+        "emailLabel": "E-Mail",
+        "emailPlaceholder": "benutzer@beispiel.com",
+        "emailRequired": "E-Mail ist erforderlich",
+        "failed": "Benutzer konnte nicht hinzugefügt werden: {{error}}",
+        "roleLabel": "Rolle",
+        "success": "Benutzer {{email}} wurde zur Organisation hinzugefügt",
+        "title": "Mitglied hinzufügen"
+      },
+      "confirmRemove": "Sind Sie sicher, dass Sie dieses Mitglied aus der Organisation entfernen möchten?",
+      "confirmRemoveWithName": "Sind Sie sicher, dass Sie {{name}} aus der Organisation entfernen möchten?",
+      "description": "Verwalten Sie Organisationsmitglieder und ihre Rollen",
+      "empty": "Keine Mitglieder",
+      "emptyDescription": "Diese Organisation hat noch keine Mitglieder",
+      "joinRequestFailed": "Beitrittsanfrage konnte nicht gesendet werden: {{error}}",
+      "joinRequested": "Beitrittsanfrage erfolgreich gesendet",
+      "memberRemoveFailed": "Mitglied konnte nicht entfernt werden: {{error}}",
+      "memberRemoved": "Mitglied aus Organisation entfernt",
+      "memberRemovedWithName": "{{name}} wurde aus der Organisation entfernt",
+      "notMember": "Sie sind kein Mitglied dieser Organisation",
+      "pendingDescription": "Benutzer, die angefragt haben, dieser Organisation beizutreten",
+      "pendingRequests": "Ausstehende Anfragen",
+      "requestAcceptFailed": "Beitrittsanfrage konnte nicht akzeptiert werden: {{error}}",
+      "requestAccepted": "Beitrittsanfrage akzeptiert",
+      "requestAcceptedWithName": "Die Beitrittsanfrage von {{name}} wurde akzeptiert",
+      "requestJoin": "Beitrittsanfrage senden",
+      "requestPending": "Ihre Beitrittsanfrage wartet auf Genehmigung durch einen Administrator",
+      "requestRejectFailed": "Beitrittsanfrage konnte nicht abgelehnt werden: {{error}}",
+      "requestRejected": "Beitrittsanfrage abgelehnt",
+      "requestRejectedWithName": "Die Beitrittsanfrage von {{name}} wurde abgelehnt",
+      "requestToJoin": "Anfrage zum Beitritt zu dieser Organisation, um Gruppenbestellungen einzusehen und zusammenzuarbeiten",
+      "roleUpdateFailed": "Rolle konnte nicht aktualisiert werden: {{error}}",
+      "roleUpdated": "Mitgliedsrolle erfolgreich aktualisiert",
+      "roleUpdatedWithDetails": "Die Rolle von {{name}} wurde auf {{role}} aktualisiert",
+      "title": "Mitglieder",
+      "user": "Benutzer",
+      "viewOnly": "Sie haben nur Lesezugriff. Nur Administratoren können Organisationseinstellungen verwalten."
+    },
+    "messages": {
+      "avatarDeleteFailed": "Fehler beim Löschen des Avatars: {{error}}",
+      "avatarDeleted": "Avatar erfolgreich gelöscht",
+      "avatarUploadFailed": "Fehler beim Hochladen des Avatars: {{error}}",
+      "avatarUploaded": "Avatar erfolgreich hochgeladen",
+      "createFailed": "Fehler beim Erstellen der Organisation: {{error}}",
+      "created": "Organisation erfolgreich erstellt",
+      "createdWithName": "Organisation \"{{name}}\" erfolgreich erstellt",
+      "creating": "Organisation wird erstellt...",
+      "deleteFailed": "Fehler beim Löschen der Organisation: {{error}}",
+      "deleted": "Organisation erfolgreich gelöscht",
+      "deleting": "Organisation wird gelöscht...",
+      "deletingAvatar": "Avatar wird gelöscht...",
+      "genericError": "Ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut.",
+      "missingEmail": "Benutzer-E-Mail ist erforderlich",
+      "missingName": "Organisationsname ist erforderlich",
+      "updateFailed": "Fehler beim Aktualisieren der Organisation: {{error}}",
+      "updated": "Organisation erfolgreich aktualisiert",
+      "updating": "Organisation wird aktualisiert...",
+      "uploadingAvatar": "Avatar wird hochgeladen...",
+      "userLookupNotImplemented": "Benutzersuche per E-Mail ist noch nicht implementiert"
+    },
+    "roles": {
+      "admin": "Administrator",
+      "member": "Mitglied"
+    },
+    "title": "Organisationen"
   },
   "profile": {
+    "accountCard": {
+      "description": "Deine Kontodetails und Einstellungen.",
+      "title": "Kontodetails"
+    },
     "badge": "Dein Profil",
-    "subtitle": "Deine Kontoinformationen und Bestellhistorie.",
     "delivery": {
-      "manageButton": "Lieferadressen verwalten",
       "backToProfile": "Zurück zum Profil",
-      "title": "Gespeicherte Adressen",
-      "subtitle": "Speichere häufig genutzte Lieferorte, damit du Bestellungen schneller abschließen kannst.",
+      "formCard": {
+        "description": "Füge gespeicherte Lieferinfos hinzu, bearbeite oder lösche sie für schnellere Bestellungen.",
+        "title": "Lieferprofile verwalten"
+      },
       "helper": "Lege mehrere Profile an (Büro, Zuhause, Kunde) und wähle sie später beim Abschicken aus.",
+      "manageButton": "Lieferadressen verwalten",
       "stats": {
-        "label": "Gespeicherte Profile",
         "count_one": "{{count}} Profil einsatzbereit",
         "count_other": "{{count}} Profile einsatzbereit",
-        "empty": "Noch keine Profile gespeichert – lege eines an, um Zeit zu sparen."
+        "empty": "Noch keine Profile gespeichert – lege eines an, um Zeit zu sparen.",
+        "label": "Gespeicherte Profile"
       },
-      "formCard": {
-        "title": "Lieferprofile verwalten",
-        "description": "Füge gespeicherte Lieferinfos hinzu, bearbeite oder lösche sie für schnellere Bestellungen."
-      }
-    },
-    "stats": {
-      "userId": "Benutzer-ID",
-      "ordersLogged": "Erfasste Bestellungen"
-    },
-    "accountCard": {
-      "title": "Kontodetails",
-      "description": "Deine Kontodetails und Einstellungen."
+      "subtitle": "Speichere häufig genutzte Lieferorte, damit du Bestellungen schneller abschließen kannst.",
+      "title": "Gespeicherte Adressen"
     },
     "fields": {
-      "username": "Benutzername",
-      "userId": "Benutzer-ID",
       "created": "Erstellt",
-      "updated": "Aktualisiert"
+      "updated": "Aktualisiert",
+      "userId": "Benutzer-ID",
+      "username": "Benutzername"
     },
     "history": {
       "backToProfile": "Zurück zum Profil"
     },
     "previousOrders": {
-      "title": "Meine Tacos",
       "count_one": "{{count}} einzigartiger Taco",
       "count_other": "{{count}} einzigartige Tacos",
       "description": "Alle deine Tacos nach Rezept gruppiert. Sieh welche du am häufigsten bestellst.",
       "empty": "Noch keine Tacos. Erstelle deine erste Bestellung!",
+      "lastOrdered": "Zuletzt bestellt {{date}}",
+      "noTacos": "Keine Tacos in dieser Bestellung",
       "orderedTimes": "{{count}} Mal bestellt",
       "recentOrder": "Von: {{name}}",
-      "lastOrdered": "Zuletzt bestellt {{date}}",
-      "noTacos": "Keine Tacos in dieser Bestellung"
-    }
+      "title": "Meine Tacos"
+    },
+    "stats": {
+      "ordersLogged": "Erfasste Bestellungen",
+      "userId": "Benutzer-ID"
+    },
+    "subtitle": "Deine Kontoinformationen und Bestellhistorie."
+  },
+  "releases": {
+    "assets": "Dateien",
+    "backToAbout": "Zurück zu Über",
+    "changelog": "Änderungsprotokoll",
+    "description": "Bleiben Sie auf dem Laufenden über die neuesten Funktionen, Verbesserungen und Fehlerbehebungen.",
+    "downloads": "Downloads",
+    "latest": "Neueste",
+    "noReleases": "Noch keine Versionen",
+    "noReleasesDescription": "Schauen Sie später für Versionshinweise und Updates vorbei.",
+    "prerelease": "Vorabversion",
+    "releasedThis": "hat diese Version veröffentlicht",
+    "title": "Versionshinweise",
+    "viewOnGitHub": "Auf GitHub anzeigen"
+  },
+  "root": {
+    "appSubtitle": "Bestelle French Tacos zusammen mit deinem Team. Erstelle Gruppenbestellungen, lade Kollegen ein und gebe eine große Bestellung auf.",
+    "errors": {
+      "applicationError": "Anwendungsfehler",
+      "somethingWrong": "Etwas ist schiefgelaufen.",
+      "unknownError": "Unbekannter Fehler"
+    },
+    "tacocrew": "TacoCrew"
   },
   "stock": {
     "badge": "Menü",
-    "title": "Was verfügbar ist",
-    "subtitle": "Durchsuche verfügbare Zutaten und Artikel für deine Bestellungen.",
+    "join": {
+      "closed": "Diese Bestellung ist geschlossen",
+      "deadline": "Bestellung schließt {{time}}",
+      "expired": "Diese Bestellung ist geschlossen",
+      "joinButton": "Meine Bestellung hinzufügen",
+      "notStarted": "Diese Bestellung hat noch nicht begonnen",
+      "participants": "{{count}} Personen sind beigetreten",
+      "participants_one": "{{count}} Person ist beigetreten",
+      "signInPrompt": "Melde dich an, um deine Bestellung hinzuzufügen",
+      "subtitle": "Füge deine Tacos zu dieser Gruppenbestellung hinzu",
+      "title": "Tritt unserer Gruppenbestellung bei!",
+      "viewOrders": "Alle Bestellungen anzeigen"
+    },
+    "list": {
+      "availability": {
+        "available": "Verfügbar",
+        "outOfStock": "Nicht verfügbar"
+      },
+      "copied": "Kopiert!",
+      "copyId": "ID kopieren",
+      "copyIdTooltip": "ID in Zwischenablage kopieren",
+      "empty": "Noch keine Artikel verfügbar.",
+      "noItems": "Keine Artikel für diese Kategorie gefunden.",
+      "noPrice": "Kein Preis"
+    },
     "live": "Live mit Händlern synchronisiert",
     "overview": {
-      "title": "Live Lagerübersicht",
+      "ariaLabel": "Lagerkategorien",
       "description": "Wechsle Kategorien, um zu sehen, was für deine Bestellungen verfügbar ist.",
-      "ariaLabel": "Lagerkategorien"
+      "title": "Live Lagerübersicht"
     },
     "sections": {
-      "meats": {
-        "label": "Fleisch",
-        "blurb": "Kernproteine und Signatur-Mischungen."
-      },
-      "sauces": {
-        "label": "Soßen",
-        "blurb": "Scharf, süß und alles dazwischen."
-      },
-      "garnishes": {
-        "label": "Beilagen",
-        "blurb": "Frische Toppings für jede Bestellung."
-      },
-      "extras": {
-        "label": "Extras",
-        "blurb": "Zusätze, die Geschmack und Crunch steigern."
+      "desserts": {
+        "blurb": "Süße Enden für jedes Festmahl.",
+        "label": "Desserts"
       },
       "drinks": {
-        "label": "Getränke",
-        "blurb": "Halte Erfrischungen gekühlt und bereit."
+        "blurb": "Halte Erfrischungen gekühlt und bereit.",
+        "label": "Getränke"
       },
-      "desserts": {
-        "label": "Desserts",
-        "blurb": "Süße Enden für jedes Festmahl."
+      "extras": {
+        "blurb": "Zusätze, die Geschmack und Crunch steigern.",
+        "label": "Extras"
+      },
+      "garnishes": {
+        "blurb": "Frische Toppings für jede Bestellung.",
+        "label": "Beilagen"
+      },
+      "meats": {
+        "blurb": "Kernproteine und Signatur-Mischungen.",
+        "label": "Fleisch"
+      },
+      "sauces": {
+        "blurb": "Scharf, süß und alles dazwischen.",
+        "label": "Soßen"
       }
     },
     "stats": {
       "categories": "Kategorien",
-      "ingredients": "Zutaten",
-      "lowStock": "Niedriger Bestand",
       "counts": {
         "inStock_one": "{{count}} verfügbar",
         "inStock_other": "{{count}} verfügbar",
         "total_one": "{{count}} gesamt",
         "total_other": "{{count}} gesamt"
-      }
+      },
+      "ingredients": "Zutaten",
+      "lowStock": "Niedriger Bestand"
     },
-    "list": {
-      "empty": "Noch keine Artikel verfügbar.",
-      "noItems": "Keine Artikel für diese Kategorie gefunden.",
-      "noPrice": "Kein Preis",
-      "copyIdTooltip": "ID in Zwischenablage kopieren",
-      "copyId": "ID kopieren",
-      "copied": "Kopiert!",
-      "availability": {
-        "available": "Verfügbar",
-        "outOfStock": "Nicht verfügbar"
-      }
-    },
-    "join": {
-      "title": "Tritt unserer Gruppenbestellung bei!",
-      "subtitle": "Füge deine Tacos zu dieser Gruppenbestellung hinzu",
-      "deadline": "Bestellung schließt {{time}}",
-      "participants": "{{count}} Personen sind beigetreten",
-      "participants_one": "{{count}} Person ist beigetreten",
-      "joinButton": "Meine Bestellung hinzufügen",
-      "signInPrompt": "Melde dich an, um deine Bestellung hinzuzufügen",
-      "viewOrders": "Alle Bestellungen anzeigen",
-      "expired": "Diese Bestellung ist geschlossen",
-      "notStarted": "Diese Bestellung hat noch nicht begonnen",
-      "closed": "Diese Bestellung ist geschlossen"
-    }
+    "subtitle": "Durchsuche verfügbare Zutaten und Artikel für deine Bestellungen.",
+    "title": "Was verfügbar ist"
   },
-  "notifications": {
-    "title": "Benachrichtigungen",
-    "empty": "Alles erledigt!",
-    "emptyHint": "Neue Benachrichtigungen erscheinen hier",
-    "emptyArchive": "Keine archivierten Benachrichtigungen",
-    "emptyArchiveHint": "Archivierte Benachrichtigungen erscheinen hier",
-    "markAllRead": "Alle als gelesen markieren",
-    "archive": "Archivieren",
-    "archiveAll": "Alle archivieren",
-    "close": "Schließen",
-    "tabs": {
-      "inbox": "Posteingang",
-      "archive": "Archiv"
-    },
-    "timeAgo": {
-      "justNow": "Gerade eben",
-      "minutes": "Vor {{count}}m",
-      "hours": "Vor {{count}}h",
-      "days": "Vor {{count}}T"
-    }
-  },
-  "about": {
-    "version": "Version",
-    "releaseNotes": "Versionshinweise",
-    "buildInfo": "Build-Informationen",
-    "buildDate": "Build-Datum",
-    "branch": "Branch",
-    "commit": "Commit",
-    "latestTag": "Neuester Tag",
-    "latestCommit": "Neuester Commit",
-    "noCommitMessage": "Keine Commit-Nachricht verfügbar",
-    "contributors": "Mitwirkende",
-    "madeWith": "Gemacht mit",
-    "byTeam": "vom TacoCrew-Team"
-  },
-  "releases": {
-    "title": "Versionshinweise",
-    "description": "Bleiben Sie auf dem Laufenden über die neuesten Funktionen, Verbesserungen und Fehlerbehebungen.",
-    "changelog": "Änderungsprotokoll",
-    "latest": "Neueste",
-    "prerelease": "Vorabversion",
-    "noReleases": "Noch keine Versionen",
-    "noReleasesDescription": "Schauen Sie später für Versionshinweise und Updates vorbei.",
-    "releasedThis": "hat diese Version veröffentlicht",
-    "assets": "Dateien",
-    "downloads": "Downloads",
-    "viewOnGitHub": "Auf GitHub anzeigen",
-    "backToAbout": "Zurück zu Über"
+  "validation": {
+    "avatarFormat": "Nur .jpg, .jpeg, .png und .webp Formate werden unterstützt",
+    "avatarSize": "Dateigröße muss kleiner als 5 MB sein",
+    "invalid": "Ungültiger Wert",
+    "cityMax": "Stadt darf höchstens 100 Zeichen enthalten",
+    "cityRequired": "Stadt ist erforderlich",
+    "contactNameMax": "Name darf höchstens 100 Zeichen enthalten",
+    "contactNameRequired": "Kontaktname ist erforderlich",
+    "customerNameRequired": "Kundenname ist erforderlich",
+    "email": "Bitte geben Sie eine gültige E-Mail-Adresse ein",
+    "endDateAfterStart": "Enddatum muss nach dem Startdatum liegen",
+    "endDateRequired": "Enddatum ist erforderlich",
+    "endsWith": "Muss mit '{{value}}' enden",
+    "houseNumberMax": "Hausnummer darf höchstens 10 Zeichen enthalten",
+    "includes": "Muss '{{value}}' enthalten",
+    "invalidOption": "Bitte wählen Sie eine gültige Option",
+    "invalidString": "Ungültige Zeichenkette",
+    "invalidType": "Erwartet {{expected}}, erhalten {{received}}",
+    "maxItems": "Darf höchstens {{max}} Elemente enthalten",
+    "maxLength": "Darf höchstens {{max}} Zeichen enthalten",
+    "maxNumber": "Darf höchstens {{max}} sein",
+    "maxNumberExclusive": "Muss kleiner als {{max}} sein",
+    "meatRequired": "Bitte wählen Sie mindestens ein Fleisch",
+    "minItems": "Muss mindestens {{min}} Elemente enthalten",
+    "minLength": "Muss mindestens {{min}} Zeichen enthalten",
+    "minNumber": "Muss mindestens {{min}} sein",
+    "minNumberExclusive": "Muss größer als {{min}} sein",
+    "nameMax": "Name darf höchstens 100 Zeichen enthalten",
+    "nameMin": "Name muss mindestens 2 Zeichen enthalten",
+    "noteMax": "Notiz darf höchstens 500 Zeichen enthalten",
+    "orderNameMax": "Name darf höchstens 100 Zeichen enthalten",
+    "orderNameRequired": "Bestellname ist erforderlich",
+    "orgNameEmpty": "Organisationsname darf nicht leer sein",
+    "orgNameMax": "Name darf höchstens 100 Zeichen enthalten",
+    "orgNameRequired": "Organisationsname ist erforderlich",
+    "password": "Passwort erforderlich",
+    "passwordMax": "Passwort darf höchstens 100 Zeichen enthalten",
+    "passwordMin": "Passwort muss mindestens 8 Zeichen enthalten",
+    "phoneInvalid": "Ungültige Telefonnummer",
+    "phoneRequired": "Telefonnummer ist erforderlich",
+    "postcodeInvalid": "Ungültige Schweizer Postleitzahl (muss 4 Ziffern sein)",
+    "postcodeRequired": "Postleitzahl ist erforderlich",
+    "profileLabelMax": "Label darf höchstens 50 Zeichen enthalten",
+    "profileLabelRequired": "Profil-Label ist erforderlich",
+    "quantityMin": "Menge muss mindestens 1 sein",
+    "requestedTimeRequired": "Gewünschte Lieferzeit ist erforderlich",
+    "required": "Dieses Feld ist erforderlich",
+    "sauceRequired": "Bitte wählen Sie mindestens eine Sauce",
+    "startDateRequired": "Startdatum ist erforderlich",
+    "startsWith": "Muss mit '{{value}}' beginnen",
+    "streetMax": "Straße darf höchstens 100 Zeichen enthalten",
+    "streetRequired": "Straße ist erforderlich",
+    "tacoOrItems": "Bitte wählen Sie mindestens einen Taco oder andere Artikel",
+    "tooBig": "Wert zu groß",
+    "tooSmall": "Wert zu klein",
+    "url": "Bitte geben Sie eine gültige URL ein",
+    "uuid": "Bitte geben Sie eine gültige UUID ein"
   }
 }

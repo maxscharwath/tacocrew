@@ -1,7 +1,7 @@
+import { Button, Card, CardContent, CardHeader, CardTitle } from '@tacocrew/ui-kit';
 import { Check, Plus } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { OrganizationAvatar } from '@/components/shared/OrganizationAvatar';
-import { Button, Card, CardContent, CardHeader, CardTitle } from '@/components/ui';
 import type { Organization } from '@/lib/api/types';
 
 interface OrganizationsListProps {
@@ -55,7 +55,6 @@ export function OrganizationsList({
               <OrganizationAvatar
                 organizationId={org.id}
                 name={org.name}
-                hasImage={Boolean(org.image)}
                 size="sm"
               />
               <div className="min-w-0 flex-1">

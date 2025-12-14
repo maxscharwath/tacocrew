@@ -1,5 +1,5 @@
+import { Avatar, AvatarFallback, AvatarImage, type AvatarProps } from '@tacocrew/ui-kit';
 import { getUserInitials } from '@/components/orders/user-utils';
-import { Avatar, type AvatarProps } from '@/components/ui';
 import { getAvatarSizePixels } from '@/lib/api/image-utils';
 import { getAvatarUrl } from '@/lib/api/user';
 
@@ -30,15 +30,9 @@ export function UserAvatar({
   const avatarUrl = getAvatarUrl(userId, { size: avatarSize });
 
   return (
-    <Avatar
-      src={avatarUrl}
-      alt={alt ?? name ?? undefined}
-      size={size}
-      variant={variant}
-      color={color}
-      className={className}
-    >
-      {getUserInitials(name)}
+    <Avatar size={size} variant={variant} color={color} className={className}>
+      <AvatarImage src={avatarUrl} alt={alt ?? name ?? ''} />
+      <AvatarFallback>{getUserInitials(name)}</AvatarFallback>
     </Avatar>
   );
 }

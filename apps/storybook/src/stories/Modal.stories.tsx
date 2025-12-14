@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { Button, Modal } from '@tacobot/ui-kit';
+import { Button, Modal } from '@tacocrew/ui-kit';
 import { useState } from 'react';
 
 const meta = {

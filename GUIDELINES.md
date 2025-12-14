@@ -21,7 +21,7 @@ TacoCrew is a modern monorepo application for managing taco orders within organi
 ### Monorepo Structure
 
 ```
-tacobot/
+tacocrew/
 ├── apps/
 │   ├── api/          # Backend API (Hono + Prisma)
 │   ├── web/          # Frontend web app (React + Vite)
@@ -271,8 +271,8 @@ import { useState, useEffect } from 'react';
 import { z } from 'zod';
 
 // 2. Workspace packages
-import { Button, Card } from '@tacobot/ui-kit';
-import { TacoSize } from '@tacobot/gigatacos-client';
+import { Button, Card } from '@tacocrew/ui-kit';
+import { TacoSize } from '@tacocrew/gigatacos-client';
 
 // 3. Internal absolute imports (using path aliases)
 import { routes } from '@/lib/routes';
@@ -364,8 +364,8 @@ export async function createOrder(req: Request) {
 ```json
 {
   "dependencies": {
-    "@tacobot/ui-kit": "workspace:^",
-    "@tacobot/gigatacos-client": "workspace:*"
+    "@tacocrew/ui-kit": "workspace:^",
+    "@tacocrew/gigatacos-client": "workspace:*"
   }
 }
 ```
@@ -415,8 +415,8 @@ import { Button } from '../../../components/ui/Button';
 bun dev
 
 # Run specific app
-bun --filter @tacobot/web dev
-bun --filter @tacobot/api dev
+bun --filter @tacocrew/web dev
+bun --filter @tacocrew/api dev
 ```
 
 **Building**:
@@ -425,7 +425,7 @@ bun --filter @tacobot/api dev
 bun build
 
 # Build specific project
-bun --filter @tacobot/ui-kit build
+bun --filter @tacocrew/ui-kit build
 ```
 
 **Testing**:
@@ -434,7 +434,7 @@ bun --filter @tacobot/ui-kit build
 bun test
 
 # Run tests for specific project
-bun --filter @tacobot/api test
+bun --filter @tacocrew/api test
 ```
 
 **Dependencies**: Turbo automatically builds dependencies first (e.g., `ui-kit` before `web`).

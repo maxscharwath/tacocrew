@@ -1,10 +1,10 @@
+import { Avatar, AvatarFallback, AvatarImage } from '@tacocrew/ui-kit';
 import {
   getAvatarSizeClass,
   getAvatarSizePixels,
   getStackedOffsetClass,
   getUserInitials,
 } from '@/components/orders/user-utils';
-import { Avatar } from '@/components/ui';
 import { getAvatarUrl } from '@/lib/api/user';
 
 type Participant = {
@@ -19,8 +19,8 @@ type StackedAvatarsProps = {
 };
 
 /**
- * Stacked avatar component for displaying multiple participants
- * Shows overlapping avatars with a count badge if there are more than maxVisible
+ * Stacked avatar component for displaying multiple participants.
+ * Shows overlapping avatars with a count badge if there are more than maxVisible.
  */
 export function StackedAvatars({ participants, maxVisible = 5, size = 'sm' }: StackedAvatarsProps) {
   if (participants.length === 0) {
@@ -36,25 +36,24 @@ export function StackedAvatars({ participants, maxVisible = 5, size = 'sm' }: St
   return (
     <div className="mx-2 flex items-center overflow-visible">
       {visible.map((participant, index) => (
-        <div
+        <Avatar
           key={participant.userId}
-          className={`${index > 0 ? offsetClass : ''} relative overflow-hidden rounded-full border border-brand-400 shadow-sm`}
+          color="brandHero"
+          size={size}
+          variant="default"
+          className={`${index > 0 ? offsetClass : ''} ${avatarClass} relative rounded-full border border-brand-400 shadow-sm`}
           style={{ zIndex: index + 1 }}
         >
-          <Avatar
-            color="brandHero"
-            size={size}
-            variant="default"
+          <AvatarImage
             src={getAvatarUrl(participant.userId, { size: avatarSize })}
-            className={`${avatarClass} border-0`}
-          >
-            {getUserInitials(participant.name)}
-          </Avatar>
-        </div>
+            alt={participant.name ?? ''}
+          />
+          <AvatarFallback>{getUserInitials(participant.name)}</AvatarFallback>
+        </Avatar>
       ))}
       {remaining > 0 && (
         <div
-          className={`${offsetClass} relative flex min-w-8 items-center justify-center rounded-full border border-brand-400 bg-slate-800 px-2 shadow-sm ${avatarClass} font-semibold text-sm text-white`}
+          className={`${offsetClass} ${avatarClass} relative flex min-w-8 items-center justify-center rounded-full border border-brand-400 bg-slate-800 px-2 font-semibold text-sm text-white shadow-sm`}
           style={{ zIndex: 10 }}
         >
           +{remaining}

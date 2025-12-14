@@ -151,7 +151,7 @@ import {
 
 ```typescript
 // Bad - Direct package import
-import { Button } from '@tacobot/ui-kit';
+import { Button } from '@tacocrew/ui-kit';
 ```
 
 ### Available UI-Kit Components
@@ -607,7 +607,7 @@ export function Button({ variant = 'primary', fullWidth, className }: ButtonProp
 **✅ DO** use design tokens for consistency:
 
 ```typescript
-import { radius, backgrounds, shadows } from '@tacobot/ui-kit';
+import { radius, backgrounds, shadows } from '@tacocrew/ui-kit';
 
 // Good - Use design tokens
 <Card className={cx(radius.md, backgrounds.card, shadows.sm)}>

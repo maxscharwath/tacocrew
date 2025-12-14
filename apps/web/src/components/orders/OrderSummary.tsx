@@ -1,14 +1,15 @@
-import { ShoppingBag } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
 import {
   Avatar,
+  AvatarFallback,
   Button,
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui';
+} from '@tacocrew/ui-kit';
+import { ShoppingBag } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import type { StockResponse } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import type { MeatSelection, PriceBreakdownItem, ProgressStep, TacoSizeItem } from '@/types/orders';
@@ -75,7 +76,9 @@ export function OrderSummary({
       <CardHeader className="gap-3 border-white/10 border-b">
         <div className="flex items-center gap-3">
           <Avatar color="brand" size="md">
-            <ShoppingBag />
+            <AvatarFallback>
+              <ShoppingBag />
+            </AvatarFallback>
           </Avatar>
           <div>
             <CardTitle className="text-white">{t('orders.create.summary.title')}</CardTitle>

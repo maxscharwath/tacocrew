@@ -1,7 +1,3 @@
-import { Building2, Check, Plus, X } from 'lucide-react';
-import { type FormEvent, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { OrganizationAvatarPicker } from '@/components/profile/OrganizationAvatarPicker';
 import {
   Alert,
   Button,
@@ -10,12 +6,21 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  Field,
+  FieldError,
   InputGroup,
   InputGroupAddon,
   InputGroupInput,
-  Label,
-} from '@/components/ui';
+} from '@tacocrew/ui-kit';
+import { Building2, Check, Plus, X } from 'lucide-react';
+import { useState } from 'react';
+import { Controller } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
+import { FormField } from '@/components/forms';
+import { OrganizationAvatarPicker } from '@/components/profile/OrganizationAvatarPicker';
+import { useZodForm } from '@/hooks/useZodForm';
 import type { OrganizationPayload } from '@/lib/api/types';
+import { type CreateOrganizationFormData, createOrganizationSchema } from '@/lib/schemas';
 
 interface OrganizationCreateFormProps {
   readonly onSubmit: (
@@ -33,46 +38,20 @@ export function OrganizationCreateForm({
   disabled = false,
 }: OrganizationCreateFormProps) {
   const { t } = useTranslation();
-  const [form, setForm] = useState<OrganizationPayload>({ name: '' });
-  const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [avatarBackgroundColor, setAvatarBackgroundColor] = useState<string | null>(null);
-  const [feedback, setFeedback] = useState<{ tone: 'success' | 'error'; text: string } | null>(
-    null
-  );
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const validate = (): boolean => {
-    if (!form.name.trim()) {
-      setFeedback({ tone: 'error', text: t('organizations.messages.missingName') });
-      return false;
-    }
-    return true;
-  };
+  const form = useZodForm({
+    schema: createOrganizationSchema,
+    defaultValues: {
+      name: '',
+      avatar: undefined,
+    },
+  });
 
   const handleAvatarFileSelect = (file: File) => {
-    // Validate file type
-    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
-    if (!validTypes.includes(file.type)) {
-      setFeedback({
-        tone: 'error',
-        text: t('account.avatar.invalidType') || 'Invalid file type. Only images are allowed.',
-      });
-      return;
-    }
-
-    // Validate file size (5MB max)
-    const maxSize = 5 * 1024 * 1024;
-    if (file.size > maxSize) {
-      setFeedback({
-        tone: 'error',
-        text: t('account.avatar.fileTooLarge') || 'File is too large. Maximum size is 5MB.',
-      });
-      return;
-    }
-
-    setAvatarFile(file);
-    setFeedback(null);
+    // Zod will validate the file, but we need to set the preview
+    form.setValue('avatar', file, { shouldValidate: true });
 
     // Show preview
     const reader = new FileReader();
@@ -85,31 +64,26 @@ export function OrganizationCreateForm({
   };
 
   const handleRemoveAvatar = () => {
-    setAvatarFile(null);
+    form.setValue('avatar', undefined, { shouldValidate: true });
     setAvatarPreview(null);
     setAvatarBackgroundColor(null);
   };
 
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    if (!validate() || isSubmitting) return;
-
-    setIsSubmitting(true);
-    setFeedback(null);
-
+  const handleSubmit = async (data: CreateOrganizationFormData) => {
     try {
-      await onSubmit(form, avatarFile, avatarBackgroundColor);
+      const payload: OrganizationPayload = { name: data.name };
+      await onSubmit(payload, data.avatar ?? null, avatarBackgroundColor);
       // Reset form on success
-      setForm({ name: '' });
-      setAvatarFile(null);
+      form.reset();
       setAvatarPreview(null);
       setAvatarBackgroundColor(null);
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : t('organizations.messages.genericError');
-      setFeedback({ tone: 'error', text: errorMessage });
-    } finally {
-      setIsSubmitting(false);
+      form.setError('root', {
+        type: 'manual',
+        message: errorMessage,
+      });
     }
   };
 
@@ -129,59 +103,72 @@ export function OrganizationCreateForm({
         </div>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {feedback && (
-            <Alert tone={feedback.tone} className="fade-in slide-in-from-top-2 animate-in">
-              <p className="text-sm">{feedback.text}</p>
+        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+          {form.formState.errors.root && (
+            <Alert tone="error" className="fade-in slide-in-from-top-2 animate-in">
+              <p className="text-sm">{form.formState.errors.root.message}</p>
             </Alert>
           )}
 
           {/* Avatar Upload Section */}
-          <div className="rounded-xl border border-white/5 bg-slate-900/30 p-4 transition-all duration-200 hover:border-brand-400/20">
-            <OrganizationAvatarPicker
-              preview={avatarPreview}
-              onFileSelect={handleAvatarFileSelect}
-              onRemove={handleRemoveAvatar}
-              disabled={disabled || isSubmitting}
-            />
-          </div>
+          <Controller
+            name="avatar"
+            control={form.control}
+            render={({ fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <div className="rounded-xl border border-white/5 bg-slate-900/30 p-4 transition-all duration-200 hover:border-brand-400/20">
+                  <OrganizationAvatarPicker
+                    preview={avatarPreview}
+                    onFileSelect={handleAvatarFileSelect}
+                    onRemove={handleRemoveAvatar}
+                    disabled={disabled || form.formState.isSubmitting}
+                  />
+                </div>
+                {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+              </Field>
+            )}
+          />
 
           {/* Name Input */}
-          <div className="space-y-2">
-            <Label htmlFor="org-name" className="font-medium text-base">
-              {t('organizations.form.name.label')}
-            </Label>
-            <InputGroup>
-              <InputGroupAddon>
-                <Building2 className="size-4" />
-              </InputGroupAddon>
-              <InputGroupInput
-                id="org-name"
-                value={form.name}
-                onChange={(e) => {
-                  setForm({ name: e.target.value });
-                  setFeedback(null);
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    handleSubmit(e);
-                  }
-                }}
-                placeholder={t('organizations.form.name.placeholder')}
-                disabled={disabled || isSubmitting}
-                autoFocus
-                className="text-base"
-              />
-            </InputGroup>
-          </div>
+          <FormField
+            name="name"
+            control={form.control}
+            label={t('organizations.form.name.label')}
+            required
+          >
+            {(field) => (
+              <InputGroup>
+                <InputGroupAddon>
+                  <Building2 className="size-4" />
+                </InputGroupAddon>
+                <InputGroupInput
+                  name={field.name}
+                  value={typeof field.value === 'string' ? field.value : ''}
+                  onChange={field.onChange}
+                  onBlur={field.onBlur}
+                  ref={field.ref}
+                  id="org-name"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      form.handleSubmit(handleSubmit)();
+                    }
+                  }}
+                  placeholder={t('organizations.form.name.placeholder')}
+                  disabled={disabled || form.formState.isSubmitting}
+                  autoFocus
+                  className="text-base"
+                />
+              </InputGroup>
+            )}
+          </FormField>
 
           {/* Action Buttons */}
           <div className="flex justify-end gap-3 pt-2">
             <Button
               type="submit"
-              loading={isSubmitting}
-              disabled={disabled || isSubmitting || !form.name.trim()}
+              loading={form.formState.isSubmitting}
+              disabled={disabled || form.formState.isSubmitting}
               size="lg"
               className="gap-2"
             >
@@ -192,7 +179,7 @@ export function OrganizationCreateForm({
               type="button"
               variant="ghost"
               onClick={onCancel}
-              disabled={disabled || isSubmitting}
+              disabled={disabled || form.formState.isSubmitting}
               size="lg"
               className="gap-2"
             >

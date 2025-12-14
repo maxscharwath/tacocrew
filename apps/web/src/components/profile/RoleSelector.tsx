@@ -1,6 +1,6 @@
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@tacocrew/ui-kit';
 import { Crown, User } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui';
 import type { OrganizationRole } from '@/lib/api/types';
 
 type RoleSelectorProps = {
@@ -8,7 +8,6 @@ type RoleSelectorProps = {
   readonly onValueChange: (value: OrganizationRole) => void;
   readonly disabled?: boolean;
   readonly id?: string;
-  readonly className?: string;
   readonly triggerClassName?: string;
 };
 
@@ -20,7 +19,6 @@ export function RoleSelector({
   onValueChange,
   disabled = false,
   id,
-  className,
   triggerClassName,
 }: RoleSelectorProps) {
   const { t } = useTranslation();
@@ -44,9 +42,8 @@ export function RoleSelector({
   return (
     <Select
       value={value}
-      onValueChange={(val) => onValueChange(val as OrganizationRole)}
+      onValueChange={(val: string) => onValueChange(val as OrganizationRole)}
       disabled={disabled}
-      className={className}
     >
       <SelectTrigger id={id} className={triggerClassName}>
         <SelectValue>

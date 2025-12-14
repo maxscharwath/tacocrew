@@ -16,9 +16,9 @@ export interface ApiErrorBody {
  */
 function isRecord(value: unknown): value is Record<string, unknown> {
   return (
-    typeof value === 'object' &&
     value !== null &&
     !Array.isArray(value) &&
+    value instanceof Object &&
     Object.getPrototypeOf(value) === Object.prototype
   );
 }
@@ -27,7 +27,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
  * Extract error information from error body
  */
 function extractErrorInfo(errorBody: unknown): ApiErrorBody | null {
-  if (!errorBody || typeof errorBody !== 'object') {
+  if (!errorBody || Array.isArray(errorBody) || !(errorBody instanceof Object)) {
     return null;
   }
 
@@ -35,14 +35,15 @@ function extractErrorInfo(errorBody: unknown): ApiErrorBody | null {
     return null;
   }
 
+  const isString = (value: unknown): value is string => {
+    return value !== null && value !== undefined && (value as string).constructor === String;
+  };
+
   return {
-    id: 'id' in errorBody && typeof errorBody.id === 'string' ? errorBody.id : undefined,
-    code: 'code' in errorBody && typeof errorBody.code === 'string' ? errorBody.code : undefined,
-    message:
-      'message' in errorBody && typeof errorBody.message === 'string'
-        ? errorBody.message
-        : undefined,
-    key: 'key' in errorBody && typeof errorBody.key === 'string' ? errorBody.key : undefined,
+    id: 'id' in errorBody && isString(errorBody.id) ? errorBody.id : undefined,
+    code: 'code' in errorBody && isString(errorBody.code) ? errorBody.code : undefined,
+    message: 'message' in errorBody && isString(errorBody.message) ? errorBody.message : undefined,
+    key: 'key' in errorBody && isString(errorBody.key) ? errorBody.key : undefined,
     details: 'details' in errorBody && isRecord(errorBody.details) ? errorBody.details : undefined,
   };
 }
@@ -61,7 +62,7 @@ export class ApiError extends Error {
     this.body = body;
 
     // Extract error information if body contains error object
-    if (body && typeof body === 'object' && 'error' in body) {
+    if (body && !Array.isArray(body) && body instanceof Object && 'error' in body) {
       const bodyWithError: { error?: unknown } = body;
       const errorInfo = extractErrorInfo(bodyWithError.error);
       if (errorInfo) {

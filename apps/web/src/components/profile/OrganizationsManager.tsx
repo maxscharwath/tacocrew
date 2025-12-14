@@ -1,3 +1,4 @@
+import { Button, Card, CardContent, EmptyState, toast } from '@tacocrew/ui-kit';
 import { Building2, Plus } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -5,7 +6,6 @@ import { useRevalidator } from 'react-router';
 import { OrganizationCreateForm } from '@/components/profile/OrganizationCreateForm';
 import { OrganizationDetails } from '@/components/profile/OrganizationDetails';
 import { OrganizationsList } from '@/components/profile/OrganizationsList';
-import { Button, Card, CardContent, EmptyState, toast } from '@/components/ui';
 import { OrganizationApi, UserApi } from '@/lib/api';
 import type { Organization, OrganizationPayload } from '@/lib/api/types';
 
@@ -104,7 +104,7 @@ export function OrganizationsManager({
     setOrganizations(initialOrganizations);
     // Update selectedId if current selection is no longer in the list
     setSelectedId((currentSelectedId) => {
-      if (currentSelectedId && !initialOrganizations.find((org) => org.id === currentSelectedId)) {
+      if (currentSelectedId && !initialOrganizations.some((org) => org.id === currentSelectedId)) {
         return initialOrganizations[0]?.id ?? '';
       }
       return currentSelectedId;

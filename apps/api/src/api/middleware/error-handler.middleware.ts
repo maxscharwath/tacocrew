@@ -3,7 +3,7 @@
  * @module hono/middleware/error-handler
  */
 
-import { CsrfError, NetworkError, RateLimitError } from '@tacobot/gigatacos-client';
+import { CsrfError, NetworkError, RateLimitError } from '@tacocrew/gigatacos-client';
 import { Context, ErrorHandler } from 'hono';
 import { ErrorCodes } from '@/shared/types/types';
 import { ApiError, CsrfError as AppCsrfError } from '@/shared/utils/errors.utils';

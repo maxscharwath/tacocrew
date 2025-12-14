@@ -1,4 +1,4 @@
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@tacocrew/ui-kit';
 import { OrganizationAvatar } from './OrganizationAvatar';
 
 type OrganizationAvatarWithTooltipProps = {

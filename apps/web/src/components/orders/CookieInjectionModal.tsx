@@ -1,7 +1,7 @@
+import { Alert, Card, CardContent, CardHeader, CardTitle, Modal } from '@tacocrew/ui-kit';
 import { Lock, Terminal } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Alert, Card, CardContent, CardHeader, CardTitle, Modal } from '@/components/ui';
 import { getOrderCookies } from '@/lib/api/orders';
 
 type CookieInjectionModalProps = {

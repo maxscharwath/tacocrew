@@ -1,3 +1,4 @@
+import { Button } from '@tacocrew/ui-kit';
 import { Terminal } from 'lucide-react';
 import { Suspense, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -18,7 +19,6 @@ import {
   ShareButton,
 } from '@/components/orders';
 import { OrderDetailSkeleton } from '@/components/skeletons';
-import { Button } from '@/components/ui';
 import { useDeveloperMode } from '@/hooks/useDeveloperMode';
 import type { UpsertUserOrderBody } from '@/lib/api';
 import { OrdersApi, StockApi } from '@/lib/api';

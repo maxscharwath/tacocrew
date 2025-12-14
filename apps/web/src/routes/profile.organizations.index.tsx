@@ -1,8 +1,8 @@
+import { Card, CardContent, EmptyState } from '@tacocrew/ui-kit';
 import { Building2 } from 'lucide-react';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLoaderData, useNavigate } from 'react-router';
-import { Card, CardContent, EmptyState } from '@/components/ui';
 import { OrganizationApi } from '@/lib/api';
 import { routes } from '@/lib/routes';
 import type { LoaderData } from '@/lib/types/loader-types';

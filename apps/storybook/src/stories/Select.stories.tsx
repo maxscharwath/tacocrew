@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { MultiSelect, Select } from '@tacobot/ui-kit';
+import { MultiSelect, Select } from '@tacocrew/ui-kit';
 
 const meta = {
   title: 'UI Kit/Select',

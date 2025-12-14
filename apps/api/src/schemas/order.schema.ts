@@ -3,7 +3,7 @@
  * @module schemas/order
  */
 
-import { OrderStatus, OrderType } from '@tacobot/gigatacos-client';
+import { OrderStatus, OrderType } from '@tacocrew/gigatacos-client';
 import { z } from 'zod';
 import { CartId } from '@/schemas/cart.schema';
 import { UserId } from '@/schemas/user.schema';

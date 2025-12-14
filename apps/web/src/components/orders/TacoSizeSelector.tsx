@@ -1,6 +1,14 @@
+import {
+  Avatar,
+  AvatarFallback,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@tacocrew/ui-kit';
 import { CheckCircle2, Ruler } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { Avatar, Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui';
 import type { StockResponse } from '@/lib/api';
 import { TACO_SIZE_CONFIG } from '@/lib/taco-config';
 import { cn } from '@/lib/utils';
@@ -16,7 +24,7 @@ type TacoSizeSelectorProps = {
   readonly currency: string;
 };
 
-export function TacoSizeSelector({ sizes, selected, onSelect, currency }: TacoSizeSelectorProps) {
+export function TacoSizeSelector({ sizes, selected, onSelect }: TacoSizeSelectorProps) {
   const { t } = useTranslation();
 
   return (
@@ -24,7 +32,9 @@ export function TacoSizeSelector({ sizes, selected, onSelect, currency }: TacoSi
       <CardHeader className="gap-2 sm:gap-3">
         <div className="flex items-center gap-2 sm:gap-3">
           <Avatar color="blue" size="sm" className="sm:size-md">
-            <Ruler />
+            <AvatarFallback>
+              <Ruler />
+            </AvatarFallback>
           </Avatar>
           <div>
             <CardTitle className="text-white">{t('orders.create.sizeSection.title')}</CardTitle>

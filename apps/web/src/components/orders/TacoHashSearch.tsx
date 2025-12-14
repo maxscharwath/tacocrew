@@ -1,7 +1,7 @@
+import { Button, Input } from '@tacocrew/ui-kit';
 import { ArrowRight, Link } from 'lucide-react';
 import { type KeyboardEvent, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button, Input } from '@/components/ui';
 import { TacosApi } from '@/lib/api';
 import type { TacoOrder } from '@/lib/api/types';
 

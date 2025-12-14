@@ -1,3 +1,12 @@
+import {
+  Avatar,
+  AvatarFallback,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@tacocrew/ui-kit';
 import { Phone, ScrollText } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -9,7 +18,6 @@ import {
   ReceiptTicket,
   type ReceiptTicketModel,
 } from '@/components/orders/ReceiptTicket';
-import { Avatar, Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui';
 import { useLocaleFormatter } from '@/hooks/useLocaleFormatter';
 import { OrdersApi } from '@/lib/api';
 import { sendPaymentReminder } from '@/lib/api/notifications';
@@ -280,7 +288,9 @@ export function GroupOrderReceipts({
       <CardHeader className="gap-2">
         <div className="flex items-center gap-3">
           <Avatar color="brandHero" size="md" variant="elevated">
-            <ScrollText />
+            <AvatarFallback>
+              <ScrollText />
+            </AvatarFallback>
           </Avatar>
           <div>
             <CardTitle className="text-lg text-white">{sectionTitle}</CardTitle>
@@ -294,7 +304,9 @@ export function GroupOrderReceipts({
           <div className="rounded-xl border border-brand-400/30 bg-brand-500/10 p-4">
             <div className="flex items-center gap-3">
               <Avatar color="brandHero" size="sm" variant="elevated">
-                <Phone />
+                <AvatarFallback>
+                  <Phone />
+                </AvatarFallback>
               </Avatar>
               <div className="flex-1">
                 <p className="font-semibold text-brand-100 text-sm">

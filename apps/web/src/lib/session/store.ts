@@ -1,6 +1,6 @@
 import type { Session } from './types';
 
-const STORAGE_KEY = 'tacobot.session';
+const STORAGE_KEY = 'tacocrew.session';
 
 type Listener = () => void;
 

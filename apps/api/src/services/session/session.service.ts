@@ -3,7 +3,7 @@
  * @module services/session
  */
 
-import type { SessionContext } from '@tacobot/gigatacos-client';
+import type { SessionContext } from '@tacocrew/gigatacos-client';
 import { injectable } from 'tsyringe';
 import { BackendIntegrationClient } from '@/infrastructure/api/backend-integration.client';
 import { PrismaService } from '@/infrastructure/database/prisma.service';

@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { Skeleton, SkeletonText } from '@tacobot/ui-kit';
+import { Skeleton, SkeletonText } from '@tacocrew/ui-kit';
 
 const meta = {
   title: 'UI Kit/Skeleton',

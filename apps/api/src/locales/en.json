@@ -20,7 +20,7 @@
       },
       "test": {
         "title": "Test Notification",
-        "body": "This is a test notification from TacoBot!"
+        "body": "This is a test notification from TacoCrew!"
       },
       "organization": {
         "joinRequest": {

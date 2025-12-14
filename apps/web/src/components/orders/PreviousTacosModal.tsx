@@ -1,5 +1,5 @@
+import { Modal } from '@tacocrew/ui-kit';
 import { useTranslation } from 'react-i18next';
-import { Modal } from '@/components/ui';
 import type { PreviousOrder, StockResponse } from '@/lib/api/types';
 import { PreviousTacoCard } from './PreviousTacoCard';
 

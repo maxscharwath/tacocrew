@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { Button, Tooltip, TooltipContent, TooltipTrigger } from '@tacobot/ui-kit';
+import { Button, Tooltip, TooltipContent, TooltipTrigger } from '@tacocrew/ui-kit';
 import { Info } from 'lucide-react';
 
 const meta = {

@@ -1,8 +1,8 @@
+import { Button, Card, CardContent, EmptyState } from '@tacocrew/ui-kit';
 import { Building2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Outlet, useLoaderData, useLocation, useNavigate } from 'react-router';
 import { OrganizationsList } from '@/components/profile/OrganizationsList';
-import { Button, Card, CardContent, EmptyState } from '@/components/ui';
 import { OrganizationApi } from '@/lib/api';
 import { routes } from '@/lib/routes';
 import type { LoaderData } from '@/lib/types/loader-types';
@@ -32,7 +32,7 @@ export function ProfileOrganizationsRoute() {
 
   // Get selected organization ID from URL
   const currentPath = location.pathname;
-  const detailMatch = currentPath.match(/\/profile\/organizations\/([^/]+)$/);
+  const detailMatch = new RegExp(/\/profile\/organizations\/([^/]+)$/).exec(currentPath);
   const selectedId = detailMatch && !currentPath.endsWith('/new') ? detailMatch[1] : undefined;
   const isNewRoute = currentPath.endsWith('/new');
 

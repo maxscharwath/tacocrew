@@ -1,8 +1,3 @@
-import { Check, Crown, Mail, User, UserPlus, X } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { RoleSelector } from '@/components/profile/RoleSelector';
-import { UserAvatar } from '@/components/shared/UserAvatar';
 import {
   Alert,
   Badge,
@@ -18,7 +13,12 @@ import {
   InputGroupInput,
   Label,
   toast,
-} from '@/components/ui';
+} from '@tacocrew/ui-kit';
+import { Check, Crown, Mail, User, UserPlus, X } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { RoleSelector } from '@/components/profile/RoleSelector';
+import { UserAvatar } from '@/components/shared/UserAvatar';
 import { OrganizationApi } from '@/lib/api';
 import type { OrganizationMember, OrganizationRole, PendingRequest } from '@/lib/api/types';
 

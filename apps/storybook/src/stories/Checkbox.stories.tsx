@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { Checkbox } from '@tacobot/ui-kit';
+import { Checkbox } from '@tacocrew/ui-kit';
 
 const meta = {
   title: 'UI Kit/Checkbox',

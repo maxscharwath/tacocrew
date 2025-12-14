@@ -1,4 +1,5 @@
-import { TacoSize } from '@tacobot/gigatacos-client';
+import { TacoSize } from '@tacocrew/gigatacos-client';
+import { Alert } from '@tacocrew/ui-kit';
 import { ArrowLeft } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -21,7 +22,6 @@ import {
   TacoBuilder,
   TacoSizeSelector,
 } from '@/components/orders';
-import { Alert } from '@/components/ui';
 import { useOrderForm } from '@/hooks/useOrderForm';
 import { useOrderValidation } from '@/hooks/useOrderValidation';
 import { useProgressSteps } from '@/hooks/useProgressSteps';

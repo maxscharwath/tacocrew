@@ -1,8 +1,6 @@
-import { Plus, ShoppingBag } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
-import { Link, useRevalidator } from 'react-router';
 import {
   Avatar,
+  AvatarFallback,
   Button,
   Card,
   CardContent,
@@ -10,7 +8,10 @@ import {
   CardHeader,
   CardTitle,
   EmptyState,
-} from '@/components/ui';
+} from '@tacocrew/ui-kit';
+import { Plus, ShoppingBag } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { Link, useRevalidator } from 'react-router';
 import type { GroupOrder, UserOrderSummary } from '@/lib/api/types';
 import { routes } from '@/lib/routes';
 import { getOrderPermissions, useEmptyStateDescription } from '@/utils/order-helpers';
@@ -44,7 +45,9 @@ export function OrdersList({
       <CardHeader className="gap-2">
         <div className="flex items-center gap-3">
           <Avatar color="brandHero" size="md" variant="elevated">
-            <ShoppingBag />
+            <AvatarFallback>
+              <ShoppingBag />
+            </AvatarFallback>
           </Avatar>
           <div>
             <CardTitle className="text-lg text-white">{t('orders.detail.list.title')}</CardTitle>

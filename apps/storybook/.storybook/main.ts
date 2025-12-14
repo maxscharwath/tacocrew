@@ -3,8 +3,6 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { StorybookConfig } from '@storybook/react-vite';
 
-const __filename = fileURLToPath(import.meta.url);
-
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const uiKitPath = resolve(__dirname, '../../../packages/ui-kit/src');
 
@@ -26,14 +24,14 @@ const config: StorybookConfig = {
       ...config.resolve,
       alias: {
         ...config.resolve?.alias,
-        '@tacobot/ui-kit': uiKitPath,
+        '@tacocrew/ui-kit': uiKitPath,
       },
       dedupe: [...(config.resolve?.dedupe ?? []), 'react', 'react-dom', 'react/jsx-runtime'],
     };
 
     config.optimizeDeps = {
       ...config.optimizeDeps,
-      exclude: [...(config.optimizeDeps?.exclude ?? []), '@tacobot/ui-kit'],
+      exclude: [...(config.optimizeDeps?.exclude ?? []), '@tacocrew/ui-kit'],
       include: [...(config.optimizeDeps?.include ?? []), 'react', 'react-dom'],
     };
 

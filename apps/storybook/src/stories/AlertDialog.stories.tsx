@@ -10,7 +10,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
   Button,
-} from '@tacobot/ui-kit';
+} from '@tacocrew/ui-kit';
 
 const meta = {
   title: 'UI Kit/AlertDialog',
@@ -19,7 +19,7 @@ const meta = {
     layout: 'padded',
     docs: {
       description: {
-        component: 'Blocking confirmation dialog built with Radix primitives and TacoBot styles.',
+        component: 'Blocking confirmation dialog built with Radix primitives and TacoCrew styles.',
       },
     },
   },

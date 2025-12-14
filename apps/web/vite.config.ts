@@ -67,13 +67,13 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': resolve(__dirname, './src'),
-      '@tacobot/ui-kit': uiKitPath,
+      '@tacocrew/ui-kit': uiKitPath,
     },
     dedupe: ['react', 'react-dom', 'react-router'],
   },
   optimizeDeps: {
     include: ['react', 'react-dom', 'react-router'],
-    exclude: ['@tacobot/ui-kit'],
+    exclude: ['@tacocrew/ui-kit'],
     force: true,
   },
   build: {

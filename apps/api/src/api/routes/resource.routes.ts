@@ -4,7 +4,7 @@
  */
 
 import { createRoute } from '@hono/zod-openapi';
-import { TacoSize } from '@tacobot/gigatacos-client';
+import { TacoSize } from '@tacocrew/gigatacos-client';
 import { z } from 'zod';
 import { AmountSchema, jsonContent } from '@/api/schemas/shared.schemas';
 import { createRouteApp } from '@/api/utils/route.utils';

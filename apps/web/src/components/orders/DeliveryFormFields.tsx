@@ -1,7 +1,3 @@
-import { Globe, Hash, MapPin, User } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
-import type { DeliveryType } from '@/components/orders/DeliveryTypeSelector';
-import { DeliveryTypeSelector } from '@/components/orders/DeliveryTypeSelector';
 import {
   InputGroup,
   InputGroupAddon,
@@ -13,7 +9,11 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui';
+} from '@tacocrew/ui-kit';
+import { Globe, Hash, MapPin, User } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import type { DeliveryType } from '@/components/orders/DeliveryTypeSelector';
+import { DeliveryTypeSelector } from '@/components/orders/DeliveryTypeSelector';
 import {
   getSwissCantons,
   getSwitzerlandName,

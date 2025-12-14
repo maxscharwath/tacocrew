@@ -7,7 +7,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@tacobot/ui-kit';
+} from '@tacocrew/ui-kit';
 import { Copy, Edit, MoreVertical, Settings, Trash2, User } from 'lucide-react';
 
 const meta = {

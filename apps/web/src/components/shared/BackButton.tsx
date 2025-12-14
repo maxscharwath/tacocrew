@@ -3,10 +3,10 @@
  * @module components/shared/BackButton
  */
 
+import { Button } from '@tacocrew/ui-kit';
 import { ArrowLeft } from 'lucide-react';
 import type { ReactElement } from 'react';
 import { Link } from 'react-router';
-import { Button } from '@/components/ui';
 import { cx } from '@/utils/cx';
 
 type BackButtonProps = {

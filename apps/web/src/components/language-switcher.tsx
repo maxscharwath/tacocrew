@@ -1,22 +1,9 @@
+import { CountryFlag, SegmentedControl, SegmentedControlItem } from '@tacocrew/ui-kit';
 import { useTranslation } from 'react-i18next';
-import { CountryFlag, SegmentedControl, type SegmentedControlOption } from '@/components/ui';
 import { updateUserLanguage } from '@/lib/api/user';
 import { type LanguageConfig, languages } from '@/lib/locale.config';
 
 type LanguageCode = (typeof languages)[number]['code'];
-
-const options: SegmentedControlOption<LanguageCode>[] = languages.map((language) => {
-  const lang = language as LanguageConfig & { countryCode: string };
-  return {
-    value: lang.code,
-    label: (
-      <>
-        <CountryFlag countryCode={lang.countryCode} size="sm" />
-        <span>{lang.code.toUpperCase()}</span>
-      </>
-    ),
-  };
-});
 
 export function LanguageSwitcher() {
   const { i18n } = useTranslation();
@@ -40,7 +27,16 @@ export function LanguageSwitcher() {
           console.error('Failed to update user language preference', error);
         });
       }}
-      options={options}
-    />
+    >
+      {languages.map((language) => {
+        const lang = language as LanguageConfig & { countryCode: string };
+        return (
+          <SegmentedControlItem key={lang.code} value={lang.code}>
+            <CountryFlag countryCode={lang.countryCode} size="sm" />
+            <span>{lang.code.toUpperCase()}</span>
+          </SegmentedControlItem>
+        );
+      })}
+    </SegmentedControl>
   );
 }

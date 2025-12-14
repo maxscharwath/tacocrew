@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { Divider } from '@tacobot/ui-kit';
+import { Divider } from '@tacocrew/ui-kit';
 
 const meta = {
   title: 'UI Kit/Divider',

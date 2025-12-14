@@ -1,5 +1,5 @@
-import appIcon from '@/assets/icon.png?format=webp';
-import { Card, CardContent, Skeleton } from './ui';
+import { Card, CardContent, Skeleton } from '@tacocrew/ui-kit';
+import appIcon from '@/assets/icon.png?format=webp&img';
 
 export function HydrateFallback() {
   return (

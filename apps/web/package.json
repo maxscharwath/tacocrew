@@ -1,12 +1,12 @@
 {
-  "name": "@tacobot/web",
+  "name": "@tacocrew/web",
   "private": true,
   "version": "0.2512.1",
   "type": "module",
   "description": "TacoCrew - Order French tacos together with your team",
   "repository": {
     "type": "git",
-    "url": "https://github.com/maxscharwath/tacobot"
+    "url": "https://github.com/maxscharwath/tacocrew"
   },
   "author": {
     "name": "Maxime Scharwath",
@@ -34,8 +34,8 @@
   "dependencies": {
     "@better-auth/passkey": "^1.4.5",
     "@icons-pack/react-simple-icons": "^13.8.0",
-    "@tacobot/gigatacos-client": "workspace:^",
-    "@tacobot/ui-kit": "workspace:^",
+    "@tacocrew/gigatacos-client": "workspace:^",
+    "@tacocrew/ui-kit": "workspace:^",
     "@tailwindcss/vite": "^4.1.17",
     "better-auth": "^1.3.34",
     "bs58": "^6.0.0",
@@ -44,6 +44,7 @@
     "i18next": "^25.6.3",
     "i18next-browser-languagedetector": "^8.2.0",
     "i18next-resources-to-backend": "^1.2.1",
+    "libphonenumber-js": "^1.12.31",
     "lucide-react": "^0.554.0",
     "qr-code-styling": "^1.9.2",
     "react": "^19.2.0",

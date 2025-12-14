@@ -1,8 +1,3 @@
-import { Loader2 } from 'lucide-react';
-import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { useLoaderData, useNavigate } from 'react-router';
-import { OrganizationAvatar } from '@/components/shared/OrganizationAvatar';
 import {
   Alert,
   Button,
@@ -12,7 +7,12 @@ import {
   CardHeader,
   CardTitle,
   toast,
-} from '@/components/ui';
+} from '@tacocrew/ui-kit';
+import { Loader2 } from 'lucide-react';
+import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useLoaderData, useNavigate } from 'react-router';
+import { OrganizationAvatar } from '@/components/shared/OrganizationAvatar';
 import { OrganizationApi } from '@/lib/api';
 import { ApiError } from '@/lib/api/http';
 import { routes } from '@/lib/routes';
@@ -94,7 +94,6 @@ export function OrganizationJoinRoute() {
                 <OrganizationAvatar
                   organizationId={organization.id}
                   name={organization.name}
-                  hasImage={Boolean(organization.image)}
                   color="brandHero"
                   size="2xl"
                   variant="elevated"

@@ -1,4 +1,4 @@
-import { Toaster } from '@tacobot/ui-kit';
+import { Toaster } from '@tacocrew/ui-kit';
 import { StrictMode } from 'react';
 import ReactDOM from 'react-dom/client';
 import { RouterProvider } from 'react-router';

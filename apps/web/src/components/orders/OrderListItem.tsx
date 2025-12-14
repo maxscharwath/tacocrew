@@ -1,10 +1,10 @@
+import { StatusBadge } from '@tacocrew/ui-kit';
 import { ArrowUpRight, Calendar } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
 import { StackedAvatars } from '@/components/orders/StackedAvatars';
 import { UserBadge } from '@/components/orders/UserBadge';
 import { OrganizationAvatarWithTooltip } from '@/components/shared/OrganizationAvatarWithTooltip';
-import { StatusBadge } from '@/components/ui';
 import type { UserGroupOrder } from '@/lib/api/types';
 import { routes } from '@/lib/routes';
 

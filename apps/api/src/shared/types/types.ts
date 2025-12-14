@@ -3,7 +3,7 @@
  * @module types
  */
 
-import { OrderType, TacoSize } from '@tacobot/gigatacos-client';
+import { OrderType, TacoSize } from '@tacocrew/gigatacos-client';
 import { CartId } from '@/schemas/cart.schema';
 import { Dessert } from '@/schemas/dessert.schema';
 import { Drink } from '@/schemas/drink.schema';

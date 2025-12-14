@@ -1,8 +1,8 @@
+import { Button, Card, CardContent, EmptyState } from '@tacocrew/ui-kit';
 import { AlertTriangle, ArrowLeft, Home, RefreshCw } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { isRouteErrorResponse, useNavigate, useRouteError } from 'react-router';
 import { NotFound } from '@/components/errors/NotFound';
-import { Button, Card, CardContent, EmptyState } from '@/components/ui';
 import { routes } from '@/lib/routes';
 
 export function ErrorBoundary() {
@@ -65,7 +65,7 @@ export function ErrorBoundary() {
                 variant="outline"
                 size="lg"
                 className="w-full gap-2 sm:w-auto"
-                onClick={() => window.history.back()}
+                onClick={() => globalThis.history.back()}
               >
                 <ArrowLeft size={18} />
                 {t('errors.badRequest.goBack')}
@@ -134,7 +134,7 @@ export function ErrorBoundary() {
                 variant="ghost"
                 size="lg"
                 className="w-full gap-2 sm:w-auto"
-                onClick={() => window.location.reload()}
+                onClick={() => globalThis.location.reload()}
               >
                 <RefreshCw size={18} />
                 {t('errors.application.reload')}

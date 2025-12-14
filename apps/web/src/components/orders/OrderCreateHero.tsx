@@ -1,6 +1,6 @@
+import { Avatar, AvatarImage } from '@tacocrew/ui-kit';
 import { useTranslation } from 'react-i18next';
-import appIcon from '@/assets/icon.png?format=webp';
-import { Avatar } from '@/components/ui';
+import appIcon from '@/assets/icon.png?format=webp&img';
 
 export function OrderCreateHero() {
   const { t } = useTranslation();
@@ -11,13 +11,9 @@ export function OrderCreateHero() {
       <div className="-bottom-16 pointer-events-none absolute left-12 h-60 w-60 rounded-full bg-purple-500/25 blur-3xl" />
       <div className="relative space-y-4 sm:space-y-6">
         <div className="flex items-center gap-2 sm:gap-3">
-          <Avatar
-            color="brandHero"
-            size="lg"
-            variant="elevated"
-            className="sm:size-xl"
-            src={appIcon}
-          />
+          <Avatar color="brandHero" size="lg" variant="elevated" className="sm:size-xl">
+            <AvatarImage src={appIcon} alt="TacoCrew" />
+          </Avatar>
           <div className="flex-1">
             <h1 className="font-semibold text-2xl text-white tracking-tight sm:text-3xl lg:text-4xl">
               {t('orders.create.hero.title')}

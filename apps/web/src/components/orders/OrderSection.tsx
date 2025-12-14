@@ -1,6 +1,6 @@
+import { Badge } from '@tacocrew/ui-kit';
 import { CheckCircle2 } from 'lucide-react';
 import type { ComponentType } from 'react';
-import { Badge } from '@/components/ui';
 
 /**
  * OrderSection - A presentational component for displaying a section of order items

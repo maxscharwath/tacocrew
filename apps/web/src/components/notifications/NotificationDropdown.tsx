@@ -1,3 +1,4 @@
+import { Button, EmptyState, SegmentedControl, SegmentedControlItem } from '@tacocrew/ui-kit';
 import type { LucideIcon } from 'lucide-react';
 import {
   Archive,
@@ -19,7 +20,6 @@ import {
 import { type MouseEvent, useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
-import { Button, EmptyState, SegmentedControl } from '@/components/ui';
 import { useRelativeTime } from '@/hooks';
 import {
   archiveAllNotifications,
@@ -319,38 +319,29 @@ export function NotificationDropdown({ onClose, onMarkAsRead }: NotificationDrop
     }
   };
 
-  const tabOptions = [
-    {
-      value: 'inbox' as const,
-      label: (
-        <span className="flex items-center gap-2">
-          <Inbox size={14} className="shrink-0" />
-          <span>{t('notifications.tabs.inbox')}</span>
-          <CountBadge count={unreadCount} variant="unread" />
-        </span>
-      ),
-    },
-    {
-      value: 'archive' as const,
-      label: (
-        <span className="flex items-center gap-2">
-          <Archive size={14} className="shrink-0" />
-          <span>{t('notifications.tabs.archive')}</span>
-          <CountBadge count={archivedCount} variant="muted" />
-        </span>
-      ),
-    },
-  ];
-
   return (
     <>
       <div className="shrink-0 border-white/10 border-b px-3 py-3">
         <SegmentedControl
           value={activeTab}
-          onValueChange={setActiveTab}
-          options={tabOptions}
+          onValueChange={(value) => setActiveTab(value as TabValue)}
           className="w-full"
-        />
+        >
+          <SegmentedControlItem value="inbox">
+            <span className="flex items-center gap-2">
+              <Inbox size={14} className="shrink-0" />
+              <span>{t('notifications.tabs.inbox')}</span>
+              <CountBadge count={unreadCount} variant="unread" />
+            </span>
+          </SegmentedControlItem>
+          <SegmentedControlItem value="archive">
+            <span className="flex items-center gap-2">
+              <Archive size={14} className="shrink-0" />
+              <span>{t('notifications.tabs.archive')}</span>
+              <CountBadge count={archivedCount} variant="muted" />
+            </span>
+          </SegmentedControlItem>
+        </SegmentedControl>
       </div>
 
       <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain sm:max-h-[50vh] sm:min-h-[200px]">

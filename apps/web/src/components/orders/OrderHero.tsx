@@ -1,8 +1,3 @@
-import { Edit, Lock, LockOpen, MoreVertical, Plus, Send, Trash2 } from 'lucide-react';
-import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { Link, useNavigate, useRevalidator } from 'react-router';
-import { EditGroupOrderDialog } from '@/components/orders/EditGroupOrderDialog';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -13,6 +8,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   Avatar,
+  AvatarFallback,
+  AvatarImage,
   Badge,
   Button,
   Card,
@@ -22,7 +19,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
   StatusBadge,
-} from '@/components/ui';
+} from '@tacocrew/ui-kit';
+import { Edit, Lock, LockOpen, MoreVertical, Plus, Send, Trash2 } from 'lucide-react';
+import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Link, useNavigate, useRevalidator } from 'react-router';
+import { EditGroupOrderDialog } from '@/components/orders/EditGroupOrderDialog';
 import { useDateFormat } from '@/hooks/useDateFormat';
 import type { GroupOrder, UserOrderSummary } from '@/lib/api';
 import { OrdersApi, resolveImageUrl } from '@/lib/api';
@@ -232,14 +234,9 @@ export function OrderHero({
           </h1>
           <p className="text-slate-200 text-sm">{formatDateTimeRange(startDate, endDate)}</p>
           <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-3 py-2">
-            <Avatar
-              color="brandHero"
-              size="md"
-              variant="elevated"
-              src={resolveImageUrl(leader?.image)}
-              alt={leaderName}
-            >
-              {leaderInitial}
+            <Avatar color="brandHero" size="md" variant="elevated">
+              <AvatarImage src={resolveImageUrl(leader?.image)} alt={leaderName} />
+              <AvatarFallback>{leaderInitial}</AvatarFallback>
             </Avatar>
             <div>
               <p className="text-slate-400 text-xs uppercase tracking-[0.3em]">

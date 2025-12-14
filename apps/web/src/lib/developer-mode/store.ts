@@ -1,6 +1,6 @@
 type Listener = () => void;
 
-const STORAGE_KEY = 'tacobot:developerMode';
+const STORAGE_KEY = 'tacocrew:developerMode';
 
 class DeveloperModeStore {
   private isEnabled: boolean;

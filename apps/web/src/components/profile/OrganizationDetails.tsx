@@ -1,8 +1,3 @@
-import { Building2, Copy, Pencil, Save, Trash2, Upload, X } from 'lucide-react';
-import { type ChangeEvent, useRef, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { OrganizationMembers } from '@/components/profile/OrganizationMembers';
-import { OrganizationAvatar } from '@/components/shared/OrganizationAvatar';
 import {
   Alert,
   AlertDialog,
@@ -23,7 +18,12 @@ import {
   Input,
   Label,
   toast,
-} from '@/components/ui';
+} from '@tacocrew/ui-kit';
+import { Copy, Pencil, Save, Trash2, Upload, X } from 'lucide-react';
+import { type ChangeEvent, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { OrganizationMembers } from '@/components/profile/OrganizationMembers';
+import { OrganizationAvatar } from '@/components/shared/OrganizationAvatar';
 import { useCopyFeedback } from '@/hooks/useCopyFeedback';
 import { OrganizationApi } from '@/lib/api';
 import type { Organization, OrganizationPayload } from '@/lib/api/types';
@@ -175,7 +175,6 @@ export function OrganizationDetails({
               <OrganizationAvatar
                 organizationId={organization.id}
                 name={organization.name}
-                hasImage={Boolean(organization.image)}
                 size="2xl"
                 color="brand"
               />

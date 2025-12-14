@@ -1,4 +1,4 @@
-import type { TacoSize } from '@tacobot/gigatacos-client';
+import type { TacoSize } from '@tacocrew/gigatacos-client';
 import type { ComponentType } from 'react';
 import type { StockResponse } from '@/lib/api';
 /**

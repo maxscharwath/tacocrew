@@ -1,7 +1,7 @@
+import { Button, Label } from '@tacocrew/ui-kit';
 import { Building2, Trash2, Upload } from 'lucide-react';
 import { type ChangeEvent, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button, Label } from '@/components/ui';
 
 interface OrganizationAvatarPickerProps {
   readonly preview: string | null;

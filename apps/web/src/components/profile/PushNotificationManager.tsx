@@ -1,6 +1,3 @@
-import { Bell, Laptop, RefreshCw } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import {
   Alert,
   AlertDialog,
@@ -19,7 +16,10 @@ import {
   CardTitle,
   EmptyState,
   toast,
-} from '@/components/ui';
+} from '@tacocrew/ui-kit';
+import { Bell, Laptop, RefreshCw } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { usePushNotifications } from '@/hooks';
 import {
   deletePushSubscription,

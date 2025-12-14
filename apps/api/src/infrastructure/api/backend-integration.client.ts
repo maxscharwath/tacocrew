@@ -1,6 +1,6 @@
 /**
  * Backend Integration Adapter
- * Adapts the new @tacobot/gigatacos-client package to work with the existing app
+ * Adapts the new @tacocrew/gigatacos-client package to work with the existing app
  * Handles CSRF token management and automatic regeneration
  * @module infrastructure/backend-client/adapter
  */
@@ -20,7 +20,7 @@ import {
   type StockAvailabilityBackend,
   type Taco,
   type TacoFormData,
-} from '@tacobot/gigatacos-client';
+} from '@tacocrew/gigatacos-client';
 import { injectable } from 'tsyringe';
 import type { SessionId } from '@/schemas/session.schema';
 import { SessionService } from '@/services/session/session.service';
@@ -28,7 +28,7 @@ import { config } from '@/shared/config/app.config';
 import { injectLazy } from '@/shared/utils/inject.utils';
 import { logger } from '@/shared/utils/logger.utils';
 
-export type { OrderSummary } from '@tacobot/gigatacos-client';
+export type { OrderSummary } from '@tacocrew/gigatacos-client';
 
 /**
  * Adapter that wraps the new gigatacos-client package

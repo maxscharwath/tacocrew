@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { Button, ButtonGroup, ButtonGroupSeparator, ButtonGroupText } from '@tacobot/ui-kit';
+import { Button, ButtonGroup, ButtonGroupSeparator, ButtonGroupText } from '@tacocrew/ui-kit';
 import { FilterIcon } from 'lucide-react';
 
 const meta = {

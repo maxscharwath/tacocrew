@@ -1,3 +1,4 @@
+import { Button, Card, CardContent, EmptyState } from '@tacocrew/ui-kit';
 import {
   AlertCircle,
   AlertTriangle,
@@ -8,7 +9,6 @@ import {
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { isRouteErrorResponse, useLocation, useNavigate, useRouteError } from 'react-router';
-import { Button, Card, CardContent, EmptyState } from '@/components/ui';
 import { ApiError } from '@/lib/api/http';
 import { routes } from '@/lib/routes';
 
@@ -20,7 +20,7 @@ export function OrganizationError() {
 
   // Check if we can go back - location.key is set when navigating (not 'default' on initial load)
   // Also check history length as a fallback
-  const canGoBack = location.key !== 'default' || window.history.length > 1;
+  const canGoBack = location.key !== 'default' || globalThis.history.length > 1;
 
   const handleGoBack = () => {
     navigate(-1);

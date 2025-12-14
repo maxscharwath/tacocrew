@@ -1,6 +1,6 @@
+import { Badge, Card, CardContent, CardHeader, CardTitle } from '@tacocrew/ui-kit';
 import { Ham, Minus, Plus } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { Badge, Card, CardContent, CardHeader, CardTitle } from '@/components/ui';
 import type { StockResponse } from '@/lib/api/types';
 import { cn } from '@/lib/utils';
 import type { MeatSelection, TacoSizeItem } from '@/types/orders';
@@ -20,7 +20,6 @@ export function MeatSelector({
   stock,
   selectedTacoSize,
   size,
-  currency,
   isSubmitting,
   updateMeatQuantity,
 }: MeatSelectorProps) {
@@ -65,7 +64,7 @@ export function MeatSelector({
                 selectedTacoSize !== null &&
                 item.in_stock &&
                 canAddMore &&
-                isSubmitting === false;
+                !isSubmitting;
 
               return (
                 <div
@@ -77,7 +76,7 @@ export function MeatSelector({
                       : 'border-white/10 bg-slate-800/50 hover:border-brand-400/40 hover:bg-slate-800/70 hover:shadow-[0_4px_12px_rgba(99,102,241,0.15)]',
                     canClickToAdd && 'cursor-pointer',
                     isDisabled && quantity === 0 && !canClickToAdd && 'cursor-not-allowed',
-                    item.in_stock === false &&
+                    !item.in_stock &&
                       'border-slate-700/50 bg-slate-900/40 opacity-60 grayscale hover:border-slate-700/50 hover:bg-slate-900/40'
                   )}
                 >
@@ -89,7 +88,7 @@ export function MeatSelector({
                       aria-label={t('common.labels.addMeat', { name: item.name })}
                     />
                   )}
-                  {item.in_stock === false && (
+                  {!item.in_stock && (
                     <div className="pointer-events-none absolute inset-0 z-10 rounded-2xl border-2 border-slate-600/30 border-dashed bg-slate-900/40" />
                   )}
                   <div className="relative z-0 mb-4 flex items-start gap-3">
@@ -97,7 +96,7 @@ export function MeatSelector({
                       <span
                         className={cn(
                           'block truncate font-semibold text-sm',
-                          item.in_stock === false ? 'text-slate-500 line-through' : 'text-white'
+                          item.in_stock ? 'text-white' : 'text-slate-500 line-through'
                         )}
                       >
                         {item.name}
@@ -108,7 +107,7 @@ export function MeatSelector({
                             {item.price.value.toFixed(2)} {item.price.currency}
                           </span>
                         )}
-                        {item.in_stock === false && (
+                        {!item.in_stock && (
                           <Badge tone="warning" className="px-1.5 py-0 font-semibold text-[9px]">
                             {t('common.outOfStock')}
                           </Badge>

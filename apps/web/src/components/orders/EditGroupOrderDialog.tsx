@@ -1,9 +1,21 @@
+import { zodResolver } from '@hookform/resolvers/zod';
+import {
+  Alert,
+  Button,
+  DateTimePicker,
+  Field,
+  FieldError,
+  FieldLabel,
+  Input,
+  Modal,
+} from '@tacocrew/ui-kit';
 import { format } from 'date-fns';
-import { type FormEvent, useEffect, useState } from 'react';
+import { useEffect } from 'react';
+import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
-import { Button, DateTimePicker, Input, Label, Modal } from '@/components/ui';
 import { OrdersApi } from '@/lib/api';
 import type { GroupOrder } from '@/lib/api/types';
+import { type EditGroupOrderFormData, editGroupOrderSchema } from '@/lib/schemas';
 import { toDate } from '@/lib/utils/date';
 
 type EditGroupOrderDialogProps = {
@@ -20,93 +32,44 @@ export function EditGroupOrderDialog({
   onSuccess,
 }: EditGroupOrderDialogProps) {
   const { t } = useTranslation();
-  const [name, setName] = useState(groupOrder.name ?? '');
-  const [startDate, setStartDate] = useState(() => {
-    const date = toDate(groupOrder.startDate);
-    return format(date, 'yyyy-MM-dd');
+
+  const form = useForm<EditGroupOrderFormData>({
+    resolver: zodResolver(editGroupOrderSchema),
+    defaultValues: {
+      name: groupOrder.name ?? '',
+      startDate: toDate(groupOrder.startDate).toISOString(),
+      endDate: toDate(groupOrder.endDate).toISOString(),
+    },
   });
-  const [startTime, setStartTime] = useState(() => {
-    const date = toDate(groupOrder.startDate);
-    return format(date, 'HH:mm');
-  });
-  const [endDate, setEndDate] = useState(() => {
-    const date = toDate(groupOrder.endDate);
-    return format(date, 'yyyy-MM-dd');
-  });
-  const [endTime, setEndTime] = useState(() => {
-    const date = toDate(groupOrder.endDate);
-    return format(date, 'HH:mm');
-  });
-  const [isSaving, setIsSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   // Reset form when dialog opens/closes or groupOrder changes
   useEffect(() => {
     if (isOpen) {
-      setName(groupOrder.name ?? '');
-      const start = toDate(groupOrder.startDate);
-      const end = toDate(groupOrder.endDate);
-      setStartDate(format(start, 'yyyy-MM-dd'));
-      setStartTime(format(start, 'HH:mm'));
-      setEndDate(format(end, 'yyyy-MM-dd'));
-      setEndTime(format(end, 'HH:mm'));
-      setError(null);
+      form.reset({
+        name: groupOrder.name ?? '',
+        startDate: toDate(groupOrder.startDate).toISOString(),
+        endDate: toDate(groupOrder.endDate).toISOString(),
+      });
     }
-  }, [isOpen, groupOrder]);
+  }, [isOpen, groupOrder, form]);
 
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    setIsSaving(true);
-
+  const handleSubmit = async (data: EditGroupOrderFormData) => {
     try {
-      const startDateTime = new Date(`${startDate}T${startTime}`);
-      const endDateTime = new Date(`${endDate}T${endTime}`);
-
-      if (endDateTime <= startDateTime) {
-        setError(t('orders.detail.edit.error.endDateTimeBeforeStart'));
-        setIsSaving(false);
-        return;
-      }
-
       await OrdersApi.updateGroupOrder(groupOrder.id, {
-        name: name.trim() || null,
-        startDate: startDateTime.toISOString(),
-        endDate: endDateTime.toISOString(),
+        name: data.name.trim() || null,
+        startDate: data.startDate,
+        endDate: data.endDate,
       });
 
       onSuccess();
       onClose();
     } catch (err) {
       console.error('Failed to update group order:', err);
-      setError(err instanceof Error ? err.message : t('orders.detail.edit.error.generic'));
-    } finally {
-      setIsSaving(false);
+      form.setError('root', {
+        type: 'manual',
+        message: err instanceof Error ? err.message : t('orders.detail.edit.error.generic'),
+      });
     }
-  };
-
-  // Validate end date/time against start date/time
-  const validateEndDateTime = (
-    checkEndDate: string = endDate,
-    checkEndTime: string = endTime,
-    checkStartDate: string = startDate,
-    checkStartTime: string = startTime
-  ) => {
-    if (checkEndDate < checkStartDate) {
-      return t('orders.detail.edit.error.endDateBeforeStart');
-    }
-    if (checkEndDate === checkStartDate && checkEndTime <= checkStartTime) {
-      return t('orders.detail.edit.error.endTimeBeforeStart');
-    }
-    return null;
-  };
-
-  // Update error when end date changes
-  const handleEndDateChange = (newDate: string) => {
-    setEndDate(newDate);
-    // Validate with the new date
-    const validationError = validateEndDateTime(newDate, endTime, startDate, startTime);
-    setError(validationError);
   };
 
   return (
@@ -116,80 +79,103 @@ export function EditGroupOrderDialog({
       title={t('orders.detail.edit.title')}
       description={t('orders.detail.edit.description')}
     >
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="grid gap-2">
-          <Label htmlFor="orderName">{t('common.labels.dropName')}</Label>
-          <Input
-            id="orderName"
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder={t('common.placeholders.dropName')}
-            disabled={isSaving}
-          />
-        </div>
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+        <Controller
+          name="name"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel htmlFor="orderName">{t('common.labels.dropName')}</FieldLabel>
+              <Input
+                {...field}
+                id="orderName"
+                type="text"
+                placeholder={t('common.placeholders.dropName')}
+                disabled={form.formState.isSubmitting}
+                aria-invalid={fieldState.invalid}
+              />
+              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+            </Field>
+          )}
+        />
 
         <div className="space-y-4 rounded-2xl border border-white/10 bg-slate-950/60 p-4">
           <div className="grid gap-4">
-            <DateTimePicker
-              label={t('orders.list.form.labels.opens')}
-              dateValue={startDate}
-              timeValue={startTime}
-              onDateChange={(newDate) => {
-                setStartDate(newDate);
-                // If end date is before new start date, update end date to start date
-                if (endDate < newDate) {
-                  setEndDate(newDate);
-                }
-                // Re-validate after date change
-                const validationError = validateEndDateTime(
-                  endDate < newDate ? newDate : endDate,
-                  endTime,
-                  newDate,
-                  startTime
+            <Controller
+              name="startDate"
+              control={form.control}
+              render={({ field, fieldState }) => {
+                const date = new Date(field.value);
+                return (
+                  <Field data-invalid={fieldState.invalid}>
+                    <DateTimePicker
+                      label={t('orders.list.form.labels.opens')}
+                      dateValue={format(date, 'yyyy-MM-dd')}
+                      timeValue={format(date, 'HH:mm')}
+                      onDateChange={(newDate) => {
+                        const time = format(date, 'HH:mm');
+                        field.onChange(new Date(`${newDate}T${time}`).toISOString());
+                      }}
+                      onTimeChange={(newTime) => {
+                        const dateStr = format(date, 'yyyy-MM-dd');
+                        field.onChange(new Date(`${dateStr}T${newTime}`).toISOString());
+                      }}
+                      disabled={form.formState.isSubmitting}
+                      required
+                    />
+                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  </Field>
                 );
-                setError(validationError);
               }}
-              onTimeChange={(newTime) => {
-                setStartTime(newTime);
-                // Re-validate after time change
-                const validationError = validateEndDateTime(endDate, endTime, startDate, newTime);
-                setError(validationError);
-              }}
-              disabled={isSaving}
-              required
             />
 
-            <DateTimePicker
-              label={t('orders.list.form.labels.closes')}
-              dateValue={endDate}
-              timeValue={endTime}
-              onDateChange={handleEndDateChange}
-              onTimeChange={(newTime) => {
-                setEndTime(newTime);
-                // Re-validate after time change
-                const validationError = validateEndDateTime(endDate, newTime, startDate, startTime);
-                setError(validationError);
+            <Controller
+              name="endDate"
+              control={form.control}
+              render={({ field, fieldState }) => {
+                const date = new Date(field.value);
+                const startDate = new Date(form.getValues('startDate'));
+                return (
+                  <Field data-invalid={fieldState.invalid}>
+                    <DateTimePicker
+                      label={t('orders.list.form.labels.closes')}
+                      dateValue={format(date, 'yyyy-MM-dd')}
+                      timeValue={format(date, 'HH:mm')}
+                      onDateChange={(newDate) => {
+                        const time = format(date, 'HH:mm');
+                        field.onChange(new Date(`${newDate}T${time}`).toISOString());
+                      }}
+                      onTimeChange={(newTime) => {
+                        const dateStr = format(date, 'yyyy-MM-dd');
+                        field.onChange(new Date(`${dateStr}T${newTime}`).toISOString());
+                      }}
+                      disabled={form.formState.isSubmitting}
+                      required
+                      minDate={format(startDate, 'yyyy-MM-dd')}
+                    />
+                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  </Field>
+                );
               }}
-              disabled={isSaving}
-              required
-              minDate={startDate}
             />
           </div>
         </div>
 
-        {error && (
-          <div className="rounded-lg border border-rose-500/50 bg-rose-500/10 p-3">
-            <p className="text-rose-300 text-sm">{error}</p>
-          </div>
+        {form.formState.errors.root && (
+          <Alert tone="error">{form.formState.errors.root.message}</Alert>
         )}
 
         <div className="flex justify-end gap-3 border-white/10 border-t pt-4">
-          <Button type="button" variant="outline" onClick={onClose} disabled={isSaving}>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onClose}
+            disabled={form.formState.isSubmitting}
+          >
             {t('common.cancel')}
           </Button>
-          <Button type="submit" variant="default" disabled={isSaving}>
-            {isSaving ? t('common.saving') : t('common.save')}
+          <Button type="submit" variant="default" disabled={form.formState.isSubmitting}>
+            {form.formState.isSubmitting ? t('common.saving') : t('common.save')}
           </Button>
         </div>
       </form>

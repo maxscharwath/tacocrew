@@ -27,7 +27,7 @@ bun test
 This is a **monorepo** managed with bun workspaces and Turbo:
 
 ```
-tacobot/
+tacocrew/
 ├── apps/
 │   ├── api/          # Backend API (Hono + Prisma + TypeScript)
 │   ├── web/          # Frontend (React + Vite + React Router v7)
@@ -45,7 +45,7 @@ This project is optimized for AI-assisted development using [Claude Code](https:
 ### Getting Started with Claude Code
 
 1. **Install Claude Code**: Download from [claude.ai/download](https://claude.ai/download)
-2. **Open project**: `cd tacobot && claude`
+2. **Open project**: `cd tacocrew && claude`
 3. **Start coding**: Claude automatically loads `CLAUDE.md` with project context
 
 ### Workflow
@@ -256,8 +256,8 @@ See [RELEASE.md](./RELEASE.md) for detailed release documentation.
 bun test
 
 # Run specific project tests
-bun --filter @tacobot/api test
-bun --filter @tacobot/web test
+bun --filter @tacocrew/api test
+bun --filter @tacocrew/web test
 
 # Watch mode
 bun test --watch

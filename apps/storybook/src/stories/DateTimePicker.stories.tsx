@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { DateTimePicker } from '@tacobot/ui-kit';
+import { DateTimePicker } from '@tacocrew/ui-kit';
 import { useState } from 'react';
 
 const meta = {

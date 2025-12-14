@@ -1,9 +1,9 @@
+import { Avatar, AvatarFallback, Card, CardContent, CardHeader } from '@tacocrew/ui-kit';
 import { useTranslation } from 'react-i18next';
 import { useFetcher } from 'react-router';
 import { OrderCardActions } from '@/components/orders/OrderCardActions';
 import { OrderTags } from '@/components/orders/OrderTags';
 import { UserBadge } from '@/components/orders/UserBadge';
-import { Avatar, Card, CardContent, CardHeader } from '@/components/ui';
 import { OrdersApi } from '@/lib/api';
 import type { UserOrderSummary } from '@/lib/api/types';
 import { formatTacoSizeName, TACO_SIZE_CONFIG } from '@/lib/taco-config';
@@ -89,7 +89,9 @@ export function OrderCard({
       <CardHeader className="pr-20">
         <div className="flex items-start gap-3">
           <Avatar color="brandHero" size="md" variant="elevated">
-            <span className="text-xl">{tacoConfig?.emoji}</span>
+            <AvatarFallback>
+              <span className="text-xl">{tacoConfig?.emoji}</span>
+            </AvatarFallback>
           </Avatar>
           <div className="min-w-0 flex-1">
             <div className="mb-1.5 flex flex-wrap items-center gap-1.5">

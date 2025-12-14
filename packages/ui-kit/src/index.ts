@@ -2,6 +2,7 @@
 
 
 // Components
+export * from './accordion';
 export * from './alert';
 export * from './alert-dialog';
 export * from './avatar';
@@ -17,6 +18,7 @@ export * from './date-time-picker';
 export * from './divider';
 export * from './dropdown-menu';
 export * from './empty-state';
+export * from './field';
 export * from './input';
 export * from './input-group';
 export * from './label';

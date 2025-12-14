@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { Button, EmptyState } from '@tacobot/ui-kit';
+import { Button, EmptyState } from '@tacocrew/ui-kit';
 import { Inbox } from 'lucide-react';
 
 const meta = {

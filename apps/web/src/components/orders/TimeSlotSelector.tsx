@@ -1,5 +1,3 @@
-import { Clock } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
 import {
   Label,
   Select,
@@ -8,7 +6,9 @@ import {
   SelectSeparator,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui';
+} from '@tacocrew/ui-kit';
+import { Clock } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 // Special value for "As soon as possible" - Radix UI Select doesn't allow empty string values
 const ASAP_VALUE = '__asap__';

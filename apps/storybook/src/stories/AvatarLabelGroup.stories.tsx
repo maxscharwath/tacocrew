@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { AvatarLabelGroup } from '@tacobot/ui-kit';
+import { AvatarLabelGroup } from '@tacocrew/ui-kit';
 import { User } from 'lucide-react';
 
 const meta = {

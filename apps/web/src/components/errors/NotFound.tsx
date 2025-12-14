@@ -1,7 +1,7 @@
+import { Button, Card, CardContent, EmptyState } from '@tacocrew/ui-kit';
 import { ArrowLeft, Home, Search } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
-import { Button, Card, CardContent, EmptyState } from '@/components/ui';
 import { routes } from '@/lib/routes';
 
 interface NotFoundProps {
@@ -19,7 +19,7 @@ export function NotFound({ title, message, showBackButton = true }: NotFoundProp
   };
 
   const handleGoBack = () => {
-    window.history.back();
+    globalThis.history.back();
   };
 
   return (

@@ -1,6 +1,6 @@
 # UI-Kit Package Coding Guidelines
 
-> **Package**: @tacobot/ui-kit
+> **Package**: @tacocrew/ui-kit
 > **Purpose**: Shared React component library and design system
 > **Framework**: React + Tailwind CSS + Radix UI
 
@@ -272,7 +272,7 @@ export function CardFooter({ className, ...props }: CardFooterProps) {
 **Usage**:
 
 ```typescript
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter, Button } from '@tacobot/ui-kit';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter, Button } from '@tacocrew/ui-kit';
 
 <Card elevated>
   <CardHeader>
@@ -759,7 +759,7 @@ export const spacing = {
 **Usage**:
 
 ```typescript
-import { radius, backgrounds, shadows, textColors } from '@tacobot/ui-kit';
+import { radius, backgrounds, shadows, textColors } from '@tacocrew/ui-kit';
 
 <Card className={cn(radius.md, backgrounds.card, shadows.lg)}>
   <h2 className={textColors.primary}>Title</h2>
@@ -1003,7 +1003,7 @@ export function TooltipContent({ className, sideOffset = 4, ...props }: TooltipC
 **Usage**:
 
 ```typescript
-import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@tacobot/ui-kit';
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@tacocrew/ui-kit';
 
 <TooltipProvider>
   <Tooltip>
@@ -1113,7 +1113,7 @@ export { CardFooter } from './CardFooter';
 export type { ButtonProps } from './Button';
 
 // Usage in consuming app
-import type { ButtonProps } from '@tacobot/ui-kit';
+import type { ButtonProps } from '@tacocrew/ui-kit';
 
 type CustomButtonProps = ButtonProps & {
   readonly customProp: string;

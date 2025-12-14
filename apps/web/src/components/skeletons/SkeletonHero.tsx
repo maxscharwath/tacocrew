@@ -1,4 +1,4 @@
-import { Skeleton, SkeletonText } from '../ui';
+import { Skeleton, SkeletonText } from '@tacocrew/ui-kit';
 
 type SkeletonHeroProps = {
   readonly showBadge?: boolean;

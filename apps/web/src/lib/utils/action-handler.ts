@@ -154,21 +154,23 @@ function processZodIssues(issues: unknown[]): {
 
   for (const issue of issues) {
     if (
-      typeof issue !== 'object' ||
       issue === null ||
+      Array.isArray(issue) ||
+      !(issue instanceof Object) ||
       !('path' in issue) ||
       !('message' in issue)
     ) {
       continue;
     }
 
-    const path = Array.isArray(issue.path)
-      ? issue.path.filter((p: unknown) => typeof p === 'string').join('.')
-      : '';
+    const isString = (value: unknown): value is string => {
+      return value !== null && value !== undefined && (value as string).constructor === String;
+    };
+    const path = Array.isArray(issue.path) ? issue.path.filter(isString).join('.') : '';
 
-    if (path && !fieldErrors[path] && typeof issue.message === 'string') {
+    if (path && !fieldErrors[path] && isString(issue.message)) {
       fieldErrors[path] = issue.message;
-    } else if (!path && typeof issue.message === 'string') {
+    } else if (!path && isString(issue.message)) {
       messages.push(issue.message);
     }
   }
@@ -212,16 +214,20 @@ function parseZodError(errorBody: unknown): {
  * Extract error message from API error body
  */
 function extractApiErrorMessage(body: unknown, defaultMessage: string): string {
-  if (typeof body !== 'object' || !body || !('error' in body)) {
+  if (!body || Array.isArray(body) || !(body instanceof Object) || !('error' in body)) {
     return defaultMessage;
   }
 
   const errorObj = body.error;
+  const isString = (value: unknown): value is string => {
+    return value !== null && value !== undefined && (value as string).constructor === String;
+  };
   if (
-    typeof errorObj === 'object' &&
     errorObj &&
+    !Array.isArray(errorObj) &&
+    errorObj instanceof Object &&
     'message' in errorObj &&
-    typeof errorObj.message === 'string'
+    isString(errorObj.message)
   ) {
     return errorObj.message;
   }

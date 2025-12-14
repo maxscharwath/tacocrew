@@ -3,7 +3,7 @@
  * @module services/resource
  */
 
-import { TACO_SIZE_CONFIG, TacoSize } from '@tacobot/gigatacos-client';
+import { TACO_SIZE_CONFIG, TacoSize } from '@tacocrew/gigatacos-client';
 import { injectable } from 'tsyringe';
 import { BackendIntegrationClient } from '@/infrastructure/api/backend-integration.client';
 import { Currency, createAmount, StockCategory } from '@/shared/types/types';

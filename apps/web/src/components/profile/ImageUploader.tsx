@@ -1,6 +1,3 @@
-import { Camera, Check, Plus, RotateCcw, Trash2, X } from 'lucide-react';
-import { type ChangeEvent, type DragEvent, useEffect, useId, useRef, useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import {
   Alert,
   AlertDialog,
@@ -13,7 +10,10 @@ import {
   AlertDialogTitle,
   Button,
   toast,
-} from '@/components/ui';
+} from '@tacocrew/ui-kit';
+import { Camera, Check, Plus, RotateCcw, Trash2, X } from 'lucide-react';
+import { type ChangeEvent, type DragEvent, useEffect, useId, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { deleteAvatar, uploadAvatar } from '@/lib/api/user';
 import { imageUrlToFile, PREDEFINED_AVATAR_THUMBNAILS, PREDEFINED_AVATARS } from '@/lib/avatars';
 import { ENV } from '@/lib/env';
@@ -76,12 +76,10 @@ export function ImageUploader({ currentImage, onImageUpdate }: ImageUploaderProp
 
   // Initialize preview with currentImage immediately - resolve URL if needed
   const getInitialPreview = (): string | null => {
-    if (currentImage && typeof currentImage === 'string' && currentImage.trim()) {
+    if (currentImage?.trim()) {
       // If it's a relative URL, resolve it to absolute using API base URL or current origin
       if (currentImage.startsWith('/')) {
-        const baseUrl =
-          ENV.apiBaseUrl ||
-          (typeof globalThis.window !== 'undefined' ? globalThis.location.origin : '');
+        const baseUrl = ENV.apiBaseUrl || globalThis.location.origin;
         return baseUrl + currentImage;
       }
       return currentImage;
@@ -105,13 +103,11 @@ export function ImageUploader({ currentImage, onImageUpdate }: ImageUploaderProp
   // Sync preview with currentImage when no pending changes
   useEffect(() => {
     if (!hasPendingSelection) {
-      if (currentImage && typeof currentImage === 'string' && currentImage.trim()) {
+      if (currentImage?.trim()) {
         // Resolve relative URLs to absolute using API base URL or current origin
         let resolvedUrl = currentImage;
         if (currentImage.startsWith('/')) {
-          const baseUrl =
-            ENV.apiBaseUrl ||
-            (typeof globalThis.window !== 'undefined' ? globalThis.location.origin : '');
+          const baseUrl = ENV.apiBaseUrl || globalThis.location.origin;
           resolvedUrl = baseUrl + currentImage;
         }
         setPreview(resolvedUrl);
@@ -385,15 +381,15 @@ export function ImageUploader({ currentImage, onImageUpdate }: ImageUploaderProp
                   disabled={isUploading}
                   className={cn(
                     'relative flex aspect-square h-8 w-8 items-center justify-center rounded-lg border-2 border-dashed transition-all',
-                    !PRESET_COLORS.some((c) => c.value === backgroundColor)
-                      ? 'scale-110 border-white/10 ring-2 ring-brand-400 ring-offset-1 ring-offset-slate-900'
-                      : 'border-white/30 hover:scale-105 hover:border-brand-400 hover:bg-brand-500/10',
+                    PRESET_COLORS.some((c) => c.value === backgroundColor)
+                      ? 'border-white/30 hover:scale-105 hover:border-brand-400 hover:bg-brand-500/10'
+                      : 'scale-110 border-white/10 ring-2 ring-brand-400 ring-offset-1 ring-offset-slate-900',
                     isUploading && 'pointer-events-none opacity-50'
                   )}
                   style={{
-                    backgroundColor: !PRESET_COLORS.some((c) => c.value === backgroundColor)
-                      ? backgroundColor
-                      : undefined,
+                    backgroundColor: PRESET_COLORS.some((c) => c.value === backgroundColor)
+                      ? undefined
+                      : backgroundColor,
                   }}
                   title={t('account.avatar.customColor') || 'Custom color'}
                 >

@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { Badge } from '@tacobot/ui-kit';
+import { Badge } from '@tacocrew/ui-kit';
 
 const meta = {
   title: 'UI Kit/Badge',

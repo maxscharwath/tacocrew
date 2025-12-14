@@ -1,8 +1,8 @@
+import { Avatar, AvatarFallback, AvatarImage, Badge, Button } from '@tacocrew/ui-kit';
 import type { LucideIcon } from 'lucide-react';
 import { Bell, Clock3, RefreshCcw, ShieldCheck, Undo2, Wallet } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { getUserInitials } from '@/components/orders/user-utils';
-import { Avatar, Badge, Button } from '@/components/ui';
 import { useLocaleFormatter } from '@/hooks/useLocaleFormatter';
 import { getAvatarUrl } from '@/lib/api/user';
 
@@ -121,8 +121,9 @@ export function ReceiptTicket({
 
         <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
-            <Avatar color="brandHero" size="md" variant="elevated" src={avatarUrl}>
-              {userInitials}
+            <Avatar color="brandHero" size="md" variant="elevated">
+              <AvatarImage src={avatarUrl} alt={participantName} />
+              <AvatarFallback>{userInitials}</AvatarFallback>
             </Avatar>
             <div>
               <p className="text-[10px] text-gray-500 uppercase tracking-[0.3em]">

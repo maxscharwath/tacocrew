@@ -1,6 +1,6 @@
+import { Badge } from '@tacocrew/ui-kit';
 import { Clock } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { Badge } from '@/components/ui';
 import { useDateFormat } from '@/hooks/useDateFormat';
 import type { PreviousOrder } from '@/lib/api/types';
 import { formatTacoSizeName, TACO_SIZE_CONFIG } from '@/lib/taco-config';

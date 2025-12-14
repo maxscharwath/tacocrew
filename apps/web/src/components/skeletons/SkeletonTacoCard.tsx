@@ -1,4 +1,4 @@
-import { Skeleton } from '../ui';
+import { Skeleton } from '@tacocrew/ui-kit';
 
 export function SkeletonTacoCard() {
   return (

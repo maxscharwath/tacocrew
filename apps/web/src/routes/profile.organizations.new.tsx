@@ -1,7 +1,7 @@
+import { toast } from '@tacocrew/ui-kit';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useRevalidator } from 'react-router';
 import { OrganizationCreateForm } from '@/components/profile/OrganizationCreateForm';
-import { toast } from '@/components/ui';
 import { OrganizationApi } from '@/lib/api';
 import type { OrganizationPayload } from '@/lib/api/types';
 import { routes } from '@/lib/routes';

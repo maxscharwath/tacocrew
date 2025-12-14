@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, Skeleton, SkeletonText } from '../ui';
+import { Card, CardContent, CardHeader, Skeleton, SkeletonText } from '@tacocrew/ui-kit';
 import { SkeletonHero } from './SkeletonHero';
 
 export function DashboardSkeleton() {

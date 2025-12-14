@@ -6,7 +6,7 @@ import {
   InputGroupInput,
   InputGroupText,
   InputGroupTextarea,
-} from '@tacobot/ui-kit';
+} from '@tacocrew/ui-kit';
 import { Check, Copy, Eye, EyeOff, Lock, Search, User } from 'lucide-react';
 import { useState } from 'react';
 
@@ -106,7 +106,7 @@ export const Showcase: Story = {
         <div className="space-y-3">
           <h2 className="font-semibold text-lg text-white">With Copy Button</h2>
           <InputGroup>
-            <InputGroupInput value="https://tacobot.com/oauth/client-123" readOnly />
+            <InputGroupInput value="https://tacocrew.com/oauth/client-123" readOnly />
             <InputGroupAddon align="inline-end">
               <InputGroupButton size="icon-xs" variant="ghost" type="button">
                 <Copy className="size-4" />

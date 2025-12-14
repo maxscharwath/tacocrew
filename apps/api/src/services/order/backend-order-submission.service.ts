@@ -10,7 +10,7 @@ import {
   type OrderSubmissionResponse,
   type OrderSummary,
   PaymentMethod,
-} from '@tacobot/gigatacos-client';
+} from '@tacocrew/gigatacos-client';
 import axios from 'axios';
 import { injectable } from 'tsyringe';
 import { BackendIntegrationClient } from '@/infrastructure/api/backend-integration.client';
@@ -86,7 +86,7 @@ export class BackendOrderSubmissionService {
         });
 
         // Create mock response matching the backend API structure
-        // Note: Structure matches OrderSubmissionResponse from @tacobot/gigatacos-client
+        // Note: Structure matches OrderSubmissionResponse from @tacocrew/gigatacos-client
         // where OrderData.price is string, not number
         orderResult = {
           success: true,
@@ -143,7 +143,7 @@ export class BackendOrderSubmissionService {
         }
       );
 
-      const result = {
+      return {
         orderId: orderResult.orderId,
         transactionId,
         orderData: orderResult.OrderData,
@@ -151,7 +151,6 @@ export class BackendOrderSubmissionService {
         orderSummary,
         ...(dryRun && { dryRun: true }),
       };
-      return result;
     } catch (error) {
       logger.error('Failed to submit order', {
         sessionId,

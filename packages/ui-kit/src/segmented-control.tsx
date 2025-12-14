@@ -1,79 +1,188 @@
-import type { ReactNode } from 'react';
+import { cva } from 'class-variance-authority';
+import type { ButtonHTMLAttributes, ReactNode } from 'react';
+import { createContext, useContext, useMemo } from 'react';
 import { cn } from './utils';
 
-export type SegmentedControlOption<T extends string = string> = {
-  value: T;
-  label: ReactNode;
+type SegmentedControlContextValue = {
+  readonly value: string;
+  readonly onValueChange: (value: string) => void;
+  readonly variant: 'primary' | 'secondary';
+  readonly disabled?: boolean;
 };
 
-type SegmentedControlProps<T extends string = string> = {
-  value: T;
-  onValueChange: (value: T) => void;
-  options: SegmentedControlOption<T>[];
-  className?: string;
-  disabled?: boolean;
-  variant?: 'primary' | 'secondary';
-  renderOption?: (option: SegmentedControlOption<T>, isActive: boolean) => ReactNode;
+const SegmentedControlContext = createContext<SegmentedControlContextValue | null>(null);
+
+function useSegmentedControlContext() {
+  const context = useContext(SegmentedControlContext);
+  if (!context) {
+    throw new Error(
+      'SegmentedControl compound components must be used within a SegmentedControl component'
+    );
+  }
+  return context;
+}
+
+const containerVariants = cva('flex gap-2 rounded-xl border p-1', {
+  variants: {
+    variant: {
+      primary: 'border-gray-700 bg-slate-800/40',
+      secondary:
+        'group relative items-center gap-2.5 border-gray-700 bg-linear-to-br from-slate-900/90 via-slate-900/80 to-slate-900/70 px-3 py-1.5 shadow-lg backdrop-blur-sm transition-all duration-300 hover:border-gray-600 hover:shadow-xl',
+    },
+  },
+  defaultVariants: {
+    variant: 'primary',
+  },
+});
+
+const itemVariants = cva(
+  'relative z-10 flex items-center justify-center rounded-lg font-semibold transition-all cursor-pointer disabled:cursor-not-allowed disabled:opacity-50',
+  {
+    variants: {
+      variant: {
+        primary: 'flex-1 gap-2 px-4 py-2 text-sm transition-colors',
+        secondary: 'gap-2 px-3.5 py-1.5 text-xs transition-all duration-300 ease-out',
+      },
+      active: {
+        true: '',
+        false: '',
+      },
+    },
+    compoundVariants: [
+      {
+        variant: 'primary',
+        active: true,
+        class: 'bg-brand-500 text-white shadow-[0_4px_12px_rgba(99,102,241,0.3)]',
+      },
+      {
+        variant: 'primary',
+        active: false,
+        class: 'text-slate-400 hover:text-slate-200',
+      },
+      {
+        variant: 'secondary',
+        active: true,
+        class:
+          'scale-105 bg-linear-to-br from-brand-500/30 via-brand-500/20 to-brand-500/10 text-brand-50 shadow-[0_0_20px_rgba(99,102,241,0.3)]',
+      },
+      {
+        variant: 'secondary',
+        active: false,
+        class: 'text-slate-400 hover:scale-105 hover:bg-slate-800/50 hover:text-slate-200',
+      },
+    ],
+    defaultVariants: {
+      variant: 'primary',
+      active: false,
+    },
+  }
+);
+
+type SegmentedControlProps = {
+  readonly value: string;
+  readonly onValueChange: (value: string) => void;
+  readonly variant?: 'primary' | 'secondary';
+  readonly disabled?: boolean;
+  readonly className?: string;
+  readonly children: ReactNode;
 };
 
-const containerVariants: Record<'primary' | 'secondary', string> = {
-  primary: 'flex gap-2 rounded-xl border border-gray-700 bg-slate-800/40 p-1',
-  secondary:
-    'group relative flex items-center gap-2.5 rounded-xl border border-gray-700 bg-linear-to-br from-slate-900/90 via-slate-900/80 to-slate-900/70 px-3 py-1.5 shadow-lg backdrop-blur-sm transition-all duration-300 hover:border-gray-600 hover:shadow-xl',
-};
-
-const baseButtonClasses: Record<'primary' | 'secondary', string> = {
-  primary:
-    'relative z-10 flex-1 rounded-lg px-4 py-2 text-sm font-semibold transition-colors cursor-pointer disabled:cursor-not-allowed disabled:opacity-50',
-  secondary:
-    'relative z-10 flex items-center gap-2 rounded-lg px-3.5 py-1.5 font-semibold text-xs transition-all duration-300 ease-out cursor-pointer disabled:cursor-not-allowed disabled:opacity-50',
-};
-
-const activeButtonClasses: Record<'primary' | 'secondary', string> = {
-  primary: 'bg-brand-500 text-white shadow-[0_4px_12px_rgba(99,102,241,0.3)]',
-  secondary:
-    'scale-105 bg-linear-to-br from-brand-500/30 via-brand-500/20 to-brand-500/10 text-brand-50 shadow-[0_0_20px_rgba(99,102,241,0.3)]',
-};
-
-const inactiveButtonClasses: Record<'primary' | 'secondary', string> = {
-  primary: 'text-slate-400 hover:text-slate-200',
-  secondary: 'text-slate-400 hover:scale-105 hover:bg-slate-800/50 hover:text-slate-200',
-};
-
-export function SegmentedControl<T extends string = string>({
+/**
+ * SegmentedControl root component for creating tab-like selection controls.
+ * Uses compound component pattern for flexible composition.
+ *
+ * @param value - Currently selected value
+ * @param onValueChange - Callback when selection changes
+ * @param variant - Visual style ('primary' | 'secondary')
+ * @param disabled - Disable all items
+ * @param className - Additional CSS classes
+ * @param children - SegmentedControlItem components
+ *
+ * @example
+ * ```tsx
+ * <SegmentedControl value={tab} onValueChange={setTab}>
+ *   <SegmentedControlItem value="signin">
+ *     Sign in
+ *   </SegmentedControlItem>
+ *   <SegmentedControlItem value="signup">
+ *     Sign up
+ *   </SegmentedControlItem>
+ * </SegmentedControl>
+ * ```
+ *
+ * @see {@link SegmentedControlItem}
+ */
+export function SegmentedControl({
   value,
   onValueChange,
-  options,
-  className,
-  disabled,
   variant = 'primary',
-  renderOption,
-}: Readonly<SegmentedControlProps<T>>) {
-  return (
-    <div className={cn(containerVariants[variant], className)}>
-      {variant === 'secondary' && (
-        <div className="pointer-events-none absolute inset-0 rounded-xl bg-linear-to-r from-brand-500/10 via-purple-500/10 to-sky-500/10 opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
-      )}
-      {options.map((option) => {
-        const isActive = option.value === value;
-        const content = renderOption ? renderOption(option, isActive) : option.label;
+  disabled,
+  className,
+  children,
+}: SegmentedControlProps) {
+  const contextValue = useMemo(
+    () => ({ value, onValueChange, variant, disabled }),
+    [value, onValueChange, variant, disabled]
+  );
 
-        return (
-          <button
-            key={option.value}
-            type="button"
-            disabled={disabled}
-            onClick={() => onValueChange(option.value)}
-            data-active={isActive}
-            className={cn(
-              baseButtonClasses[variant],
-              isActive ? activeButtonClasses[variant] : inactiveButtonClasses[variant]
-            )}
-          >
-            {content}
-          </button>
-        );
-      })}
-    </div>
+  return (
+    <SegmentedControlContext.Provider value={contextValue}>
+      <div className={cn(containerVariants({ variant }), className)}>
+        {variant === 'secondary' && (
+          <div className="pointer-events-none absolute inset-0 rounded-xl bg-linear-to-r from-brand-500/10 via-purple-500/10 to-sky-500/10 opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+        )}
+        {children}
+      </div>
+    </SegmentedControlContext.Provider>
+  );
+}
+
+type SegmentedControlItemProps = ButtonHTMLAttributes<HTMLButtonElement> & {
+  readonly value: string;
+  readonly children: ReactNode;
+};
+
+/**
+ * Individual item within a SegmentedControl.
+ * Must be used as a child of SegmentedControl.
+ *
+ * @param value - Unique value for this item
+ * @param children - Content to display in the item
+ *
+ * @example
+ * ```tsx
+ * <SegmentedControlItem value="tab1">
+ *   Tab 1
+ * </SegmentedControlItem>
+ *
+ * // With icon
+ * <SegmentedControlItem value="profile">
+ *   <UserIcon size={16} />
+ *   Profile
+ * </SegmentedControlItem>
+ * ```
+ */
+export function SegmentedControlItem({
+  value: itemValue,
+  children,
+  className,
+  disabled: itemDisabled,
+  ...props
+}: SegmentedControlItemProps) {
+  const { value, onValueChange, variant, disabled: controlDisabled } = useSegmentedControlContext();
+  const isActive = itemValue === value;
+  const isDisabled = controlDisabled || itemDisabled;
+
+  return (
+    <button
+      type="button"
+      disabled={isDisabled}
+      onClick={() => onValueChange(itemValue)}
+      data-active={isActive}
+      className={cn(itemVariants({ variant, active: isActive }), className)}
+      {...props}
+    >
+      {children}
+    </button>
   );
 }

@@ -3,11 +3,11 @@ version: '3.8'
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: tacobot-postgres
+    container_name: tacocrew-postgres
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
-      POSTGRES_DB: tacobot
+      POSTGRES_DB: tacocrew
     ports:
       - "5432:5432"
     volumes:

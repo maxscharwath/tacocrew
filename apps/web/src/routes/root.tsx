@@ -1,3 +1,4 @@
+import { Avatar, AvatarFallback, AvatarImage, Button, Card } from '@tacocrew/ui-kit';
 import {
   Activity,
   ClipboardCheck,
@@ -12,10 +13,9 @@ import type { ComponentType } from 'react';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Form, Link, NavLink, Outlet, useLoaderData, useRevalidator } from 'react-router';
-import appIcon from '@/assets/icon.png?w=80&h=80&format=webp';
+import appIcon from '@/assets/icon.png?w=80&h=80&format=webp&img';
 import { ErrorBoundary } from '@/components/errors/ErrorBoundary';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
-import { Avatar, Button, Card } from '@/components/ui';
 import { useDeveloperMode } from '@/hooks/useDeveloperMode';
 import { resolveImageUrl } from '@/lib/api';
 import { routes } from '@/lib/routes';
@@ -82,15 +82,11 @@ export function RootLayout() {
               to={routes.root.dashboard()}
               className="group -mx-2 -my-1.5 flex min-w-0 items-center gap-3 rounded-lg px-2 py-1.5 transition-all hover:bg-brand-500/10 hover:text-brand-100 active:bg-brand-500/15"
             >
-              <Avatar
-                color="brandHero"
-                size="md"
-                variant="elevated"
-                className="shrink-0"
-                src={appIcon}
-              />
+              <Avatar color="brandHero" size="md" variant="elevated" className="shrink-0">
+                <AvatarImage src={appIcon} alt="TacoCrew" />
+              </Avatar>
               <h1 className="hidden min-w-0 truncate font-semibold text-white text-xl tracking-tight sm:block">
-                {t('root.tacobot')}
+                {t('root.tacocrew')}
               </h1>
             </Link>
 
@@ -109,12 +105,12 @@ export function RootLayout() {
               </Button>
               <div className="flex h-11 items-center gap-2 rounded-xl border border-white/10 bg-linear-to-br from-slate-900/90 via-slate-900/80 to-slate-950/90 px-3 py-1.5 shadow-black/20 shadow-lg backdrop-blur-sm">
                 <Link to={routes.root.profile()} className="cursor-pointer">
-                  <Avatar
-                    color="brandHero"
-                    size="sm"
-                    src={resolveImageUrl(profile?.image, { size: 32 }) || undefined}
-                  >
-                    {userInitials}
+                  <Avatar color="brandHero" size="sm">
+                    <AvatarImage
+                      src={resolveImageUrl(profile?.image, { size: 32 }) || undefined}
+                      alt={userName}
+                    />
+                    <AvatarFallback>{userInitials}</AvatarFallback>
                   </Avatar>
                 </Link>
                 <Link

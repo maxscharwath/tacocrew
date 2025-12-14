@@ -1,20 +1,3 @@
-import { Lock, Send, Truck } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import {
-  Form,
-  type LoaderFunctionArgs,
-  useActionData,
-  useLoaderData,
-  useNavigate,
-  useNavigation,
-  useParams,
-} from 'react-router';
-import { DeliveryFormFields } from '@/components/orders/DeliveryFormFields';
-import { OrderConfirmationModal } from '@/components/orders/OrderConfirmationModal';
-import { PreferencesSection } from '@/components/orders/PreferencesSection';
-import { ProfileManager } from '@/components/orders/ProfileManager';
-import { BackButton } from '@/components/shared';
 import {
   Alert,
   AlertDialog,
@@ -33,7 +16,24 @@ import {
   CardTitle,
   Checkbox,
   Label,
-} from '@/components/ui';
+} from '@tacocrew/ui-kit';
+import { Lock, Send, Truck } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import {
+  Form,
+  type LoaderFunctionArgs,
+  useActionData,
+  useLoaderData,
+  useNavigate,
+  useNavigation,
+  useParams,
+} from 'react-router';
+import { DeliveryFormFields } from '@/components/orders/DeliveryFormFields';
+import { OrderConfirmationModal } from '@/components/orders/OrderConfirmationModal';
+import { PreferencesSection } from '@/components/orders/PreferencesSection';
+import { ProfileManager } from '@/components/orders/ProfileManager';
+import { BackButton } from '@/components/shared';
 import { SWITZERLAND_COUNTRY } from '@/constants/location';
 import { useDeliveryForm } from '@/hooks/useDeliveryForm';
 import { useDeveloperMode } from '@/hooks/useDeveloperMode';

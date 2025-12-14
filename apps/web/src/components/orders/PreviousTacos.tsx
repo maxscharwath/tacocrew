@@ -1,7 +1,7 @@
+import { Avatar, AvatarFallback, Button } from '@tacocrew/ui-kit';
 import { Package } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Avatar, Button } from '@/components/ui';
 import type { PreviousOrder, StockResponse, TacoOrder } from '@/lib/api/types';
 import { PreviousTacosModal } from './PreviousTacosModal';
 import { TacoHashSearch } from './TacoHashSearch';
@@ -36,7 +36,9 @@ export function PreviousTacos({
       <div className="space-y-4 rounded-2xl border border-white/10 bg-slate-900/50 p-4 sm:space-y-6 sm:rounded-3xl sm:p-6">
         <div className="flex items-center gap-2 border-white/10 border-b pb-3 sm:gap-3 sm:pb-4">
           <Avatar color="indigo" size="sm" className="sm:size-md">
-            <Package />
+            <AvatarFallback>
+              <Package />
+            </AvatarFallback>
           </Avatar>
           <div>
             <h2 className="font-semibold text-base text-white sm:text-lg">
