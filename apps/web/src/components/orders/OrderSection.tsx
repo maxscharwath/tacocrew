@@ -6,13 +6,13 @@ import type { ComponentType } from 'react';
  * OrderSection - A presentational component for displaying a section of order items
  * @component
  */
-type OrderSectionProps = {
-  readonly title: string;
-  readonly items: string[] | Array<{ name: string; quantity?: number }>;
-  readonly icon: ComponentType<{ size?: number; className?: string }>;
-  readonly emptyText?: string;
-  readonly showQuantity?: boolean;
-};
+type OrderSectionProps = Readonly<{
+  title: string;
+  items: string[] | Array<{ name: string; quantity?: number }>;
+  icon: ComponentType<{ size?: number; className?: string }>;
+  emptyText?: string;
+  showQuantity?: boolean;
+}>;
 
 export function OrderSection({
   title,

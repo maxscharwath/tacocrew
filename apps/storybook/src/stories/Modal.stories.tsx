@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { action } from 'storybook/actions';
 import { Button, Modal } from '@tacocrew/ui-kit';
-import { useState } from 'react';
+import React, { useState } from 'react';
 
 const meta = {
   title: 'UI Kit/Modal',
@@ -24,17 +25,18 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-// Interactive story - use controls panel to explore all options
-const ModalDemo = (args: typeof meta.args) => {
+// Stateful wrapper component for modal stories
+function ModalDemo(props: React.ComponentProps<typeof Modal>) {
   const [open, setOpen] = useState(false);
   return (
     <div className="space-y-4">
       <Button onClick={() => setOpen(true)}>Open modal</Button>
       <Modal
+        {...props}
         isOpen={open}
         onClose={() => setOpen(false)}
-        title={args.title || 'Schedule delivery'}
-        description={args.description || 'Pick a time slot for your crew.'}
+        title={props.title || 'Schedule delivery'}
+        description={props.description || 'Pick a time slot for your crew.'}
       >
         <p className="text-slate-300 text-sm">
           11:30 AM - 1:00 PM slots usually fill up fast on Fridays. Consider earlier pickup if you
@@ -49,12 +51,15 @@ const ModalDemo = (args: typeof meta.args) => {
       </Modal>
     </div>
   );
-};
+}
 
 export const Default: Story = {
-  render: (args) => <ModalDemo {...args} />,
+  render: (args: React.ComponentProps<typeof Modal>) => <ModalDemo {...args} />,
   args: {
+    isOpen: false,
+    onClose: action('on-close'),
     title: 'Schedule delivery',
     description: 'Pick a time slot for your crew.',
+    children: null,
   },
 };

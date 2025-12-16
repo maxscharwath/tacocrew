@@ -13,8 +13,8 @@ export function ProfileSkeleton() {
           opacity: 0,
         }}
       >
-        <div className="pointer-events-none absolute -top-24 right-0 h-60 w-60 rounded-full bg-brand-400/30 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-16 left-10 h-56 w-56 rounded-full bg-purple-500/25 blur-3xl" />
+        <div className="-top-24 pointer-events-none absolute right-0 h-60 w-60 rounded-full bg-brand-400/30 blur-3xl" />
+        <div className="-bottom-16 pointer-events-none absolute left-10 h-56 w-56 rounded-full bg-purple-500/25 blur-3xl" />
         <div className="relative space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <Skeleton delay={100} className="h-6 w-32 rounded-full" />
@@ -56,7 +56,7 @@ export function ProfileSkeleton() {
           <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-3">
             {Array.from({ length: 6 }).map((_, i) => (
               <div
-                key={i}
+                key={`profile-skeleton-${i}`}
                 style={{
                   animation: 'skeleton-fade-in 0.5s ease-out forwards',
                   animationDelay: `${700 + i * 100}ms`,

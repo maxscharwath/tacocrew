@@ -48,12 +48,12 @@ export type CurrencyCode = CommonCurrency | string;
 /**
  * Represents a monetary amount with currency
  */
-export interface Amount {
+export type Amount = Readonly<{
   /** The monetary value */
-  readonly value: number;
+  value: number;
   /** The currency code (ISO 4217) */
-  readonly currency: CurrencyCode;
-}
+  currency: CurrencyCode;
+}>;
 
 /**
  * Creates an Amount object

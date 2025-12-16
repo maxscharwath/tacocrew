@@ -36,7 +36,7 @@ export function DashboardSkeleton() {
           <CardContent className="gap-4">
             {Array.from({ length: 3 }).map((_, i) => (
               <div
-                key={i}
+                key={`dashboard-left-${i}`}
                 className="flex items-center justify-between gap-6 rounded-2xl border border-white/10 bg-slate-900/70 p-5"
                 style={{
                   animation: 'skeleton-fade-in 0.5s ease-out forwards',
@@ -71,7 +71,7 @@ export function DashboardSkeleton() {
           <CardContent className="gap-4">
             {Array.from({ length: 3 }).map((_, i) => (
               <div
-                key={i}
+                key={`dashboard-right-${i}`}
                 className="flex items-center justify-between gap-6 rounded-2xl border border-white/10 bg-slate-900/70 p-5"
                 style={{
                   animation: 'skeleton-fade-in 0.5s ease-out forwards',

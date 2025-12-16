@@ -7,13 +7,13 @@ import { cn } from '@/lib/utils';
  * SelectionGroup - A presentational component for selecting items with checkboxes
  * @component
  */
-type SelectionGroupProps = {
-  readonly items: Array<{ id: string; name: string; price?: Amount; in_stock: boolean }>;
-  readonly selected: string[];
-  readonly onToggle: (id: string) => void;
-  readonly disabled?: boolean;
-  readonly maxSelections?: number;
-};
+type SelectionGroupProps = Readonly<{
+  items: Array<{ id: string; name: string; price?: Amount; in_stock: boolean }>;
+  selected: string[];
+  onToggle: (id: string) => void;
+  disabled?: boolean;
+  maxSelections?: number;
+}>;
 
 export function SelectionGroup({
   items,

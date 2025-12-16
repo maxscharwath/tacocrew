@@ -30,7 +30,7 @@ export interface NotificationChannelResult {
  */
 export interface NotificationChannel {
   /** Unique name for this channel */
-  readonly name: string;
+  name: string;
 
   /**
    * Check if this channel is available/configured

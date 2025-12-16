@@ -9,11 +9,11 @@ import type { ReactElement } from 'react';
 import { Link } from 'react-router';
 import { cx } from '@/utils/cx';
 
-type BackButtonProps = {
-  readonly to: string;
-  readonly label: string;
-  readonly className?: string;
-};
+type BackButtonProps = Readonly<{
+  to: string;
+  label: string;
+  className?: string;
+}>;
 
 /**
  * Standardized back button with left arrow icon

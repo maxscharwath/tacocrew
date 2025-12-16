@@ -9,14 +9,14 @@ import { cx } from '@/utils/cx';
 
 type ColorVariant = 'brand' | 'amber' | 'purple' | 'green';
 
-type PageHeroProps = {
-  readonly variant?: ColorVariant;
-  readonly icon?: LucideIcon;
-  readonly title: ReactNode;
-  readonly subtitle?: ReactNode;
-  readonly children?: ReactNode;
-  readonly className?: string;
-};
+type PageHeroProps = Readonly<{
+  variant?: ColorVariant;
+  icon?: LucideIcon;
+  title: ReactNode;
+  subtitle?: ReactNode;
+  children?: ReactNode;
+  className?: string;
+}>;
 
 const VARIANT_STYLES: Record<
   ColorVariant,

@@ -21,25 +21,25 @@ import {
   type SwissCanton,
 } from '@/constants/location';
 
-type DeliveryFormFieldsProps = {
-  readonly customerName: string;
-  readonly setCustomerName: (value: string) => void;
-  readonly customerPhone: string;
-  readonly setCustomerPhone: (value: string) => void;
-  readonly deliveryType: DeliveryType;
-  readonly setDeliveryType: (value: DeliveryType) => void;
-  readonly road: string;
-  readonly setRoad: (value: string) => void;
-  readonly houseNumber: string;
-  readonly setHouseNumber: (value: string) => void;
-  readonly postcode: string;
-  readonly setPostcode: (value: string) => void;
-  readonly city: string;
-  readonly setCity: (value: string) => void;
-  readonly stateRegion: SwissCanton;
-  readonly setStateRegion: (value: SwissCanton) => void;
-  readonly disabled?: boolean;
-};
+type DeliveryFormFieldsProps = Readonly<{
+  customerName: string;
+  setCustomerName: (value: string) => void;
+  customerPhone: string;
+  setCustomerPhone: (value: string) => void;
+  deliveryType: DeliveryType;
+  setDeliveryType: (value: DeliveryType) => void;
+  road: string;
+  setRoad: (value: string) => void;
+  houseNumber: string;
+  setHouseNumber: (value: string) => void;
+  postcode: string;
+  setPostcode: (value: string) => void;
+  city: string;
+  setCity: (value: string) => void;
+  stateRegion: SwissCanton;
+  setStateRegion: (value: SwissCanton) => void;
+  disabled?: boolean;
+}>;
 
 export function DeliveryFormFields({
   customerName,

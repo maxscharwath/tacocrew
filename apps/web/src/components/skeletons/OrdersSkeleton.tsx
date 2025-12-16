@@ -37,7 +37,7 @@ export function OrdersSkeleton() {
           <div className="grid gap-4">
             {Array.from({ length: 4 }).map((_, i) => (
               <article
-                key={i}
+                key={`order-skeleton-${i}`}
                 className="flex items-center justify-between gap-6 rounded-2xl border border-white/10 bg-slate-900/70 p-5"
                 style={{
                   animation: 'skeleton-fade-in 0.5s ease-out forwards',

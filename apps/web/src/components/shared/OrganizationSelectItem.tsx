@@ -1,10 +1,10 @@
 import type { Organization } from '@/lib/api/types';
 import { OrganizationAvatar } from './OrganizationAvatar';
 
-type OrganizationSelectItemProps = {
-  readonly organization: Organization;
-  readonly size?: 'sm' | 'md';
-};
+type OrganizationSelectItemProps = Readonly<{
+  organization: Organization;
+  size?: 'sm' | 'md';
+}>;
 
 /**
  * Reusable organization item display for select components

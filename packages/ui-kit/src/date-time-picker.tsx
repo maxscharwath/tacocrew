@@ -3,19 +3,19 @@ import { InputGroup, InputGroupAddon, InputGroupInput } from './input-group';
 import { Label } from './label';
 import { cn } from './utils';
 
-type DateTimePickerProps = {
-  readonly label: string;
-  readonly dateValue: string; // ISO date string (YYYY-MM-DD)
-  readonly timeValue: string; // Time string (HH:MM)
-  readonly onDateChange: (date: string) => void;
-  readonly onTimeChange: (time: string) => void;
-  readonly disabled?: boolean;
-  readonly required?: boolean;
-  readonly minDate?: string; // ISO date string
-  readonly maxDate?: string; // ISO date string
-  readonly error?: boolean;
-  readonly className?: string;
-};
+type DateTimePickerProps = Readonly<{
+  label: string;
+  dateValue: string; // ISO date string (YYYY-MM-DD)
+  timeValue: string; // Time string (HH:MM)
+  onDateChange: (date: string) => void;
+  onTimeChange: (time: string) => void;
+  disabled?: boolean;
+  required?: boolean;
+  minDate?: string; // ISO date string
+  maxDate?: string; // ISO date string
+  error?: boolean;
+  className?: string;
+}>;
 
 export function DateTimePicker({
   label,

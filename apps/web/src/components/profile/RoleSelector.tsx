@@ -3,27 +3,17 @@ import { Crown, User } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { OrganizationRole } from '@/lib/api/types';
 
-type RoleSelectorProps = {
-  readonly value: OrganizationRole;
-  readonly onValueChange: (value: OrganizationRole) => void;
-  readonly disabled?: boolean;
-  readonly id?: string;
-  readonly triggerClassName?: string;
-};
+type RoleSelectorProps = Readonly<{
+  value: OrganizationRole;
+  onValueChange: (value: OrganizationRole) => void;
+  disabled?: boolean;
+  id?: string;
+  triggerClassName?: string;
+}>;
 
-/**
- * Reusable role selector component with icons
- */
-export function RoleSelector({
-  value,
-  onValueChange,
-  disabled = false,
-  id,
-  triggerClassName,
-}: RoleSelectorProps) {
+function RoleDisplay({ role }: Readonly<{ role: OrganizationRole }>) {
   const { t } = useTranslation();
-
-  const RoleDisplay = ({ role }: { role: OrganizationRole }) => (
+  return (
     <div className="flex items-center gap-2">
       {role === 'ADMIN' ? (
         <>
@@ -38,7 +28,18 @@ export function RoleSelector({
       )}
     </div>
   );
+}
 
+/**
+ * Reusable role selector component with icons
+ */
+export function RoleSelector({
+  value,
+  onValueChange,
+  disabled = false,
+  id,
+  triggerClassName,
+}: RoleSelectorProps) {
   return (
     <Select
       value={value}

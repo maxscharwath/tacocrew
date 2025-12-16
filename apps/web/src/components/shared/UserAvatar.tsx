@@ -3,15 +3,15 @@ import { getUserInitials } from '@/components/orders/user-utils';
 import { getAvatarSizePixels } from '@/lib/api/image-utils';
 import { getAvatarUrl } from '@/lib/api/user';
 
-type UserAvatarProps = {
-  readonly userId: string;
-  readonly name: string | null;
-  readonly size?: AvatarProps['size'];
-  readonly variant?: AvatarProps['variant'];
-  readonly color?: AvatarProps['color'];
-  readonly className?: string;
-  readonly alt?: string;
-};
+type UserAvatarProps = Readonly<{
+  userId: string;
+  name: string | null;
+  size?: AvatarProps['size'];
+  variant?: AvatarProps['variant'];
+  color?: AvatarProps['color'];
+  className?: string;
+  alt?: string;
+}>;
 
 /**
  * Reusable user avatar component with automatic initials fallback.

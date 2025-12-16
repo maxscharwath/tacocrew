@@ -36,8 +36,8 @@ export function SkeletonHero({
     <section
       className={`relative overflow-hidden rounded-3xl border border-white/10 bg-linear-to-br from-brand-500/20 via-slate-900/80 to-slate-950/90 p-8 shadow-[0_40px_120px_rgba(8,47,73,0.35)] backdrop-blur-sm lg:p-10 ${className || ''}`}
     >
-      <div className="absolute -top-24 right-0 h-60 w-60 animate-pulse rounded-full bg-brand-400/30 blur-3xl" />
-      <div className="absolute -bottom-10 left-10 h-48 w-48 rounded-full bg-purple-500/25 blur-3xl" />
+      <div className="-top-24 absolute right-0 h-60 w-60 animate-pulse rounded-full bg-brand-400/30 blur-3xl" />
+      <div className="-bottom-10 absolute left-10 h-48 w-48 rounded-full bg-purple-500/25 blur-3xl" />
       <div className="absolute inset-0 bg-linear-to-br from-transparent via-transparent to-brand-500/5" />
       <div className="relative flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
         <div className="space-y-2">
@@ -49,7 +49,7 @@ export function SkeletonHero({
         {showStats && (
           <div className="grid h-fit w-full grid-cols-1 items-stretch gap-3 rounded-2xl border border-white/10 bg-slate-900/70 p-3 shadow-[0_20px_60px_rgba(0,0,0,0.3)] backdrop-blur-sm sm:w-fit sm:grid-cols-3 sm:p-5">
             {Array.from({ length: statsCount }).map((_, i) => (
-              <SkeletonStatBubble key={i} delay={200 + i * 100} />
+              <SkeletonStatBubble key={`stat-bubble-${i}`} delay={200 + i * 100} />
             ))}
           </div>
         )}

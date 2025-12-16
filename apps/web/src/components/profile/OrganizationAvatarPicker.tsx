@@ -3,12 +3,12 @@ import { Building2, Trash2, Upload } from 'lucide-react';
 import { type ChangeEvent, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 
-interface OrganizationAvatarPickerProps {
-  readonly preview: string | null;
-  readonly onFileSelect: (file: File) => void;
-  readonly onRemove: () => void;
-  readonly disabled?: boolean;
-}
+type OrganizationAvatarPickerProps = Readonly<{
+  preview: string | null;
+  onFileSelect: (file: File) => void;
+  onRemove: () => void;
+  disabled?: boolean;
+}>;
 
 export function OrganizationAvatarPicker({
   preview,

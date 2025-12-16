@@ -82,7 +82,7 @@ function FieldLabel({
   required,
   children,
   ...props
-}: ComponentProps<'label'> & { readonly required?: boolean }) {
+}: ComponentProps<'label'> & Readonly<{ required?: boolean }>) {
   return (
     <label
       data-slot="field-label"
@@ -144,9 +144,10 @@ function FieldError({
   className,
   errors,
   ...props
-}: Omit<ComponentProps<'p'>, 'children'> & {
-  readonly errors?: readonly (RHFFieldError | undefined)[];
-}) {
+}: Omit<ComponentProps<'p'>, 'children'> &
+  Readonly<{
+    errors?: readonly (RHFFieldError | undefined)[];
+  }>) {
   const validErrors = errors?.filter(
     (error): error is RHFFieldError => error !== undefined
   );

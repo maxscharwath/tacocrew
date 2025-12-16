@@ -16,20 +16,20 @@ import { useTranslation } from 'react-i18next';
 import type { DeliveryProfile } from '@/lib/api/types';
 import { formatPhoneNumber } from '@/utils/phone-formatter';
 
-type ProfileManagerProps = {
-  readonly deliveryProfiles: DeliveryProfile[];
-  readonly selectedProfileId: string;
-  readonly profileLabel: string;
-  readonly setProfileLabel: (value: string) => void;
-  readonly profileMessage: { type: 'success' | 'error'; text: string } | null;
-  readonly profileLoading: boolean;
-  readonly onProfileSelect: (profileId: string) => void;
-  readonly onClearProfileSelection: () => void;
-  readonly onSaveProfile: () => void;
-  readonly onUpdateProfile: () => void;
-  readonly onDeleteProfile: () => void;
-  readonly disabled?: boolean;
-};
+type ProfileManagerProps = Readonly<{
+  deliveryProfiles: DeliveryProfile[];
+  selectedProfileId: string;
+  profileLabel: string;
+  setProfileLabel: (value: string) => void;
+  profileMessage: { type: 'success' | 'error'; text: string } | null;
+  profileLoading: boolean;
+  onProfileSelect: (profileId: string) => void;
+  onClearProfileSelection: () => void;
+  onSaveProfile: () => void;
+  onUpdateProfile: () => void;
+  onDeleteProfile: () => void;
+  disabled?: boolean;
+}>;
 
 export function ProfileManager({
   deliveryProfiles,

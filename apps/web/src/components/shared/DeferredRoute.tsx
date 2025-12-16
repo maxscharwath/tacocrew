@@ -6,11 +6,11 @@
 import { type ReactElement, type ReactNode, Suspense } from 'react';
 import { Await } from 'react-router';
 
-type DeferredRouteProps<T> = {
-  readonly data: Promise<T>;
-  readonly fallback: ReactNode;
-  readonly children: (data: T) => ReactNode;
-};
+type DeferredRouteProps<T> = Readonly<{
+  data: Promise<T>;
+  fallback: ReactNode;
+  children: (data: T) => ReactNode;
+}>;
 
 /**
  * Wrapper component that handles Suspense + Await pattern for deferred data

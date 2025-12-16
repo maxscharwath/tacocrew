@@ -11,12 +11,13 @@ const sizeStyles = {
   lg: { root: 'gap-3', title: 'text-base font-semibold', subtitle: 'text-base' },
 };
 
-export interface AvatarLabelGroupProps extends Omit<AvatarProps, 'size' | 'title'> {
-  readonly size?: AvatarLabelGroupSize;
-  readonly title: string | ReactNode;
-  readonly subtitle: string | ReactNode;
-  readonly className?: string;
-}
+export type AvatarLabelGroupProps = Omit<AvatarProps, 'size' | 'title'> &
+  Readonly<{
+    size?: AvatarLabelGroupSize;
+    title: string | ReactNode;
+    subtitle: string | ReactNode;
+    className?: string;
+  }>;
 
 export function AvatarLabelGroup({
   title,

@@ -3,13 +3,13 @@ import { PaymentMethodSelector } from '@/components/orders/PaymentMethodSelector
 import { TimeSlotSelector } from '@/components/orders/TimeSlotSelector';
 import type { PaymentMethod } from '@/lib/api/types';
 
-type PreferencesSectionProps = {
-  readonly requestedFor: string;
-  readonly setRequestedFor: (value: string) => void;
-  readonly paymentMethod: PaymentMethod;
-  readonly setPaymentMethod: (value: PaymentMethod) => void;
-  readonly disabled?: boolean;
-};
+type PreferencesSectionProps = Readonly<{
+  requestedFor: string;
+  setRequestedFor: (value: string) => void;
+  paymentMethod: PaymentMethod;
+  setPaymentMethod: (value: PaymentMethod) => void;
+  disabled?: boolean;
+}>;
 
 export function PreferencesSection({
   requestedFor,

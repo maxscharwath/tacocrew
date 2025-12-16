@@ -13,12 +13,12 @@ import { useTranslation } from 'react-i18next';
 // Special value for "As soon as possible" - Radix UI Select doesn't allow empty string values
 const ASAP_VALUE = '__asap__';
 
-type TimeSlotSelectorProps = {
-  readonly selected: string | undefined;
-  readonly onSelect: (time: string) => void;
-  readonly disabled?: boolean;
-  readonly required?: boolean;
-};
+type TimeSlotSelectorProps = Readonly<{
+  selected: string | undefined;
+  onSelect: (time: string) => void;
+  disabled?: boolean;
+  required?: boolean;
+}>;
 
 /**
  * Generates time slots every 10 minutes from 00:00 to 23:50

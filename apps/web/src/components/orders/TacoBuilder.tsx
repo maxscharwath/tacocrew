@@ -16,16 +16,15 @@ import { SelectionGroup } from '@/components/orders/SelectionGroup';
 import type { StockResponse } from '@/lib/api/types';
 import type { TacoCustomization } from '@/types/orders';
 
-type TacoBuilderProps = {
-  readonly taco: TacoCustomization;
-  readonly stock: StockResponse;
-  readonly currency: string;
-  readonly isSubmitting: boolean;
-  readonly onUpdateMeatQuantity: (meatId: string, quantity: number) => void;
-  readonly onToggleSauce: (id: string) => void;
-  readonly onToggleGarniture: (id: string) => void;
-  readonly onNoteChange: (note: string) => void;
-};
+type TacoBuilderProps = Readonly<{
+  taco: TacoCustomization;
+  stock: StockResponse;
+  isSubmitting: boolean;
+  onUpdateMeatQuantity: (meatId: string, quantity: number) => void;
+  onToggleSauce: (id: string) => void;
+  onToggleGarniture: (id: string) => void;
+  onNoteChange: (note: string) => void;
+}>;
 
 export function TacoBuilder({
   taco,

@@ -9,27 +9,27 @@ import { OrganizationsList } from '@/components/profile/OrganizationsList';
 import { OrganizationApi, UserApi } from '@/lib/api';
 import type { Organization, OrganizationPayload } from '@/lib/api/types';
 
-interface OrganizationsManagerProps {
-  readonly organizations: Organization[];
-}
+type OrganizationsManagerProps = Readonly<{
+  organizations: Organization[];
+}>;
 
-interface OrganizationContentProps {
-  readonly isCreating: boolean;
-  readonly selectedOrganization: Organization | undefined;
-  readonly isAdmin: boolean;
-  readonly isPending: boolean;
-  readonly userRole: 'ADMIN' | 'MEMBER' | null;
-  readonly userStatus: 'ACTIVE' | 'PENDING' | null;
-  readonly currentUserId: string;
-  readonly onCreateSubmit: (
+type OrganizationContentProps = Readonly<{
+  isCreating: boolean;
+  selectedOrganization: Organization | undefined;
+  isAdmin: boolean;
+  isPending: boolean;
+  userRole: 'ADMIN' | 'MEMBER' | null;
+  userStatus: 'ACTIVE' | 'PENDING' | null;
+  currentUserId: string;
+  onCreateSubmit: (
     data: OrganizationPayload,
     avatarFile: File | null,
     backgroundColor: string | null
   ) => Promise<void>;
-  readonly onCreateCancel: () => void;
-  readonly onUpdate: (updated: Organization) => void;
-  readonly onDelete: () => void;
-}
+  onCreateCancel: () => void;
+  onUpdate: (updated: Organization) => void;
+  onDelete: () => void;
+}>;
 
 function OrganizationContent({
   isCreating,

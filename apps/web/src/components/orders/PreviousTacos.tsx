@@ -6,12 +6,12 @@ import type { PreviousOrder, StockResponse, TacoOrder } from '@/lib/api/types';
 import { PreviousTacosModal } from './PreviousTacosModal';
 import { TacoHashSearch } from './TacoHashSearch';
 
-type PreviousTacosProps = {
-  readonly previousOrders: PreviousOrder[];
-  readonly stock: StockResponse;
-  readonly onSelectTaco: (taco: PreviousOrder['taco'] | TacoOrder) => void;
-  readonly disabled?: boolean;
-};
+type PreviousTacosProps = Readonly<{
+  previousOrders: PreviousOrder[];
+  stock: StockResponse;
+  onSelectTaco: (taco: PreviousOrder['taco'] | TacoOrder) => void;
+  disabled?: boolean;
+}>;
 
 export function PreviousTacos({
   previousOrders,

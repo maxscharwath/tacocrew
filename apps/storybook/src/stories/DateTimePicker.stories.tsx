@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { action } from 'storybook/actions';
 import { DateTimePicker } from '@tacocrew/ui-kit';
-import { useState } from 'react';
 
 const meta = {
   title: 'UI Kit/DateTimePicker',
@@ -14,6 +14,21 @@ const meta = {
       control: 'text',
       description: 'Label for the date time picker',
     },
+    disabled: {
+      control: 'boolean',
+      description: 'Whether the date time picker is disabled',
+    },
+    required: {
+      control: 'boolean',
+      description: 'Whether the field is required',
+    },
+  },
+  args: {
+    label: 'Pickup window',
+    dateValue: '2025-03-15',
+    timeValue: '18:30',
+    onDateChange: action('on-date-change'),
+    onTimeChange: action('on-time-change'),
   },
 } satisfies Meta<typeof DateTimePicker>;
 
@@ -21,22 +36,4 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 // Main story - use controls panel to explore all options
-export const Default: Story = {
-  render: (args) => {
-    const [date, setDate] = useState('2025-03-15');
-    const [time, setTime] = useState('18:30');
-
-    return (
-      <DateTimePicker
-        label={args.label || 'Pickup window'}
-        dateValue={date}
-        timeValue={time}
-        onDateChange={setDate}
-        onTimeChange={setTime}
-      />
-    );
-  },
-  args: {
-    label: 'Pickup window',
-  },
-};
+export const Default: Story = {};

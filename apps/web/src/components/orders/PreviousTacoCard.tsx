@@ -6,12 +6,12 @@ import type { PreviousOrder } from '@/lib/api/types';
 import { formatTacoSizeName, TACO_SIZE_CONFIG } from '@/lib/taco-config';
 import { cn } from '@/lib/utils';
 
-type PreviousTacoCardProps = {
-  readonly order: PreviousOrder;
-  readonly stock: { tacos: Array<{ code: string }> };
-  readonly disabled?: boolean;
-  readonly onSelect: (taco: PreviousOrder['taco']) => void;
-};
+type PreviousTacoCardProps = Readonly<{
+  order: PreviousOrder;
+  stock: { tacos: Array<{ code: string }> };
+  disabled?: boolean;
+  onSelect: (taco: PreviousOrder['taco']) => void;
+}>;
 
 export function PreviousTacoCard({ order, stock, disabled, onSelect }: PreviousTacoCardProps) {
   const { t } = useTranslation();

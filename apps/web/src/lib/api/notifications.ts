@@ -50,7 +50,8 @@ export function getNotifications(
   if (options?.cursor) params.set('cursor', options.cursor);
   if (options?.archived !== undefined) params.set('archived', options.archived.toString());
   const query = params.toString();
-  return apiClient.get<Page<Notification>>(`/api/v1/notifications${query ? `?${query}` : ''}`);
+  const url = query ? `/api/v1/notifications?${query}` : '/api/v1/notifications';
+  return apiClient.get<Page<Notification>>(url);
 }
 
 export function getUnreadCount() {

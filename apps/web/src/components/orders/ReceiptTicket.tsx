@@ -57,22 +57,22 @@ export type ReceiptTicketModel = {
   canShowSendReminder: boolean;
 };
 
-type ReceiptTicketProps = {
+type ReceiptTicketProps = Readonly<{
   ticket: ReceiptTicketModel;
   userId: string;
-  timestamp: { date: string; time: string };
+  timestamp: Readonly<{ date: string; time: string }>;
   feePerPerson: number;
-  feeInfo: {
+  feeInfo: Readonly<{
     total: number;
     participants: number;
-  };
+  }>;
   currency: string;
   isBusy: boolean;
   isSendingReminder?: boolean;
   onParticipantToggle: () => void;
   onReimbursementToggle: () => void;
   onSendReminder?: () => void;
-};
+}>;
 
 export function ReceiptTicket({
   ticket,
@@ -181,11 +181,11 @@ export function ReceiptTicket({
   );
 }
 
-type ReceiptItemsListProps = {
+type ReceiptItemsListProps = Readonly<{
   items: ReceiptItem[];
   itemsLabel: string;
   currency: string;
-};
+}>;
 
 function ReceiptItemsList({ items, itemsLabel, currency }: ReceiptItemsListProps) {
   const { formatCurrency } = useLocaleFormatter(currency);
@@ -210,18 +210,18 @@ function ReceiptItemsList({ items, itemsLabel, currency }: ReceiptItemsListProps
   );
 }
 
-type ReceiptTotalsProps = {
+type ReceiptTotalsProps = Readonly<{
   subtotal: number;
   total: number;
   feePerPerson: number;
   currency: string;
-  labels: {
+  labels: Readonly<{
     subtotal: string;
     feeShare: string;
     total: string;
     explanation: string;
-  };
-};
+  }>;
+}>;
 
 function ReceiptTotals({ subtotal, total, feePerPerson, currency, labels }: ReceiptTotalsProps) {
   const { formatCurrency } = useLocaleFormatter(currency);
@@ -244,7 +244,7 @@ function ReceiptTotals({ subtotal, total, feePerPerson, currency, labels }: Rece
   );
 }
 
-type ReceiptActionsProps = {
+type ReceiptActionsProps = Readonly<{
   participantPaid: boolean;
   reimbursementComplete: boolean;
   canShowParticipantAction: boolean;
@@ -252,17 +252,17 @@ type ReceiptActionsProps = {
   canShowSendReminder: boolean;
   isBusy: boolean;
   isSendingReminder?: boolean;
-  labels: {
+  labels: Readonly<{
     markSelfPaid: string;
     unmarkSelfPaid: string;
     confirmReceipt: string;
     reopenReceipt: string;
     sendReminder: string;
-  };
+  }>;
   onParticipantToggle: () => void;
   onReimbursementToggle: () => void;
   onSendReminder?: () => void;
-};
+}>;
 
 function ReceiptActions({
   participantPaid,
@@ -337,10 +337,10 @@ function ReceiptActions({
   );
 }
 
-type ReceiptStatusBadgeProps = {
+type ReceiptStatusBadgeProps = Readonly<{
   variant: ReceiptStatusVariant;
   label: string;
-};
+}>;
 
 function ReceiptStatusBadge({ variant, label }: ReceiptStatusBadgeProps) {
   const tone = STATUS_TONES[variant];

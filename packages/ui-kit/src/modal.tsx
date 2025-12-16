@@ -4,14 +4,14 @@ import { createPortal } from 'react-dom';
 import { Button } from './button';
 import { cn } from './utils';
 
-type ModalProps = {
+type ModalProps = Readonly<{
   isOpen: boolean;
   onClose: () => void;
   title: string;
   description?: string;
   children: React.ReactNode;
   className?: string;
-};
+}>;
 
 export function Modal({ isOpen, onClose, title, description, children, className }: ModalProps) {
   useEffect(() => {

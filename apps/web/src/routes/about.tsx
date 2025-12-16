@@ -74,12 +74,13 @@ const socialButtonVariants = cva(
   }
 );
 
-type SocialButtonProps = {
-  readonly href: string;
-  readonly title: string;
-  readonly children: ReactNode;
-  readonly className?: string;
-} & VariantProps<typeof socialButtonVariants>;
+type SocialButtonProps = Readonly<{
+  href: string;
+  title: string;
+  children: ReactNode;
+  className?: string;
+}> &
+  VariantProps<typeof socialButtonVariants>;
 
 function SocialButton({ href, title, children, variant, className }: SocialButtonProps) {
   const isExternal = !href.startsWith('mailto:');
@@ -97,7 +98,7 @@ function SocialButton({ href, title, children, variant, className }: SocialButto
   );
 }
 
-function ContributorCard({ contributor }: { readonly contributor: Contributor }) {
+function ContributorCard({ contributor }: Readonly<{ contributor: Contributor }>) {
   const initials = contributor.name
     .split(' ')
     .map((n) => n[0])
@@ -169,12 +170,12 @@ function BuildInfoItem({
   label,
   value,
   mono = false,
-}: {
-  readonly icon: ComponentType<{ size?: number; className?: string }>;
-  readonly label: string;
-  readonly value: string | null | undefined;
-  readonly mono?: boolean;
-}) {
+}: Readonly<{
+  icon: ComponentType<{ size?: number; className?: string }>;
+  label: string;
+  value: string | null | undefined;
+  mono?: boolean;
+}>) {
   if (!value) return null;
 
   return (

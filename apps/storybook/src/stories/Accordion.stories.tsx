@@ -32,6 +32,10 @@ type Story = StoryObj<typeof meta>;
 
 // Main story - single collapsible accordion
 export const Default: Story = {
+  args: {
+    type: 'single',
+    collapsible: true,
+  },
   render: () => (
     <Accordion type="single" collapsible className="w-full max-w-2xl">
       <AccordionItem value="item-1">
@@ -61,6 +65,9 @@ export const Default: Story = {
 
 // Multiple items can be open simultaneously
 export const Multiple: Story = {
+  args: {
+    type: 'multiple',
+  },
   render: () => (
     <Accordion type="multiple" className="w-full max-w-2xl">
       <AccordionItem value="item-1">
@@ -90,6 +97,10 @@ export const Multiple: Story = {
 
 // FAQ Example
 export const FAQ: Story = {
+  args: {
+    type: 'single',
+    collapsible: true,
+  },
   render: () => (
     <div className="w-full max-w-3xl space-y-6">
       <div>
@@ -141,6 +152,10 @@ export const FAQ: Story = {
 
 // With Rich Content
 export const RichContent: Story = {
+  args: {
+    type: 'single',
+    collapsible: true,
+  },
   render: () => (
     <Accordion type="single" collapsible className="w-full max-w-2xl">
       <AccordionItem value="item-1">
@@ -194,6 +209,11 @@ export const RichContent: Story = {
 
 // Controlled Example (with default value)
 export const DefaultOpen: Story = {
+  args: {
+    type: 'single',
+    collapsible: true,
+    defaultValue: 'item-2',
+  },
   render: () => (
     <Accordion type="single" collapsible defaultValue="item-2" className="w-full max-w-2xl">
       <AccordionItem value="item-1">

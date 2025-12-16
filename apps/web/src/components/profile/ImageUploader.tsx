@@ -434,19 +434,23 @@ export function ImageUploader({ currentImage, onImageUpdate }: ImageUploaderProp
                 const isSelected = pendingAvatarUrl === avatarUrl;
                 const isCurrent = currentImage === avatarUrl;
                 const thumbnailUrl = PREDEFINED_AVATAR_THUMBNAILS[index];
+
+                const stateClass = (() => {
+                  if (isSelected)
+                    return 'ring-2 ring-brand-400 ring-offset-1 ring-offset-slate-900';
+                  if (isCurrent) return 'border-emerald-400/50';
+                  return 'border-white/20 hover:scale-105 hover:border-brand-400/50 hover:bg-linear-to-br hover:from-brand-300 hover:via-brand-400 hover:to-sky-400';
+                })();
+
                 return (
                   <button
-                    key={index}
+                    key={avatarUrl}
                     type="button"
                     onClick={() => handlePredefinedAvatarSelect(avatarUrl)}
                     disabled={isUploading}
                     className={cn(
                       'relative aspect-square overflow-hidden rounded-lg border-2 bg-linear-to-br from-brand-400 via-brand-500 to-sky-500 transition-all',
-                      isSelected
-                        ? 'ring-2 ring-brand-400 ring-offset-1 ring-offset-slate-900'
-                        : isCurrent
-                          ? 'border-emerald-400/50'
-                          : 'border-white/20 hover:scale-105 hover:border-brand-400/50 hover:bg-linear-to-br hover:from-brand-300 hover:via-brand-400 hover:to-sky-400',
+                      stateClass,
                       isUploading && 'pointer-events-none opacity-50'
                     )}
                   >

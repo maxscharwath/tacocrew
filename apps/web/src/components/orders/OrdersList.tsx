@@ -17,15 +17,15 @@ import { routes } from '@/lib/routes';
 import { getOrderPermissions, useEmptyStateDescription } from '@/utils/order-helpers';
 import { OrderCard } from './OrderCard';
 
-type OrdersListProps = {
-  readonly userOrders: UserOrderSummary[];
-  readonly groupOrder: GroupOrder;
-  readonly currentUserId: string;
-  readonly isLeader: boolean;
-  readonly orderId: string;
-  readonly isSubmitting: boolean;
-  readonly canAddOrders: boolean;
-};
+type OrdersListProps = Readonly<{
+  userOrders: UserOrderSummary[];
+  groupOrder: GroupOrder;
+  currentUserId: string;
+  isLeader: boolean;
+  orderId: string;
+  isSubmitting: boolean;
+  canAddOrders: boolean;
+}>;
 
 export function OrdersList({
   userOrders,

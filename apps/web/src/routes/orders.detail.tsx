@@ -231,10 +231,6 @@ function OrderDetailContent({
   const canSubmit = isLeader && groupOrder.canSubmitGroupOrder;
   const isSubmitted = groupOrder.status === 'submitted' || groupOrder.status === 'completed';
   const isClosedManually = groupOrder.status === 'closed';
-  const statusIntent =
-    isClosedManually || (isDeveloperMode && isSubmitted)
-      ? 'reopen-group-order'
-      : 'close-group-order';
   // Calculate total price from API response
   const totalPrice: Amount = userOrders.reduce<Amount>(
     (acc, order) => ({
@@ -253,7 +249,6 @@ function OrderDetailContent({
         canAddOrders={canAddOrders}
         canSubmit={canSubmit}
         orderId={params.orderId ?? ''}
-        statusIntent={statusIntent}
         isClosedManually={isClosedManually}
         isSubmitting={isSubmitting}
         isLeader={isLeader}

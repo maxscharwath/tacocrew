@@ -5,14 +5,14 @@ import type { StockResponse } from '@/lib/api/types';
 import { cn } from '@/lib/utils';
 import type { MeatSelection, TacoSizeItem } from '@/types/orders';
 
-type MeatSelectorProps = {
-  readonly meats: MeatSelection[];
-  readonly stock: StockResponse;
-  readonly selectedTacoSize: TacoSizeItem | null;
-  readonly size: string | null;
-  readonly isSubmitting: boolean;
-  readonly updateMeatQuantity: (id: string, delta: number) => void;
-};
+type MeatSelectorProps = Readonly<{
+  meats: MeatSelection[];
+  stock: StockResponse;
+  selectedTacoSize: TacoSizeItem | null;
+  size: string | null;
+  isSubmitting: boolean;
+  updateMeatQuantity: (id: string, delta: number) => void;
+}>;
 
 export function MeatSelector({
   meats,

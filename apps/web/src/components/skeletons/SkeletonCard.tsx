@@ -26,7 +26,7 @@ export function SkeletonCard({
       )}
       <CardContent className="gap-4">
         {Array.from({ length: contentLines }).map((_, i) => (
-          <Skeleton key={i} className="h-20 w-full rounded-2xl" />
+          <Skeleton key={`skeleton-card-${i}`} className="h-20 w-full rounded-2xl" />
         ))}
       </CardContent>
     </Card>

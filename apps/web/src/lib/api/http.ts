@@ -119,13 +119,17 @@ function setupHeaders(options: RequestOptions): Headers {
 /**
  * Parse response payload
  */
-function parseResponse(response: Response): Promise<unknown> {
+async function parseResponse(response: Response): Promise<unknown> {
   const contentType = response.headers.get('Content-Type') ?? '';
   const isJson = contentType.includes('application/json');
   if (!isJson) {
-    return Promise.resolve(undefined);
+    return undefined;
   }
-  return response.json().catch(() => undefined);
+  try {
+    return await response.json();
+  } catch {
+    return undefined;
+  }
 }
 
 async function send<TResponse>(method: HttpMethod, path: string, options: RequestOptions = {}) {
@@ -144,11 +148,11 @@ async function send<TResponse>(method: HttpMethod, path: string, options: Reques
     ...options,
     method,
     headers,
-    body: isFormData
-      ? (options.body as FormData)
-      : options.body
-        ? JSON.stringify(options.body)
-        : undefined,
+    body: (() => {
+      if (isFormData) return options.body as FormData;
+      if (options.body) return JSON.stringify(options.body);
+      return undefined;
+    })(),
     credentials: 'include', // Include cookies for Better Auth sessions
   });
 

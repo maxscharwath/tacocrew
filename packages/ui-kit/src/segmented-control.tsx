@@ -3,12 +3,12 @@ import type { ButtonHTMLAttributes, ReactNode } from 'react';
 import { createContext, useContext, useMemo } from 'react';
 import { cn } from './utils';
 
-type SegmentedControlContextValue<T = unknown> = {
-  readonly value: T;
-  readonly onValueChange: (value: T) => void;
-  readonly variant: 'primary' | 'secondary';
-  readonly disabled?: boolean;
-};
+type SegmentedControlContextValue<T = unknown> = Readonly<{
+  value: T;
+  onValueChange: (value: T) => void;
+  variant: 'primary' | 'secondary';
+  disabled?: boolean;
+}>;
 
 const SegmentedControlContext = createContext<SegmentedControlContextValue | null>(null);
 
@@ -79,14 +79,14 @@ const itemVariants = cva(
   }
 );
 
-type SegmentedControlProps<T> = {
-  readonly value: T;
-  readonly onValueChange: (value: T) => void;
-  readonly variant?: 'primary' | 'secondary';
-  readonly disabled?: boolean;
-  readonly className?: string;
-  readonly children: ReactNode;
-};
+type SegmentedControlProps<T> = Readonly<{
+  value: T;
+  onValueChange: (value: T) => void;
+  variant?: 'primary' | 'secondary';
+  disabled?: boolean;
+  className?: string;
+  children: ReactNode;
+}>;
 
 /**
  * SegmentedControl root component for creating tab-like selection controls.
@@ -140,10 +140,11 @@ export function SegmentedControl<T = unknown>({
   );
 }
 
-type SegmentedControlItemProps<T = unknown> = ButtonHTMLAttributes<HTMLButtonElement> & {
-  readonly value: T;
-  readonly children: ReactNode;
-};
+type SegmentedControlItemProps<T = unknown> = ButtonHTMLAttributes<HTMLButtonElement> &
+  Readonly<{
+    value: T;
+    children: ReactNode;
+  }>;
 
 /**
  * Individual item within a SegmentedControl.

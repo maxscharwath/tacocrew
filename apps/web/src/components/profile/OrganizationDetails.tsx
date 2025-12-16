@@ -29,17 +29,17 @@ import { OrganizationApi } from '@/lib/api';
 import type { Organization, OrganizationPayload } from '@/lib/api/types';
 import { routes } from '@/lib/routes';
 
-interface OrganizationDetailsProps {
-  readonly organization: Organization;
-  readonly isAdmin: boolean;
-  readonly isPending: boolean;
-  readonly userRole: 'ADMIN' | 'MEMBER' | null;
-  readonly userStatus: 'ACTIVE' | 'PENDING' | null;
-  readonly currentUserId: string;
-  readonly onUpdate: (updated: Organization) => void;
-  readonly onDelete: () => void;
-  readonly disabled?: boolean;
-}
+type OrganizationDetailsProps = Readonly<{
+  organization: Organization;
+  isAdmin: boolean;
+  isPending: boolean;
+  userRole: 'ADMIN' | 'MEMBER' | null;
+  userStatus: 'ACTIVE' | 'PENDING' | null;
+  currentUserId: string;
+  onUpdate: (updated: Organization) => void;
+  onDelete: () => void;
+  disabled?: boolean;
+}>;
 
 export function OrganizationDetails({
   organization,

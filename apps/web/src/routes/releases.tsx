@@ -16,6 +16,7 @@ import {
   Skeleton,
 } from '@tacocrew/ui-kit';
 import { ArrowLeft, Calendar, Download, ExternalLink, Package, Sparkles, Tag } from 'lucide-react';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
 import Markdown from 'react-markdown';
 import { Link, useLoaderData } from 'react-router';
@@ -85,7 +86,80 @@ function formatBytes(bytes: number): string {
   return `${Number.parseFloat((bytes / k ** i).toFixed(1))} ${sizes[i]}`;
 }
 
-function ReleaseCard({ release, isLatest }: { release: GitHubRelease; isLatest: boolean }) {
+const markdownComponents = {
+  h1: ({ children }: Readonly<{ children?: React.ReactNode }>) => (
+    <h1 className="mt-4 mb-2 border-white/10 border-b pb-2 font-bold text-white text-xl">
+      {children}
+    </h1>
+  ),
+  h2: ({ children }: Readonly<{ children?: React.ReactNode }>) => (
+    <h2 className="mt-4 mb-2 font-bold text-lg text-white">{children}</h2>
+  ),
+  h3: ({ children }: Readonly<{ children?: React.ReactNode }>) => (
+    <h3 className="mt-3 mb-1 font-semibold text-base text-white">{children}</h3>
+  ),
+  p: ({ children }: Readonly<{ children?: React.ReactNode }>) => (
+    <p className="my-2 text-slate-300 leading-relaxed">{children}</p>
+  ),
+  ul: ({ children }: Readonly<{ children?: React.ReactNode }>) => (
+    <ul className="my-2 space-y-1 pl-4">{children}</ul>
+  ),
+  li: ({ children }: Readonly<{ children?: React.ReactNode }>) => (
+    <li className="text-slate-300 before:mr-2 before:text-brand-400 before:content-['•']">
+      {children}
+    </li>
+  ),
+  code: ({
+    children,
+    className,
+  }: Readonly<{
+    children?: React.ReactNode;
+    className?: string;
+  }>) => {
+    const isInline = !className;
+    if (isInline) {
+      return (
+        <code className="rounded bg-slate-800 px-1.5 py-0.5 font-mono text-brand-300 text-xs">
+          {children}
+        </code>
+      );
+    }
+    return (
+      <code className="block overflow-x-auto rounded-lg bg-slate-800 p-3 font-mono text-slate-300 text-xs">
+        {children}
+      </code>
+    );
+  },
+  pre: ({ children }: Readonly<{ children?: React.ReactNode }>) => (
+    <pre className="my-3 overflow-x-auto rounded-lg bg-slate-800 p-4">{children}</pre>
+  ),
+  a: ({ href, children }: Readonly<{ href?: string; children?: React.ReactNode }>) => (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="text-brand-300 underline decoration-brand-400/30 underline-offset-2 transition-colors hover:text-brand-200 hover:decoration-brand-400"
+    >
+      {children}
+    </a>
+  ),
+  blockquote: ({ children }: Readonly<{ children?: React.ReactNode }>) => (
+    <blockquote className="my-3 border-brand-500/50 border-l-2 pl-4 text-slate-400 italic">
+      {children}
+    </blockquote>
+  ),
+  img: ({ src, alt }: Readonly<{ src?: string; alt?: string }>) => (
+    <img src={src} alt={alt} className="my-4 max-w-full rounded-lg border border-white/10" />
+  ),
+} as const;
+
+function ReleaseCard({
+  release,
+  isLatest,
+}: Readonly<{
+  release: GitHubRelease;
+  isLatest: boolean;
+}>) {
   const { t } = useTranslation();
   const { formatDateOnly } = useDateFormat();
 
@@ -157,74 +231,7 @@ function ReleaseCard({ release, isLatest }: { release: GitHubRelease; isLatest: 
             {/* Release body (markdown) */}
             {release.body && (
               <div className="prose prose-invert prose-sm max-w-none rounded-xl border border-white/5 bg-slate-900/50 p-4">
-                <Markdown
-                  components={{
-                    h1: ({ children }) => (
-                      <h1 className="mt-4 mb-2 border-white/10 border-b pb-2 font-bold text-white text-xl">
-                        {children}
-                      </h1>
-                    ),
-                    h2: ({ children }) => (
-                      <h2 className="mt-4 mb-2 font-bold text-lg text-white">{children}</h2>
-                    ),
-                    h3: ({ children }) => (
-                      <h3 className="mt-3 mb-1 font-semibold text-base text-white">{children}</h3>
-                    ),
-                    p: ({ children }) => (
-                      <p className="my-2 text-slate-300 leading-relaxed">{children}</p>
-                    ),
-                    ul: ({ children }) => <ul className="my-2 space-y-1 pl-4">{children}</ul>,
-                    li: ({ children }) => (
-                      <li className="text-slate-300 before:mr-2 before:text-brand-400 before:content-['•']">
-                        {children}
-                      </li>
-                    ),
-                    code: ({ children, className }) => {
-                      const isInline = !className;
-                      if (isInline) {
-                        return (
-                          <code className="rounded bg-slate-800 px-1.5 py-0.5 font-mono text-brand-300 text-xs">
-                            {children}
-                          </code>
-                        );
-                      }
-                      return (
-                        <code className="block overflow-x-auto rounded-lg bg-slate-800 p-3 font-mono text-slate-300 text-xs">
-                          {children}
-                        </code>
-                      );
-                    },
-                    pre: ({ children }) => (
-                      <pre className="my-3 overflow-x-auto rounded-lg bg-slate-800 p-4">
-                        {children}
-                      </pre>
-                    ),
-                    a: ({ href, children }) => (
-                      <a
-                        href={href}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-brand-300 underline decoration-brand-400/30 underline-offset-2 transition-colors hover:text-brand-200 hover:decoration-brand-400"
-                      >
-                        {children}
-                      </a>
-                    ),
-                    blockquote: ({ children }) => (
-                      <blockquote className="my-3 border-brand-500/50 border-l-2 pl-4 text-slate-400 italic">
-                        {children}
-                      </blockquote>
-                    ),
-                    img: ({ src, alt }) => (
-                      <img
-                        src={src}
-                        alt={alt}
-                        className="my-4 max-w-full rounded-lg border border-white/10"
-                      />
-                    ),
-                  }}
-                >
-                  {release.body}
-                </Markdown>
+                <Markdown components={markdownComponents}>{release.body}</Markdown>
               </div>
             )}
 
@@ -294,7 +301,7 @@ function ReleasesListSkeleton() {
   );
 }
 
-function ReleasesList({ releases }: { releases: GitHubRelease[] }) {
+function ReleasesList({ releases }: Readonly<{ releases: GitHubRelease[] }>) {
   const { t } = useTranslation();
 
   if (releases.length === 0) {
@@ -342,8 +349,8 @@ export function ReleasesRoute() {
 
       {/* Hero */}
       <section className="relative overflow-hidden rounded-3xl border border-white/10 bg-linear-to-br from-purple-500/15 via-slate-900/90 to-brand-900/30 p-8 shadow-[0_40px_120px_rgba(8,47,73,0.35)] backdrop-blur-sm">
-        <div className="absolute -top-24 right-0 h-60 w-60 animate-pulse rounded-full bg-purple-400/20 blur-3xl" />
-        <div className="absolute -bottom-16 left-10 h-56 w-56 rounded-full bg-brand-500/20 blur-3xl" />
+        <div className="-top-24 absolute right-0 h-60 w-60 animate-pulse rounded-full bg-purple-400/20 blur-3xl" />
+        <div className="-bottom-16 absolute left-10 h-56 w-56 rounded-full bg-brand-500/20 blur-3xl" />
 
         <div className="relative">
           <Badge tone="brand" pill className="mb-4 uppercase tracking-[0.3em]">

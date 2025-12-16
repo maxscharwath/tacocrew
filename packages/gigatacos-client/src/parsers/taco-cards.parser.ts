@@ -36,7 +36,7 @@ function parseSizeFromTitle(title: string): TacoSize | null {
  * Parse price from taco title
  */
 function parsePriceFromTitle(title: string): number {
-  const match = /-\s*([0-9]+(?:[.,][0-9]+)?)\s*(?:CHF|EUR|€|\$)\.?/i.exec(title);
+  const match = /-\s*(\d+(?:[.,]\d+)?)\s*(?:CHF|EUR|€|\$)\.?/i.exec(title);
   return match?.[1] ? Number.parseFloat(match[1].replace(',', '.')) : 0;
 }
 

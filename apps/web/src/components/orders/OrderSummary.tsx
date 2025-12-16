@@ -20,30 +20,30 @@ import { ProgressStepper } from './ProgressStepper';
  * @component
  */
 
-type OrderSummaryProps = {
-  readonly selectedTacoSize: TacoSizeItem | null;
-  readonly meats: MeatSelection[];
-  readonly sauces: string[];
-  readonly garnitures: string[];
-  readonly extras: string[];
-  readonly drinks: string[];
-  readonly desserts: string[];
-  readonly note: string;
-  readonly priceBreakdown: PriceBreakdownItem[];
-  readonly totalPrice: number;
-  readonly currency: string;
-  readonly summaryBreakdown: string;
-  readonly hasTaco: boolean;
-  readonly hasOtherItems: boolean;
-  readonly canSubmit: boolean;
-  readonly validationMessages: string[];
-  readonly stock: StockResponse;
-  readonly progressSteps: ProgressStep[];
-  readonly formId: string;
-  readonly isSubmitting: boolean;
-  readonly editOrderId: string | null;
-  readonly onCancel: () => void;
-};
+type OrderSummaryProps = Readonly<{
+  selectedTacoSize: TacoSizeItem | null;
+  meats: MeatSelection[];
+  sauces: string[];
+  garnitures: string[];
+  extras: string[];
+  drinks: string[];
+  desserts: string[];
+  note: string;
+  priceBreakdown: PriceBreakdownItem[];
+  totalPrice: number;
+  currency: string;
+  summaryBreakdown: string;
+  hasTaco: boolean;
+  hasOtherItems: boolean;
+  canSubmit: boolean;
+  validationMessages: string[];
+  stock: StockResponse;
+  progressSteps: ProgressStep[];
+  formId: string;
+  isSubmitting: boolean;
+  editOrderId: string | null;
+  onCancel: () => void;
+}>;
 
 export function OrderSummary({
   selectedTacoSize,

@@ -3,12 +3,12 @@ import { useTranslation } from 'react-i18next';
 import type { PaymentMethod } from '@/lib/api/types';
 import { cn } from '@/lib/utils';
 
-type PaymentMethodSelectorProps = {
-  readonly selected: PaymentMethod | undefined;
-  readonly onSelect: (method: PaymentMethod) => void;
-  readonly disabled?: boolean;
-  readonly required?: boolean;
-};
+type PaymentMethodSelectorProps = Readonly<{
+  selected: PaymentMethod | undefined;
+  onSelect: (method: PaymentMethod) => void;
+  disabled?: boolean;
+  required?: boolean;
+}>;
 
 const PAYMENT_METHOD_CONFIG: Record<PaymentMethod, { icon: typeof CreditCard; labelKey: string }> =
   {

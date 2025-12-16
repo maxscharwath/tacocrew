@@ -38,7 +38,7 @@ export class UpdateUserOrderUserPaymentStatusUseCase {
       throw new NotFoundError({ resource: 'GroupOrder', id: groupOrderId });
     }
 
-    if (!userOrder || userOrder.groupOrderId !== groupOrderId) {
+    if (userOrder?.groupOrderId !== groupOrderId) {
       throw new NotFoundError({ resource: 'UserOrder', id: userOrderId });
     }
 

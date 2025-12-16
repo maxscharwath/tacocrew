@@ -7,9 +7,9 @@ import type { ProgressStep } from '@/types/orders';
  * @component
  */
 
-type ProgressStepperProps = {
-  readonly steps: ProgressStep[];
-};
+type ProgressStepperProps = Readonly<{
+  steps: ProgressStep[];
+}>;
 
 export function ProgressStepper({ steps }: ProgressStepperProps) {
   if (steps.length === 0) {

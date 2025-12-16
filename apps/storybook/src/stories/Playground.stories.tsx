@@ -343,7 +343,6 @@ function PlaygroundContent() {
                 <div className="space-y-2">
                   <Label htmlFor="pickup-time">Pickup Window</Label>
                   <DateTimePicker
-                    id="pickup-time"
                     label=""
                     dateValue={date}
                     timeValue={time}

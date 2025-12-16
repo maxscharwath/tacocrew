@@ -5,10 +5,10 @@ import Confetti from 'react-confetti';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 
-type OrderConfirmationModalProps = {
-  readonly isOpen: boolean;
-  readonly onClose: () => void;
-};
+type OrderConfirmationModalProps = Readonly<{
+  isOpen: boolean;
+  onClose: () => void;
+}>;
 
 export function OrderConfirmationModal({ isOpen, onClose }: OrderConfirmationModalProps) {
   const { t } = useTranslation();

@@ -41,7 +41,11 @@ export function StockSkeleton() {
             }}
           >
             {Array.from({ length: 6 }).map((_, i) => (
-              <Skeleton key={i} delay={700 + i * 50} className="h-10 w-24 rounded-full" />
+              <Skeleton
+                key={`stock-tab-${i}`}
+                delay={700 + i * 50}
+                className="h-10 w-24 rounded-full"
+              />
             ))}
           </div>
 
@@ -62,7 +66,7 @@ export function StockSkeleton() {
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
               {Array.from({ length: 6 }).map((_, i) => (
                 <article
-                  key={i}
+                  key={`stock-item-${i}`}
                   className="space-y-5 rounded-2xl border border-white/10 bg-slate-900/70 p-5"
                   style={{
                     animation: 'skeleton-fade-in 0.5s ease-out forwards',

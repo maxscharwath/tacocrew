@@ -143,16 +143,16 @@ function parseItemsFromFormData(
 /**
  * Validate taco selection and ingredients
  */
-function validateTacoSelection(params: {
-  readonly size: string | undefined;
-  readonly meats: ReadonlyArray<{ readonly id: string; readonly quantity: number }>;
-  readonly sauces: ReadonlyArray<{ readonly id: string }>;
-  readonly garnitures: ReadonlyArray<{ readonly id: string }>;
-  readonly extras: ReadonlyArray<{ readonly id: string; readonly quantity: number }>;
-  readonly drinks: ReadonlyArray<{ readonly id: string; readonly quantity: number }>;
-  readonly desserts: ReadonlyArray<{ readonly id: string; readonly quantity: number }>;
-  readonly tacoSize: { readonly allowGarnitures: boolean } | undefined;
-}): void {
+function validateTacoSelection(params: Readonly<{
+  size: string | undefined;
+  meats: ReadonlyArray<Readonly<{ id: string; quantity: number }>>;
+  sauces: ReadonlyArray<Readonly<{ id: string }>>;
+  garnitures: ReadonlyArray<Readonly<{ id: string }>>;
+  extras: ReadonlyArray<Readonly<{ id: string; quantity: number }>>;
+  drinks: ReadonlyArray<Readonly<{ id: string; quantity: number }>>;
+  desserts: ReadonlyArray<Readonly<{ id: string; quantity: number }>>;
+  tacoSize: Readonly<{ allowGarnitures: boolean }> | undefined;
+}>): void {
   const { size, meats, sauces, garnitures, extras, drinks, desserts, tacoSize } = params;
   const hasTaco = size && meats.length > 0 && sauces.length > 0;
   const hasOtherItems = extras.length > 0 || drinks.length > 0 || desserts.length > 0;
@@ -353,7 +353,6 @@ export function OrderCreateRoute() {
                 selectedTacoSize: selectedTacoSize ?? null,
               }}
               stock={stock}
-              currency={currency}
               isSubmitting={isSubmitting}
               onUpdateMeatQuantity={updateMeatQuantity}
               onToggleSauce={(id) =>

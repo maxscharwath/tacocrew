@@ -17,11 +17,11 @@ import { cn } from '@/lib/utils';
  * TacoSizeSelector - A presentational component for selecting taco sizes
  * @component
  */
-type TacoSizeSelectorProps = {
-  readonly sizes: StockResponse['tacos'];
-  readonly selected: string;
-  readonly onSelect: (size: string) => void;
-};
+type TacoSizeSelectorProps = Readonly<{
+  sizes: StockResponse['tacos'];
+  selected: string;
+  onSelect: (size: string) => void;
+}>;
 
 export function TacoSizeSelector({ sizes, selected, onSelect }: TacoSizeSelectorProps) {
   const { t } = useTranslation();

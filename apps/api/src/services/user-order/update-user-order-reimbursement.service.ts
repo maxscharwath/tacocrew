@@ -36,7 +36,7 @@ export class UpdateUserOrderReimbursementStatusUseCase {
     }
 
     const userOrder = await this.userOrderRepository.findById(userOrderId);
-    if (!userOrder || userOrder.groupOrderId !== groupOrderId) {
+    if (userOrder?.groupOrderId !== groupOrderId) {
       throw new NotFoundError({ resource: 'UserOrder', id: userOrderId });
     }
 

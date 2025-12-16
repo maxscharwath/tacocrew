@@ -5,10 +5,10 @@ import { useTranslation } from 'react-i18next';
 import { TacosApi } from '@/lib/api';
 import type { TacoOrder } from '@/lib/api/types';
 
-type TacoHashSearchProps = {
-  readonly onSelectTaco: (taco: TacoOrder) => void;
-  readonly disabled?: boolean;
-};
+type TacoHashSearchProps = Readonly<{
+  onSelectTaco: (taco: TacoOrder) => void;
+  disabled?: boolean;
+}>;
 
 export function TacoHashSearch({ onSelectTaco, disabled }: TacoHashSearchProps) {
   const { t } = useTranslation();

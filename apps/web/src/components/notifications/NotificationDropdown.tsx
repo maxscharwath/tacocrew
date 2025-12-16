@@ -302,12 +302,14 @@ export function NotificationDropdown({ onClose, onMarkAsRead }: NotificationDrop
   useEffect(() => {
     setNotifications([]);
     setNextCursor(null);
-    void fetchNotifications();
+    fetchNotifications().catch(() => {
+      // Error handling is done within fetchNotifications
+    });
   }, [isArchiveTab]);
 
   // Fetch counts once on mount
   useEffect(() => {
-    void fetchCounts();
+    fetchCounts();
   }, []);
 
   // Infinite scroll observer
@@ -317,7 +319,11 @@ export function NotificationDropdown({ onClose, onMarkAsRead }: NotificationDrop
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry?.isIntersecting && nextCursor) void fetchNotifications(nextCursor);
+        if (entry?.isIntersecting && nextCursor) {
+          fetchNotifications(nextCursor).catch(() => {
+            // Error handling is done within fetchNotifications
+          });
+        }
       },
       { threshold: 0.1 }
     );

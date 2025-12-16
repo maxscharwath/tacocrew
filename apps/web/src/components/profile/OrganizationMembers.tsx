@@ -22,11 +22,11 @@ import { UserAvatar } from '@/components/shared/UserAvatar';
 import { OrganizationApi } from '@/lib/api';
 import type { OrganizationMember, OrganizationRole, PendingRequest } from '@/lib/api/types';
 
-interface OrganizationMembersProps {
-  readonly organizationId: string;
-  readonly isAdmin: boolean;
-  readonly currentUserId: string;
-}
+type OrganizationMembersProps = Readonly<{
+  organizationId: string;
+  isAdmin: boolean;
+  currentUserId: string;
+}>;
 
 export function OrganizationMembers({
   organizationId,

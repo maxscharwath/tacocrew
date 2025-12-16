@@ -1,7 +1,16 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { PhoneInput } from '@tacocrew/ui-kit';
-import { useState } from 'react';
+import React, { useState } from 'react';
 
+/**
+ * PhoneInput component with international phone number support
+ *
+ * ## Features
+ * - Country selection with flags
+ * - Automatic formatting
+ * - Validation support
+ * - Error states
+ */
 const meta = {
   title: 'UI Kit/PhoneInput',
   component: PhoneInput,
@@ -11,16 +20,21 @@ const meta = {
   tags: ['autodocs'],
   argTypes: {
     defaultCountry: {
-      control: 'text',
-      description: 'Default country code (e.g., "CH", "US", "FR")',
+      control: 'select',
+      options: ['CH', 'US', 'FR', 'DE', 'GB'],
+      description: 'Default country code',
     },
     error: {
       control: 'boolean',
-      description: 'Whether the input has an error state',
+      description: 'Error state',
     },
     disabled: {
       control: 'boolean',
-      description: 'Whether the input is disabled',
+      description: 'Disabled state',
+    },
+    value: {
+      control: 'text',
+      description: 'Phone number value',
     },
   },
 } satisfies Meta<typeof PhoneInput>;
@@ -28,70 +42,95 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-// Main story - use controls panel to explore all options
+// Wrapper component for stateful stories
+function StatefulPhoneInput(props: React.ComponentProps<typeof PhoneInput>) {
+  const [value, setValue] = useState(props.value || '');
+  return <PhoneInput {...props} value={value} onChange={setValue} />;
+}
+
+/**
+ * Default phone input - use controls to explore all options
+ */
 export const Default: Story = {
-  render: (args) => {
-    const [value, setValue] = useState('');
-    return (
-      <div className="w-full max-w-sm">
-        <PhoneInput
-          {...args}
-          value={value}
-          onChange={setValue}
-          defaultCountry={args.defaultCountry || 'CH'}
-        />
-      </div>
-    );
-  },
-  args: {
-    defaultCountry: 'CH',
-  },
+  render: (args) => (
+    <div className="w-full max-w-sm">
+      <StatefulPhoneInput {...args} />
+    </div>
+  ),
 };
 
-// Showcase story - different states
-export const Showcase: Story = {
-  render: () => {
-    const [value1, setValue1] = useState('');
-    const [value2, setValue2] = useState('');
-    const [value3, setValue3] = useState('');
+/**
+ * Phone input with pre-filled value
+ */
+export const WithValue: Story = {
+  args: {
+    value: '+41 79 123 45 67',
+  },
+  render: (args) => (
+    <div className="w-full max-w-sm">
+      <StatefulPhoneInput {...args} />
+    </div>
+  ),
+};
 
-    return (
-      <div className="space-y-6">
-        <div className="space-y-3">
-          <h2 className="font-semibold text-lg text-white">Default</h2>
-          <div className="w-full max-w-sm">
-            <PhoneInput value={value1} onChange={setValue1} defaultCountry="CH" />
-          </div>
-        </div>
+/**
+ * Phone input in error state
+ */
+export const ErrorState: Story = {
+  args: {
+    error: true,
+  },
+  render: (args) => (
+    <div className="w-full max-w-sm">
+      <StatefulPhoneInput {...args} />
+    </div>
+  ),
+};
 
-        <div className="space-y-3">
-          <h2 className="font-semibold text-lg text-white">With Value</h2>
-          <div className="w-full max-w-sm">
-            <PhoneInput value={value2} onChange={setValue2} defaultCountry="US" />
-          </div>
-        </div>
+/**
+ * Disabled phone input
+ */
+export const Disabled: Story = {
+  args: {
+    value: '+41 79 123 45 67',
+    disabled: true,
+  },
+  render: (args) => (
+    <div className="w-full max-w-sm">
+      <PhoneInput
+        {...args}
+        onChange={() => {
+          // No-op for disabled state
+        }}
+      />
+    </div>
+  ),
+};
 
-        <div className="space-y-3">
-          <h2 className="font-semibold text-lg text-white">Error State</h2>
-          <div className="w-full max-w-sm">
-            <PhoneInput value={value3} onChange={setValue3} defaultCountry="FR" error />
-          </div>
-        </div>
-
-        <div className="space-y-3">
-          <h2 className="font-semibold text-lg text-white">Disabled</h2>
-          <div className="w-full max-w-sm">
-            <PhoneInput
-              value="+41 79 123 45 67"
-              onChange={() => {
-                // Disabled input - no-op handler
-              }}
-              defaultCountry="CH"
-              disabled
-            />
-          </div>
+/**
+ * Different country defaults
+ */
+export const Countries: Story = {
+  render: () => (
+    <div className="space-y-6">
+      <div className="space-y-2">
+        <h3 className="font-semibold text-sm text-white">Switzerland (CH)</h3>
+        <div className="w-full max-w-sm">
+          <StatefulPhoneInput defaultCountry="CH" />
         </div>
       </div>
-    );
-  },
+      <div className="space-y-2">
+        <h3 className="font-semibold text-sm text-white">United States (US)</h3>
+        <div className="w-full max-w-sm">
+          <StatefulPhoneInput defaultCountry="US" />
+        </div>
+      </div>
+      <div className="space-y-2">
+        <h3 className="font-semibold text-sm text-white">France (FR)</h3>
+        <div className="w-full max-w-sm">
+          <StatefulPhoneInput defaultCountry="FR" />
+        </div>
+      </div>
+    </div>
+  ),
 };

@@ -53,7 +53,11 @@ export function OrderCreateSkeleton() {
             <CardContent className="gap-4">
               <div className="grid gap-3 sm:grid-cols-2">
                 {Array.from({ length: 4 }).map((_, i) => (
-                  <Skeleton key={i} delay={1000 + i * 50} className="h-32 w-full rounded-2xl" />
+                  <Skeleton
+                    key={`taco-skeleton-${i}`}
+                    delay={1000 + i * 50}
+                    className="h-32 w-full rounded-2xl"
+                  />
                 ))}
               </div>
             </CardContent>
@@ -73,7 +77,11 @@ export function OrderCreateSkeleton() {
             <CardContent className="gap-6">
               <div className="grid gap-4 sm:grid-cols-2">
                 {Array.from({ length: 6 }).map((_, i) => (
-                  <Skeleton key={i} delay={1400 + i * 50} className="h-24 w-full rounded-xl" />
+                  <Skeleton
+                    key={`selection-skeleton-${i}`}
+                    delay={1400 + i * 50}
+                    className="h-24 w-full rounded-xl"
+                  />
                 ))}
               </div>
             </CardContent>
@@ -82,7 +90,7 @@ export function OrderCreateSkeleton() {
           <div className="space-y-4">
             {Array.from({ length: 3 }).map((_, i) => (
               <Card
-                key={i}
+                key={`section-card-${i}`}
                 className="p-6"
                 style={{
                   animation: 'skeleton-fade-in 0.5s ease-out forwards',
@@ -97,7 +105,7 @@ export function OrderCreateSkeleton() {
                   <div className="grid gap-3">
                     {Array.from({ length: 4 }).map((_, j) => (
                       <Skeleton
-                        key={j}
+                        key={`section-${i}-item-${j}`}
                         delay={1800 + i * 200 + j * 50}
                         className="h-12 w-full rounded-lg"
                       />

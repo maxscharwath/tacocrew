@@ -267,7 +267,7 @@ export class PushNotificationClient {
    * Convert base64url to Uint8Array
    */
   private urlBase64ToUint8Array(base64url: string): Uint8Array<ArrayBuffer> {
-    const binary = atob(base64url.replace(/-/g, '+').replace(/_/g, '/'));
+    const binary = atob(base64url.replaceAll('-', '+').replaceAll('_', '/'));
     const buffer = new ArrayBuffer(binary.length);
     const bytes = new Uint8Array(buffer);
     for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
