@@ -3,23 +3,24 @@ import type { ButtonHTMLAttributes, ReactNode } from 'react';
 import { createContext, useContext, useMemo } from 'react';
 import { cn } from './utils';
 
-type SegmentedControlContextValue = {
-  readonly value: string;
-  readonly onValueChange: (value: string) => void;
+type SegmentedControlContextValue<T = unknown> = {
+  readonly value: T;
+  readonly onValueChange: (value: T) => void;
   readonly variant: 'primary' | 'secondary';
   readonly disabled?: boolean;
 };
 
 const SegmentedControlContext = createContext<SegmentedControlContextValue | null>(null);
 
-function useSegmentedControlContext() {
+function useSegmentedControlContext<T = unknown>(): SegmentedControlContextValue<T> {
   const context = useContext(SegmentedControlContext);
   if (!context) {
     throw new Error(
       'SegmentedControl compound components must be used within a SegmentedControl component'
     );
   }
-  return context;
+  // Safe cast: context stores unknown, we cast to the specific type T
+  return context as unknown as SegmentedControlContextValue<T>;
 }
 
 const containerVariants = cva('flex gap-2 rounded-xl border p-1', {
@@ -78,9 +79,9 @@ const itemVariants = cva(
   }
 );
 
-type SegmentedControlProps = {
-  readonly value: string;
-  readonly onValueChange: (value: string) => void;
+type SegmentedControlProps<T> = {
+  readonly value: T;
+  readonly onValueChange: (value: T) => void;
   readonly variant?: 'primary' | 'secondary';
   readonly disabled?: boolean;
   readonly className?: string;
@@ -112,21 +113,23 @@ type SegmentedControlProps = {
  *
  * @see {@link SegmentedControlItem}
  */
-export function SegmentedControl({
+export function SegmentedControl<T = unknown>({
   value,
   onValueChange,
   variant = 'primary',
   disabled,
   className,
   children,
-}: SegmentedControlProps) {
+}: SegmentedControlProps<T>) {
   const contextValue = useMemo(
     () => ({ value, onValueChange, variant, disabled }),
     [value, onValueChange, variant, disabled]
   );
 
   return (
-    <SegmentedControlContext.Provider value={contextValue}>
+    <SegmentedControlContext.Provider
+      value={contextValue as unknown as SegmentedControlContextValue}
+    >
       <div className={cn(containerVariants({ variant }), className)}>
         {variant === 'secondary' && (
           <div className="pointer-events-none absolute inset-0 rounded-xl bg-linear-to-r from-brand-500/10 via-purple-500/10 to-sky-500/10 opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
@@ -137,8 +140,8 @@ export function SegmentedControl({
   );
 }
 
-type SegmentedControlItemProps = ButtonHTMLAttributes<HTMLButtonElement> & {
-  readonly value: string;
+type SegmentedControlItemProps<T = unknown> = ButtonHTMLAttributes<HTMLButtonElement> & {
+  readonly value: T;
   readonly children: ReactNode;
 };
 
@@ -160,17 +163,23 @@ type SegmentedControlItemProps = ButtonHTMLAttributes<HTMLButtonElement> & {
  *   <UserIcon size={16} />
  *   Profile
  * </SegmentedControlItem>
+ *
+ * // With numbers
+ * <SegmentedControlItem value={1}>
+ *   Option 1
+ * </SegmentedControlItem>
  * ```
  */
-export function SegmentedControlItem({
+export function SegmentedControlItem<T = unknown>({
   value: itemValue,
   children,
   className,
   disabled: itemDisabled,
   ...props
-}: SegmentedControlItemProps) {
-  const { value, onValueChange, variant, disabled: controlDisabled } = useSegmentedControlContext();
-  const isActive = itemValue === value;
+}: SegmentedControlItemProps<T>) {
+  const { value, onValueChange, variant, disabled: controlDisabled } =
+    useSegmentedControlContext<T>();
+  const isActive = Object.is(itemValue, value);
   const isDisabled = controlDisabled || itemDisabled;
 
   return (
