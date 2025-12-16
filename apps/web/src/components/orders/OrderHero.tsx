@@ -48,7 +48,7 @@ type OrderHeroProps = Readonly<{
   isLeader?: boolean;
   isDeveloperMode?: boolean;
   isSubmitted?: boolean;
-};
+}>;
 
 export function OrderHero({
   groupOrder,
