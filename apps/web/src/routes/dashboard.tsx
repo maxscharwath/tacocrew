@@ -67,8 +67,8 @@ function DashboardContent({ data }: Readonly<{ data: DashboardData }>) {
   return (
     <div className="space-y-10">
       <section className="relative overflow-hidden rounded-3xl border border-white/10 bg-linear-to-br from-brand-500/20 via-slate-900/80 to-slate-950/90 p-8 shadow-[0_40px_120px_rgba(8,47,73,0.35)] backdrop-blur-sm lg:p-10">
-        <div className="-top-24 absolute right-0 h-60 w-60 animate-pulse rounded-full bg-brand-400/30 blur-3xl" />
-        <div className="-bottom-10 absolute left-10 h-48 w-48 rounded-full bg-purple-500/25 blur-3xl" />
+        <div className="absolute -top-24 right-0 h-60 w-60 animate-pulse rounded-full bg-brand-400/30 blur-3xl" />
+        <div className="absolute -bottom-10 left-10 h-48 w-48 rounded-full bg-purple-500/25 blur-3xl" />
         <div className="absolute inset-0 bg-linear-to-br from-transparent via-transparent to-brand-500/5" />
         <div className="relative flex flex-col gap-4 sm:gap-6 lg:flex-row lg:items-start lg:justify-between">
           <div className="space-y-2">

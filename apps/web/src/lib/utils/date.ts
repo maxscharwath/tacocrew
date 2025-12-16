@@ -3,58 +3,11 @@
  * Provides type-safe date parsing and conversion
  */
 
-import { isValid, parseISO } from 'date-fns';
+import { type DateArg, isValid, parse, toDate } from 'date-fns';
 
-/**
- * Type for date values that can be converted to Date objects
- */
-export type DateInput = string | Date | number;
+export type DateInput = DateArg<Date>;
 
-/**
- * Safely converts a date input to a Date object using date-fns
- * Prefers parseISO for ISO strings, falls back to new Date() for other formats
- *
- * @param value - Date string (ISO or other format), Date object, or timestamp
- * @returns Date object, or throws if invalid
- *
- * @example
- * ```ts
- * toDate('2024-01-15T10:30:00Z') // Date object
- * toDate(new Date()) // Date object
- * toDate('2024-01-15') // Date object (parsed as ISO)
- * ```
- */
-export function toDate(value: DateInput): Date {
-  if (value instanceof Date) {
-    return value;
-  }
-
-  if (typeof value === 'number') {
-    return new Date(value);
-  }
-
-  if (typeof value === 'string') {
-    // Try parseISO first for ISO strings (handles timezone correctly)
-    try {
-      const parsed = parseISO(value);
-      if (isValid(parsed)) {
-        return parsed;
-      }
-    } catch {
-      // Fall through to new Date() if parseISO fails
-    }
-
-    // Fallback to new Date() for non-ISO strings
-    const fallback = new Date(value);
-    if (isValid(fallback)) {
-      return fallback;
-    }
-
-    throw new Error(`Invalid date string: ${value}`);
-  }
-
-  throw new Error(`Invalid date input type: ${typeof value}`);
-}
+export { toDate } from 'date-fns';
 
 /**
  * Safely converts a date input to a Date object, returning null if invalid
@@ -73,4 +26,24 @@ export function toDateOrNull(value: DateInput | null | undefined): Date | null {
   } catch {
     return null;
   }
+}
+
+/**
+ * Combines a date string (YYYY-MM-DD) and time string (HH:mm) into an ISO date string
+ *
+ * @param dateStr - Date string in YYYY-MM-DD format
+ * @param timeStr - Time string in HH:mm format
+ * @returns ISO date string
+ *
+ * @example
+ * ```ts
+ * combineDateAndTime('2024-01-15', '14:30') // '2024-01-15T14:30:00.000Z'
+ * ```
+ */
+export function combineDateAndTime(dateStr: string, timeStr: string): string {
+  const dateTime = parse(`${dateStr} ${timeStr}`, 'yyyy-MM-dd HH:mm', new Date());
+  if (!isValid(dateTime)) {
+    throw new Error(`Invalid date/time: ${dateStr} ${timeStr}`);
+  }
+  return dateTime.toISOString();
 }

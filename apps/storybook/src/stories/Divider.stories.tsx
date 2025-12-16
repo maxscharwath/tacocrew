@@ -13,11 +13,6 @@ const meta = {
       control: 'text',
       description: 'Optional label text for the divider',
     },
-    orientation: {
-      control: 'select',
-      options: ['horizontal', 'vertical'],
-      description: 'The orientation of the divider',
-    },
   },
 } satisfies Meta<typeof Divider>;
 

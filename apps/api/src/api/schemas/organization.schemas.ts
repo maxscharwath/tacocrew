@@ -33,7 +33,7 @@ const CreateOrganizationRequestSchema = z.object({
 });
 
 const AddUserToOrganizationRequestSchema = z.object({
-  email: z.string().email(),
+  email: z.email(),
   role: OrganizationRoleSchema.optional(),
 });
 

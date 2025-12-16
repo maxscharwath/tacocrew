@@ -33,7 +33,7 @@ export const Default: Story = {};
 // Showcase story - all tones for reference
 export const AllTones: Story = {
   render: () => {
-    const tones = ['brand', 'success', 'warning', 'error', 'info', 'neutral'] as const;
+    const tones = ['brand', 'success', 'warning', 'neutral'] as const;
     return (
       <div className="flex flex-wrap gap-3">
         {tones.map((tone) => (

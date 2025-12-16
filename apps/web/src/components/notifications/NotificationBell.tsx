@@ -65,7 +65,7 @@ export function NotificationBell() {
     >
       <Bell size={16} />
       {unreadCount > 0 && (
-        <span className="-top-0.5 -right-0.5 absolute flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-500 px-1 font-semibold text-[10px] text-white">
+        <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-500 px-1 font-semibold text-[10px] text-white">
           {unreadCount > 99 ? '99+' : unreadCount}
         </span>
       )}
@@ -89,7 +89,7 @@ export function NotificationBell() {
         {triggerButton}
         {open &&
           createPortal(
-            <div className="fixed inset-0 z-[9999] flex h-screen w-screen flex-col bg-slate-950">
+            <div className="fixed inset-0 z-9999 flex h-screen w-screen flex-col bg-slate-950">
               {/* Header */}
               <div className="flex shrink-0 items-center justify-between border-white/10 border-b bg-slate-900/95 px-4 py-3">
                 <h2 className="font-semibold text-lg text-white">{t('notifications.title')}</h2>

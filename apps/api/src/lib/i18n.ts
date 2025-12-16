@@ -23,7 +23,7 @@ i18next.init({
     de: deTranslations,
   },
   interpolation: { escapeValue: false },
-  initImmediate: true,
+  initAsync: true,
 });
 
 /**

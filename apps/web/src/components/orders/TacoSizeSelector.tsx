@@ -21,7 +21,6 @@ type TacoSizeSelectorProps = {
   readonly sizes: StockResponse['tacos'];
   readonly selected: string;
   readonly onSelect: (size: string) => void;
-  readonly currency: string;
 };
 
 export function TacoSizeSelector({ sizes, selected, onSelect }: TacoSizeSelectorProps) {
@@ -68,7 +67,7 @@ export function TacoSizeSelector({ sizes, selected, onSelect }: TacoSizeSelector
                     {emoji}
                   </span>
                   {isSelected && (
-                    <div className="-top-1 -right-1 absolute grid h-5 w-5 place-items-center rounded-full border-2 border-slate-900 bg-brand-500 sm:h-6 sm:w-6">
+                    <div className="absolute -top-1 -right-1 grid h-5 w-5 place-items-center rounded-full border-2 border-slate-900 bg-brand-500 sm:h-6 sm:w-6">
                       <CheckCircle2 size={14} className="text-white" />
                     </div>
                   )}

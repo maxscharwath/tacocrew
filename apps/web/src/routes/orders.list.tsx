@@ -2,6 +2,9 @@ import {
   Alert,
   Button,
   DateTimePicker,
+  Field,
+  FieldError,
+  FieldLabel,
   InputGroup,
   InputGroupAddon,
   InputGroupInput,
@@ -14,28 +17,32 @@ import {
 } from '@tacocrew/ui-kit';
 import { addHours, format, setHours, setMinutes } from 'date-fns';
 import { ArrowRight, Calendar, Package, Tag, Truck } from 'lucide-react';
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, useEffect } from 'react';
+import { Controller } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import {
   Await,
-  Form,
   Link,
   type LoaderFunctionArgs,
   redirect,
   useActionData,
   useLoaderData,
-  useNavigation,
+  useSubmit,
 } from 'react-router';
+import { FormField } from '@/components/forms/FormField';
 import { OrderListItem, StatBubble } from '@/components/orders';
 import { OrganizationSelectItem } from '@/components/shared/OrganizationSelectItem';
 import { OrdersSkeleton } from '@/components/skeletons';
 import { useDateFormat } from '@/hooks/useDateFormat';
+import { useZodForm } from '@/hooks/useZodForm';
 import { OrdersApi, OrganizationApi, UserApi } from '@/lib/api';
 import { routes } from '@/lib/routes';
-import { toDate } from '@/lib/utils/date';
+import { createGroupOrderSchema } from '@/lib/schemas/order.schema';
+import { combineDateAndTime, toDate } from '@/lib/utils/date';
 import { defer } from '@/lib/utils/defer';
 import { extractErrorMessage, isMultipleOrganizationsError } from '@/lib/utils/error-helpers';
 import { createDeferredWithAuth, requireSession } from '@/lib/utils/loader-helpers';
+import { getRandomOrderName } from '@/lib/utils/order-name';
 import {
   getActiveOrganizations,
   shouldShowOrganizationSelector,
@@ -168,8 +175,7 @@ function OrdersContent({
   const { formatDateTime, formatDate, formatDateOnly, formatDayName, formatTime12Hour } =
     useDateFormat();
   const actionData = useActionData<ActionData | undefined>();
-  const navigation = useNavigation();
-  const isSubmitting = navigation.state === 'submitting';
+  const submit = useSubmit();
 
   // Filter to only active organizations
   const activeOrganizations = getActiveOrganizations(organizations);
@@ -179,18 +185,13 @@ function OrdersContent({
     actionData?.requiresOrganization
   );
 
-  // State for selected organization
-  const [selectedOrganizationId, setSelectedOrganizationId] = useState<string>(
-    activeOrganizations[0]?.id ?? ''
-  );
-
   // Get current date/time for smart defaults
   const now = new Date();
   const today = format(now, 'yyyy-MM-dd');
 
   // Calculate default end time based on start date/time (same day, but later)
   const getDefaultEndTime = (startDateValue: string, startTimeValue: string) => {
-    const startDateTime = new Date(`${startDateValue}T${startTimeValue}`);
+    const startDateTime = toDate(combineDateAndTime(startDateValue, startTimeValue));
 
     // Default to same day, but find a good deadline time
     // Try common deadlines: 5pm (17:00), 2pm (14:00), 12pm (12:00), or 3 hours later
@@ -201,80 +202,88 @@ function OrdersContent({
       const endDateTime = setHours(startDateTime, deadlineHour);
       const hoursDiff = (endDateTime.getTime() - startDateTime.getTime()) / (1000 * 60 * 60);
       if (hoursDiff >= 1) {
-        return format(endDateTime, "yyyy-MM-dd'T'HH:mm");
+        return endDateTime.toISOString();
       }
     }
 
     // If no common deadline works, default to 3 hours later (minimum 1 hour)
     let endDateTime = addHours(startDateTime, 3);
-    // Ensure at least 1 hour difference
+    // Ensure at least 1-hour difference
     if (endDateTime <= startDateTime) {
       endDateTime = addHours(startDateTime, 1);
     }
-    return format(endDateTime, "yyyy-MM-dd'T'HH:mm");
+    return endDateTime.toISOString();
   };
 
-  const [startDate, setStartDate] = useState(today);
-  const [startTime, setStartTime] = useState(format(now, 'HH:mm'));
-  const [endDate, setEndDate] = useState(() => {
-    const defaultEnd = getDefaultEndTime(today, format(now, 'HH:mm'));
-    return defaultEnd.split('T')[0];
+  const defaultStartTime = format(now, 'HH:mm');
+  const defaultEnd = getDefaultEndTime(today, defaultStartTime);
+
+  // Initialize form with useZodForm
+  const form = useZodForm({
+    schema: createGroupOrderSchema,
+    defaultValues: {
+      name: '',
+      startDate: combineDateAndTime(today, defaultStartTime),
+      endDate: defaultEnd,
+      organizationId: activeOrganizations[0]?.id ?? '',
+    },
   });
-  const [endTime, setEndTime] = useState(() => {
-    const defaultEnd = getDefaultEndTime(today, format(now, 'HH:mm'));
-    return defaultEnd.split('T')[1];
-  });
 
-  // Get random order name from translations with date injection
-  const getRandomOrderName = (): string => {
-    const randomNames = t('orders.common.randomNames', { returnObjects: true }) as string[];
-    if (Array.isArray(randomNames) && randomNames.length > 0) {
-      const template = randomNames[Math.floor(Math.random() * randomNames.length)] || '';
-      const startDateObj = new Date(`${startDate}T${startTime}`);
-      // Use formatDayName for day name only (e.g., "Monday", "Lundi", "Montag")
-      const dayName = formatDayName(startDateObj);
-      const dateStr = formatDateOnly(startDateObj, 'MMM d');
+  const isSubmitting = form.formState.isSubmitting;
 
-      // Use i18n interpolation instead of manual replace
-      return t(template, { day: dayName, date: dateStr });
-    }
-    return '';
-  };
-
-  // Set default random name when component loads (will update when dates change)
-  const [defaultOrderName, setDefaultOrderName] = useState(() => getRandomOrderName());
+  // Watch form values
+  const startDateValue = form.watch('startDate');
+  const endDateValue = form.watch('endDate');
 
   // Update random name when start date/time changes
   useEffect(() => {
-    setDefaultOrderName(getRandomOrderName());
+    const randomName = getRandomOrderName({
+      startDateValue,
+      t,
+      formatters: {
+        formatDayName,
+        formatDateOnly,
+        formatTime12Hour,
+      },
+      fallbackDate: today,
+      fallbackTime: defaultStartTime,
+    });
+    if (randomName && !form.getValues('name')) {
+      form.setValue('name', randomName);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [startDate, startTime]);
+  }, [startDateValue]);
 
   // Calculate minimum date/time for closes based on start date/time
-  const getMinDateTime = () => {
-    const startDateTime = new Date(`${startDate}T${startTime}`);
+  const getMinDateTime = (startDateValue: string) => {
+    const startDateTime = new Date(startDateValue);
+    const dateStr = format(startDateTime, 'yyyy-MM-dd');
     return {
-      date: startDate,
+      date: dateStr,
       datetime: startDateTime,
     };
   };
 
   // Auto-adjust end date/time when start date/time changes
   useEffect(() => {
-    const minDateTime = getMinDateTime();
-    const endDateTime = new Date(`${endDate}T${endTime}`);
+    if (!startDateValue || !endDateValue) return;
+
+    const minDateTime = getMinDateTime(startDateValue);
+    const endDateTime = new Date(endDateValue);
 
     // If end is before start, recalculate default end time based on new start
     if (endDateTime < minDateTime.datetime) {
-      const defaultEnd = getDefaultEndTime(startDate, startTime);
-      setEndDate(defaultEnd.split('T')[0]);
-      setEndTime(defaultEnd.split('T')[1]);
+      const dateStr = format(minDateTime.datetime, 'yyyy-MM-dd');
+      const timeStr = format(minDateTime.datetime, 'HH:mm');
+      const defaultEnd = getDefaultEndTime(dateStr, timeStr);
+      form.setValue('endDate', defaultEnd);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [startDate, startTime]);
+  }, [startDateValue]);
 
   const setQuickDeadline = (hour: number) => {
-    const minDateTime = getMinDateTime();
+    if (!startDateValue) return;
+    const minDateTime = getMinDateTime(startDateValue);
     // Set hour and minutes to 00 using date-fns
     let deadline = setMinutes(setHours(minDateTime.datetime, hour), 0);
 
@@ -283,8 +292,7 @@ function OrdersContent({
       deadline = setMinutes(addHours(setHours(minDateTime.datetime, hour), 24), 0);
     }
 
-    setEndDate(format(deadline, 'yyyy-MM-dd'));
-    setEndTime(format(deadline, 'HH:mm'));
+    form.setValue('endDate', deadline.toISOString());
   };
 
   // Get smart label for quick deadline button (just show time, keep it short)
@@ -296,13 +304,16 @@ function OrdersContent({
     return formatTime12Hour(date);
   };
 
-  const getStartDateTime = () => {
-    return `${startDate}T${startTime}`;
-  };
-
-  const getEndDateTime = () => {
-    return `${endDate}T${endTime}`;
-  };
+  // Handle form submission
+  const handleSubmit = form.handleSubmit((data) => {
+    const formData = new FormData();
+    formData.append('_intent', 'create');
+    formData.append('name', data.name || '');
+    formData.append('startDate', data.startDate);
+    formData.append('endDate', data.endDate);
+    formData.append('organizationId', data.organizationId || '');
+    void submit(formData, { method: 'post' });
+  });
 
   const upcomingOrders = [...groupOrders]
     .filter((order) => toDate(order.endDate) > new Date())
@@ -410,64 +421,70 @@ function OrdersContent({
               </Link>
             </div>
           ) : (
-            <Form method="post" className="grid gap-4">
-              <input type="hidden" name="_intent" value="create" />
-              <input type="hidden" name="startDate" value={getStartDateTime()} />
-              <input type="hidden" name="endDate" value={getEndDateTime()} />
-              <input type="hidden" name="organizationId" value={selectedOrganizationId} />
-
-              <div className="grid gap-2">
-                <Label htmlFor="name">{t('common.labels.dropName')}</Label>
-                <InputGroup>
-                  <InputGroupAddon>
-                    <Tag className="size-4" />
-                  </InputGroupAddon>
-                  <InputGroupInput
-                    id="name"
-                    name="name"
-                    type="text"
-                    placeholder={t('common.placeholders.dropName')}
-                    defaultValue={defaultOrderName}
-                    disabled={isSubmitting}
-                    required
-                  />
-                </InputGroup>
-              </div>
+            <form onSubmit={handleSubmit} className="grid gap-4">
+              <FormField
+                name="name"
+                control={form.control}
+                label={t('common.labels.dropName')}
+                required
+              >
+                {(field, fieldState) => (
+                  <InputGroup>
+                    <InputGroupAddon>
+                      <Tag className="size-4" />
+                    </InputGroupAddon>
+                    <InputGroupInput
+                      {...field}
+                      id="name"
+                      type="text"
+                      placeholder={t('common.placeholders.dropName')}
+                      disabled={isSubmitting}
+                      aria-invalid={fieldState.invalid}
+                    />
+                  </InputGroup>
+                )}
+              </FormField>
 
               {showOrganizationSelector && (
-                <div className="grid gap-2">
-                  <Label htmlFor="organizationId">
-                    {t('orders.list.form.labels.organization')}
-                  </Label>
-                  <Select
-                    value={selectedOrganizationId || undefined}
-                    onValueChange={setSelectedOrganizationId}
-                    disabled={isSubmitting}
-                    required
-                  >
-                    <SelectTrigger
-                      id="organizationId"
-                      error={actionData?.requiresOrganization}
-                      className="w-full"
-                    >
-                      <SelectValue
-                        placeholder={t('orders.list.form.placeholders.selectOrganization')}
-                      />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {activeOrganizations.map((org) => (
-                        <SelectItem key={org.id} value={org.id}>
-                          <OrganizationSelectItem organization={org} size="sm" />
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  {actionData?.requiresOrganization && (
-                    <p className="text-rose-400 text-xs">
-                      {t('orders.list.form.errors.organizationRequired')}
-                    </p>
+                <Controller
+                  name="organizationId"
+                  control={form.control}
+                  render={({ field, fieldState }) => (
+                    <Field data-invalid={fieldState.invalid || actionData?.requiresOrganization}>
+                      <FieldLabel htmlFor="organizationId" required>
+                        {t('orders.list.form.labels.organization')}
+                      </FieldLabel>
+                      <Select
+                        value={field.value || undefined}
+                        onValueChange={field.onChange}
+                        disabled={isSubmitting}
+                      >
+                        <SelectTrigger
+                          id="organizationId"
+                          error={fieldState.invalid || actionData?.requiresOrganization}
+                          className="w-full"
+                        >
+                          <SelectValue
+                            placeholder={t('orders.list.form.placeholders.selectOrganization')}
+                          />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {activeOrganizations.map((org) => (
+                            <SelectItem key={org.id} value={org.id}>
+                              <OrganizationSelectItem organization={org} size="sm" />
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                      {actionData?.requiresOrganization && !fieldState.invalid && (
+                        <p className="text-rose-400 text-xs">
+                          {t('orders.list.form.errors.organizationRequired')}
+                        </p>
+                      )}
+                    </Field>
                   )}
-                </div>
+                />
               )}
 
               <div className="space-y-4 rounded-2xl border border-white/10 bg-slate-950/60 p-4">
@@ -479,13 +496,33 @@ function OrdersContent({
                 </div>
 
                 <div className="grid gap-4">
-                  <DateTimePicker
-                    label={t('orders.list.form.labels.opens')}
-                    dateValue={startDate}
-                    timeValue={startTime}
-                    onDateChange={setStartDate}
-                    onTimeChange={setStartTime}
-                    disabled={isSubmitting}
+                  <Controller
+                    name="startDate"
+                    control={form.control}
+                    render={({ field, fieldState }) => {
+                      const date = new Date(field.value);
+                      return (
+                        <Field data-invalid={fieldState.invalid}>
+                          <DateTimePicker
+                            label={t('orders.list.form.labels.opens')}
+                            dateValue={format(date, 'yyyy-MM-dd')}
+                            timeValue={format(date, 'HH:mm')}
+                            onDateChange={(newDate) => {
+                              const time = format(date, 'HH:mm');
+                              field.onChange(combineDateAndTime(newDate, time));
+                            }}
+                            onTimeChange={(newTime) => {
+                              const dateStr = format(date, 'yyyy-MM-dd');
+                              field.onChange(combineDateAndTime(dateStr, newTime));
+                            }}
+                            disabled={isSubmitting}
+                            error={fieldState.invalid}
+                            required
+                          />
+                          {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                        </Field>
+                      );
+                    }}
                   />
 
                   <div className="grid gap-2">
@@ -523,14 +560,35 @@ function OrdersContent({
                         {getQuickDeadlineLabel(17)}
                       </button>
                     </div>
-                    <DateTimePicker
-                      label={t('orders.list.form.labels.closes')}
-                      dateValue={endDate}
-                      timeValue={endTime}
-                      onDateChange={setEndDate}
-                      onTimeChange={setEndTime}
-                      disabled={isSubmitting}
-                      minDate={getMinDateTime().date}
+                    <Controller
+                      name="endDate"
+                      control={form.control}
+                      render={({ field, fieldState }) => {
+                        const date = new Date(field.value);
+                        const minDateTime = getMinDateTime(startDateValue);
+                        return (
+                          <Field data-invalid={fieldState.invalid}>
+                            <DateTimePicker
+                              label={t('orders.list.form.labels.closes')}
+                              dateValue={format(date, 'yyyy-MM-dd')}
+                              timeValue={format(date, 'HH:mm')}
+                              onDateChange={(newDate) => {
+                                const time = format(date, 'HH:mm');
+                                field.onChange(combineDateAndTime(newDate, time));
+                              }}
+                              onTimeChange={(newTime) => {
+                                const dateStr = format(date, 'yyyy-MM-dd');
+                                field.onChange(combineDateAndTime(dateStr, newTime));
+                              }}
+                              disabled={isSubmitting}
+                              minDate={minDateTime.date}
+                              error={fieldState.invalid}
+                              required
+                            />
+                            {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                          </Field>
+                        );
+                      }}
                     />
                     <p className="text-slate-400 text-xs">
                       {t('orders.list.form.labels.deadlineHint')}
@@ -552,7 +610,7 @@ function OrdersContent({
               <Button type="submit" loading={isSubmitting} disabled={isSubmitting} fullWidth>
                 {t('orders.list.form.actions.launch')}
               </Button>
-            </Form>
+            </form>
           )}
         </section>
       </div>

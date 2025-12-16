@@ -209,8 +209,8 @@ export function AboutRoute() {
       <Card className="relative overflow-hidden border-white/10">
         {/* Background effects */}
         <div className="pointer-events-none absolute inset-0 bg-linear-to-br from-brand-500/10 via-transparent to-purple-500/10" />
-        <div className="-top-20 -right-20 pointer-events-none absolute h-64 w-64 rounded-full bg-brand-500/20 blur-[80px]" />
-        <div className="-bottom-20 -left-20 pointer-events-none absolute h-64 w-64 rounded-full bg-purple-500/15 blur-[80px]" />
+        <div className="pointer-events-none absolute -top-20 -right-20 h-64 w-64 rounded-full bg-brand-500/20 blur-[80px]" />
+        <div className="pointer-events-none absolute -bottom-20 -left-20 h-64 w-64 rounded-full bg-purple-500/15 blur-[80px]" />
 
         <CardContent className="relative p-4 sm:p-8 lg:p-10">
           <div className="flex flex-col items-center gap-4 text-center sm:flex-row sm:gap-6 sm:text-left">

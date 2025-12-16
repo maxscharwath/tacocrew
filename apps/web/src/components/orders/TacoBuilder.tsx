@@ -30,7 +30,6 @@ type TacoBuilderProps = {
 export function TacoBuilder({
   taco,
   stock,
-  currency,
   isSubmitting,
   onUpdateMeatQuantity,
   onToggleSauce,
@@ -61,7 +60,6 @@ export function TacoBuilder({
           stock={stock}
           selectedTacoSize={taco.selectedTacoSize}
           size={taco.size}
-          currency={currency}
           isSubmitting={isSubmitting}
           updateMeatQuantity={onUpdateMeatQuantity}
         />

@@ -244,9 +244,9 @@ export function LoginRoute() {
     <div className="relative min-h-screen bg-slate-950 text-slate-100">
       {/* Background decorative elements */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="-top-24 absolute right-1/3 h-96 w-96 rounded-full bg-brand-500/20 blur-3xl" />
+        <div className="absolute -top-24 right-1/3 h-96 w-96 rounded-full bg-brand-500/20 blur-3xl" />
         <div className="absolute bottom-0 left-1/3 h-96 w-96 rounded-full bg-purple-500/20 blur-3xl" />
-        <div className="-translate-x-1/2 -translate-y-1/2 absolute top-1/2 left-1/2 h-72 w-72 rounded-full bg-sky-500/10 blur-3xl" />
+        <div className="absolute top-1/2 left-1/2 h-72 w-72 -translate-x-1/2 -translate-y-1/2 rounded-full bg-sky-500/10 blur-3xl" />
       </div>
 
       {/* Language switcher */}

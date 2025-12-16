@@ -10,7 +10,6 @@ type MeatSelectorProps = {
   readonly stock: StockResponse;
   readonly selectedTacoSize: TacoSizeItem | null;
   readonly size: string | null;
-  readonly currency: string;
   readonly isSubmitting: boolean;
   readonly updateMeatQuantity: (id: string, delta: number) => void;
 };

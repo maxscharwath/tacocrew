@@ -482,23 +482,63 @@
       "labels": {
         "shortId": "ID {{id}}"
       },
-      "randomNames": [
-        "{{day}} Lunch Order",
-        "Team Order {{date}}",
-        "{{day}} Group Order",
-        "Office Tacos {{date}}",
-        "{{day}} Team Lunch",
-        "Group Order {{date}}",
-        "{{day}} Taco Run",
-        "Team Lunch {{date}}",
-        "{{day}} Office Order",
-        "Lunch Order {{date}}",
-        "{{day}} Team Order",
-        "Office Order {{date}}",
-        "{{day}} Group Lunch",
-        "Team Tacos {{date}}",
-        "{{day}} Lunch Run"
-      ],
+      "randomNames": {
+        "context": {
+          "morning": [
+            "{{day}} Morning Tacos",
+            "Early Bird Order {{date}}",
+            "{{day}} Breakfast Run",
+            "Morning Team Order",
+            "{{day}} Sunrise Tacos",
+            "Breakfast Club {{date}}",
+            "{{day}} Morning Rush",
+            "Early Order {{date}}"
+          ],
+          "afternoon": [
+            "{{day}} Lunch Order",
+            "Team Lunch {{date}}",
+            "{{day}} Group Lunch",
+            "Office Tacos {{date}}",
+            "{{day}} Team Order",
+            "Lunch Run {{date}}",
+            "{{day}} Midday Tacos",
+            "Afternoon Order {{date}}",
+            "{{day}} Office Lunch",
+            "Team Tacos {{date}}"
+          ],
+          "evening": [
+            "{{day}} Evening Order",
+            "Team Dinner {{date}}",
+            "{{day}} After Work Tacos",
+            "Evening Group Order",
+            "{{day}} Dinner Run",
+            "Team Evening {{date}}",
+            "{{day}} Night Tacos",
+            "Evening Rush {{date}}"
+          ],
+          "weekday": [
+            "{{day}} Office Order",
+            "Team Order {{date}}",
+            "{{day}} Work Lunch",
+            "Office Tacos {{date}}",
+            "{{day}} Team Lunch",
+            "Group Order {{date}}"
+          ],
+          "weekend": [
+            "{{day}} Weekend Tacos",
+            "Weekend Order {{date}}",
+            "{{day}} Casual Order",
+            "Weekend Team {{date}}",
+            "{{day}} Relaxed Run",
+            "Weekend Group {{date}}"
+          ]
+        }
+      },
+      "timeOfDay": {
+        "morning": "Morning",
+        "afternoon": "Afternoon",
+        "evening": "Evening"
+      },
       "unnamedDrop": "Untitled order"
     },
     "create": {

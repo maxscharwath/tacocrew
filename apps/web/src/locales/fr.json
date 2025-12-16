@@ -482,23 +482,63 @@
       "labels": {
         "shortId": "ID {{id}}"
       },
-      "randomNames": [
-        "Déjeuner {{day}}",
-        "Commande Équipe {{date}}",
-        "Commande Groupe {{day}}",
-        "Tacos Bureau {{date}}",
-        "Déjeuner Équipe {{day}}",
-        "Commande Groupe {{date}}",
-        "Tournée Taco {{day}}",
-        "Déjeuner Équipe {{date}}",
-        "Commande Bureau {{day}}",
-        "Commande Déjeuner {{date}}",
-        "Commande Équipe {{day}}",
-        "Commande Bureau {{date}}",
-        "Déjeuner Groupe {{day}}",
-        "Tacos Équipe {{date}}",
-        "Tournée Déjeuner {{day}}"
-      ],
+      "randomNames": {
+        "context": {
+          "morning": [
+            "Tacos Matin {{day}}",
+            "Commande Matinale {{date}}",
+            "Petit-déjeuner {{day}}",
+            "Équipe Matin {{date}}",
+            "Tacos Aube {{day}}",
+            "Club Petit-déj {{date}}",
+            "Rush Matin {{day}}",
+            "Commande Tôt {{date}}"
+          ],
+          "afternoon": [
+            "Déjeuner {{day}}",
+            "Déjeuner Équipe {{date}}",
+            "Déjeuner Groupe {{day}}",
+            "Tacos Bureau {{date}}",
+            "Commande Équipe {{day}}",
+            "Tournée Déjeuner {{date}}",
+            "Tacos Midi {{day}}",
+            "Commande Après-midi {{date}}",
+            "Déjeuner Bureau {{day}}",
+            "Tacos Équipe {{date}}"
+          ],
+          "evening": [
+            "Commande Soir {{day}}",
+            "Dîner Équipe {{date}}",
+            "Tacos Après-travail {{day}}",
+            "Commande Groupe Soir {{date}}",
+            "Tournée Dîner {{day}}",
+            "Équipe Soir {{date}}",
+            "Tacos Nuit {{day}}",
+            "Rush Soir {{date}}"
+          ],
+          "weekday": [
+            "Commande Bureau {{day}}",
+            "Commande Équipe {{date}}",
+            "Déjeuner Travail {{day}}",
+            "Tacos Bureau {{date}}",
+            "Déjeuner Équipe {{day}}",
+            "Commande Groupe {{date}}"
+          ],
+          "weekend": [
+            "Tacos Weekend {{day}}",
+            "Commande Weekend {{date}}",
+            "Commande Décontractée {{day}}",
+            "Équipe Weekend {{date}}",
+            "Tournée Relax {{day}}",
+            "Groupe Weekend {{date}}"
+          ]
+        }
+      },
+      "timeOfDay": {
+        "morning": "Matin",
+        "afternoon": "Après-midi",
+        "evening": "Soir"
+      },
       "unnamedDrop": "Commande sans titre"
     },
     "create": {

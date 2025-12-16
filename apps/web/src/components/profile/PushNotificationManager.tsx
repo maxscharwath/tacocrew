@@ -28,6 +28,105 @@ import {
   sendTestNotification,
 } from '@/lib/api/push-notifications';
 
+/**
+ * Parse user agent string to get a friendly device name
+ */
+function parseUserAgent(userAgent: string): string {
+  const ua = userAgent.toLowerCase();
+
+  // Detect OS
+  let os = 'Unknown';
+  if (ua.includes('windows')) os = 'Windows';
+  else if (ua.includes('mac')) os = 'macOS';
+  else if (ua.includes('linux')) os = 'Linux';
+  else if (ua.includes('android')) os = 'Android';
+  else if (ua.includes('iphone') || ua.includes('ipad')) os = 'iOS';
+
+  // Detect Browser
+  let browser = 'Unknown';
+  if (ua.includes('firefox')) browser = 'Firefox';
+  else if (ua.includes('edg')) browser = 'Edge';
+  else if (ua.includes('chrome')) browser = 'Chrome';
+  else if (ua.includes('safari') && !ua.includes('chrome')) browser = 'Safari';
+
+  return `${browser} on ${os}`;
+}
+
+/**
+ * List of push notification subscriptions
+ */
+function PushSubscriptionsList({
+  isLoading,
+  subscriptions,
+  onDeleteClick,
+}: Readonly<{
+  isLoading: boolean;
+  subscriptions: PushSubscriptionInfo[];
+  onDeleteClick: (id: string) => void;
+}>) {
+  const { t } = useTranslation();
+
+  if (isLoading) {
+    return <div className="py-4 text-center text-slate-400">{t('account.loading')}</div>;
+  }
+
+  if (subscriptions.length === 0) {
+    return (
+      <EmptyState
+        icon={Bell}
+        title={t('account.pushNotifications.devices.emptyState.title')}
+        description={t('account.pushNotifications.devices.emptyState.description')}
+      />
+    );
+  }
+
+  return (
+    <div className="space-y-2">
+      {subscriptions.map((subscription) => {
+        const deviceName = subscription.userAgent
+          ? parseUserAgent(subscription.userAgent)
+          : t('account.pushNotifications.devices.unknownDevice');
+        return (
+          <div
+            key={subscription.id}
+            className="flex flex-col gap-3 rounded-xl border border-white/10 bg-slate-800/40 p-4 sm:flex-row sm:items-center sm:justify-between"
+          >
+            <div className="flex min-w-0 flex-1 items-center gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-slate-700/50">
+                <Laptop className="h-5 w-5 text-slate-300" />
+              </div>
+              <div className="min-w-0 flex-1 overflow-hidden">
+                <div className="truncate font-medium text-white">{deviceName}</div>
+                <div className="mt-1 text-slate-400 text-sm">
+                  {t('account.pushNotifications.devices.registered')}{' '}
+                  {new Date(subscription.createdAt).toLocaleDateString()}
+                </div>
+                {subscription.userAgent && (
+                  <div className="mt-1 truncate text-slate-500 text-xs">
+                    {subscription.userAgent}
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className="flex shrink-0 items-center gap-2 sm:ml-2">
+              <Button
+                onClick={() => {
+                  onDeleteClick(subscription.id);
+                }}
+                variant="destructive"
+                size="sm"
+                className="w-full sm:w-auto"
+              >
+                {t('account.pushNotifications.devices.delete')}
+              </Button>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 export function PushNotificationManager() {
   const { t } = useTranslation();
   const [isTestingNotification, setIsTestingNotification] = useState(false);
@@ -86,25 +185,6 @@ export function PushNotificationManager() {
     }
   };
 
-  const parseUserAgent = (userAgent: string): string => {
-    if (userAgent.includes('Chrome')) {
-      return userAgent.includes('Mobile') ? 'Chrome Mobile' : 'Chrome';
-    }
-    if (userAgent.includes('Firefox')) {
-      return userAgent.includes('Mobile') ? 'Firefox Mobile' : 'Firefox';
-    }
-    if (userAgent.includes('Safari') && !userAgent.includes('Chrome')) {
-      return userAgent.includes('Mobile') ? 'Safari Mobile' : 'Safari';
-    }
-    if (userAgent.includes('Edge')) {
-      return 'Edge';
-    }
-    if (userAgent.includes('Opera')) {
-      return 'Opera';
-    }
-    return t('account.pushNotifications.devices.unknownDevice');
-  };
-
   return (
     <>
       <Card>
@@ -118,9 +198,7 @@ export function PushNotificationManager() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {!isPushSupported ? (
-              <Alert tone="warning">{t('account.pushNotifications.notSupported')}</Alert>
-            ) : (
+            {isPushSupported ? (
               <>
                 <div className="space-y-3">
                   <div className="flex flex-col gap-3 rounded-xl border border-white/10 bg-slate-800/40 p-4 sm:flex-row sm:items-center sm:justify-between">
@@ -268,65 +346,11 @@ export function PushNotificationManager() {
                         </div>
                       </div>
 
-                      {isLoadingSubscriptions ? (
-                        <div className="py-4 text-center text-slate-400">
-                          {t('account.loading')}
-                        </div>
-                      ) : pushSubscriptions.length === 0 ? (
-                        <EmptyState
-                          icon={Bell}
-                          title={t('account.pushNotifications.devices.emptyState.title')}
-                          description={t(
-                            'account.pushNotifications.devices.emptyState.description'
-                          )}
-                        />
-                      ) : (
-                        <div className="space-y-2">
-                          {pushSubscriptions.map((subscription) => {
-                            const deviceName = subscription.userAgent
-                              ? parseUserAgent(subscription.userAgent)
-                              : t('account.pushNotifications.devices.unknownDevice');
-                            return (
-                              <div
-                                key={subscription.id}
-                                className="flex flex-col gap-3 rounded-xl border border-white/10 bg-slate-800/40 p-4 sm:flex-row sm:items-center sm:justify-between"
-                              >
-                                <div className="flex min-w-0 flex-1 items-center gap-3">
-                                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-slate-700/50">
-                                    <Laptop className="h-5 w-5 text-slate-300" />
-                                  </div>
-                                  <div className="min-w-0 flex-1 overflow-hidden">
-                                    <div className="truncate font-medium text-white">
-                                      {deviceName}
-                                    </div>
-                                    <div className="mt-1 text-slate-400 text-sm">
-                                      {t('account.pushNotifications.devices.registered')}{' '}
-                                      {new Date(subscription.createdAt).toLocaleDateString()}
-                                    </div>
-                                    {subscription.userAgent && (
-                                      <div className="mt-1 truncate text-slate-500 text-xs">
-                                        {subscription.userAgent}
-                                      </div>
-                                    )}
-                                  </div>
-                                </div>
-                                <div className="flex shrink-0 items-center gap-2 sm:ml-2">
-                                  <Button
-                                    onClick={() => {
-                                      setShowDeleteSubscriptionDialog(subscription.id);
-                                    }}
-                                    variant="destructive"
-                                    size="sm"
-                                    className="w-full sm:w-auto"
-                                  >
-                                    {t('account.pushNotifications.devices.delete')}
-                                  </Button>
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      )}
+                      <PushSubscriptionsList
+                        isLoading={isLoadingSubscriptions}
+                        subscriptions={pushSubscriptions}
+                        onDeleteClick={setShowDeleteSubscriptionDialog}
+                      />
                     </div>
                   )}
                 </div>
@@ -339,6 +363,8 @@ export function PushNotificationManager() {
                   {t('account.pushNotifications.about.description')}
                 </Alert>
               </>
+            ) : (
+              <Alert tone="warning">{t('account.pushNotifications.notSupported')}</Alert>
             )}
           </div>
         </CardContent>

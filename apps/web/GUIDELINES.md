@@ -973,6 +973,71 @@ function OrderList() {
 
 ## Performance
 
+### React Compiler (No Manual Memoization Needed)
+
+**🎉 React Compiler is enabled** - Manual memoization with `useMemo`, `useCallback`, and `React.memo` is **no longer necessary**.
+
+**❌ DON'T** use manual memoization:
+
+```typescript
+// Bad - React Compiler handles this automatically
+const expensiveValue = useMemo(() => calculateValue(data), [data]);
+const handleClick = useCallback(() => doSomething(), [dependency]);
+const MemoizedComponent = memo(MyComponent);
+```
+
+**✅ DO** write simple, straightforward code:
+
+```typescript
+// Good - React Compiler optimizes automatically
+const expensiveValue = calculateValue(data);
+const handleClick = () => doSomething();
+function MyComponent({ data }: Props) { /* ... */ }
+```
+
+**Why?**
+- ✅ React Compiler automatically memoizes components and values
+- ✅ Cleaner, more readable code without manual optimization
+- ✅ Better performance than manual memoization in most cases
+- ✅ No need to manage dependency arrays
+
+**When to keep manual memoization:**
+- Only for semantic guarantees (e.g., `useCallback` for third-party libraries that require stable references)
+- If you have a specific, measured performance issue that manual memoization solves
+
+### useEffectEvent for Effect Callbacks
+
+**✅ DO** use `useEffectEvent` (React 19.2+) for functions called inside effects that should always see latest values:
+
+```typescript
+// Good - useEffectEvent creates stable function that always sees latest props/state
+const fetchData = useEffectEvent(async (cursor?: string) => {
+  const data = await api.getData({ cursor, archived: isArchiveTab });
+  setData(data);
+});
+
+useEffect(() => {
+  void fetchData();
+}, [isArchiveTab]); // Only re-run when isArchiveTab changes
+```
+
+**❌ DON'T** use eslint-disable for effect dependencies:
+
+```typescript
+// Bad - Disabling linter hides potential bugs
+useEffect(() => {
+  void fetchData();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [someValue]);
+```
+
+**Why useEffectEvent?**
+- ✅ Functions created with `useEffectEvent` always see the latest props and state
+- ✅ They don't need to be included in effect dependency arrays
+- ✅ No stale closure issues
+- ✅ Cleaner code without eslint-disable comments
+- ✅ Properly communicates intent: "this is an event handler for the effect"
+
 ### Lazy Loading
 
 **✅ DO** lazy load routes:

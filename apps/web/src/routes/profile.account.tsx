@@ -22,7 +22,7 @@ import {
   toast,
 } from '@tacocrew/ui-kit';
 import { Edit, Globe, Key, Laptop, Lock, Mail, Phone, User } from 'lucide-react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { LoaderFunctionArgs } from 'react-router';
 import { LanguageSwitcher } from '@/components/language-switcher';
@@ -50,25 +50,22 @@ function useEditableField<T extends string | null | undefined>(
     setValue(currentValue ?? defaultValue);
   }, [currentValue, defaultValue]);
 
-  const handleSave = useCallback(
-    async (transformedValue?: T) => {
-      setIsSaving(true);
-      try {
-        await onUpdate(transformedValue ?? (value as T));
-        setIsEditing(false);
-      } finally {
-        setIsSaving(false);
-      }
-    },
-    [onUpdate, value]
-  );
+  const handleSave = async (transformedValue?: T) => {
+    setIsSaving(true);
+    try {
+      await onUpdate(transformedValue ?? (value as T));
+      setIsEditing(false);
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
-  const handleCancel = useCallback(() => {
+  const handleCancel = () => {
     setValue(currentValue ?? defaultValue);
     setIsEditing(false);
-  }, [currentValue, defaultValue]);
+  };
 
-  const startEditing = useCallback(() => setIsEditing(true), []);
+  const startEditing = () => setIsEditing(true);
 
   return {
     isEditing,

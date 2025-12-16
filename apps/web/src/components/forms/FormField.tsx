@@ -13,13 +13,17 @@ interface FormFieldProps<T extends FieldValues> {
   readonly control: Control<T>;
   readonly label?: string;
   readonly required?: boolean;
-  readonly children: (field: ControllerRenderProps<T, FieldPath<T>>) => ReactNode;
+  readonly children: (
+    field: ControllerRenderProps<T, FieldPath<T>>,
+    fieldState: { invalid: boolean; error?: { message?: string } }
+  ) => ReactNode;
   readonly disabled?: boolean;
 }
 
 /**
  * Reusable form field component that wraps react-hook-form's Controller
  * Reduces boilerplate by handling Field, Label, and Error rendering
+ * Error messages are automatically translated via the error map in useZodForm
  *
  * @example
  * ```tsx
@@ -29,7 +33,14 @@ interface FormFieldProps<T extends FieldValues> {
  *   label="Email address"
  *   required
  * >
- *   {(field) => <Input {...field} type="email" placeholder="you@example.com" />}
+ *   {(field, fieldState) => (
+ *     <Input
+ *       {...field}
+ *       type="email"
+ *       placeholder="you@example.com"
+ *       aria-invalid={fieldState.invalid}
+ *     />
+ *   )}
  * </FormField>
  * ```
  */
@@ -52,7 +63,7 @@ export function FormField<T extends FieldValues>({
               {label}
             </FieldLabel>
           )}
-          {children(field)}
+          {children(field, { invalid: fieldState.invalid, error: fieldState.error })}
           {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
         </Field>
       )}

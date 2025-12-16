@@ -51,7 +51,7 @@ export const Showcase: Story = {
         <div className="flex flex-wrap gap-4">
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon-xs">
+              <Button variant="ghost" size="sm">
                 <Info size={16} />
               </Button>
             </TooltipTrigger>

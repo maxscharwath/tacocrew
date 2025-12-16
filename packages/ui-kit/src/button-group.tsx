@@ -6,7 +6,7 @@ import { Separator } from './separator';
 import { cn } from './utils';
 
 const buttonGroupVariants = cva(
-  "flex w-fit items-stretch [&>*]:focus-visible:z-10 [&>*]:focus-visible:relative [&>[data-slot=select-trigger]:not([class*='w-'])]:w-fit [&>input]:flex-1 has-[select[aria-hidden=true]:last-child]:[&>[data-slot=select-trigger]:last-of-type]:rounded-r-md has-[>[data-slot=button-group]]:gap-2",
+  "flex w-fit items-stretch [&>*]:focus-visible:z-10 [&>*]:focus-visible:relative [&>[data-slot=select-trigger]:not([class*='w-'])]:w-fit [&>input]:flex-1 has-[select[aria-hidden=true]:last-child]:[&>[data-slot=select-trigger]:last-of-type]:rounded-r-md has-[>[data-slot=button-group]]:gap-2 [&>input]:focus-visible:ring-0 [&>input]:focus-visible:ring-offset-0 [&>input]:aria-invalid:ring-0 [&>input]:aria-invalid:ring-offset-0 [&>input]:aria-invalid:bg-transparent [&>button]:focus-visible:ring-0 [&>button]:focus-visible:ring-offset-0 has-[input:focus-visible]:[&>button]:border-brand-400 has-[input[aria-invalid=true]]:bg-rose-500/10 has-[input[aria-invalid=true]]:rounded-xl has-[input[aria-invalid=true]]:[&>button]:border-rose-400/50 has-[input[aria-invalid=true]]:focus-within:ring-[3px] has-[input[aria-invalid=true]]:focus-within:ring-rose-400/40 has-[input[aria-invalid=true]]:focus-within:ring-offset-2 has-[input[aria-invalid=true]]:focus-within:ring-offset-slate-950",
   {
     variants: {
       orientation: {

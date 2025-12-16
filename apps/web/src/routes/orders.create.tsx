@@ -340,12 +340,7 @@ export function OrderCreateRoute() {
             disabled={isSubmitting}
           />
 
-          <TacoSizeSelector
-            sizes={stock.tacos}
-            selected={size}
-            onSelect={setSize}
-            currency={currency}
-          />
+          <TacoSizeSelector sizes={stock.tacos} selected={size} onSelect={setSize} />
 
           {size && (
             <TacoBuilder

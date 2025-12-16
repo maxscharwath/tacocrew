@@ -81,9 +81,9 @@ export function OrganizationJoinRoute() {
   return (
     <div className="relative min-h-screen bg-slate-950 text-slate-100">
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="-top-24 absolute right-1/2 h-72 w-72 animate-pulse rounded-full bg-brand-500/20 blur-3xl" />
+        <div className="absolute -top-24 right-1/2 h-72 w-72 animate-pulse rounded-full bg-brand-500/20 blur-3xl" />
         <div className="absolute bottom-0 left-1/2 h-72 w-72 rounded-full bg-purple-500/20 blur-3xl" />
-        <div className="-translate-x-1/2 -translate-y-1/2 absolute top-1/2 left-1/2 h-96 w-96 rounded-full bg-sky-500/10 blur-3xl" />
+        <div className="absolute top-1/2 left-1/2 h-96 w-96 -translate-x-1/2 -translate-y-1/2 rounded-full bg-sky-500/10 blur-3xl" />
       </div>
       <div className="relative flex min-h-screen items-center justify-center p-3 sm:p-6">
         <Card className="w-full max-w-lg border-brand-400/60 bg-linear-to-br from-brand-500/20 via-slate-900/80 to-slate-950/90 shadow-[0_8px_24px_rgba(99,102,241,0.35)] transition-all duration-300 hover:border-brand-400/80 hover:shadow-2xl hover:shadow-brand-500/40">
@@ -144,7 +144,7 @@ export function OrganizationJoinRoute() {
                   variant="default"
                   size="lg"
                 >
-                  <div className="-translate-x-full absolute inset-0 bg-linear-to-r from-transparent via-white/10 to-transparent transition-transform group-hover:translate-x-full" />
+                  <div className="absolute inset-0 -translate-x-full bg-linear-to-r from-transparent via-white/10 to-transparent transition-transform group-hover:translate-x-full" />
                   {busy ? (
                     <>
                       <Loader2 size={20} className="animate-spin" />

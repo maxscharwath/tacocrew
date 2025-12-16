@@ -17,7 +17,14 @@ import {
   Wallet,
   XCircle,
 } from 'lucide-react';
-import { type MouseEvent, useCallback, useEffect, useRef, useState } from 'react';
+import {
+  type MouseEvent,
+  type RefObject,
+  useEffect,
+  useEffectEvent,
+  useRef,
+  useState,
+} from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 import { useRelativeTime } from '@/hooks';
@@ -170,6 +177,78 @@ function CountBadge({ count, variant }: Readonly<{ count: number; variant: 'unre
   );
 }
 
+function NotificationListContent({
+  isLoading,
+  notifications,
+  isArchiveTab,
+  hasMore,
+  isLoadingMore,
+  loadMoreRef,
+  onArchive,
+  onClick,
+  formatRelativeTime,
+}: Readonly<{
+  isLoading: boolean;
+  notifications: Notification[];
+  isArchiveTab: boolean;
+  hasMore: boolean;
+  isLoadingMore: boolean;
+  loadMoreRef: RefObject<HTMLDivElement | null>;
+  onArchive: (id: string) => void;
+  onClick: (notification: Notification) => void;
+  formatRelativeTime: (date: string) => string;
+}>) {
+  const { t } = useTranslation();
+
+  if (isLoading) {
+    return (
+      <div className="divide-y divide-white/5">
+        <NotificationSkeleton />
+        <NotificationSkeleton />
+        <NotificationSkeleton />
+      </div>
+    );
+  }
+
+  if (notifications.length === 0) {
+    const emptyIcon = isArchiveTab ? Archive : Sparkles;
+    const emptyTitle = isArchiveTab ? 'notifications.emptyArchive' : 'notifications.empty';
+    const emptyDescription = isArchiveTab
+      ? 'notifications.emptyArchiveHint'
+      : 'notifications.emptyHint';
+
+    return (
+      <EmptyState
+        icon={emptyIcon}
+        title={t(emptyTitle)}
+        description={t(emptyDescription)}
+        className="border-0 bg-transparent"
+      />
+    );
+  }
+
+  return (
+    <div className="divide-y divide-white/5">
+      {notifications.map((n) => (
+        <NotificationItem
+          key={n.id}
+          notification={n}
+          onArchive={onArchive}
+          onClick={onClick}
+          canArchive={!isArchiveTab}
+          formatRelativeTime={formatRelativeTime}
+          archiveLabel={t('notifications.archive')}
+        />
+      ))}
+      {hasMore && (
+        <div ref={loadMoreRef} className="flex items-center justify-center py-4">
+          {isLoadingMore && <Loader2 size={16} className="animate-spin text-slate-400" />}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function NotificationDropdown({ onClose, onMarkAsRead }: NotificationDropdownProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -188,28 +267,25 @@ export function NotificationDropdown({ onClose, onMarkAsRead }: NotificationDrop
 
   const isArchiveTab = activeTab === 'archive';
 
-  // Fetch notifications for current tab
-  const fetchNotifications = useCallback(
-    async (cursor?: string) => {
-      cursor ? setIsLoadingMore(true) : setIsLoading(true);
+  // Fetch notifications for current tab - always sees latest isArchiveTab value
+  const fetchNotifications = useEffectEvent(async (cursor?: string) => {
+    cursor ? setIsLoadingMore(true) : setIsLoading(true);
 
-      try {
-        const data = await getNotifications({ limit: 15, cursor, archived: isArchiveTab });
-        setNotifications((prev) => (cursor ? [...prev, ...data.items] : data.items));
-        setNextCursor(data.nextCursor);
-        setHasMore(data.hasMore);
-      } catch {
-        // Silently fail
-      } finally {
-        setIsLoading(false);
-        setIsLoadingMore(false);
-      }
-    },
-    [isArchiveTab]
-  );
+    try {
+      const data = await getNotifications({ limit: 15, cursor, archived: isArchiveTab });
+      setNotifications((prev) => (cursor ? [...prev, ...data.items] : data.items));
+      setNextCursor(data.nextCursor);
+      setHasMore(data.hasMore);
+    } catch {
+      // Silently fail
+    } finally {
+      setIsLoading(false);
+      setIsLoadingMore(false);
+    }
+  });
 
-  // Fetch counts (unread + archived) - only once on mount
-  const fetchCounts = useCallback(async () => {
+  // Fetch counts (unread + archived) - regular function since called from event handlers
+  const fetchCounts = async () => {
     try {
       const [unread, archived] = await Promise.all([
         getUnreadCount(),
@@ -220,18 +296,19 @@ export function NotificationDropdown({ onClose, onMarkAsRead }: NotificationDrop
     } catch {
       // Silently fail
     }
-  }, []);
+  };
 
-  // Initial load: fetch notifications + counts
+  // Initial load: fetch notifications when tab changes
   useEffect(() => {
     setNotifications([]);
     setNextCursor(null);
-    fetchNotifications();
-  }, [fetchNotifications]);
+    void fetchNotifications();
+  }, [isArchiveTab]);
 
+  // Fetch counts once on mount
   useEffect(() => {
-    fetchCounts();
-  }, [fetchCounts]);
+    void fetchCounts();
+  }, []);
 
   // Infinite scroll observer
   useEffect(() => {
@@ -240,14 +317,14 @@ export function NotificationDropdown({ onClose, onMarkAsRead }: NotificationDrop
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry?.isIntersecting && nextCursor) fetchNotifications(nextCursor);
+        if (entry?.isIntersecting && nextCursor) void fetchNotifications(nextCursor);
       },
       { threshold: 0.1 }
     );
 
     observer.observe(el);
     return () => observer.disconnect();
-  }, [hasMore, nextCursor, isLoadingMore, fetchNotifications]);
+  }, [hasMore, nextCursor, isLoadingMore]);
 
   const refreshAfterAction = () => {
     onMarkAsRead();
@@ -322,11 +399,7 @@ export function NotificationDropdown({ onClose, onMarkAsRead }: NotificationDrop
   return (
     <>
       <div className="shrink-0 border-white/10 border-b px-3 py-3">
-        <SegmentedControl
-          value={activeTab}
-          onValueChange={(value) => setActiveTab(value as TabValue)}
-          className="w-full"
-        >
+        <SegmentedControl value={activeTab} onValueChange={setActiveTab} className="w-full">
           <SegmentedControlItem value="inbox">
             <span className="flex items-center gap-2">
               <Inbox size={14} className="shrink-0" />
@@ -345,41 +418,17 @@ export function NotificationDropdown({ onClose, onMarkAsRead }: NotificationDrop
       </div>
 
       <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain sm:max-h-[50vh] sm:min-h-[200px]">
-        {isLoading ? (
-          <div className="divide-y divide-white/5">
-            <NotificationSkeleton />
-            <NotificationSkeleton />
-            <NotificationSkeleton />
-          </div>
-        ) : notifications.length === 0 ? (
-          <EmptyState
-            icon={isArchiveTab ? Archive : Sparkles}
-            title={t(isArchiveTab ? 'notifications.emptyArchive' : 'notifications.empty')}
-            description={t(
-              isArchiveTab ? 'notifications.emptyArchiveHint' : 'notifications.emptyHint'
-            )}
-            className="border-0 bg-transparent"
-          />
-        ) : (
-          <div className="divide-y divide-white/5">
-            {notifications.map((n) => (
-              <NotificationItem
-                key={n.id}
-                notification={n}
-                onArchive={handleArchive}
-                onClick={handleClick}
-                canArchive={!isArchiveTab}
-                formatRelativeTime={formatRelativeTime}
-                archiveLabel={t('notifications.archive')}
-              />
-            ))}
-            {hasMore && (
-              <div ref={loadMoreRef} className="flex items-center justify-center py-4">
-                {isLoadingMore && <Loader2 size={16} className="animate-spin text-slate-400" />}
-              </div>
-            )}
-          </div>
-        )}
+        <NotificationListContent
+          isLoading={isLoading}
+          notifications={notifications}
+          isArchiveTab={isArchiveTab}
+          hasMore={hasMore}
+          isLoadingMore={isLoadingMore}
+          loadMoreRef={loadMoreRef}
+          onArchive={handleArchive}
+          onClick={handleClick}
+          formatRelativeTime={formatRelativeTime}
+        />
       </div>
 
       {!isArchiveTab && notifications.length > 0 && (

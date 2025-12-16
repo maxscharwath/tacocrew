@@ -4,9 +4,7 @@
  * Supports both static and dynamically generated keys
  */
 
-import { describe, expect, test as it } from 'bun:test';
-import { readdirSync } from 'node:fs';
-import { join, resolve } from 'node:path';
+import { describe, test } from 'bun:test';
 
 interface TranslationUsage {
   key: string;
@@ -112,7 +110,7 @@ async function extractDynamicKeyPatterns(files: string[]): Promise<DynamicKeyPat
   );
 
   const patterns: DynamicKeyPattern[] = [];
-  for (const [prefix, usages] of patternMap.entries()) {
+  for (const [prefix, usages] of Array.from(patternMap.entries())) {
     patterns.push({ prefix, usedIn: usages });
   }
 
@@ -179,15 +177,13 @@ function getKeysUnderPrefix(obj: unknown, prefix: string): string[] {
 
 async function loadLocaleFiles(localeDir: string): Promise<Record<string, unknown>> {
   const locales: Record<string, unknown> = {};
-  const localeFiles = readdirSync(localeDir).filter((f) => f.endsWith('.json'));
+  const glob = new Bun.Glob('*.json');
 
-  await Promise.all(
-    localeFiles.map(async (file) => {
-      const lang = file.replace('.json', '');
-      const fileContent = Bun.file(join(localeDir, file));
-      locales[lang] = await fileContent.json();
-    })
-  );
+  for await (const file of glob.scan(localeDir)) {
+    const lang = file.replace('.json', '');
+    const fileContent = Bun.file(`${localeDir}/${file}`);
+    locales[lang] = await fileContent.json();
+  }
 
   return locales;
 }
@@ -199,7 +195,7 @@ function checkMissingStaticKeys(
   const pluralSuffixes = ['_zero', '_one', '_two', '_few', '_many', '_other'];
   const missingKeys: Array<{ key: string; missingIn: string[]; usedIn: string }> = [];
 
-  for (const [key, usageList] of keyUsages.entries()) {
+  for (const [key, usageList] of Array.from(keyUsages.entries())) {
     const hasPluralVariants = pluralSuffixes.some((suffix) => keyUsages.has(`${key}${suffix}`));
     if (hasPluralVariants) continue;
 
@@ -250,7 +246,7 @@ function validateDynamicKeyPatterns(
     }
 
     if (allMissing.length > 0) {
-      const uniqueMissing = [...new Set(allMissing)];
+      const uniqueMissing = Array.from(new Set(allMissing));
       dynamicKeyIssues.push({ prefix, missingKeys: uniqueMissing });
     }
   }
@@ -292,22 +288,19 @@ function buildErrorMessages(
 }
 
 describe('Frontend Translation Keys', () => {
-  it('should have all translation keys present in all locale files', async () => {
+  test('should have all translation keys present in all locale files', async () => {
     // Determine paths based on whether we're running from project root or apps/web
-    const isInWebDir = process.cwd().endsWith('apps/web');
-    const webSrc = isInWebDir
-      ? resolve(process.cwd(), 'src')
-      : resolve(process.cwd(), 'apps/web/src');
-    const localeDir = isInWebDir
-      ? resolve(process.cwd(), 'src/locales')
-      : resolve(process.cwd(), 'apps/web/src/locales');
+    const cwd = process.cwd();
+    const isInWebDir = cwd.endsWith('apps/web');
+    const webSrc = isInWebDir ? `${cwd}/src` : `${cwd}/apps/web/src`;
+    const localeDir = isInWebDir ? `${cwd}/src/locales` : `${cwd}/apps/web/src/locales`;
 
     // Find all TypeScript/TSX files using Bun's glob
-    const globPattern = join(webSrc, '**/*.{ts,tsx}');
+    const globPattern = `${webSrc}/**/*.{ts,tsx}`;
     const codeFiles: string[] = [];
     const glob = new Bun.Glob(globPattern);
     for await (const file of glob.scan('.')) {
-      const fullPath = resolve(process.cwd(), file);
+      const fullPath = `${cwd}/${file}`;
       if (
         !fullPath.includes('.test.') &&
         !fullPath.includes('__tests__') &&
@@ -342,10 +335,7 @@ describe('Frontend Translation Keys', () => {
     const errors = buildErrorMessages(missingKeys, dynamicKeyIssues);
 
     if (errors.length > 0) {
-      expect(errors).toHaveLength(
-        0,
-        errors.join('\n\n') + '\n\nRun "bun check:translations" for more details.'
-      );
+      throw new Error(errors.join('\n\n') + '\n\nRun "bun check:translations" for more details.');
     }
   });
 });

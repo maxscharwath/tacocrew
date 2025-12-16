@@ -342,8 +342,8 @@ export function ReleasesRoute() {
 
       {/* Hero */}
       <section className="relative overflow-hidden rounded-3xl border border-white/10 bg-linear-to-br from-purple-500/15 via-slate-900/90 to-brand-900/30 p-8 shadow-[0_40px_120px_rgba(8,47,73,0.35)] backdrop-blur-sm">
-        <div className="-top-24 absolute right-0 h-60 w-60 animate-pulse rounded-full bg-purple-400/20 blur-3xl" />
-        <div className="-bottom-16 absolute left-10 h-56 w-56 rounded-full bg-brand-500/20 blur-3xl" />
+        <div className="absolute -top-24 right-0 h-60 w-60 animate-pulse rounded-full bg-purple-400/20 blur-3xl" />
+        <div className="absolute -bottom-16 left-10 h-56 w-56 rounded-full bg-brand-500/20 blur-3xl" />
 
         <div className="relative">
           <Badge tone="brand" pill className="mb-4 uppercase tracking-[0.3em]">

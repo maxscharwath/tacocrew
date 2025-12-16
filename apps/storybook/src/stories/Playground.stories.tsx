@@ -37,7 +37,12 @@ import {
   Modal,
   PhoneInput,
   SegmentedControl,
+  SegmentedControlItem,
   Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
   Separator,
   Skeleton,
   StatusBadge,
@@ -213,15 +218,19 @@ function PlaygroundContent() {
                   <Label>Status</Label>
                   <Select
                     value={status}
-                    onChange={(e) => setStatus(e.target.value as typeof status)}
-                    className="flex-1"
+                    onValueChange={(value) => setStatus(value as typeof status)}
                   >
-                    <option value="draft">Draft</option>
-                    <option value="pending">Pending</option>
-                    <option value="active">Active</option>
-                    <option value="submitted">Submitted</option>
-                    <option value="completed">Completed</option>
-                    <option value="closed">Closed</option>
+                    <SelectTrigger className="flex-1">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="draft">Draft</SelectItem>
+                      <SelectItem value="pending">Pending</SelectItem>
+                      <SelectItem value="active">Active</SelectItem>
+                      <SelectItem value="submitted">Submitted</SelectItem>
+                      <SelectItem value="completed">Completed</SelectItem>
+                      <SelectItem value="closed">Closed</SelectItem>
+                    </SelectContent>
                   </Select>
                 </div>
                 <Separator />
@@ -229,12 +238,11 @@ function PlaygroundContent() {
                   <Label>View Mode</Label>
                   <SegmentedControl
                     value={viewMode}
-                    onValueChange={(value) => setViewMode(value as typeof viewMode)}
-                    options={[
-                      { value: 'list', label: 'List' },
-                      { value: 'grid', label: 'Grid' },
-                    ]}
-                  />
+                    onValueChange={(value) => setViewMode(value as 'list' | 'grid')}
+                  >
+                    <SegmentedControlItem value="list">List</SegmentedControlItem>
+                    <SegmentedControlItem value="grid">Grid</SegmentedControlItem>
+                  </SegmentedControl>
                 </div>
                 <Divider />
                 <div className="flex flex-wrap gap-3">
@@ -272,7 +280,7 @@ function PlaygroundContent() {
                       </Badge>
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <Button variant="ghost" size="icon-xs">
+                          <Button variant="ghost" size="sm">
                             <MoreVertical size={14} />
                           </Button>
                         </TooltipTrigger>
@@ -321,9 +329,14 @@ function PlaygroundContent() {
 
                 <div className="space-y-2">
                   <Label htmlFor="delivery-type">Delivery Type</Label>
-                  <Select id="delivery-type" defaultValue="pickup">
-                    <option value="pickup">Pickup at Lausanne HQ</option>
-                    <option value="delivery">Deliver to Avenue d'Echallens 82</option>
+                  <Select defaultValue="pickup">
+                    <SelectTrigger id="delivery-type">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="pickup">Pickup at Lausanne HQ</SelectItem>
+                      <SelectItem value="delivery">Deliver to Avenue d'Echallens 82</SelectItem>
+                    </SelectContent>
                   </Select>
                 </div>
 

@@ -70,7 +70,7 @@ export function OrderCard({
   return (
     <Card
       className={cn(
-        'group hover:-translate-y-0.5 relative flex flex-col transition-all duration-300',
+        'group relative flex flex-col transition-all duration-300 hover:-translate-y-0.5',
         isMyOrder
           ? 'border-brand-400/60 bg-linear-to-br from-brand-500/20 via-slate-900/80 to-slate-950/90 shadow-[0_8px_24px_rgba(99,102,241,0.35)] hover:border-brand-400/80 hover:shadow-2xl hover:shadow-brand-500/40'
           : 'border-white/10 bg-linear-to-br from-slate-900/90 via-slate-900/70 to-slate-950/90 hover:border-brand-400/50 hover:shadow-2xl hover:shadow-brand-500/25'

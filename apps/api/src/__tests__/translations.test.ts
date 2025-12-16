@@ -3,9 +3,7 @@
  * Ensures all translation keys used in code exist in all locale files
  */
 
-import { describe, expect, test as it } from 'bun:test';
-import { readdirSync } from 'node:fs';
-import { join, resolve } from 'node:path';
+import { describe, test } from 'bun:test';
 
 interface TranslationUsage {
   key: string;
@@ -69,16 +67,17 @@ function keyExists(obj: unknown, key: string): boolean {
 }
 
 describe('Backend Translation Keys', () => {
-  it('should have all translation keys present in all locale files', async () => {
-    const apiSrc = resolve(process.cwd(), 'apps/api/src');
-    const localeDir = resolve(process.cwd(), 'apps/api/src/locales');
+  test('should have all translation keys present in all locale files', async () => {
+    const cwd = process.cwd();
+    const apiSrc = `${cwd}/apps/api/src`;
+    const localeDir = `${cwd}/apps/api/src/locales`;
 
     // Find all TypeScript files using Bun's glob
-    const globPattern = join(apiSrc, '**/*.ts');
+    const globPattern = `${apiSrc}/**/*.ts`;
     const codeFiles: string[] = [];
     const glob = new Bun.Glob(globPattern);
     for await (const file of glob.scan('.')) {
-      const fullPath = resolve(process.cwd(), file);
+      const fullPath = `${cwd}/${file}`;
       if (
         !fullPath.includes('.test.') &&
         !fullPath.includes('__tests__') &&
@@ -102,21 +101,19 @@ describe('Backend Translation Keys', () => {
 
     // Load all locale files
     const locales: Record<string, unknown> = {};
-    const localeFiles = readdirSync(localeDir).filter((f) => f.endsWith('.json'));
+    const localeGlob = new Bun.Glob('*.json');
 
-    await Promise.all(
-      localeFiles.map(async (file) => {
-        const lang = file.replace('.json', '');
-        const fileContent = Bun.file(join(localeDir, file));
-        const parsed = await fileContent.json();
-        // Backend uses 'translation' namespace
-        locales[lang] = parsed.translation || parsed;
-      })
-    );
+    for await (const file of localeGlob.scan(localeDir)) {
+      const lang = file.replace('.json', '');
+      const fileContent = Bun.file(`${localeDir}/${file}`);
+      const parsed = await fileContent.json();
+      // Backend uses 'translation' namespace
+      locales[lang] = parsed.translation || parsed;
+    }
 
     // Check for missing keys
     const missingKeys: Array<{ key: string; missingIn: string[]; usedIn: string }> = [];
-    for (const [key, usageList] of keyUsages.entries()) {
+    for (const [key, usageList] of Array.from(keyUsages.entries())) {
       const missingIn: string[] = [];
       for (const [lang, translations] of Object.entries(locales)) {
         if (!keyExists(translations, key)) {
@@ -141,7 +138,7 @@ describe('Backend Translation Keys', () => {
             `  - ${key} (missing in: ${missingIn.join(', ')}, used in: ${usedIn})`
         )
         .join('\n')}\n\nRun 'bun check:translations' for more details.`;
-      expect(missingKeys).toHaveLength(0, message);
+      throw new Error(message);
     }
   });
 });

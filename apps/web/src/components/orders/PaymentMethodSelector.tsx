@@ -68,7 +68,7 @@ export function PaymentMethodSelector({
                   <Icon size={24} className={isSelected ? 'text-brand-300' : 'text-slate-400'} />
                 </div>
                 {isSelected && (
-                  <div className="-top-1 -right-1 absolute grid h-6 w-6 place-items-center rounded-full border-2 border-slate-900 bg-brand-500">
+                  <div className="absolute -top-1 -right-1 grid h-6 w-6 place-items-center rounded-full border-2 border-slate-900 bg-brand-500">
                     <CheckCircle2 size={14} className="text-white" />
                   </div>
                 )}

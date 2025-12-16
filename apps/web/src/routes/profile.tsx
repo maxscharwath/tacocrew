@@ -41,8 +41,8 @@ export function ProfileRoute() {
     <div className="space-y-10">
       {/* Profile Hero - Spotify Inspired */}
       <section className="relative overflow-hidden rounded-3xl border border-white/10 bg-linear-to-br from-brand-500/15 via-slate-900/80 to-slate-950/90 p-8 shadow-[0_40px_120px_rgba(8,47,73,0.35)] backdrop-blur-sm lg:p-12">
-        <div className="-top-24 pointer-events-none absolute right-0 h-60 w-60 rounded-full bg-brand-400/20 blur-3xl" />
-        <div className="-bottom-16 pointer-events-none absolute left-10 h-56 w-56 rounded-full bg-purple-500/15 blur-3xl" />
+        <div className="pointer-events-none absolute -top-24 right-0 h-60 w-60 rounded-full bg-brand-400/20 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-16 left-10 h-56 w-56 rounded-full bg-purple-500/15 blur-3xl" />
 
         <div className="relative">
           <div className="grid gap-4 sm:gap-6 md:grid-cols-[minmax(180px,220px)_1fr] lg:grid-cols-[minmax(220px,260px)_1fr]">

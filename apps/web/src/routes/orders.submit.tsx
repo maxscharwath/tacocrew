@@ -193,8 +193,8 @@ export function OrderSubmitRoute() {
       />
 
       <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-linear-to-br from-amber-500/10 via-slate-900/80 to-slate-950/90 p-8">
-        <div className="-top-24 pointer-events-none absolute right-0 h-72 w-72 rounded-full bg-amber-400/20 blur-3xl" />
-        <div className="-bottom-16 pointer-events-none absolute left-12 h-60 w-60 rounded-full bg-rose-500/20 blur-3xl" />
+        <div className="pointer-events-none absolute -top-24 right-0 h-72 w-72 rounded-full bg-amber-400/20 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-16 left-12 h-60 w-60 rounded-full bg-rose-500/20 blur-3xl" />
         <div className="relative space-y-4">
           <div className="flex items-center gap-3">
             <div className="grid h-12 w-12 place-items-center rounded-xl bg-linear-to-br from-amber-400 via-amber-500 to-rose-500">

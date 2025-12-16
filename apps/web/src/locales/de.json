@@ -482,23 +482,63 @@
       "labels": {
         "shortId": "ID {{id}}"
       },
-      "randomNames": [
-        "{{day}} Mittagessen",
-        "Team Bestellung {{date}}",
-        "{{day}} Gruppenbestellung",
-        "Büro Tacos {{date}}",
-        "{{day}} Team Mittagessen",
-        "Gruppenbestellung {{date}}",
-        "{{day}} Taco Runde",
-        "Team Mittagessen {{date}}",
-        "{{day}} Büro Bestellung",
-        "Mittagessen Bestellung {{date}}",
-        "{{day}} Team Bestellung",
-        "Büro Bestellung {{date}}",
-        "{{day}} Gruppen Mittagessen",
-        "Team Tacos {{date}}",
-        "{{day}} Mittagessen Runde"
-      ],
+      "randomNames": {
+        "context": {
+          "morning": [
+            "{{day}} Morgen Tacos",
+            "Frühbestellung {{date}}",
+            "{{day}} Frühstücksrunde",
+            "Morgen Team Bestellung {{date}}",
+            "{{day}} Sonnenaufgang Tacos",
+            "Frühstücksclub {{date}}",
+            "{{day}} Morgen Rush",
+            "Frühe Bestellung {{date}}"
+          ],
+          "afternoon": [
+            "{{day}} Mittagessen",
+            "Team Mittagessen {{date}}",
+            "{{day}} Gruppen Mittagessen",
+            "Büro Tacos {{date}}",
+            "{{day}} Team Bestellung",
+            "Mittagessen Runde {{date}}",
+            "{{day}} Mittags Tacos",
+            "Nachmittags Bestellung {{date}}",
+            "{{day}} Büro Mittagessen",
+            "Team Tacos {{date}}"
+          ],
+          "evening": [
+            "{{day}} Abend Bestellung",
+            "Team Abendessen {{date}}",
+            "{{day}} Nach Feierabend Tacos",
+            "Abend Gruppenbestellung {{date}}",
+            "{{day}} Abendessen Runde",
+            "Team Abend {{date}}",
+            "{{day}} Nacht Tacos",
+            "Abend Rush {{date}}"
+          ],
+          "weekday": [
+            "{{day}} Büro Bestellung",
+            "Team Bestellung {{date}}",
+            "{{day}} Arbeits Mittagessen",
+            "Büro Tacos {{date}}",
+            "{{day}} Team Mittagessen",
+            "Gruppenbestellung {{date}}"
+          ],
+          "weekend": [
+            "{{day}} Wochenende Tacos",
+            "Wochenende Bestellung {{date}}",
+            "{{day}} Locker Bestellung",
+            "Wochenende Team {{date}}",
+            "{{day}} Entspannte Runde",
+            "Wochenende Gruppe {{date}}"
+          ]
+        }
+      },
+      "timeOfDay": {
+        "morning": "Morgen",
+        "afternoon": "Nachmittag",
+        "evening": "Abend"
+      },
       "unnamedDrop": "Unbenannte Bestellung"
     },
     "create": {

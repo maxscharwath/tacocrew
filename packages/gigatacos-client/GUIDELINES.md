@@ -429,79 +429,80 @@ export class OutOfStockError extends ClientError {
 
 ```typescript
 // client.ts
+class BackendClient {
+  async getMenu (): Promise<Menu> {
+    try {
+      const html = await this.http.get<string>('/menu');
+      return parseMenuPage(html);
+    } catch (error) {
+      if (error instanceof ParserError) {
+        // Log parser errors with context
+        console.error('Failed to parse menu:', error.message);
+        throw error;
+      }
 
-async getMenu(): Promise<Menu> {
-  try {
-    const html = await this.http.get<string>('/menu');
-    return parseMenuPage(html);
-  } catch (error) {
-    if (error instanceof ParserError) {
-      // Log parser errors with context
-      console.error('Failed to parse menu:', error.message);
+      if (axios.isAxiosError(error)) {
+        throw new NetworkError(
+          'Failed to fetch menu',
+          error.response?.status,
+          error
+        );
+      }
+
+      throw new ClientError(`Unexpected error: ${error}`);
+    }
+  }
+
+  async submitOrder (order: OrderSubmission): Promise<Order> {
+    // Pre-validation
+    this.validateOrderSubmission(order);
+
+    try {
+      const formData = this.buildOrderFormData(order);
+      const html = await this.http.post<string>('/orders', formData);
+      return parseOrderConfirmation(html);
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const status = error.response?.status;
+
+        // Handle specific HTTP errors
+        if (status === 401) {
+          throw new AuthenticationError('Session expired');
+        }
+
+        if (status === 400) {
+          throw new ValidationError('Invalid order data');
+        }
+
+        if (status === 409) {
+          // Parse which item is out of stock
+          const itemName = parseOutOfStockItem(error.response?.data);
+          throw new OutOfStockError('unknown', itemName);
+        }
+
+        throw new NetworkError('Failed to submit order', status, error);
+      }
+
       throw error;
     }
+  }
 
-    if (axios.isAxiosError(error)) {
-      throw new NetworkError(
-        'Failed to fetch menu',
-        error.response?.status,
-        error
-      );
+  private validateOrderSubmission (order: OrderSubmission): void {
+    if (!isTacoSize(order.size)) {
+      throw new ValidationError('Invalid taco size', 'size');
     }
 
-    throw new ClientError(`Unexpected error: ${error}`);
-  }
-}
-
-async submitOrder(order: OrderSubmission): Promise<Order> {
-  // Pre-validation
-  this.validateOrderSubmission(order);
-
-  try {
-    const formData = this.buildOrderFormData(order);
-    const html = await this.http.post<string>('/orders', formData);
-    return parseOrderConfirmation(html);
-  } catch (error) {
-    if (axios.isAxiosError(error)) {
-      const status = error.response?.status;
-
-      // Handle specific HTTP errors
-      if (status === 401) {
-        throw new AuthenticationError('Session expired');
-      }
-
-      if (status === 400) {
-        throw new ValidationError('Invalid order data');
-      }
-
-      if (status === 409) {
-        // Parse which item is out of stock
-        const itemName = parseOutOfStockItem(error.response?.data);
-        throw new OutOfStockError('unknown', itemName);
-      }
-
-      throw new NetworkError('Failed to submit order', status, error);
+    if (order.meats.length === 0) {
+      throw new ValidationError('At least one meat is required', 'meats');
     }
 
-    throw error;
-  }
-}
+    if (order.meats.length > 3) {
+      throw new ValidationError('Maximum 3 meats allowed', 'meats');
+    }
 
-private validateOrderSubmission(order: OrderSubmission): void {
-  if (!isTacoSize(order.size)) {
-    throw new ValidationError('Invalid taco size', 'size');
-  }
-
-  if (order.meats.length === 0) {
-    throw new ValidationError('At least one meat is required', 'meats');
-  }
-
-  if (order.meats.length > 3) {
-    throw new ValidationError('Maximum 3 meats allowed', 'meats');
-  }
-
-  if (order.sauces.length === 0) {
-    throw new ValidationError('At least one sauce is required', 'sauces');
+    if (order.sauces.length === 0) {
+      throw new ValidationError('At least one sauce is required', 'sauces');
+    }
   }
 }
 ```

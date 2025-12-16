@@ -62,7 +62,7 @@ export function TimeSlotSelector({
         </Label>
       </div>
       <div className="relative">
-        <div className="-translate-y-1/2 pointer-events-none absolute top-1/2 left-3 z-10">
+        <div className="pointer-events-none absolute top-1/2 left-3 z-10 -translate-y-1/2">
           <Clock size={18} className="text-slate-500" />
         </div>
         <input type="hidden" name="requestedFor" value={selected || ''} />

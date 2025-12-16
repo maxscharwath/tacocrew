@@ -101,7 +101,11 @@ function InputGroupButton({
       type={type}
       data-size={size}
       variant={variant}
-      className={cn(inputGroupButtonVariants({ size }), className)}
+      className={cn(
+        inputGroupButtonVariants({ size }),
+        'focus-visible:ring-0 focus-visible:ring-offset-0',
+        className
+      )}
       {...props}
     />
   );
@@ -127,7 +131,7 @@ function InputGroupInput({
     <Input
       data-slot="input-group-control"
       className={cn(
-        'flex-1 rounded-none border-0 bg-transparent px-4 py-3 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0',
+        'flex-1 rounded-none border-0 bg-transparent px-4 py-3 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 aria-invalid:ring-0 aria-invalid:ring-offset-0 aria-invalid:bg-transparent',
         className
       )}
       {...props}
@@ -143,7 +147,7 @@ function InputGroupTextarea({
     <Textarea
       data-slot="input-group-control"
       className={cn(
-        'flex-1 resize-none rounded-none border-0 bg-transparent px-4 py-3 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0',
+        'flex-1 resize-none rounded-none border-0 bg-transparent px-4 py-3 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 aria-invalid:ring-0 aria-invalid:ring-offset-0 aria-invalid:bg-transparent',
         className
       )}
       {...props}

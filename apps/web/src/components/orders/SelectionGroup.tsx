@@ -56,7 +56,7 @@ export function SelectionGroup({
               <span
                 className={cn(
                   'block truncate font-medium text-sm',
-                  !item.in_stock ? 'text-slate-500 line-through' : 'text-white'
+                  item.in_stock ? 'text-white' : 'text-slate-500 line-through'
                 )}
               >
                 {item.name}

@@ -38,7 +38,6 @@ export function OrderListItem({
               organizationId={order.organization.id}
               name={order.organization.name}
               size="md"
-              hasImage={!!order.organization.image}
             />
           </div>
         )}
@@ -55,7 +54,6 @@ export function OrderListItem({
                     organizationId={order.organization.id}
                     name={order.organization.name}
                     size="sm"
-                    hasImage={!!order.organization.image}
                   />
                 </div>
               )}

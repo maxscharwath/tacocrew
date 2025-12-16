@@ -93,13 +93,13 @@ export function PageHero({
       {/* Decorative glows */}
       <div
         className={cx(
-          '-top-24 pointer-events-none absolute right-0 h-72 w-72 rounded-full blur-3xl',
+          'pointer-events-none absolute -top-24 right-0 h-72 w-72 rounded-full blur-3xl',
           styles.glow1
         )}
       />
       <div
         className={cx(
-          '-bottom-16 pointer-events-none absolute left-12 h-60 w-60 rounded-full blur-3xl',
+          'pointer-events-none absolute -bottom-16 left-12 h-60 w-60 rounded-full blur-3xl',
           styles.glow2
         )}
       />
