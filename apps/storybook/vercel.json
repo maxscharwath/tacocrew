@@ -1,5 +1,5 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "buildCommand": "bun install && bun turbo build --filter=@tacocrew/storybook",
-  "outputDirectory": "apps/storybook/storybook-static"
+  "outputDirectory": "storybook-static"
 }
