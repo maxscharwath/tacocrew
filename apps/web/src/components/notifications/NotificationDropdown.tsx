@@ -273,9 +273,10 @@ export function NotificationDropdown({ onClose, onMarkAsRead }: NotificationDrop
 
     try {
       const data = await getNotifications({ limit: 15, cursor, archived: isArchiveTab });
-      setNotifications((prev) => (cursor ? [...prev, ...data.items] : data.items));
-      setNextCursor(data.nextCursor);
-      setHasMore(data.hasMore);
+      const items = data.items ?? [];
+      setNotifications((prev) => (cursor ? [...prev, ...items] : items));
+      setNextCursor(data.nextCursor ?? null);
+      setHasMore(data.hasMore ?? false);
     } catch {
       // Silently fail
     } finally {
@@ -284,15 +285,12 @@ export function NotificationDropdown({ onClose, onMarkAsRead }: NotificationDrop
     }
   });
 
-  // Fetch counts (unread + archived) - regular function since called from event handlers
+  // Fetch counts (unread) - regular function since called from event handlers
   const fetchCounts = async () => {
     try {
-      const [unread, archived] = await Promise.all([
-        getUnreadCount(),
-        getNotifications({ limit: 1, archived: true }),
-      ]);
+      const unread = await getUnreadCount();
       setUnreadCount(unread.count);
-      setArchivedCount(archived.total);
+      // Note: Cursor pagination doesn't provide total counts, so archived count is not available
     } catch {
       // Silently fail
     }
@@ -437,7 +435,7 @@ export function NotificationDropdown({ onClose, onMarkAsRead }: NotificationDrop
         />
       </div>
 
-      {!isArchiveTab && notifications.length > 0 && (
+      {!isArchiveTab && notifications && notifications.length > 0 && (
         <div className="shrink-0 border-white/10 border-t bg-slate-900/50 px-3 py-2">
           <Button
             variant="ghost"

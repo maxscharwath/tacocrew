@@ -25,8 +25,7 @@ export const organizationJoinLoader = createLoader(
     const organizationId = requireParam(params, 'id', 'Organization ID is required');
     const organization = await OrganizationApi.getOrganizationById(organizationId);
     return { organization };
-  },
-  { requireAuth: true }
+  }
 );
 
 export function OrganizationJoinRoute() {

@@ -13,8 +13,7 @@ export const profileDeliveryLoader = createLoader(
   async () => {
     const profiles = await UserApi.getDeliveryProfiles();
     return { profiles };
-  },
-  { requireAuth: true }
+  }
 );
 
 export function ProfileDeliveryRoute() {

@@ -12,8 +12,7 @@ export const profileOrganizationsIndexLoader = createLoader(
   async () => {
     const organizations = await OrganizationApi.getMyOrganizations();
     return { organizations };
-  },
-  { requireAuth: true }
+  }
 );
 
 export function ProfileOrganizationsIndexRoute() {

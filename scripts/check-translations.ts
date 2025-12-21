@@ -278,4 +278,4 @@ async function main() {
   }
 }
 
-main();
+await main();

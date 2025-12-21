@@ -69,8 +69,7 @@ export const orderSubmitLoader = createLoader(
       userOrders: groupOrderWithUsers.userOrders,
       deliveryProfiles,
     };
-  },
-  { requireAuth: true }
+  }
 );
 
 export const orderSubmitAction = createActionHandler({

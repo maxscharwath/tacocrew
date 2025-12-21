@@ -4,13 +4,9 @@
  */
 
 import { injectable } from 'tsyringe';
+import type { Notification } from '@/generated/client';
 import { Prisma } from '@/generated/client';
-import {
-  createPage,
-  cursorArgs,
-  normalizeLimit,
-  type Page,
-} from '@/infrastructure/database/pagination';
+import { Page, withPagination } from '@/infrastructure/database/pagination';
 import { PrismaService } from '@/infrastructure/database/prisma.service';
 import type { UserId } from '@/schemas/user.schema';
 import { inject } from '@/shared/utils/inject.utils';
@@ -25,26 +21,11 @@ export interface CreateNotificationData {
   data?: Record<string, unknown>;
 }
 
-export interface NotificationRecord {
-  id: string;
-  userId: string;
-  type: string;
-  title: string;
-  body: string;
-  url: string | null;
-  data: Record<string, unknown> | null;
-  read: boolean;
-  readAt: Date | null;
-  archived: boolean;
-  archivedAt: Date | null;
-  createdAt: Date;
-}
-
 @injectable()
 export class NotificationRepository {
   private readonly prisma = inject(PrismaService);
 
-  async create(data: CreateNotificationData): Promise<NotificationRecord> {
+  async create(data: CreateNotificationData): Promise<Notification> {
     try {
       const notification = await this.prisma.client.notification.create({
         data: {
@@ -57,7 +38,7 @@ export class NotificationRepository {
         },
       });
       logger.debug('Notification created', { userId: data.userId, type: data.type });
-      return this.mapToRecord(notification);
+      return notification;
     } catch (error) {
       logger.error('Failed to create notification', { userId: data.userId, error });
       throw error;
@@ -66,38 +47,32 @@ export class NotificationRepository {
 
   async findByUserId(
     userId: UserId,
-    options?: { limit?: number; cursor?: string; archived?: boolean }
-  ): Promise<Page<NotificationRecord>> {
+    options?: { limit?: number; cursor?: string; before?: string; archived?: boolean }
+  ): Promise<Page<Notification>> {
     try {
-      const where = { userId, archived: options?.archived ?? false };
-      const limit = normalizeLimit(options?.limit);
-
-      // Run count and findMany in parallel
-      const [total, items] = await Promise.all([
-        this.prisma.client.notification.count({ where }),
-        this.prisma.client.notification.findMany({
-          where,
+      // Fetch paginated results
+      return await withPagination(
+        this.prisma.client.notification,
+        {
+          where: {
+            userId,
+            archived: options?.archived ?? false,
+          },
           orderBy: { createdAt: 'desc' },
-          take: limit + 1, // Fetch one extra to check hasMore
-          ...cursorArgs(options?.cursor),
-        }),
-      ]);
-
-      const page = createPage(items.map(this.mapToRecord), total, limit);
-
-      return page;
+        },
+        options
+      );
     } catch (error) {
       logger.error('Failed to find notifications', { userId, error });
-      return { items: [], total: 0, nextCursor: null, hasMore: false };
+      return Page.empty<Notification>();
     }
   }
 
-  async findById(id: string): Promise<NotificationRecord | null> {
+  async findById(id: string): Promise<Notification | null> {
     try {
-      const notification = await this.prisma.client.notification.findUnique({
+      return await this.prisma.client.notification.findUnique({
         where: { id },
       });
-      return notification ? this.mapToRecord(notification) : null;
     } catch (error) {
       logger.error('Failed to find notification by id', { id, error });
       return null;
@@ -115,7 +90,7 @@ export class NotificationRepository {
     }
   }
 
-  async markAsRead(id: string, userId: UserId): Promise<NotificationRecord | null> {
+  async markAsRead(id: string, userId: UserId): Promise<Notification | null> {
     try {
       const notification = await this.prisma.client.notification.update({
         where: { id, userId }, // Ensure user owns the notification
@@ -125,7 +100,7 @@ export class NotificationRepository {
         },
       });
       logger.debug('Notification marked as read', { id, userId });
-      return this.mapToRecord(notification);
+      return notification;
     } catch (error) {
       logger.error('Failed to mark notification as read', { id, userId, error });
       return null;
@@ -149,7 +124,7 @@ export class NotificationRepository {
     }
   }
 
-  async archive(id: string, userId: UserId): Promise<NotificationRecord | null> {
+  async archive(id: string, userId: UserId): Promise<Notification | null> {
     try {
       const notification = await this.prisma.client.notification.update({
         where: { id, userId },
@@ -161,7 +136,7 @@ export class NotificationRepository {
         },
       });
       logger.debug('Notification archived', { id, userId });
-      return this.mapToRecord(notification);
+      return notification;
     } catch (error) {
       logger.error('Failed to archive notification', { id, userId, error });
       return null;
@@ -217,35 +192,5 @@ export class NotificationRepository {
       logger.error('Failed to delete notifications for user', { userId, error });
       return 0;
     }
-  }
-
-  private mapToRecord(notification: {
-    id: string;
-    userId: string;
-    type: string;
-    title: string;
-    body: string;
-    url: string | null;
-    data: unknown;
-    read: boolean;
-    readAt: Date | null;
-    archived: boolean;
-    archivedAt: Date | null;
-    createdAt: Date;
-  }): NotificationRecord {
-    return {
-      id: notification.id,
-      userId: notification.userId,
-      type: notification.type,
-      title: notification.title,
-      body: notification.body,
-      url: notification.url,
-      data: notification.data as Record<string, unknown> | null,
-      read: notification.read,
-      readAt: notification.readAt,
-      archived: notification.archived,
-      archivedAt: notification.archivedAt,
-      createdAt: notification.createdAt,
-    };
   }
 }

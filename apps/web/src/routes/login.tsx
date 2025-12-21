@@ -37,8 +37,6 @@ import { type LoginFormData, loginSchema, type SignupFormData, signupSchema } fr
  * Redirects to home if user is already authenticated with a valid session
  */
 export async function authenticationLoader({ request }: LoaderFunctionArgs) {
-  // Check if user is already signed in with Better Auth
-  // Only redirect if we have a valid session - don't redirect if session is invalid
   const session = await authClient.getSession();
   if (!session?.data?.user) {
     return null;

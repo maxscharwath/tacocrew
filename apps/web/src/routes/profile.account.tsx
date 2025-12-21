@@ -307,8 +307,7 @@ type Passkey = {
 
 export const accountLoader = createLoader(
   // No data to load - this route only requires authentication
-  (_: LoaderFunctionArgs) => Promise.resolve({}),
-  { requireAuth: true }
+  (_: LoaderFunctionArgs) => Promise.resolve({})
 );
 
 export function AccountRoute() {

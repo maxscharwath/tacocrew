@@ -1,5 +1,4 @@
 import { ENV } from '@/lib/env';
-import { sessionStore } from '@/lib/session/store';
 
 type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
@@ -87,9 +86,6 @@ function buildUrl(path: string): string | URL {
   return ENV.apiBaseUrl ? new URL(path, ENV.apiBaseUrl) : path;
 }
 
-/**
- * Setup request headers
- */
 function setupHeaders(options: RequestOptions): Headers {
   const headers = new Headers(options.headers);
 
@@ -99,18 +95,6 @@ function setupHeaders(options: RequestOptions): Headers {
 
   if (options.body && !headers.has('Content-Type')) {
     headers.set('Content-Type', 'application/json');
-  }
-
-  // Better Auth uses cookies for authentication, so we don't need to send JWT tokens
-  // Cookies are automatically sent by the browser when credentials: 'include' is set
-  // We only send JWT tokens if sessionStore has a session (for backward compatibility)
-  if (!options.skipAuth) {
-    const session = sessionStore.getSession();
-    if (session) {
-      // Legacy JWT token support (for backward compatibility)
-      headers.set('Authorization', `Bearer ${session.token}`);
-      headers.set('x-username', session.username);
-    }
   }
 
   return headers;

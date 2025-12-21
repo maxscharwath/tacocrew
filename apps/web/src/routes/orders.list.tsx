@@ -41,7 +41,7 @@ import { createGroupOrderSchema } from '@/lib/schemas/order.schema';
 import { combineDateAndTime, toDate } from '@/lib/utils/date';
 import { defer } from '@/lib/utils/defer';
 import { extractErrorMessage, isMultipleOrganizationsError } from '@/lib/utils/error-helpers';
-import { createDeferredWithAuth, requireSession } from '@/lib/utils/loader-helpers';
+import { createDeferredWithAuth } from '@/lib/utils/loader-helpers';
 import { getRandomOrderName } from '@/lib/utils/order-name';
 import {
   getActiveOrganizations,
@@ -60,8 +60,6 @@ type ActionData = {
 };
 
 export async function ordersLoader(_: LoaderFunctionArgs) {
-  await requireSession();
-
   return defer({
     groupOrders: createDeferredWithAuth(() => UserApi.getGroupOrders()),
     organizations: createDeferredWithAuth(() => OrganizationApi.getMyOrganizations()),

@@ -27,7 +27,6 @@ import { useOrderValidation } from '@/hooks/useOrderValidation';
 import { useProgressSteps } from '@/hooks/useProgressSteps';
 import { OrdersApi, StockApi, UserApi } from '@/lib/api';
 import type { UpsertUserOrderBody } from '@/lib/api/orders';
-import { authClient } from '@/lib/auth-client';
 import { routes } from '@/lib/routes';
 import { createActionHandler } from '@/lib/utils/action-handler';
 import { createLoader } from '@/lib/utils/loader-factory';
@@ -39,75 +38,45 @@ type ActionData = {
   errorMessage?: string;
 };
 
-/**
- * Get and validate user session
- */
-async function getUserSession(): Promise<string> {
-  const session = await authClient.getSession();
-  if (!session?.data?.user) {
-    throw redirect(routes.signin());
-  }
-  return session.data.user.id;
-}
-
-/**
- * Fetch order to prefill (either edit or duplicate)
- */
 async function fetchPrefillOrder(
   groupOrderId: string,
-  prefillOrderId: string,
-  userId: string,
-  isLeader: boolean,
-  isEdit: boolean
+  prefillOrderId: string
 ): Promise<LoaderData['myOrder']> {
   try {
-    const orderDetail = await OrdersApi.getUserOrder(groupOrderId, prefillOrderId);
-    if (isEdit && !isLeader && orderDetail.userId !== userId) {
-      throw new Response('Unauthorized', { status: 403 });
-    }
-    return orderDetail;
+    return await OrdersApi.getUserOrder(groupOrderId, prefillOrderId);
   } catch {
     throw redirect(routes.root.orderCreate({ orderId: groupOrderId }));
   }
 }
 
-export const orderCreateLoader = createLoader(
-  async ({ params, request }: LoaderFunctionArgs) => {
-    const groupOrderId = requireParam(params, 'orderId', 'Order not found');
-    const userId = await getUserSession();
+export const orderCreateLoader = createLoader(async ({ params, request }: LoaderFunctionArgs) => {
+  const groupOrderId = requireParam(params, 'orderId', 'Order not found');
 
-    const url = new URL(request.url);
-    const orderId = url.searchParams.get('orderId');
-    const duplicateId = url.searchParams.get('duplicate');
+  const url = new URL(request.url);
+  const orderId = url.searchParams.get('orderId');
+  const duplicateId = url.searchParams.get('duplicate');
+  const prefillOrderId = orderId ?? duplicateId ?? undefined;
 
-    const [groupOrderWithUsers, stock, previousOrders] = await Promise.all([
-      OrdersApi.getGroupOrderWithOrders(groupOrderId),
-      StockApi.getStock(),
-      UserApi.getPreviousOrders().catch(() => []),
-    ]);
+  const [groupOrderWithUsers, stock, previousOrders, myOrder] = await Promise.all([
+    OrdersApi.getGroupOrderWithOrders(groupOrderId),
+    StockApi.getStock(),
+    UserApi.getPreviousOrders().catch(() => []),
+    prefillOrderId ? fetchPrefillOrder(groupOrderId, prefillOrderId) : Promise.resolve(undefined),
+  ]);
 
-    const groupOrder = groupOrderWithUsers.groupOrder;
+  const groupOrder = groupOrderWithUsers.groupOrder;
 
-    if (!groupOrder.canAcceptOrders) {
-      throw redirect(routes.root.orderDetail({ orderId: groupOrderId }));
-    }
+  if (!groupOrder.canAcceptOrders) {
+    throw redirect(routes.root.orderDetail({ orderId: groupOrderId }));
+  }
 
-    const isLeader = groupOrder.leader.id === userId;
-    const prefillOrderId = orderId ?? duplicateId ?? undefined;
-
-    const myOrder = prefillOrderId
-      ? await fetchPrefillOrder(groupOrderId, prefillOrderId, userId, isLeader, !!orderId)
-      : undefined;
-
-    return {
-      groupOrder,
-      myOrder,
-      stock,
-      previousOrders,
-    };
-  },
-  { requireAuth: true }
-);
+  return {
+    groupOrder,
+    myOrder,
+    stock,
+    previousOrders,
+  };
+});
 
 type LoaderData = {
   groupOrder: Awaited<ReturnType<typeof OrdersApi.getGroupOrderWithOrders>>['groupOrder'];
@@ -175,8 +144,6 @@ export const orderCreateAction = createActionHandler({
     POST: async ({ formData }, _request, params) => {
       const groupOrderId = params?.orderId;
       if (!groupOrderId) throw new Response('Order not found', { status: 404 });
-
-      await getUserSession();
 
       type TacoSize = UpsertUserOrderBody['items']['tacos'][number]['size'];
 

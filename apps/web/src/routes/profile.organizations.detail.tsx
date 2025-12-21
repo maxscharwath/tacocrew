@@ -50,8 +50,7 @@ export const profileOrganizationsDetailLoader = createLoader(
       // Re-throw other errors
       throw error;
     }
-  },
-  { requireAuth: true }
+  }
 );
 
 export function ProfileOrganizationsDetailRoute() {

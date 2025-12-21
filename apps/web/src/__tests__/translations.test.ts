@@ -212,13 +212,15 @@ function checkMissingStaticKeys(
     }
 
     if (missingIn.length > 0) {
-      const firstUsage = usageList[0]!;
-      const relPath = firstUsage.file.replace(process.cwd() + '/', '');
-      missingKeys.push({
-        key,
-        missingIn,
-        usedIn: `${relPath}:${firstUsage.line}`,
-      });
+      const firstUsage = usageList[0];
+      if (firstUsage) {
+        const relPath = firstUsage.file.replace(process.cwd() + '/', '');
+        missingKeys.push({
+          key,
+          missingIn,
+          usedIn: `${relPath}:${firstUsage.line}`,
+        });
+      }
     }
   }
 

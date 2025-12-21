@@ -12,8 +12,7 @@ export const profileOrganizationsLoader = createLoader(
   async () => {
     const organizations = await OrganizationApi.getMyOrganizations();
     return { organizations };
-  },
-  { requireAuth: true }
+  }
 );
 
 export function ProfileOrganizationsRoute() {

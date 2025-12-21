@@ -6,7 +6,6 @@ import { apiClient } from '@/lib/api/http';
 
 export interface Page<T> {
   items: T[];
-  total: number;
   nextCursor: string | null;
   hasMore: boolean;
 }

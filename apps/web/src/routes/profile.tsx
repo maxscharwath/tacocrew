@@ -25,8 +25,7 @@ export const profileLoader = createLoader(
     ]);
 
     return { profile, previousOrders };
-  },
-  { requireAuth: true }
+  }
 );
 
 export function ProfileRoute() {

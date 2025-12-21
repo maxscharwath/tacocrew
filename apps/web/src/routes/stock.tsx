@@ -24,8 +24,7 @@ export const stockLoader = createDeferredLoader(
   async () => {
     const stock = await StockApi.getStock();
     return { stock };
-  },
-  { requireAuth: true }
+  }
 );
 
 const STOCK_SECTIONS = [

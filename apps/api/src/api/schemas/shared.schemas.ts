@@ -38,29 +38,28 @@ export const CursorPaginationQuerySchema = z.object({
     .optional()
     .transform((v) => (v ? Math.min(Math.max(Number.parseInt(v, 10), 1), 100) : 20))
     .describe('Number of items per page (1-100, default: 20)'),
-  cursor: z.string().optional().describe('Cursor for the next page'),
+  cursor: z.string().optional().describe('Cursor for the next page (after cursor)'),
+  before: z.string().optional().describe('Cursor for the previous page (before cursor)'),
 });
 
 export type CursorPaginationQuery = z.infer<typeof CursorPaginationQuerySchema>;
 
 /**
- * Creates a paginated response schema for a given item schema
+ * Creates a paginated response schema for cursor-based pagination.
+ * Note: Cursor pagination doesn't include total counts as they're expensive
+ * to compute and not necessary for navigation.
  */
 export function createPageSchema<T extends z.ZodTypeAny>(itemSchema: T) {
   return z.object({
     items: z.array(itemSchema),
-    total: z.number().describe('Total number of items matching the query'),
+    firstCursor: z.string().nullable().describe('Cursor for the first item in the current page'),
+    lastCursor: z.string().nullable().describe('Cursor for the last item in the current page'),
     nextCursor: z.string().nullable().describe('Cursor for the next page, null if no more pages'),
-    hasMore: z.boolean().describe('Whether there are more items to load'),
+    previousCursor: z
+      .string()
+      .nullable()
+      .describe('Cursor for the previous page, null if on first page'),
+    hasNextPage: z.boolean().describe('Whether there are more items after the current page'),
+    hasPreviousPage: z.boolean().describe('Whether there are items before the current page'),
   });
 }
-
-/**
- * Type helper for paginated responses
- */
-export type Page<T> = {
-  items: T[];
-  total: number;
-  nextCursor: string | null;
-  hasMore: boolean;
-};

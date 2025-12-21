@@ -4,17 +4,19 @@
  */
 
 import { injectable } from 'tsyringe';
-import { PrismaClient } from '@/generated/client';
-import { getPrismaClient } from '@/infrastructure/database/prisma.client';
+import {
+  getPrismaClient,
+  type PrismaClientWithPagination,
+} from '@/infrastructure/database/prisma.client';
 import { logger } from '@/shared/utils/logger.utils';
 
 /**
  * Prisma service wrapper for dependency injection
- * Uses the shared PrismaClient instance to avoid connection pool exhaustion
+ * Uses the shared PrismaClient instance with pagination extension
  */
 @injectable()
 export class PrismaService {
-  public readonly client: PrismaClient;
+  public readonly client: PrismaClientWithPagination;
 
   constructor() {
     // Use the shared PrismaClient instance

@@ -11,6 +11,7 @@ import {
   jsonContent,
 } from '@/api/schemas/shared.schemas';
 import { authSecurity, createAuthenticatedRouteApp } from '@/api/utils/route.utils';
+import type { Notification } from '@/generated/client';
 import { NotificationRepository } from '@/infrastructure/repositories/notification.repository';
 import { inject } from '@/shared/utils/inject.utils';
 
@@ -24,10 +25,19 @@ const NotificationSchema = z.object({
   url: z.string().nullable(),
   data: z.record(z.string(), z.unknown()).nullable(),
   read: z.boolean(),
-  readAt: z.string().nullable(),
+  readAt: z.preprocess(
+    (val) => (val instanceof Date ? val.toISOString() : val),
+    z.coerce.string().nullable()
+  ),
   archived: z.boolean(),
-  archivedAt: z.string().nullable(),
-  createdAt: z.string(),
+  archivedAt: z.preprocess(
+    (val) => (val instanceof Date ? val.toISOString() : val),
+    z.coerce.string().nullable()
+  ),
+  createdAt: z.preprocess(
+    (val) => (val instanceof Date ? val.toISOString() : val),
+    z.coerce.string()
+  ),
 });
 
 const NotificationPageSchema = createPageSchema(NotificationSchema);
@@ -36,35 +46,6 @@ const NotificationPageSchema = createPageSchema(NotificationSchema);
 const ErrorResponseSchema = z.object({ error: z.string() });
 const SuccessCountResponseSchema = z.object({ success: z.boolean(), count: z.number() });
 const NotificationIdParamSchema = z.object({ id: z.string() });
-
-/** Transform NotificationRecord to JSON response */
-function toNotificationJson(n: {
-  id: string;
-  type: string;
-  title: string;
-  body: string;
-  url: string | null;
-  data: Record<string, unknown> | null;
-  read: boolean;
-  readAt: Date | null;
-  archived: boolean;
-  archivedAt: Date | null;
-  createdAt: Date;
-}) {
-  return {
-    id: n.id,
-    type: n.type,
-    title: n.title,
-    body: n.body,
-    url: n.url,
-    data: n.data,
-    read: n.read,
-    readAt: n.readAt?.toISOString() || null,
-    archived: n.archived,
-    archivedAt: n.archivedAt?.toISOString() || null,
-    createdAt: n.createdAt.toISOString(),
-  };
-}
 
 // GET /notifications - List user's notifications with cursor-based pagination
 app.openapi(
@@ -79,6 +60,7 @@ app.openapi(
           .string()
           .optional()
           .transform((v) => v === 'true'),
+        before: z.string().optional().describe('Cursor for the previous page'),
       }),
     },
     responses: {
@@ -90,17 +72,27 @@ app.openapi(
   }),
   async (c) => {
     const userId = c.var.user.id;
-    const { limit, cursor, archived } = c.req.valid('query');
+    const { limit, cursor, before, archived } = c.req.valid('query');
     const notificationRepository = inject(NotificationRepository);
 
-    const result = await notificationRepository.findByUserId(userId, { limit, cursor, archived });
+    const result = await notificationRepository.findByUserId(userId, {
+      limit,
+      cursor,
+      before,
+      archived,
+    });
 
+    // Use Spring Boot-style map() to transform the page
+    const response = result.map(function (n: Notification) {
+      return NotificationSchema.parse(n);
+    });
+
+    // Convert to JSON format expected by frontend
+    const jsonResponse = response.toJSON();
     return c.json(
       {
-        items: result.items.map(toNotificationJson),
-        total: result.total,
-        nextCursor: result.nextCursor,
-        hasMore: result.hasMore,
+        ...jsonResponse,
+        hasMore: jsonResponse.hasNextPage,
       },
       200
     );
@@ -167,7 +159,7 @@ app.openapi(
       return c.json({ error: 'Notification not found' }, 404);
     }
 
-    return c.json(toNotificationJson(notification), 200);
+    return c.json(NotificationSchema.parse(notification), 200);
   }
 );
 
@@ -227,7 +219,7 @@ app.openapi(
       return c.json({ error: 'Notification not found' }, 404);
     }
 
-    return c.json(toNotificationJson(notification), 200);
+    return c.json(NotificationSchema.parse(notification), 200);
   }
 );
 

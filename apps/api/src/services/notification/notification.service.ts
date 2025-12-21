@@ -4,10 +4,8 @@
  */
 
 import { injectable } from 'tsyringe';
-import {
-  type NotificationRecord,
-  NotificationRepository,
-} from '@/infrastructure/repositories/notification.repository';
+import type { Notification } from '@/generated/client';
+import { NotificationRepository } from '@/infrastructure/repositories/notification.repository';
 import { UserRepository } from '@/infrastructure/repositories/user.repository';
 import type { UserId } from '@/schemas/user.schema';
 import {
@@ -120,9 +118,9 @@ export class NotificationService {
     userId: UserId,
     payload: NotificationPayload | NotificationPayloadWithTranslations,
     options?: SendNotificationOptions
-  ): Promise<NotificationRecord | null> {
+  ): Promise<Notification | null> {
     const finalPayload = await this.resolvePayload(userId, payload);
-    let storedNotification: NotificationRecord | null = null;
+    let storedNotification: Notification | null = null;
 
     // Store notification in database for in-app display
     if (!options?.skipPersist) {

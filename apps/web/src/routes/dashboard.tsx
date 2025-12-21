@@ -41,8 +41,7 @@ export const dashboardLoader = createDeferredLoader(
       groupOrders,
       orderHistory: orderHistory.slice(0, 5),
     };
-  },
-  { requireAuth: true }
+  }
 );
 
 type DashboardData = {

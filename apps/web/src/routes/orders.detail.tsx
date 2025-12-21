@@ -10,7 +10,9 @@ import {
   useLoaderData,
   useNavigation,
   useParams,
+  useRouteLoaderData,
 } from 'react-router';
+import type { RootLoaderData } from '@/routes/root.loader';
 import {
   CookieInjectionModal,
   GroupOrderReceipts,
@@ -33,41 +35,29 @@ import type {
 import { createActionHandler } from '@/lib/utils/action-handler';
 import { defer } from '@/lib/utils/defer';
 import { parseFormData } from '@/lib/utils/form-data';
-import { createDeferredWithAuth, requireSession } from '@/lib/utils/loader-helpers';
+import { createDeferredWithAuth } from '@/lib/utils/loader-helpers';
 
 type LoaderData = {
   groupOrder: Awaited<ReturnType<typeof OrdersApi.getGroupOrderWithOrders>>['groupOrder'];
   userOrders: Awaited<ReturnType<typeof OrdersApi.getGroupOrderWithOrders>>['userOrders'];
-  myOrders: Awaited<ReturnType<typeof OrdersApi.getGroupOrderWithOrders>>['userOrders'];
-  isLeader: boolean;
-  currentUserId: string;
   stock: Awaited<ReturnType<typeof StockApi.getStock>>;
 };
 
 type GroupOrderData = {
   groupOrder: LoaderData['groupOrder'];
   userOrders: LoaderData['userOrders'];
-  myOrders: LoaderData['myOrders'];
-  isLeader: LoaderData['isLeader'];
-  currentUserId: LoaderData['currentUserId'];
 };
 
-async function loadOrderDetail(groupOrderId: string, userId: string) {
+async function loadOrderDetail(groupOrderId: string) {
   const [groupOrderWithUsers, stockData] = await Promise.all([
     createDeferredWithAuth(() => OrdersApi.getGroupOrderWithOrders(groupOrderId)),
     createDeferredWithAuth(() => StockApi.getStock()),
   ]);
 
-  const myOrders = groupOrderWithUsers.userOrders.filter((order) => order.userId === userId);
-  const isLeader = groupOrderWithUsers.groupOrder.leader.id === userId;
-
   return {
     groupOrderData: {
       groupOrder: groupOrderWithUsers.groupOrder,
       userOrders: groupOrderWithUsers.userOrders,
-      myOrders,
-      isLeader,
-      currentUserId: userId,
     },
     stock: stockData,
   };
@@ -79,10 +69,8 @@ export async function orderDetailLoader({ params }: LoaderFunctionArgs) {
     throw new Response('Order not found', { status: 404 });
   }
 
-  const { userId } = await requireSession();
-
   return defer({
-    data: loadOrderDetail(groupOrderId, userId),
+    data: loadOrderDetail(groupOrderId),
   });
 }
 
@@ -219,7 +207,10 @@ function OrderDetailContent({
 }>) {
   const { t } = useTranslation();
   const tt = (key: string, options?: Record<string, unknown>) => t(`orders.detail.${key}`, options);
-  const { groupOrder, userOrders, isLeader, currentUserId } = groupOrderData;
+  const { groupOrder, userOrders } = groupOrderData;
+  const rootData = useRouteLoaderData('root') as RootLoaderData;
+  const currentUserId = rootData.profile?.id ?? '';
+  const isLeader = groupOrder.leader.id === currentUserId;
   const navigation = useNavigation();
   const params = useParams();
   const isSubmitting = navigation.state === 'submitting';
