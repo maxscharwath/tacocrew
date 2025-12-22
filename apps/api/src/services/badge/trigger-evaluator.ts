@@ -168,7 +168,10 @@ function evaluateDateTrigger(trigger: DateTrigger, context: EvaluationContext): 
 
     case 'registeredBefore':
       // Check if user registered on or before the specified date
-      return context.userCreatedAt <= new Date(condition.date);
+      // Set cutoff to end of day (23:59:59.999) to include users who registered on that date
+      const cutoffDate = new Date(condition.date);
+      cutoffDate.setHours(23, 59, 59, 999);
+      return context.userCreatedAt <= cutoffDate;
 
     default:
       return false;

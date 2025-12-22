@@ -247,7 +247,12 @@ function checkBadgeEligibility(
   if (trigger.type === 'date') {
     // Handle registeredBefore condition - can be evaluated during migration
     if (trigger.condition.type === 'registeredBefore') {
-      return userCreatedAt <= new Date(trigger.condition.date);
+      // Parse the cutoff date and set to end of day (23:59:59.999) to include the full day
+      const cutoffDateStr = trigger.condition.date;
+      const cutoffDate = new Date(cutoffDateStr);
+      // Set to end of day to include users who registered on that date
+      cutoffDate.setHours(23, 59, 59, 999);
+      return userCreatedAt <= cutoffDate;
     }
     // Other date conditions need real-time checking
     return false;
@@ -460,38 +465,55 @@ async function migrateUserBadges() {
 
     // Check and award badges
     let userBadgesAwarded = 0;
+    const userCreatedAt = user.createdAt ?? new Date();
+
+    console.log(`  📅 User registered: ${userCreatedAt.toISOString().split('T')[0]}`);
 
     for (const badge of BADGES) {
       // Skip if already earned
-      if (existingBadgeIds.has(badge.id)) continue;
+      if (existingBadgeIds.has(badge.id)) {
+        console.log(`  ✅ Already earned: ${badge.id}`);
+        continue;
+      }
 
       // Skip badges with availability restrictions that have passed
       if (badge.availability?.until && new Date() > badge.availability.until) {
-        console.log(`  ⏭️  Skipped (expired): ${badge.id}`);
+        console.log(`  ⏭️  Skipped (expired): ${badge.id} - expired on ${badge.availability.until.toISOString().split('T')[0]}`);
+        continue;
+      }
+
+      // Skip badges with availability restrictions that haven't started
+      if (badge.availability?.from && new Date() < badge.availability.from) {
+        console.log(`  ⏭️  Skipped (not yet available): ${badge.id} - available from ${badge.availability.from.toISOString().split('T')[0]}`);
         continue;
       }
 
       // Skip action/time-based badges - these require real-time event checking
       // Date badges with registeredBefore can be evaluated during migration
-      if (badge.trigger.type === 'action' || badge.trigger.type === 'time') {
-        console.log(`  ⏭️  Skipped (requires real-time): ${badge.id}`);
+      if (badge.trigger.type === 'action') {
+        console.log(`  ⏭️  Skipped (action-based, requires real-time event): ${badge.id}`);
+        continue;
+      }
+
+      if (badge.trigger.type === 'time') {
+        console.log(`  ⏭️  Skipped (time-based, requires real-time event): ${badge.id}`);
         continue;
       }
 
       // Skip date badges that aren't registeredBefore (they need real-time checking)
       if (badge.trigger.type === 'date' && badge.trigger.condition.type !== 'registeredBefore') {
-        console.log(`  ⏭️  Skipped (requires real-time): ${badge.id}`);
+        console.log(`  ⏭️  Skipped (date-based, requires real-time event): ${badge.id} (condition: ${badge.trigger.condition.type})`);
         continue;
       }
 
       // Check eligibility - cast to UserStats shape for metric lookup
-      if (
-        checkBadgeEligibility(
-          statsData as Parameters<typeof getMetricValue>[1],
-          badge.trigger,
-          user.createdAt ?? new Date()
-        )
-      ) {
+      const isEligible = checkBadgeEligibility(
+        statsData as Parameters<typeof getMetricValue>[1],
+        badge.trigger,
+        userCreatedAt
+      );
+
+      if (isEligible) {
         await prisma.userBadge.create({
           data: {
             userId: user.id,
@@ -502,6 +524,29 @@ async function migrateUserBadges() {
         userBadgesAwarded++;
         totalBadges++;
         console.log(`  🏆 Awarded: ${badge.id}`);
+      } else {
+        // Explain why the badge wasn't awarded
+        let reason = '';
+        if (badge.trigger.type === 'count') {
+          const value = getMetricValue(badge.trigger.metric, statsData as Parameters<typeof getMetricValue>[1]);
+          reason = `needs ${badge.trigger.threshold}, has ${value}`;
+        } else if (badge.trigger.type === 'date' && badge.trigger.condition.type === 'registeredBefore') {
+          const cutoffDateStr = badge.trigger.condition.date;
+          const cutoffDate = new Date(cutoffDateStr);
+          cutoffDate.setHours(23, 59, 59, 999); // End of day for comparison
+          const userDateStr = userCreatedAt.toISOString().split('T')[0];
+          const cutoffDateStrFormatted = cutoffDate.toISOString().split('T')[0];
+          const qualifies = userCreatedAt <= cutoffDate;
+          reason = `registered ${userDateStr}, cutoff is ${cutoffDateStrFormatted} (${qualifies ? 'SHOULD QUALIFY - check date comparison logic!' : 'registered too late'})`;
+        } else if (badge.trigger.type === 'streak') {
+          const value = getMetricValue('longestOrderStreak', statsData as Parameters<typeof getMetricValue>[1]);
+          reason = `needs streak of ${badge.trigger.count}, has ${value}`;
+        } else if (badge.trigger.type === 'combo') {
+          reason = `combo condition not met (${badge.trigger.conditions.length} conditions)`;
+        } else {
+          reason = 'condition not met';
+        }
+        console.log(`  ❌ Not eligible: ${badge.id} - ${reason}`);
       }
     }
 
