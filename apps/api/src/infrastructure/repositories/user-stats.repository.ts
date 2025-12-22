@@ -88,6 +88,7 @@ export class UserStatsRepository {
 
   /**
    * Add unique items to a JSON array field
+   * Handles both string IDs and objects with id field
    * Returns the updated count of unique items
    */
   async addToArray(userId: UserId, field: ArrayField, items: readonly string[]): Promise<number> {
@@ -95,16 +96,41 @@ export class UserStatsRepository {
 
     try {
       const stats = await this.getOrCreate(userId);
-      const currentItems = (stats[field] as string[]) || [];
-      const uniqueItems = new Set([...currentItems, ...items]);
-      const newArray = Array.from(uniqueItems);
+      const currentItems = (stats[field] as unknown[]) || [];
+      
+      // Deduplicate by id field (for objects) or by value (for strings)
+      const seen = new Set<string>();
+      const unique: unknown[] = [];
+      
+      // First, add existing items
+      for (const item of currentItems) {
+        if (typeof item === 'string') {
+          if (!seen.has(item)) {
+            seen.add(item);
+            unique.push(item);
+          }
+        } else if (item && typeof item === 'object' && 'id' in item && typeof item.id === 'string') {
+          if (!seen.has(item.id)) {
+            seen.add(item.id);
+            unique.push(item);
+          }
+        }
+      }
+      
+      // Then, add new items (only strings are passed in, but check for safety)
+      for (const item of items) {
+        if (typeof item === 'string' && !seen.has(item)) {
+          seen.add(item);
+          unique.push(item);
+        }
+      }
 
       await this.prisma.client.userStats.update({
         where: { userId },
-        data: { [field]: newArray },
+        data: { [field]: unique },
       });
 
-      return newArray.length;
+      return unique.length;
     } catch (error) {
       logger.error('Failed to add items to array', { userId, field, items, error });
       throw error;
