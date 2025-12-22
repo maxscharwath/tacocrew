@@ -19,6 +19,7 @@ const result = await Bun.build({
     'sharp',
     '@prisma/*',
     'prisma',
+    'prisma-extension-pagination',
     'pg',
 
     // Auth
