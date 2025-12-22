@@ -22,13 +22,20 @@ if (!databaseUrl) {
 const adapter = new PrismaPg({ connectionString: databaseUrl });
 const prisma = new PrismaClient({ adapter });
 
+interface Ingredient {
+  id: string;
+  code?: string;
+  name?: string;
+}
+
 interface TacoItem {
   id?: string;
   size?: string;
-  meats?: string[];
-  sauces?: string[];
-  garnitures?: string[];
+  meats?: (string | Ingredient)[];
+  sauces?: (string | Ingredient)[];
+  garnitures?: (string | Ingredient)[];
   quantity?: number;
+  price?: number;
   isMystery?: boolean;
 }
 
@@ -77,12 +84,7 @@ function extractStatsFromItems(items: OrderItems): {
         for (const meat of taco.meats) {
           if (!meat) continue;
           // Extract ID from object or use string directly
-          let meatId: string | null = null;
-          if (typeof meat === 'string') {
-            meatId = meat;
-          } else if (meat && typeof meat === 'object' && 'id' in meat) {
-            meatId = String((meat as { id: unknown }).id);
-          }
+          const meatId = typeof meat === 'string' ? meat : meat.id;
           if (meatId) meats.add(meatId);
         }
       }
@@ -90,12 +92,7 @@ function extractStatsFromItems(items: OrderItems): {
         for (const sauce of taco.sauces) {
           if (!sauce) continue;
           // Extract ID from object or use string directly
-          let sauceId: string | null = null;
-          if (typeof sauce === 'string') {
-            sauceId = sauce;
-          } else if (sauce && typeof sauce === 'object' && 'id' in sauce) {
-            sauceId = String((sauce as { id: unknown }).id);
-          }
+          const sauceId = typeof sauce === 'string' ? sauce : sauce.id;
           if (sauceId) sauces.add(sauceId);
         }
       }
@@ -103,12 +100,7 @@ function extractStatsFromItems(items: OrderItems): {
         for (const garniture of taco.garnitures) {
           if (!garniture) continue;
           // Extract ID from object or use string directly
-          let garnitureId: string | null = null;
-          if (typeof garniture === 'string') {
-            garnitureId = garniture;
-          } else if (garniture && typeof garniture === 'object' && 'id' in garniture) {
-            garnitureId = String((garniture as { id: unknown }).id);
-          }
+          const garnitureId = typeof garniture === 'string' ? garniture : garniture.id;
           if (garnitureId) garnitures.add(garnitureId);
         }
       }
