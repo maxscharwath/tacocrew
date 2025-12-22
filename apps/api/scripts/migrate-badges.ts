@@ -69,9 +69,17 @@ function extractStatsFromItems(items: OrderItems): {
       const qty = taco.quantity ?? 1;
       tacosCount += qty;
 
-      // Calculate price (price is in centimes)
+      // Calculate price - convert from CHF to centimes if needed
+      // Prices in database might be stored in CHF (e.g., 12.50) or centimes (e.g., 1250)
+      // We need to detect and convert: if price < 100, assume it's CHF and convert to centimes
       if (typeof taco.price === 'number') {
-        totalPrice += taco.price * qty;
+        let priceInCentimes = taco.price;
+        // If price is less than 100, it's likely in CHF (no taco costs less than 1 CHF = 100 centimes)
+        // Convert CHF to centimes by multiplying by 100
+        if (priceInCentimes > 0 && priceInCentimes < 100) {
+          priceInCentimes = Math.round(priceInCentimes * 100);
+        }
+        totalPrice += priceInCentimes * qty;
       }
 
       // Check if mystery taco (either flagged or has random/mystery in meats)
@@ -107,11 +115,15 @@ function extractStatsFromItems(items: OrderItems): {
     }
   }
 
-  // Add prices from extras, drinks, desserts
+  // Add prices from extras, drinks, desserts - convert from CHF to centimes if needed
   if (items.extras && Array.isArray(items.extras)) {
     for (const extra of items.extras) {
       if (extra && typeof extra === 'object' && 'price' in extra && 'quantity' in extra) {
-        const price = typeof extra.price === 'number' ? extra.price : 0;
+        let price = typeof extra.price === 'number' ? extra.price : 0;
+        // Convert CHF to centimes if price is less than 100
+        if (price > 0 && price < 100) {
+          price = Math.round(price * 100);
+        }
         const qty = typeof extra.quantity === 'number' ? extra.quantity : 1;
         totalPrice += price * qty;
       }
@@ -120,7 +132,11 @@ function extractStatsFromItems(items: OrderItems): {
   if (items.drinks && Array.isArray(items.drinks)) {
     for (const drink of items.drinks) {
       if (drink && typeof drink === 'object' && 'price' in drink && 'quantity' in drink) {
-        const price = typeof drink.price === 'number' ? drink.price : 0;
+        let price = typeof drink.price === 'number' ? drink.price : 0;
+        // Convert CHF to centimes if price is less than 100
+        if (price > 0 && price < 100) {
+          price = Math.round(price * 100);
+        }
         const qty = typeof drink.quantity === 'number' ? drink.quantity : 1;
         totalPrice += price * qty;
       }
@@ -129,7 +145,11 @@ function extractStatsFromItems(items: OrderItems): {
   if (items.desserts && Array.isArray(items.desserts)) {
     for (const dessert of items.desserts) {
       if (dessert && typeof dessert === 'object' && 'price' in dessert && 'quantity' in dessert) {
-        const price = typeof dessert.price === 'number' ? dessert.price : 0;
+        let price = typeof dessert.price === 'number' ? dessert.price : 0;
+        // Convert CHF to centimes if price is less than 100
+        if (price > 0 && price < 100) {
+          price = Math.round(price * 100);
+        }
         const qty = typeof dessert.quantity === 'number' ? dessert.quantity : 1;
         totalPrice += price * qty;
       }
