@@ -128,6 +128,10 @@ export const DateConditionSchema = z.discriminatedUnion('type', [
     from: z.string(), // ISO date
     until: z.string(), // ISO date
   }),
+  z.object({
+    type: z.literal('registeredBefore'),
+    date: z.string(), // ISO date - user must have registered on or before this date
+  }),
 ]);
 export type DateCondition = z.infer<typeof DateConditionSchema>;
 

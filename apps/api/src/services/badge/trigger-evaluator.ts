@@ -166,6 +166,10 @@ function evaluateDateTrigger(trigger: DateTrigger, context: EvaluationContext): 
     case 'range':
       return date >= new Date(condition.from) && date <= new Date(condition.until);
 
+    case 'registeredBefore':
+      // Check if user registered on or before the specified date
+      return context.userCreatedAt <= new Date(condition.date);
+
     default:
       return false;
   }

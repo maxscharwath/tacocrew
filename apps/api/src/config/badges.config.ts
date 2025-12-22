@@ -80,7 +80,11 @@ export const BADGES: readonly BadgeDefinition[] = [
   },
   {
     id: 'founder',
-    trigger: { type: 'count', metric: 'organizationsCreated', threshold: 1 },
+    // Awarded to all users who registered on or before the specified date
+    trigger: {
+      type: 'date',
+      condition: { type: 'registeredBefore', date: '2025-11-14' }, // TODO: Update with the actual cutoff date
+    },
   },
   {
     id: 'inviter',

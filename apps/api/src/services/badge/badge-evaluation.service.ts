@@ -193,8 +193,13 @@ export class BadgeEvaluationService {
           if (until && now > until) continue;
         }
 
-        // Evaluate trigger (only count-based and combo triggers make sense for backfill)
-        if (badge.trigger.type === 'count' || badge.trigger.type === 'combo' || badge.trigger.type === 'streak') {
+        // Evaluate trigger (count, combo, streak, and date triggers make sense for backfill)
+        if (
+          badge.trigger.type === 'count' ||
+          badge.trigger.type === 'combo' ||
+          badge.trigger.type === 'streak' ||
+          badge.trigger.type === 'date'
+        ) {
           const passed = evaluateTrigger(badge.trigger, {
             stats,
             event: syntheticEvent,
