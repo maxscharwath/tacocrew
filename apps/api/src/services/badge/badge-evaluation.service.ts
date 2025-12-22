@@ -189,10 +189,12 @@ export class BadgeEvaluationService {
         if (earnedBadgeIds.has(badge.id)) continue;
 
         // Check badge availability based on when the user registered (for backfill)
-        // Badge is expired if user registered AFTER the until date
+        // This is a conservative check - user could have earned it within the availability window
         if (badge.availability) {
           const { from, until } = badge.availability;
+          // Badge is not yet available if user registered BEFORE the from date
           if (from && userCreatedAt < from) continue;
+          // Badge is expired if user registered AFTER the until date
           if (until && userCreatedAt > until) continue;
         }
 

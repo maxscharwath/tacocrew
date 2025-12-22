@@ -221,11 +221,12 @@ type BadgeTrigger = (typeof BADGES)[number]['trigger'];
 /**
  * Check if a user qualifies for a badge based on their stats
  * Simplified: uses centralized getMetricValue from metrics.config.ts
+ * @param userCreatedAt - Only required for date triggers with registeredBefore condition
  */
 function checkBadgeEligibility(
   stats: Parameters<typeof getMetricValue>[1],
   trigger: BadgeTrigger,
-  userCreatedAt: Date
+  userCreatedAt?: Date
 ): boolean {
   if (trigger.type === 'count') {
     // Use centralized metric lookup - no switch statement needed!
@@ -247,6 +248,9 @@ function checkBadgeEligibility(
   if (trigger.type === 'date') {
     // Handle registeredBefore condition - can be evaluated during migration
     if (trigger.condition.type === 'registeredBefore') {
+      if (!userCreatedAt) {
+        return false; // Cannot evaluate without user creation date
+      }
       // Parse the cutoff date and set to end of day (23:59:59.999) to include the full day
       const cutoffDateStr = trigger.condition.date;
       const cutoffDate = new Date(cutoffDateStr);
@@ -476,17 +480,22 @@ async function migrateUserBadges() {
         continue;
       }
 
-      // Check badge availability based on when the user registered (not current date)
-      // Badge is expired if user registered AFTER the until date
-      if (badge.availability?.until && userCreatedAt > badge.availability.until) {
-        console.log(`  ⏭️  Skipped (expired): ${badge.id} - user registered ${userCreatedAt.toISOString().split('T')[0]}, badge expired on ${badge.availability.until.toISOString().split('T')[0]}`);
-        continue;
-      }
-
-      // Badge is not yet available if user registered BEFORE the from date
-      if (badge.availability?.from && userCreatedAt < badge.availability.from) {
-        console.log(`  ⏭️  Skipped (not yet available): ${badge.id} - user registered ${userCreatedAt.toISOString().split('T')[0]}, badge available from ${badge.availability.from.toISOString().split('T')[0]}`);
-        continue;
+      // Check badge availability
+      // For badges that can be backfilled, check if badge was available when user could have earned it
+      // For action-based badges, we skip them anyway, so availability doesn't matter here
+      if (badge.availability) {
+        const { from, until } = badge.availability;
+        // Badge is expired if user registered AFTER the until date (for backfillable badges)
+        // This is a conservative check - user could have earned it before expiration
+        if (until && userCreatedAt > until) {
+          console.log(`  ⏭️  Skipped (expired): ${badge.id} - user registered ${userCreatedAt.toISOString().split('T')[0]}, badge expired on ${until.toISOString().split('T')[0]}`);
+          continue;
+        }
+        // Badge is not yet available if user registered BEFORE the from date
+        if (from && userCreatedAt < from) {
+          console.log(`  ⏭️  Skipped (not yet available): ${badge.id} - user registered ${userCreatedAt.toISOString().split('T')[0]}, badge available from ${from.toISOString().split('T')[0]}`);
+          continue;
+        }
       }
 
       // Skip action/time-based badges - these require real-time event checking
@@ -507,11 +516,13 @@ async function migrateUserBadges() {
         continue;
       }
 
-      // Check eligibility - cast to UserStats shape for metric lookup
+      // Check eligibility - only pass userCreatedAt if badge needs it (date badges with registeredBefore)
+      const needsUserCreatedAt =
+        badge.trigger.type === 'date' && badge.trigger.condition.type === 'registeredBefore';
       const isEligible = checkBadgeEligibility(
         statsData as Parameters<typeof getMetricValue>[1],
         badge.trigger,
-        userCreatedAt
+        needsUserCreatedAt ? userCreatedAt : undefined
       );
 
       if (isEligible) {
