@@ -310,74 +310,8 @@ function checkBadgeEligibility(
   return false;
 }
 
-/**
- * Migrate old badge IDs to new ones
- * Handles badge ID renames (e.g., taco-veteran -> taco-legend, taco-legend -> king-of-tacos)
- */
-async function migrateBadgeIds() {
-  console.log('🔄 Migrating badge IDs...\n');
-
-  const badgeIdMigrations: Array<{ oldId: string; newId: string }> = [
-    { oldId: 'taco-veteran', newId: 'taco-legend' },
-    { oldId: 'taco-legend', newId: 'king-of-tacos' },
-    { oldId: 'taco-tuesday', newId: 'taco-friday' },
-  ];
-
-  let migrated = 0;
-
-  for (const migration of badgeIdMigrations) {
-    // Find all badges with the old ID
-    const oldBadges = await prisma.userBadge.findMany({
-      where: { badgeId: migration.oldId },
-    });
-
-    if (oldBadges.length === 0) continue;
-
-    console.log(`  📦 Found ${oldBadges.length} badges with ID "${migration.oldId}"`);
-
-    for (const badge of oldBadges) {
-      // Check if user already has the new badge
-      const existingNewBadge = await prisma.userBadge.findFirst({
-        where: {
-          userId: badge.userId,
-          badgeId: migration.newId,
-        },
-      });
-
-      if (existingNewBadge) {
-        // User already has the new badge, delete the old one
-        await prisma.userBadge.delete({ where: { id: badge.id } });
-        console.log(`    ✅ Deleted duplicate old badge for user ${badge.userId}`);
-      } else {
-        // Update to new badge ID
-        // We need to delete and recreate because of the unique constraint
-        await prisma.userBadge.delete({ where: { id: badge.id } });
-        await prisma.userBadge.create({
-          data: {
-            userId: badge.userId,
-            badgeId: migration.newId,
-            earnedAt: badge.earnedAt,
-            context: badge.context,
-          },
-        });
-        console.log(`    ✅ Updated badge ID for user ${badge.userId}`);
-      }
-      migrated++;
-    }
-  }
-
-  if (migrated > 0) {
-    console.log(`\n  ✨ Migrated ${migrated} badge IDs\n`);
-  } else {
-    console.log('  ✅ No badge IDs to migrate\n');
-  }
-}
-
 async function migrateUserBadges() {
   console.log('🚀 Starting badge migration...\n');
-
-  // First, migrate any old badge IDs
-  await migrateBadgeIds();
 
   const users = await prisma.user.findMany({
     select: { id: true, name: true, createdAt: true },

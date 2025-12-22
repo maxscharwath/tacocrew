@@ -42,7 +42,7 @@ export interface BadgeDefinition {
 
 // Import all badge images via Vite glob - converts to WebP
 const badgeImages = import.meta.glob<{ default: string }>('@/assets/badges/*.png', {
-  query: { format: 'webp', w: 256 },
+  query: { format: 'webp', w: 525 },
   eager: true,
 });
 
