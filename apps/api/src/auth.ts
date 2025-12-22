@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { passkey } from '@better-auth/passkey';
 import { betterAuth } from 'better-auth';
 import { prismaAdapter } from 'better-auth/adapters/prisma';
+import { customSession } from 'better-auth/plugins';
 import { getPrismaClient } from '@/infrastructure/database/prisma.client';
 
 // Use the shared PrismaClient instance to avoid connection pool exhaustion
@@ -19,11 +20,11 @@ export const auth: ReturnType<typeof betterAuth> = betterAuth({
     process.env['FRONTEND_URL'] || 'http://localhost:5173',
   ],
   session: {
-    // Enable cookie caching to avoid DB hits on every session check
-    // Session data is cached in a signed cookie for 5 minutes
+    // Cookie cache disabled to prevent large cookies when user images are base64 encoded
+    // Large base64 images cause cookies to exceed 4KB limit and split into multiple cookies
+    // TODO: Re-enable cookie cache once user images are stored as URLs instead of base64
     cookieCache: {
-      enabled: true,
-      maxAge: 5 * 60, // 5 minutes
+      enabled: false, // Disabled to prevent cookie size issues with large base64 images
     },
     expiresIn: 60 * 60 * 24 * 7, // 7 days
   },
@@ -36,6 +37,15 @@ export const auth: ReturnType<typeof betterAuth> = betterAuth({
       rpID: process.env['PASSKEY_RP_ID'] || 'localhost',
       rpName: process.env['PASSKEY_RP_NAME'] || 'TacoCrew',
       origin: process.env['FRONTEND_URL'] || 'http://localhost:5173',
+    }),
+    // Exclude image from session to reduce cookie size
+    // Large base64 images cause cookies to be split into multiple cookies
+    customSession(async ({ user, session }) => {
+      const { image: _, ...userWithoutImage } = user;
+      return {
+        user: userWithoutImage,
+        session,
+      };
     }),
   ],
   advanced: {
