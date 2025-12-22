@@ -20,6 +20,7 @@ import { orderSubmitAction, orderSubmitLoader } from '@/routes/orders.submit';
 import { organizationJoinLoader } from '@/routes/organizations.join';
 import { profileLoader } from '@/routes/profile';
 import { accountLoader } from '@/routes/profile.account';
+import { badgesLoader } from '@/routes/profile.badges';
 import { profileDeliveryLoader } from '@/routes/profile.delivery';
 import { profileOrganizationsLoader } from '@/routes/profile.organizations';
 import { profileOrganizationsDetailLoader } from '@/routes/profile.organizations.detail';
@@ -178,6 +179,18 @@ export const { routes, routerConfig } = defineRoutes({
           fallback: ProfileSkeleton,
         },
         loader: accountLoader,
+        hydrateFallback: ProfileSkeleton,
+      },
+      profileBadges: {
+        path: 'profile/badges',
+        element: {
+          importFn: () =>
+            import('@/routes/profile.badges').then((module) => ({
+              default: module.ProfileBadgesRoute,
+            })),
+          fallback: ProfileSkeleton,
+        },
+        loader: badgesLoader,
         hydrateFallback: ProfileSkeleton,
       },
       profileOrganizations: {

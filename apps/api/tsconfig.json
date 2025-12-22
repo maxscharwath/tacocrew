@@ -42,6 +42,6 @@
     "skipLibCheck": true,
     "types": ["bun-types"]
   },
-  "include": ["src/**/*", "api/**/*"],
+  "include": ["src/**/*", "api/**/*", "scripts/**/*"],
   "exclude": ["node_modules", "**/*.spec.ts", "**/*.test.ts", "dist"]
 }

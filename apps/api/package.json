@@ -19,7 +19,8 @@
     "prisma:db:push": "bunx prisma db push --accept-data-loss",
     "prisma:studio": "bunx prisma studio",
     "test": "bun test",
-    "test:watch": "bun test --watch"
+    "test:watch": "bun test --watch",
+    "migrate:badges": "bun run scripts/migrate-badges.ts"
   },
   "keywords": ["tacos", "api", "typescript", "rest-api"],
   "author": "",

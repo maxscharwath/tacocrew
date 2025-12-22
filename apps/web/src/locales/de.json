@@ -141,6 +141,186 @@
     "subtitle": "Verwalte dein Konto und Passkeys",
     "title": "Kontoeinstellungen"
   },
+  "badges": {
+    "all": {
+      "description": "{{earned}} von {{total}} Abzeichen erhalten",
+      "title": "Alle Abzeichen"
+    },
+    "complete": "abgeschlossen",
+    "earned": {
+      "description": "Du hast {{count}} Abzeichen erhalten",
+      "empty": "Du hast noch keine Abzeichen erhalten. Bestelle weiter!",
+      "title": "Erhaltene Abzeichen"
+    },
+    "earnedOn": "Erhalten am {{date}}",
+    "empty": {
+      "description": "Starte deine Reise um Abzeichen zu sammeln",
+      "title": "Noch keine Abzeichen"
+    },
+    "inProgress": {
+      "description": "Mach weiter um diese Abzeichen freizuschalten",
+      "title": "In Bearbeitung"
+    },
+    "secret": "Geheimes Abzeichen",
+    "secretHint": "Dieses Abzeichen wird durch eine geheime Aktion freigeschaltet!",
+    "stats": {
+      "completion": "Fortschritt",
+      "earned": "Erhalten",
+      "progress": "Sammlungsfortschritt",
+      "remaining": "Übrig",
+      "title": "Abzeichen-Statistiken",
+      "total": "Gesamt"
+    },
+    "recent": {
+      "title": "Kürzlich Erhalten",
+      "description": "Deine neuesten Erfolge"
+    },
+    "subtitle": "Verfolge deine Erfolge und schalte Belohnungen frei",
+    "tier": {
+      "bronze": "Bronze",
+      "gold": "Gold",
+      "legendary": "Legendär",
+      "platinum": "Platin",
+      "silver": "Silber"
+    },
+    "title": "Abzeichen",
+    "tacoRookie": {
+      "name": "Taco-Anfänger",
+      "description": "Bestelle deinen ersten Taco"
+    },
+    "tacoFan": {
+      "name": "Taco-Fan",
+      "description": "Bestelle 10 Tacos"
+    },
+    "tacoVeteran": {
+      "name": "Taco-Legende",
+      "description": "Bestelle 50 Tacos"
+    },
+    "tacoLegend": {
+      "name": "König der Tacos",
+      "description": "Bestelle 100 Tacos"
+    },
+    "tacoGod": {
+      "name": "Taco-Gott",
+      "description": "Bestelle 500 Tacos - du bist eine wahre Legende!"
+    },
+    "feelingLucky": {
+      "name": "Glückspilz",
+      "description": "Bestelle deinen ersten Mystery-Taco"
+    },
+    "mysteryFan": {
+      "name": "Mystery-Fan",
+      "description": "Bestelle 5 Mystery-Tacos"
+    },
+    "mysteryMaster": {
+      "name": "Mystery-Meister",
+      "description": "Bestelle 10 Mystery-Tacos"
+    },
+    "chaosEmbracer": {
+      "name": "Chaos-Liebhaber",
+      "description": "Bestelle 25 Mystery-Tacos - du liebst Überraschungen!"
+    },
+    "firstCommand": {
+      "name": "Erstes Kommando",
+      "description": "Führe deine erste Gruppenbestellung"
+    },
+    "squadLeader": {
+      "name": "Teamleiter",
+      "description": "Führe 5 Gruppenbestellungen"
+    },
+    "commander": {
+      "name": "Kommandant",
+      "description": "Führe 20 Gruppenbestellungen"
+    },
+    "teamPlayer": {
+      "name": "Teamplayer",
+      "description": "Tritt einer Organisation bei"
+    },
+    "generous": {
+      "name": "Großzügige Seele",
+      "description": "Bezahle die Bestellung von jemand anderem"
+    },
+    "founder": {
+      "name": "Gründer",
+      "description": "Erstelle eine Organisation"
+    },
+    "meatExplorer": {
+      "name": "Fleisch-Entdecker",
+      "description": "Probiere 5 verschiedene Fleischsorten"
+    },
+    "sauceSommelier": {
+      "name": "Saucen-Sommelier",
+      "description": "Probiere 5 verschiedene Saucen"
+    },
+    "flavorMaster": {
+      "name": "Geschmacksmeister",
+      "description": "Probiere 5 Fleischsorten UND 5 Saucen"
+    },
+    "onFire": {
+      "name": "In Flammen",
+      "description": "Bestelle 3 Wochen hintereinander"
+    },
+    "unstoppable": {
+      "name": "Unaufhaltsam",
+      "description": "Bestelle 8 Wochen hintereinander"
+    },
+    "devoted": {
+      "name": "Hingegeben",
+      "description": "Bestelle 16 Wochen hintereinander"
+    },
+    "earlyAdopter": {
+      "name": "Früher Vogel",
+      "description": "Beigetreten am 14. November 2025 - OG-Status!"
+    },
+    "lucky13": {
+      "name": "Glückliche 13",
+      "description": "Bestelle an einem Freitag den 13."
+    },
+    "anniversary": {
+      "name": "Jubiläum",
+      "description": "Bestelle am Jahrestag deines Kontos"
+    },
+    "nightOwl": {
+      "name": "Nachteule",
+      "description": "Bestelle zwischen Mitternacht und 5 Uhr morgens"
+    },
+    "earlyBird": {
+      "name": "Frühaufsteher",
+      "description": "Bestelle vor 8 Uhr morgens"
+    },
+    "inviter": {
+      "name": "Einlader",
+      "description": "Lade 3 Mitglieder zu deiner Organisation ein"
+    },
+    "bigSpender": {
+      "name": "Großzügiger Spender",
+      "description": "Gib 50.- oder mehr für Tacos aus"
+    },
+    "garnitureGuru": {
+      "name": "Garnitur-Guru",
+      "description": "Probiere 5 verschiedene Garnituren"
+    },
+    "varietySeeker": {
+      "name": "Vielfaltsucher",
+      "description": "Probiere 5 Fleischsorten, 5 Saucen UND 5 Garnituren"
+    },
+    "lunchRush": {
+      "name": "Mittags-Rush",
+      "description": "Bestelle zur Mittagszeit (11-14 Uhr)"
+    },
+    "dinnerTime": {
+      "name": "Abendessen-Zeit",
+      "description": "Bestelle zur Abendessen-Zeit (18-20 Uhr)"
+    },
+    "weekendWarrior": {
+      "name": "Wochenend-Krieger",
+      "description": "Bestelle an einem Samstag"
+    },
+    "tacoFriday": {
+      "name": "Taco-Freitag",
+      "description": "Bestelle an einem Freitag - es ist eine Tradition!"
+    }
+  },
   "common": {
     "accept": "Akzeptieren",
     "back": "Zurück",

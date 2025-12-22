@@ -13,6 +13,8 @@ import { UserRepository } from '@/infrastructure/repositories/user.repository';
 import { t } from '@/lib/i18n';
 import type { Organization, OrganizationId } from '@/schemas/organization.schema';
 import { UserId } from '@/schemas/user.schema';
+import { BadgeEvaluationService } from '@/services/badge/badge-evaluation.service';
+import { StatsTrackingService } from '@/services/badge/stats-tracking.service';
 import { NotificationService } from '@/services/notification/notification.service';
 import { inject } from '@/shared/utils/inject.utils';
 import { logger } from '@/shared/utils/logger.utils';
@@ -25,6 +27,8 @@ export class OrganizationService {
   private readonly organizationRepository = inject(OrganizationRepository);
   private readonly userRepository = inject(UserRepository);
   private readonly notificationService = inject(NotificationService);
+  private readonly statsTrackingService = inject(StatsTrackingService);
+  private readonly badgeEvaluationService = inject(BadgeEvaluationService);
 
   getOrganizationById(organizationId: OrganizationId): Promise<Organization | null> {
     return this.organizationRepository.findById(organizationId);
@@ -51,6 +55,12 @@ export class OrganizationService {
       role: OrganizationRole.ADMIN,
       status: OrganizationMemberStatus.ACTIVE,
     });
+
+    // Track badge progress (non-blocking)
+    this.trackOrganizationCreated(creatorId, organization.id).catch((error) => {
+      logger.debug('Failed to track organization creation for badges', { creatorId, error });
+    });
+
     return organization;
   }
 
@@ -93,6 +103,11 @@ export class OrganizationService {
           error,
         });
       }
+
+      // Track badge progress (non-blocking)
+      this.trackOrganizationJoined(userId, organizationId).catch((error) => {
+        logger.debug('Failed to track organization join for badges', { userId, error });
+      });
     }
   }
 
@@ -193,6 +208,11 @@ export class OrganizationService {
     } catch (error) {
       logger.debug('Failed to send join accepted notification', { userId, organizationId, error });
     }
+
+    // Track badge progress (non-blocking)
+    this.trackOrganizationJoined(userId, organizationId).catch((error) => {
+      logger.debug('Failed to track organization join for badges', { userId, error });
+    });
   }
 
   async rejectJoinRequest(
@@ -418,5 +438,37 @@ export class OrganizationService {
     }
 
     await this.organizationRepository.delete(organizationId);
+  }
+
+  /**
+   * Track organization creation for badges
+   */
+  private async trackOrganizationCreated(
+    creatorId: UserId,
+    organizationId: OrganizationId
+  ): Promise<void> {
+    await this.statsTrackingService.trackOrganizationCreated(creatorId);
+    await this.badgeEvaluationService.evaluateAfterEvent(creatorId, {
+      type: 'organizationCreated',
+      userId: creatorId,
+      timestamp: new Date(),
+      data: { organizationId },
+    });
+  }
+
+  /**
+   * Track organization join for badges
+   */
+  private async trackOrganizationJoined(
+    userId: UserId,
+    organizationId: OrganizationId
+  ): Promise<void> {
+    await this.statsTrackingService.trackOrganizationJoined(userId);
+    await this.badgeEvaluationService.evaluateAfterEvent(userId, {
+      type: 'organizationJoined',
+      userId,
+      timestamp: new Date(),
+      data: { organizationId },
+    });
   }
 }

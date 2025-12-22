@@ -8,7 +8,7 @@ import {
   CardTitle,
   EmptyState,
 } from '@tacocrew/ui-kit';
-import { Building2, Settings, Truck } from 'lucide-react';
+import { Award, Building2, Settings, Truck } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLoaderData } from 'react-router';
 import { TacoCard } from '@/components/orders/TacoCard';
@@ -110,6 +110,12 @@ export function ProfileRoute() {
                     <Button variant="outline" className="gap-2" size="md">
                       <Building2 size={18} />
                       {t('organizations.title')}
+                    </Button>
+                  </Link>
+                  <Link to={routes.root.profileBadges()}>
+                    <Button variant="outline" className="gap-2" size="md">
+                      <Award size={18} />
+                      {t('badges.title')}
                     </Button>
                   </Link>
                 </div>

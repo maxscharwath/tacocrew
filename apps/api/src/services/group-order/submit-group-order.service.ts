@@ -9,7 +9,10 @@ import { GroupOrderRepository } from '@/infrastructure/repositories/group-order.
 import { UserOrderRepository } from '@/infrastructure/repositories/user-order.repository';
 import { t } from '@/lib/i18n';
 import { canSubmitGroupOrder, type GroupOrderId } from '@/schemas/group-order.schema';
+import type { UserId } from '@/schemas/user.schema';
 import { isUserOrderEmpty, type UserOrder } from '@/schemas/user-order.schema';
+import { BadgeEvaluationService } from '@/services/badge/badge-evaluation.service';
+import { StatsTrackingService } from '@/services/badge/stats-tracking.service';
 import { NotificationService } from '@/services/notification/notification.service';
 import { BackendOrderSubmissionService } from '@/services/order/backend-order-submission.service';
 import { ResourceService } from '@/services/resource/resource.service';
@@ -45,6 +48,8 @@ export class SubmitGroupOrderUseCase {
   private readonly resourceService = inject(ResourceService);
   private readonly backendOrderSubmissionService = inject(BackendOrderSubmissionService);
   private readonly notificationService = inject(NotificationService);
+  private readonly statsTrackingService = inject(StatsTrackingService);
+  private readonly badgeEvaluationService = inject(BadgeEvaluationService);
 
   async execute(
     groupOrderId: GroupOrderId,
@@ -123,6 +128,16 @@ export class SubmitGroupOrderUseCase {
     });
     await Promise.allSettled(notificationPromises);
 
+    // Track badge progress for the leader (non-blocking, skip for dry runs)
+    if (!dryRun) {
+      this.trackGroupOrderLed(groupOrder.leaderId, groupOrderId).catch((error) => {
+        logger.error('Failed to track group order led for badges', {
+          leaderId: groupOrder.leaderId,
+          error,
+        });
+      });
+    }
+
     return {
       groupOrderId,
       submittedCount: userOrders.length,
@@ -130,6 +145,19 @@ export class SubmitGroupOrderUseCase {
       transactionId: result.transactionId,
       ...(dryRun && { dryRun: true }),
     };
+  }
+
+  /**
+   * Track group order submission for badges
+   */
+  private async trackGroupOrderLed(leaderId: UserId, groupOrderId: GroupOrderId): Promise<void> {
+    await this.statsTrackingService.trackGroupOrderLed(leaderId);
+    await this.badgeEvaluationService.evaluateAfterEvent(leaderId, {
+      type: 'groupOrderSubmitted',
+      userId: leaderId,
+      timestamp: new Date(),
+      data: { groupOrderId },
+    });
   }
 
   private async validateGroupOrder(groupOrderId: GroupOrderId) {

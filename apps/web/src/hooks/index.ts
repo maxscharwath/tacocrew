@@ -1,3 +1,4 @@
+export { useBadges } from './useBadges';
 export { useCopyFeedback } from './useCopyFeedback';
 export { useLocaleFormatter } from './useLocaleFormatter';
 export { useOrderForm } from './useOrderForm';

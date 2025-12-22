@@ -14,6 +14,8 @@ import { canGroupOrderBeModified, type GroupOrderId } from '@/schemas/group-orde
 import { GarnitureId, MeatId, SauceId, TacoId } from '@/schemas/taco.schema';
 import type { UserId } from '@/schemas/user.schema';
 import type { UserOrder } from '@/schemas/user-order.schema';
+import { BadgeEvaluationService } from '@/services/badge/badge-evaluation.service';
+import { StatsTrackingService } from '@/services/badge/stats-tracking.service';
 import { ResourceService } from '@/services/resource/resource.service';
 import { UserService } from '@/services/user/user.service';
 import { type StockAvailability, StockCategory, UserOrderItems } from '@/shared/types/types';
@@ -40,6 +42,8 @@ export class CreateUserOrderUseCase {
   private readonly userOrderRepository = inject(UserOrderRepository);
   private readonly resourceService = inject(ResourceService);
   private readonly userService = inject(UserService);
+  private readonly statsTrackingService = inject(StatsTrackingService);
+  private readonly badgeEvaluationService = inject(BadgeEvaluationService);
 
   async execute(
     groupOrderId: GroupOrderId,
@@ -116,7 +120,69 @@ export class CreateUserOrderUseCase {
       },
     });
 
+    // Track stats and evaluate badges (non-blocking)
+    this.trackOrderAndEvaluateBadges(userId, itemsWithTacoIds).catch((error) => {
+      logger.error('Failed to track order for badges', { userId, error });
+    });
+
     return userOrder;
+  }
+
+  /**
+   * Track order stats and evaluate badges
+   */
+  private async trackOrderAndEvaluateBadges(userId: UserId, items: UserOrderItems): Promise<void> {
+    // Calculate total price
+    const totalCentimes = this.calculateTotalCentimes(items);
+
+    // Build taco data for stats tracking
+    const tacoData = items.tacos.map((taco) => ({
+      isMystery: taco.meats.length === 0, // Mystery tacos have no specific meats
+      priceCentimes: taco.price * taco.quantity,
+      meats: taco.meats.map((m) => m.code),
+      sauces: taco.sauces.map((s) => s.code),
+      garnitures: taco.garnitures.map((g) => g.code),
+    }));
+
+    // Track stats
+    await this.statsTrackingService.trackOrderCreated(userId, {
+      tacos: tacoData,
+      totalCentimes,
+    });
+
+    // Check for mystery taco badges
+    const hasMysteryTaco = tacoData.some((t) => t.isMystery);
+
+    // Evaluate badges after order
+    await this.badgeEvaluationService.evaluateAfterEvent(userId, {
+      type: 'orderCreated',
+      userId,
+      timestamp: new Date(),
+      data: {
+        tacoCount: items.tacos.reduce((sum, t) => sum + t.quantity, 0),
+        totalCentimes,
+      },
+    });
+
+    // Also evaluate mystery taco event if applicable
+    if (hasMysteryTaco) {
+      await this.badgeEvaluationService.evaluateAfterEvent(userId, {
+        type: 'mysteryTacoOrdered',
+        userId,
+        timestamp: new Date(),
+      });
+    }
+  }
+
+  /**
+   * Calculate total price in centimes
+   */
+  private calculateTotalCentimes(items: UserOrderItems): number {
+    const tacoTotal = items.tacos.reduce((sum, t) => sum + t.price * t.quantity, 0);
+    const extraTotal = items.extras.reduce((sum, e) => sum + e.price * e.quantity, 0);
+    const drinkTotal = items.drinks.reduce((sum, d) => sum + d.price * d.quantity, 0);
+    const dessertTotal = items.desserts.reduce((sum, d) => sum + d.price * d.quantity, 0);
+    return tacoTotal + extraTotal + drinkTotal + dessertTotal;
   }
 
   /**

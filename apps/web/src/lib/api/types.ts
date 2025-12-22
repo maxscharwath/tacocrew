@@ -401,3 +401,8 @@ export interface GroupOrderSubmissionResponse {
   transactionId: string;
   dryRun?: boolean; // Present if order was submitted in dry-run mode
 }
+
+// Badge types have been moved to their respective modules:
+// - @/config/badges.config: BadgeDefinition, BadgeTier, BadgeCategory
+// - @/lib/api/badges: EarnedBadgeResponse, BadgeProgress, BadgeStatsResponse, UserBadgeContext
+// - @/hooks/useBadges: UserBadge, BadgeStats

@@ -141,6 +141,186 @@
     "subtitle": "Manage your account and passkeys",
     "title": "Account Settings"
   },
+  "badges": {
+    "all": {
+      "description": "{{earned}} of {{total}} badges earned",
+      "title": "All Badges"
+    },
+    "complete": "complete",
+    "earned": {
+      "description": "You've earned {{count}} badges",
+      "empty": "You haven't earned any badges yet. Keep ordering!",
+      "title": "Earned Badges"
+    },
+    "earnedOn": "Earned {{date}}",
+    "empty": {
+      "description": "Start your journey to earn badges",
+      "title": "No Badges Yet"
+    },
+    "inProgress": {
+      "description": "Keep going to unlock these badges",
+      "title": "In Progress"
+    },
+    "secret": "Secret Badge",
+    "secretHint": "This badge is unlocked through a secret action!",
+    "stats": {
+      "completion": "Completion",
+      "earned": "Earned",
+      "progress": "Collection Progress",
+      "remaining": "Remaining",
+      "title": "Badge Stats",
+      "total": "Total"
+    },
+    "recent": {
+      "title": "Recently Earned",
+      "description": "Your latest achievements"
+    },
+    "subtitle": "Track your achievements and unlock rewards",
+    "tier": {
+      "bronze": "Bronze",
+      "gold": "Gold",
+      "legendary": "Legendary",
+      "platinum": "Platinum",
+      "silver": "Silver"
+    },
+    "title": "Badges",
+    "tacoRookie": {
+      "name": "Taco Rookie",
+      "description": "Order your first taco"
+    },
+    "tacoFan": {
+      "name": "Taco Fan",
+      "description": "Order 10 tacos"
+    },
+    "tacoVeteran": {
+      "name": "Taco Legend",
+      "description": "Order 50 tacos"
+    },
+    "tacoLegend": {
+      "name": "King of Tacos",
+      "description": "Order 100 tacos"
+    },
+    "tacoGod": {
+      "name": "Taco God",
+      "description": "Order 500 tacos - you are a true legend!"
+    },
+    "feelingLucky": {
+      "name": "Feeling Lucky",
+      "description": "Order your first mystery taco"
+    },
+    "mysteryFan": {
+      "name": "Mystery Fan",
+      "description": "Order 5 mystery tacos"
+    },
+    "mysteryMaster": {
+      "name": "Mystery Master",
+      "description": "Order 10 mystery tacos"
+    },
+    "chaosEmbracer": {
+      "name": "Chaos Embracer",
+      "description": "Order 25 mystery tacos - you love surprises!"
+    },
+    "firstCommand": {
+      "name": "First Command",
+      "description": "Lead your first group order"
+    },
+    "squadLeader": {
+      "name": "Squad Leader",
+      "description": "Lead 5 group orders"
+    },
+    "commander": {
+      "name": "Commander",
+      "description": "Lead 20 group orders"
+    },
+    "teamPlayer": {
+      "name": "Team Player",
+      "description": "Join an organization"
+    },
+    "generous": {
+      "name": "Generous Soul",
+      "description": "Pay for someone else's order"
+    },
+    "founder": {
+      "name": "Founder",
+      "description": "Create an organization"
+    },
+    "meatExplorer": {
+      "name": "Meat Explorer",
+      "description": "Try 5 different meats"
+    },
+    "sauceSommelier": {
+      "name": "Sauce Sommelier",
+      "description": "Try 5 different sauces"
+    },
+    "flavorMaster": {
+      "name": "Flavor Master",
+      "description": "Try 5 meats AND 5 sauces"
+    },
+    "onFire": {
+      "name": "On Fire",
+      "description": "Order 3 weeks in a row"
+    },
+    "unstoppable": {
+      "name": "Unstoppable",
+      "description": "Order 8 weeks in a row"
+    },
+    "devoted": {
+      "name": "Devoted",
+      "description": "Order 16 weeks in a row"
+    },
+    "earlyAdopter": {
+      "name": "Early Adopter",
+      "description": "Joined on November 14, 2025 - OG status!"
+    },
+    "lucky13": {
+      "name": "Lucky 13",
+      "description": "Order on Friday the 13th"
+    },
+    "anniversary": {
+      "name": "Anniversary",
+      "description": "Order on your account anniversary"
+    },
+    "nightOwl": {
+      "name": "Night Owl",
+      "description": "Order between midnight and 5 AM"
+    },
+    "earlyBird": {
+      "name": "Early Bird",
+      "description": "Order before 8 AM"
+    },
+    "inviter": {
+      "name": "Inviter",
+      "description": "Invite 3 members to your organization"
+    },
+    "bigSpender": {
+      "name": "Big Spender",
+      "description": "Spend 50.- or more on tacos"
+    },
+    "garnitureGuru": {
+      "name": "Garniture Guru",
+      "description": "Try 5 different garnitures"
+    },
+    "varietySeeker": {
+      "name": "Variety Seeker",
+      "description": "Try 5 meats, 5 sauces, AND 5 garnitures"
+    },
+    "lunchRush": {
+      "name": "Lunch Rush",
+      "description": "Order during lunch time (11 AM - 2 PM)"
+    },
+    "dinnerTime": {
+      "name": "Dinner Time",
+      "description": "Order during dinner time (6 PM - 8 PM)"
+    },
+    "weekendWarrior": {
+      "name": "Weekend Warrior",
+      "description": "Order on a Saturday"
+    },
+    "tacoFriday": {
+      "name": "Taco Friday",
+      "description": "Order on a Friday - it's a tradition!"
+    }
+  },
   "common": {
     "accept": "Accept",
     "back": "Back",

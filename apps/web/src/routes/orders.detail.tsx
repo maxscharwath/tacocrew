@@ -208,8 +208,8 @@ function OrderDetailContent({
   const { t } = useTranslation();
   const tt = (key: string, options?: Record<string, unknown>) => t(`orders.detail.${key}`, options);
   const { groupOrder, userOrders } = groupOrderData;
-  const rootData = useRouteLoaderData('root') as RootLoaderData;
-  const currentUserId = rootData.profile?.id ?? '';
+  const rootData = useRouteLoaderData('root') as RootLoaderData | undefined;
+  const currentUserId = rootData?.profile?.id ?? '';
   const isLeader = groupOrder.leader.id === currentUserId;
   const navigation = useNavigation();
   const params = useParams();

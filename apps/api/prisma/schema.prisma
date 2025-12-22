@@ -73,6 +73,10 @@ model User {
   // Organization relations
   organizations UserOrganization[]
 
+  // Badge & rewards
+  badges UserBadge[]
+  stats  UserStats?
+
   @@unique([email])
   @@index([username])
   @@map("users")
@@ -336,9 +340,9 @@ enum OrganizationMemberStatus {
 model UserOrganization {
   userId         String
   organizationId String
-  role           OrganizationRole        @default(MEMBER)
+  role           OrganizationRole         @default(MEMBER)
   status         OrganizationMemberStatus @default(PENDING)
-  createdAt      DateTime                @default(now())
+  createdAt      DateTime                 @default(now())
 
   // Relations
   user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -350,4 +354,67 @@ model UserOrganization {
   @@index([organizationId, role])
   @@index([organizationId, status])
   @@map("user_organizations")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Badge & Rewards System
+// ─────────────────────────────────────────────────────────────────────────────
+
+model UserBadge {
+  id       String   @id @default(uuid())
+  userId   String
+  badgeId  String // References badge definition ID from config
+  earnedAt DateTime @default(now())
+  context  Json? // { orderId?, groupOrderId?, value? }
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, badgeId])
+  @@index([userId])
+  @@index([badgeId])
+  @@map("user_badges")
+}
+
+model UserStats {
+  id     String @id @default(uuid())
+  userId String @unique
+
+  // Ordering counters
+  tacosOrdered        Int @default(0)
+  mysteryTacosOrdered Int @default(0)
+  ordersPlaced        Int @default(0)
+  totalSpentCentimes  Int @default(0)
+
+  // Leadership counters
+  groupOrdersCreated Int @default(0)
+  groupOrdersLed     Int @default(0)
+
+  // Social counters
+  organizationsJoined  Int @default(0)
+  organizationsCreated Int @default(0)
+  membersInvited       Int @default(0)
+  timesPaidForOthers   Int @default(0)
+  timesGotReimbursed   Int @default(0)
+
+  // Exploration - unique items tried (stored as JSON arrays of IDs)
+  meatsTried      Json @default("[]")
+  saucesTried     Json @default("[]")
+  garnituresTried Json @default("[]")
+
+  // Streak tracking
+  currentOrderStreak Int  @default(0)
+  longestOrderStreak Int  @default(0)
+  lastOrderWeek      Int? // ISO week number
+  lastOrderYear      Int?
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("user_stats")
 }

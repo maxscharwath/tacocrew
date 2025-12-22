@@ -1,4 +1,5 @@
 export * as AuthApi from '@/lib/api/auth';
+export * as BadgesApi from '@/lib/api/badges';
 export * from '@/lib/api/image-utils';
 export * as OrdersApi from '@/lib/api/orders';
 export * as OrganizationApi from '@/lib/api/organization';

@@ -10,6 +10,8 @@ import { OrganizationRepository } from '@/infrastructure/repositories/organizati
 import type { GroupOrder } from '@/schemas/group-order.schema';
 import type { OrganizationId } from '@/schemas/organization.schema';
 import type { UserId } from '@/schemas/user.schema';
+import { BadgeEvaluationService } from '@/services/badge/badge-evaluation.service';
+import { StatsTrackingService } from '@/services/badge/stats-tracking.service';
 import { ValidationError } from '@/shared/utils/errors.utils';
 import { inject } from '@/shared/utils/inject.utils';
 import { logger } from '@/shared/utils/logger.utils';
@@ -31,6 +33,8 @@ export interface CreateGroupOrderRequest {
 export class CreateGroupOrderUseCase {
   private readonly groupOrderRepository = inject(GroupOrderRepository);
   private readonly organizationRepository = inject(OrganizationRepository);
+  private readonly statsTrackingService = inject(StatsTrackingService);
+  private readonly badgeEvaluationService = inject(BadgeEvaluationService);
 
   async execute(leaderId: UserId, request: CreateGroupOrderRequest): Promise<GroupOrder> {
     this.validateDates(request.startDate, request.endDate);
@@ -52,7 +56,25 @@ export class CreateGroupOrderUseCase {
       endDate: request.endDate.toISOString(),
     });
 
+    // Track stats and evaluate badges (non-blocking)
+    this.trackGroupOrderCreation(leaderId, groupOrder.id).catch((error) => {
+      logger.error('Failed to track group order creation for badges', { leaderId, error });
+    });
+
     return groupOrder;
+  }
+
+  /**
+   * Track group order creation for badges
+   */
+  private async trackGroupOrderCreation(leaderId: UserId, groupOrderId: string): Promise<void> {
+    await this.statsTrackingService.trackGroupOrderCreated(leaderId);
+    await this.badgeEvaluationService.evaluateAfterEvent(leaderId, {
+      type: 'groupOrderCreated',
+      userId: leaderId,
+      timestamp: new Date(),
+      data: { groupOrderId },
+    });
   }
 
   private validateDates(startDate: Date, endDate: Date): void {

@@ -141,6 +141,186 @@
     "subtitle": "Gérez votre compte et vos passkeys",
     "title": "Paramètres du compte"
   },
+  "badges": {
+    "all": {
+      "description": "{{earned}} sur {{total}} badges obtenus",
+      "title": "Tous les Badges"
+    },
+    "complete": "terminé",
+    "earned": {
+      "description": "Vous avez obtenu {{count}} badges",
+      "empty": "Vous n'avez pas encore obtenu de badges. Continuez à commander !",
+      "title": "Badges Obtenus"
+    },
+    "earnedOn": "Obtenu le {{date}}",
+    "empty": {
+      "description": "Commencez votre aventure pour gagner des badges",
+      "title": "Pas encore de Badges"
+    },
+    "inProgress": {
+      "description": "Continuez pour débloquer ces badges",
+      "title": "En Cours"
+    },
+    "secret": "Badge Secret",
+    "secretHint": "Ce badge se débloque par une action secrète !",
+    "stats": {
+      "completion": "Progression",
+      "earned": "Obtenus",
+      "progress": "Progression de la Collection",
+      "remaining": "Restants",
+      "title": "Statistiques",
+      "total": "Total"
+    },
+    "recent": {
+      "title": "Récemment Obtenus",
+      "description": "Vos derniers accomplissements"
+    },
+    "subtitle": "Suivez vos accomplissements et débloquez des récompenses",
+    "tier": {
+      "bronze": "Bronze",
+      "gold": "Or",
+      "legendary": "Légendaire",
+      "platinum": "Platine",
+      "silver": "Argent"
+    },
+    "title": "Badges",
+    "tacoRookie": {
+      "name": "Débutant Taco",
+      "description": "Commandez votre premier taco"
+    },
+    "tacoFan": {
+      "name": "Fan de Tacos",
+      "description": "Commandez 10 tacos"
+    },
+    "tacoVeteran": {
+      "name": "Légende Taco",
+      "description": "Commandez 50 tacos"
+    },
+    "tacoLegend": {
+      "name": "Roi des Tacos",
+      "description": "Commandez 100 tacos"
+    },
+    "tacoGod": {
+      "name": "Dieu du Taco",
+      "description": "Commandez 500 tacos - vous êtes une vraie légende !"
+    },
+    "feelingLucky": {
+      "name": "Chanceux",
+      "description": "Commandez votre premier taco mystère"
+    },
+    "mysteryFan": {
+      "name": "Fan de Mystère",
+      "description": "Commandez 5 tacos mystère"
+    },
+    "mysteryMaster": {
+      "name": "Maître du Mystère",
+      "description": "Commandez 10 tacos mystère"
+    },
+    "chaosEmbracer": {
+      "name": "Amateur de Chaos",
+      "description": "Commandez 25 tacos mystère - vous adorez les surprises !"
+    },
+    "firstCommand": {
+      "name": "Premier Commandement",
+      "description": "Menez votre première commande groupée"
+    },
+    "squadLeader": {
+      "name": "Chef d'Équipe",
+      "description": "Menez 5 commandes groupées"
+    },
+    "commander": {
+      "name": "Commandant",
+      "description": "Menez 20 commandes groupées"
+    },
+    "teamPlayer": {
+      "name": "Joueur d'Équipe",
+      "description": "Rejoignez une organisation"
+    },
+    "generous": {
+      "name": "Âme Généreuse",
+      "description": "Payez la commande de quelqu'un d'autre"
+    },
+    "founder": {
+      "name": "Fondateur",
+      "description": "Créez une organisation"
+    },
+    "meatExplorer": {
+      "name": "Explorateur de Viandes",
+      "description": "Essayez 5 viandes différentes"
+    },
+    "sauceSommelier": {
+      "name": "Sommelier de Sauces",
+      "description": "Essayez 5 sauces différentes"
+    },
+    "flavorMaster": {
+      "name": "Maître des Saveurs",
+      "description": "Essayez 5 viandes ET 5 sauces"
+    },
+    "onFire": {
+      "name": "En Feu",
+      "description": "Commandez 3 semaines d'affilée"
+    },
+    "unstoppable": {
+      "name": "Inarrêtable",
+      "description": "Commandez 8 semaines d'affilée"
+    },
+    "devoted": {
+      "name": "Dévoué",
+      "description": "Commandez 16 semaines d'affilée"
+    },
+    "earlyAdopter": {
+      "name": "Pionnier",
+      "description": "Rejoint le 14 novembre 2025 - statut OG !"
+    },
+    "lucky13": {
+      "name": "Vendredi 13",
+      "description": "Commandez un vendredi 13"
+    },
+    "anniversary": {
+      "name": "Anniversaire",
+      "description": "Commandez le jour anniversaire de votre compte"
+    },
+    "nightOwl": {
+      "name": "Oiseau de Nuit",
+      "description": "Commandez entre minuit et 5h du matin"
+    },
+    "earlyBird": {
+      "name": "Lève-Tôt",
+      "description": "Commandez avant 8h du matin"
+    },
+    "inviter": {
+      "name": "Inviteur",
+      "description": "Invitez 3 membres à votre organisation"
+    },
+    "bigSpender": {
+      "name": "Gros Dépensier",
+      "description": "Dépensez 50.- ou plus en tacos"
+    },
+    "garnitureGuru": {
+      "name": "Gourou des Garnitures",
+      "description": "Essayez 5 garnitures différentes"
+    },
+    "varietySeeker": {
+      "name": "Chercheur de Variété",
+      "description": "Essayez 5 viandes, 5 sauces ET 5 garnitures"
+    },
+    "lunchRush": {
+      "name": "Rush du Déjeuner",
+      "description": "Commandez pendant l'heure du déjeuner (11h - 14h)"
+    },
+    "dinnerTime": {
+      "name": "Heure du Dîner",
+      "description": "Commandez pendant l'heure du dîner (18h - 20h)"
+    },
+    "weekendWarrior": {
+      "name": "Guerrier du Week-end",
+      "description": "Commandez un samedi"
+    },
+    "tacoFriday": {
+      "name": "Vendredi Taco",
+      "description": "Commandez un vendredi - c'est une tradition !"
+    }
+  },
   "common": {
     "accept": "Accepter",
     "back": "Retour",

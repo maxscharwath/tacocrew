@@ -5,6 +5,7 @@ import { cors } from 'hono/cors';
 import { logger as honoLogger } from 'hono/logger';
 import { wrapBetterAuthErrors } from '@/api/middleware/better-auth-error-wrapper.middleware';
 import { errorHandler } from '@/api/middleware/error-handler.middleware';
+import { badgeRoutes } from '@/api/routes/badge.routes';
 import { groupOrderRoutes } from '@/api/routes/group-order.routes';
 import { healthRoutes } from '@/api/routes/health.routes';
 import { notificationRoutes } from '@/api/routes/notification.routes';
@@ -139,7 +140,8 @@ app.route(
     userOrderRoutes,
     pushNotificationRoutes,
     notificationRoutes,
-    organizationRoutes
+    organizationRoutes,
+    badgeRoutes
   )
 );
 
