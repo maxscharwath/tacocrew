@@ -262,7 +262,51 @@ function checkBadgeEligibility(
     return false;
   }
 
-  // Skip action/time triggers - these need real-time checking
+  if (trigger.type === 'action') {
+    // Handle action-based badges that can be evaluated from stats
+    // Actions like "firstOrder" can be checked by looking at the metric
+    if (trigger.action === 'firstOrder') {
+      // firstOrder requires ordersPlaced to be exactly 1
+      const ordersPlaced = getMetricValue('ordersPlaced', stats);
+      return ordersPlaced === 1;
+    }
+    if (trigger.action === 'firstMysteryTaco') {
+      const mysteryTacos = getMetricValue('mysteryTacosOrdered', stats);
+      return mysteryTacos === 1;
+    }
+    if (trigger.action === 'firstGroupOrderCreated') {
+      const groupOrdersCreated = getMetricValue('groupOrdersCreated', stats);
+      return groupOrdersCreated === 1;
+    }
+    if (trigger.action === 'firstGroupOrderLed') {
+      const groupOrdersLed = getMetricValue('groupOrdersLed', stats);
+      return groupOrdersLed === 1;
+    }
+    if (trigger.action === 'joinedOrganization') {
+      const orgsJoined = getMetricValue('organizationsJoined', stats);
+      return orgsJoined >= 1;
+    }
+    if (trigger.action === 'createdOrganization') {
+      const orgsCreated = getMetricValue('organizationsCreated', stats);
+      return orgsCreated >= 1;
+    }
+    if (trigger.action === 'invitedMember') {
+      const membersInvited = getMetricValue('membersInvited', stats);
+      return membersInvited >= 1;
+    }
+    if (trigger.action === 'paidForSomeoneElse') {
+      const timesPaid = getMetricValue('timesPaidForOthers', stats);
+      return timesPaid >= 1;
+    }
+    if (trigger.action === 'gotReimbursed') {
+      const timesReimbursed = getMetricValue('timesGotReimbursed', stats);
+      return timesReimbursed >= 1;
+    }
+    // Other actions need real-time checking
+    return false;
+  }
+
+  // Skip time triggers - these need real-time checking
   return false;
 }
 
@@ -498,12 +542,9 @@ async function migrateUserBadges() {
         }
       }
 
-      // Skip action/time-based badges - these require real-time event checking
-      // Date badges with registeredBefore can be evaluated during migration
-      if (badge.trigger.type === 'action') {
-        console.log(`  ⏭️  Skipped (action-based, requires real-time event): ${badge.id}`);
-        continue;
-      }
+      // Handle action-based badges that can be evaluated from stats
+      // Some actions (like firstOrder) can be checked by looking at metrics
+      // We'll evaluate them below, so don't skip here
 
       if (badge.trigger.type === 'time') {
         console.log(`  ⏭️  Skipped (time-based, requires real-time event): ${badge.id}`);
@@ -550,6 +591,13 @@ async function migrateUserBadges() {
           const cutoffDateStrFormatted = cutoffDate.toISOString().split('T')[0];
           const qualifies = userCreatedAt <= cutoffDate;
           reason = `registered ${userDateStr}, cutoff is ${cutoffDateStrFormatted} (${qualifies ? 'SHOULD QUALIFY - check date comparison logic!' : 'registered too late'})`;
+        } else if (badge.trigger.type === 'action') {
+          if (badge.trigger.action === 'firstOrder') {
+            const ordersPlaced = getMetricValue('ordersPlaced', statsData as Parameters<typeof getMetricValue>[1]);
+            reason = `needs first order (ordersPlaced === 1), has ${ordersPlaced}`;
+          } else {
+            reason = `action ${badge.trigger.action} condition not met`;
+          }
         } else if (badge.trigger.type === 'streak') {
           const value = getMetricValue('longestOrderStreak', statsData as Parameters<typeof getMetricValue>[1]);
           reason = `needs streak of ${badge.trigger.count}, has ${value}`;
