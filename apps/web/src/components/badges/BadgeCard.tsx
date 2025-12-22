@@ -2,9 +2,29 @@ import { cn, Tooltip, TooltipContent, TooltipTrigger } from '@tacocrew/ui-kit';
 import { Award, Lock, Sparkles } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useLocaleFormatter } from '@/hooks/useLocaleFormatter';
 import type { BadgeDefinition, BadgeTier } from '@/config/badges.config';
 import type { UserBadge } from '@/hooks/useBadges';
 import type { BadgeProgress } from '@/lib/api/badges';
+
+/**
+ * Format progress value based on badge type
+ * Converts centimes to CHF for money-related badges
+ */
+function formatProgressValue(badgeId: string, value: number): string {
+  // Badges that use totalSpentCentimes should display in CHF
+  if (badgeId === 'big-spender') {
+    const chfValue = value / 100;
+    return new Intl.NumberFormat(undefined, {
+      style: 'currency',
+      currency: 'CHF',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(chfValue);
+  }
+  // For other badges, display as-is
+  return value.toLocaleString();
+}
 
 interface BadgeCardProps {
   /** Badge definition or earned badge */
@@ -185,7 +205,7 @@ export function BadgeCard({ badge, earned, progress, onClick, className }: Badge
           <div className="mt-2">
             <div className="mb-1 flex items-center justify-between text-[10px]">
               <span className="text-slate-400">
-                {progress.current} / {progress.target}
+                {formatProgressValue(definition.id, progress.current)} / {formatProgressValue(definition.id, progress.target)}
               </span>
               <span className="font-semibold text-white">{progress.percentage}%</span>
             </div>

@@ -3,6 +3,25 @@ import { useTranslation } from 'react-i18next';
 import type { BadgeDefinition, BadgeTier } from '@/config/badges.config';
 import type { BadgeProgress as BadgeProgressType } from '@/lib/api/badges';
 
+/**
+ * Format progress value based on badge type
+ * Converts centimes to CHF for money-related badges
+ */
+function formatProgressValue(badgeId: string, value: number): string {
+  // Badges that use totalSpentCentimes should display in CHF
+  if (badgeId === 'big-spender') {
+    const chfValue = value / 100;
+    return new Intl.NumberFormat(undefined, {
+      style: 'currency',
+      currency: 'CHF',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(chfValue);
+  }
+  // For other badges, display as-is
+  return value.toLocaleString();
+}
+
 interface BadgeProgressProps {
   /** Badge definition */
   readonly badge: BadgeDefinition;
@@ -55,8 +74,8 @@ export function BadgeProgress({ badge, progress, className }: BadgeProgressProps
             <p className="truncate text-slate-500 text-xs">{description}</p>
           </div>
           <div className="shrink-0 text-right">
-            <span className="font-bold text-sm text-white">{progress.current}</span>
-            <span className="text-slate-500 text-sm"> / {progress.target}</span>
+            <span className="font-bold text-sm text-white">{formatProgressValue(badge.id, progress.current)}</span>
+            <span className="text-slate-500 text-sm"> / {formatProgressValue(badge.id, progress.target)}</span>
           </div>
         </div>
 
