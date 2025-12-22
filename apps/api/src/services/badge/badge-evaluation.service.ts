@@ -182,15 +182,18 @@ export class BadgeEvaluationService {
         timestamp: now,
       };
 
+      const userCreatedAt = user.createdAt ?? new Date();
+
       for (const badge of allBadges) {
         // Skip if already earned
         if (earnedBadgeIds.has(badge.id)) continue;
 
-        // Skip if not available
+        // Check badge availability based on when the user registered (for backfill)
+        // Badge is expired if user registered AFTER the until date
         if (badge.availability) {
           const { from, until } = badge.availability;
-          if (from && now < from) continue;
-          if (until && now > until) continue;
+          if (from && userCreatedAt < from) continue;
+          if (until && userCreatedAt > until) continue;
         }
 
         // Evaluate trigger (count, combo, streak, and date triggers make sense for backfill)

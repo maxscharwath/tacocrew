@@ -476,15 +476,16 @@ async function migrateUserBadges() {
         continue;
       }
 
-      // Skip badges with availability restrictions that have passed
-      if (badge.availability?.until && new Date() > badge.availability.until) {
-        console.log(`  ⏭️  Skipped (expired): ${badge.id} - expired on ${badge.availability.until.toISOString().split('T')[0]}`);
+      // Check badge availability based on when the user registered (not current date)
+      // Badge is expired if user registered AFTER the until date
+      if (badge.availability?.until && userCreatedAt > badge.availability.until) {
+        console.log(`  ⏭️  Skipped (expired): ${badge.id} - user registered ${userCreatedAt.toISOString().split('T')[0]}, badge expired on ${badge.availability.until.toISOString().split('T')[0]}`);
         continue;
       }
 
-      // Skip badges with availability restrictions that haven't started
-      if (badge.availability?.from && new Date() < badge.availability.from) {
-        console.log(`  ⏭️  Skipped (not yet available): ${badge.id} - available from ${badge.availability.from.toISOString().split('T')[0]}`);
+      // Badge is not yet available if user registered BEFORE the from date
+      if (badge.availability?.from && userCreatedAt < badge.availability.from) {
+        console.log(`  ⏭️  Skipped (not yet available): ${badge.id} - user registered ${userCreatedAt.toISOString().split('T')[0]}, badge available from ${badge.availability.from.toISOString().split('T')[0]}`);
         continue;
       }
 
