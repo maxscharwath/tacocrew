@@ -222,7 +222,11 @@ type BadgeTrigger = (typeof BADGES)[number]['trigger'];
  * Check if a user qualifies for a badge based on their stats
  * Simplified: uses centralized getMetricValue from metrics.config.ts
  */
-function checkBadgeEligibility(stats: Parameters<typeof getMetricValue>[1], trigger: BadgeTrigger): boolean {
+function checkBadgeEligibility(
+  stats: Parameters<typeof getMetricValue>[1],
+  trigger: BadgeTrigger,
+  userCreatedAt: Date
+): boolean {
   if (trigger.type === 'count') {
     // Use centralized metric lookup - no switch statement needed!
     const value = getMetricValue(trigger.metric, stats);
@@ -237,10 +241,19 @@ function checkBadgeEligibility(stats: Parameters<typeof getMetricValue>[1], trig
   }
 
   if (trigger.type === 'combo') {
-    return trigger.conditions.every((condition) => checkBadgeEligibility(stats, condition));
+    return trigger.conditions.every((condition) => checkBadgeEligibility(stats, condition, userCreatedAt));
   }
 
-  // Skip action/date/time triggers - these need real-time checking
+  if (trigger.type === 'date') {
+    // Handle registeredBefore condition - can be evaluated during migration
+    if (trigger.condition.type === 'registeredBefore') {
+      return userCreatedAt <= new Date(trigger.condition.date);
+    }
+    // Other date conditions need real-time checking
+    return false;
+  }
+
+  // Skip action/time triggers - these need real-time checking
   return false;
 }
 
@@ -458,19 +471,27 @@ async function migrateUserBadges() {
         continue;
       }
 
-      // Skip action/date/time-based badges - these require real-time event checking
-      // and cannot be reliably backfilled from historical data
-      if (
-        badge.trigger.type === 'action' ||
-        badge.trigger.type === 'date' ||
-        badge.trigger.type === 'time'
-      ) {
+      // Skip action/time-based badges - these require real-time event checking
+      // Date badges with registeredBefore can be evaluated during migration
+      if (badge.trigger.type === 'action' || badge.trigger.type === 'time') {
+        console.log(`  ⏭️  Skipped (requires real-time): ${badge.id}`);
+        continue;
+      }
+
+      // Skip date badges that aren't registeredBefore (they need real-time checking)
+      if (badge.trigger.type === 'date' && badge.trigger.condition.type !== 'registeredBefore') {
         console.log(`  ⏭️  Skipped (requires real-time): ${badge.id}`);
         continue;
       }
 
       // Check eligibility - cast to UserStats shape for metric lookup
-      if (checkBadgeEligibility(statsData as Parameters<typeof getMetricValue>[1], badge.trigger)) {
+      if (
+        checkBadgeEligibility(
+          statsData as Parameters<typeof getMetricValue>[1],
+          badge.trigger,
+          user.createdAt ?? new Date()
+        )
+      ) {
         await prisma.userBadge.create({
           data: {
             userId: user.id,
