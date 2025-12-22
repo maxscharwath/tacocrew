@@ -25,6 +25,11 @@ export type BadgeCategory =
   | 'loyalty'
   | 'special';
 
+/**
+ * Function to format a progress value for display
+ */
+export type BadgeValueFormatter = (value: number) => string;
+
 export interface BadgeDefinition {
   readonly id: string;
   readonly nameKey: string;
@@ -34,6 +39,8 @@ export interface BadgeDefinition {
   readonly category: BadgeCategory;
   readonly secret?: boolean;
   readonly threshold?: number;
+  /** Optional formatter for progress values (e.g., to convert centimes to CHF) */
+  readonly valueFormatter?: BadgeValueFormatter;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -204,6 +211,16 @@ export const BADGES: readonly BadgeDefinition[] = [
     tier: 'gold',
     category: 'social',
     threshold: 5000,
+    // Convert centimes to CHF for display
+    valueFormatter: (value: number) => {
+      const chfValue = value / 100;
+      return new Intl.NumberFormat(undefined, {
+        style: 'currency',
+        currency: 'CHF',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      }).format(chfValue);
+    },
   },
 
   // ─────────────────────────────────────────────────────────────────────────────

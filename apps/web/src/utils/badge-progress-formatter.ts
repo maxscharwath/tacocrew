@@ -1,35 +1,10 @@
 /**
  * Badge Progress Formatter
  * 
- * Formats badge progress values based on the metric type.
- * This centralizes formatting logic and makes it easy to add new metric types.
+ * Formats badge progress values using the formatter defined in the badge config.
  */
 
-/**
- * Metric types that require special formatting
- */
-const METRIC_FORMATTERS: Record<string, (value: number) => string> = {
-  totalSpentCentimes: (value: number) => {
-    // Convert centimes to CHF
-    const chfValue = value / 100;
-    return new Intl.NumberFormat(undefined, {
-      style: 'currency',
-      currency: 'CHF',
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(chfValue);
-  },
-};
-
-/**
- * Badge ID to metric type mapping
- * This should match the backend badge configuration
- */
-const BADGE_METRIC_MAP: Record<string, string> = {
-  'big-spender': 'totalSpentCentimes',
-  // Add more mappings as needed
-  // 'another-badge': 'anotherMetric',
-};
+import { getBadgeById } from '@/config/badges.config';
 
 /**
  * Format a progress value for a badge
@@ -39,13 +14,13 @@ const BADGE_METRIC_MAP: Record<string, string> = {
  * @returns Formatted string representation of the value
  */
 export function formatBadgeProgressValue(badgeId: string, value: number): string {
-  const metricType = BADGE_METRIC_MAP[badgeId];
+  const badge = getBadgeById(badgeId);
   
-  if (metricType && METRIC_FORMATTERS[metricType]) {
-    return METRIC_FORMATTERS[metricType](value);
+  // Use the formatter from badge config if available
+  if (badge?.valueFormatter) {
+    return badge.valueFormatter(value);
   }
   
   // Default: format as number with locale-specific separators
   return value.toLocaleString();
 }
-
