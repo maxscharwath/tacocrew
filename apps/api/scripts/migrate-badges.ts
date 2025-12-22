@@ -77,7 +77,12 @@ function extractStatsFromItems(items: OrderItems): {
         for (const meat of taco.meats) {
           if (!meat) continue;
           // Extract ID from object or use string directly
-          const meatId = typeof meat === 'string' ? meat : (meat && typeof meat === 'object' && 'id' in meat ? meat.id : null);
+          let meatId: string | null = null;
+          if (typeof meat === 'string') {
+            meatId = meat;
+          } else if (meat && typeof meat === 'object' && 'id' in meat) {
+            meatId = String((meat as { id: unknown }).id);
+          }
           if (meatId) meats.add(meatId);
         }
       }
@@ -85,7 +90,12 @@ function extractStatsFromItems(items: OrderItems): {
         for (const sauce of taco.sauces) {
           if (!sauce) continue;
           // Extract ID from object or use string directly
-          const sauceId = typeof sauce === 'string' ? sauce : (sauce && typeof sauce === 'object' && 'id' in sauce ? sauce.id : null);
+          let sauceId: string | null = null;
+          if (typeof sauce === 'string') {
+            sauceId = sauce;
+          } else if (sauce && typeof sauce === 'object' && 'id' in sauce) {
+            sauceId = String((sauce as { id: unknown }).id);
+          }
           if (sauceId) sauces.add(sauceId);
         }
       }
@@ -93,7 +103,12 @@ function extractStatsFromItems(items: OrderItems): {
         for (const garniture of taco.garnitures) {
           if (!garniture) continue;
           // Extract ID from object or use string directly
-          const garnitureId = typeof garniture === 'string' ? garniture : (garniture && typeof garniture === 'object' && 'id' in garniture ? garniture.id : null);
+          let garnitureId: string | null = null;
+          if (typeof garniture === 'string') {
+            garnitureId = garniture;
+          } else if (garniture && typeof garniture === 'object' && 'id' in garniture) {
+            garnitureId = String((garniture as { id: unknown }).id);
+          }
           if (garnitureId) garnitures.add(garnitureId);
         }
       }
