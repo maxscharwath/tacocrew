@@ -1,4 +1,4 @@
-import { Prisma } from '@prisma/client/extension';
+import { Prisma } from '@prisma/client';
 import { CursorPaginationMeta } from 'prisma-extension-pagination';
 
 /**
