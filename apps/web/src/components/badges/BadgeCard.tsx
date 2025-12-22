@@ -2,7 +2,6 @@ import { cn, Tooltip, TooltipContent, TooltipTrigger } from '@tacocrew/ui-kit';
 import { Award, Lock, Sparkles } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useLocaleFormatter } from '@/hooks/useLocaleFormatter';
 import type { BadgeDefinition, BadgeTier } from '@/config/badges.config';
 import type { UserBadge } from '@/hooks/useBadges';
 import type { BadgeProgress } from '@/lib/api/badges';
