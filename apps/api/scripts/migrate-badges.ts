@@ -72,20 +72,29 @@ function extractStatsFromItems(items: OrderItems): {
         mysteryCount += qty;
       }
 
-      // Collect unique ingredients
+      // Collect unique ingredient IDs (handle both string IDs and objects with id field)
       if (Array.isArray(taco.meats)) {
         for (const meat of taco.meats) {
-          if (meat) meats.add(meat);
+          if (!meat) continue;
+          // Extract ID from object or use string directly
+          const meatId = typeof meat === 'string' ? meat : (meat && typeof meat === 'object' && 'id' in meat ? meat.id : null);
+          if (meatId) meats.add(meatId);
         }
       }
       if (Array.isArray(taco.sauces)) {
         for (const sauce of taco.sauces) {
-          if (sauce) sauces.add(sauce);
+          if (!sauce) continue;
+          // Extract ID from object or use string directly
+          const sauceId = typeof sauce === 'string' ? sauce : (sauce && typeof sauce === 'object' && 'id' in sauce ? sauce.id : null);
+          if (sauceId) sauces.add(sauceId);
         }
       }
       if (Array.isArray(taco.garnitures)) {
         for (const garniture of taco.garnitures) {
-          if (garniture) garnitures.add(garniture);
+          if (!garniture) continue;
+          // Extract ID from object or use string directly
+          const garnitureId = typeof garniture === 'string' ? garniture : (garniture && typeof garniture === 'object' && 'id' in garniture ? garniture.id : null);
+          if (garnitureId) garnitures.add(garnitureId);
         }
       }
     }
