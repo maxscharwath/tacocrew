@@ -149,8 +149,11 @@ export const BADGES: readonly BadgeDefinition[] = [
   // ─────────────────────────────────────────────────────────────────────────────
   {
     id: 'early-adopter',
-    trigger: { type: 'action', action: 'firstOrder' },
-    availability: { until: new Date('2025-11-14') },
+    // Awarded to all users who registered on or before the specified date
+    trigger: {
+      type: 'date',
+      condition: { type: 'registeredBefore', date: '2025-11-14' },
+    },
   },
   {
     id: 'lucky-13',
