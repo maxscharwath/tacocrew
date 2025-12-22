@@ -380,12 +380,14 @@ export const BADGES: readonly BadgeDefinition[] = [
 // Utility Functions
 // ─────────────────────────────────────────────────────────────────────────────
 
-/** Map for O(1) lookup by ID */
-const badgesById = new Map(BADGES.map((b) => [b.id, b]));
+/** Object for O(1) lookup by ID */
+const badgesById: Record<string, BadgeDefinition> = Object.fromEntries(
+  BADGES.map((b) => [b.id, b])
+);
 
 /** Get badge by ID */
 export function getBadgeById(id: string): BadgeDefinition | undefined {
-  return badgesById.get(id);
+  return badgesById[id];
 }
 
 /** Get all badges */
