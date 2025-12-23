@@ -7,6 +7,7 @@ import type {
   GroupOrderWithUserOrders,
   UpsertUserOrderBody,
   UserOrderDetail,
+  UserOrderItems,
   UserOrderResponse,
 } from '@/lib/api/types';
 
@@ -31,6 +32,10 @@ export function getGroupOrder(id: string) {
 
 export function getGroupOrderWithOrders(id: string) {
   return apiClient.get<GroupOrderWithUserOrders>(`/api/v1/orders/${id}/items`);
+}
+
+export function revealMysteryTacos(groupOrderId: string, userOrderId: string) {
+  return apiClient.get<UserOrderItems>(`/api/v1/orders/${groupOrderId}/items/${userOrderId}/reveal-mystery`);
 }
 
 export function upsertUserOrder(groupOrderId: string, body: UpsertUserOrderBody) {

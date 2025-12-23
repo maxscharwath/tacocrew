@@ -44,6 +44,7 @@ describe('CreateUserOrderUseCase', () => {
 
   const mockResourceService = {
     getStock: mock(),
+    getStockForProcessing: mock(),
   };
 
   const mockUserService = {
@@ -57,6 +58,7 @@ describe('CreateUserOrderUseCase', () => {
     mockUserOrderRepository.upsert.mockReset();
     mockUserOrderRepository.create.mockReset();
     mockResourceService.getStock.mockReset();
+    mockResourceService.getStockForProcessing.mockReset();
     mockUserService.getUserById.mockReset();
 
     mockGroupOrderRepository.findById.mockResolvedValue(mockGroupOrder);
@@ -65,13 +67,13 @@ describe('CreateUserOrderUseCase', () => {
       name: 'Test User',
       email: 'test@example.com',
     });
-    mockResourceService.getStock.mockResolvedValue({
+    const mockStock = {
       [StockCategory.Meats]: [
         {
           id: deterministicUUID('viande_hachee', StockCategory.Meats),
           code: 'viande_hachee',
           name: 'Viande Hachée',
-          price: 5,
+          price: { value: 5, currency: 'CHF' },
           in_stock: true,
         },
       ],
@@ -80,7 +82,7 @@ describe('CreateUserOrderUseCase', () => {
           id: deterministicUUID('harissa', StockCategory.Sauces),
           code: 'harissa',
           name: 'Harissa',
-          price: 0,
+          price: { value: 0, currency: 'CHF' },
           in_stock: true,
         },
       ],
@@ -89,7 +91,7 @@ describe('CreateUserOrderUseCase', () => {
           id: deterministicUUID('salade', StockCategory.Garnishes),
           code: 'salade',
           name: 'Salade',
-          price: 0,
+          price: { value: 0, currency: 'CHF' },
           in_stock: true,
         },
       ],
@@ -98,14 +100,26 @@ describe('CreateUserOrderUseCase', () => {
           id: deterministicUUID('extra_frites', StockCategory.Extras),
           code: 'extra_frites',
           name: 'Frites',
-          price: 3,
+          price: { value: 3, currency: 'CHF' },
           in_stock: true,
         },
       ],
       [StockCategory.Desserts]: [],
       [StockCategory.Drinks]: [],
-      tacos: [],
-    });
+      tacos: [
+        {
+          id: deterministicUUID('tacos_XL', 'tacos'),
+          code: 'tacos_XL',
+          name: 'Tacos XL',
+          price: { value: 18.5, currency: 'CHF' },
+          maxMeats: 3,
+          maxSauces: 3,
+          allowGarnitures: true,
+        },
+      ],
+    };
+    mockResourceService.getStock.mockResolvedValue(mockStock);
+    mockResourceService.getStockForProcessing.mockResolvedValue(mockStock);
 
     const createMockUserOrder = ({
       groupOrderId: goId,

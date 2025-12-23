@@ -45,3 +45,18 @@ export const AllTones: Story = {
     );
   },
 };
+
+// Truncate example - truncate is now default behavior
+export const Truncate: Story = {
+  render: () => (
+    <div className="w-32 space-y-2">
+      <Badge>Very long badge text that will be truncated</Badge>
+      <Badge pill tone="brand">
+        Very long pill badge text
+      </Badge>
+      <Badge tone="success">
+        Another long badge text example
+      </Badge>
+    </div>
+  ),
+};

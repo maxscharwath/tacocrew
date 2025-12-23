@@ -83,18 +83,49 @@ export const GarnitureSchema = z.object({
 export type Garniture = z.infer<typeof GarnitureSchema>;
 
 /**
- * Taco schema using Zod
+ * Taco kind enum
  */
-export const TacoSchema = z.object({
+export enum TacoKind {
+  REGULAR = 'regular',
+  MYSTERY = 'mystery',
+}
+
+/**
+ * Regular Taco schema - has tacoID (recipe-based identifier)
+ * Each taco object represents a single taco. For multiple tacos, create multiple objects.
+ */
+export const RegularTacoSchema = z.object({
   id: TacoId,
   size: z.enum(TacoSize),
   meats: z.array(MeatSchema),
   sauces: z.array(SauceSchema),
   garnitures: z.array(GarnitureSchema),
   note: z.string().optional(),
-  quantity: z.number().int().min(1),
   price: z.number().min(0),
-  tacoID: z.string().min(1), // base58-encoded tacoID (Bitcoin-style identifier) - always required
+  tacoID: z.string().min(1), // base58-encoded tacoID - required for regular tacos
+  kind: z.literal(TacoKind.REGULAR),
 });
 
+/**
+ * Mystery Taco schema - no tacoID, no ingredients (chef picks everything, only size is required)
+ * Each taco object represents a single taco. For multiple tacos, create multiple objects.
+ */
+export const MysteryTacoSchema = z.object({
+  id: TacoId,
+  size: z.enum(TacoSize),
+  note: z.string().optional(),
+  price: z.number().min(0),
+  kind: z.literal(TacoKind.MYSTERY),
+});
+
+/**
+ * Taco schema - discriminated union of RegularTaco and MysteryTaco
+ */
+export const TacoSchema = z.discriminatedUnion('kind', [
+  RegularTacoSchema,
+  MysteryTacoSchema,
+]);
+
+export type RegularTaco = z.infer<typeof RegularTacoSchema>;
+export type MysteryTaco = z.infer<typeof MysteryTacoSchema>;
 export type Taco = z.infer<typeof TacoSchema>;

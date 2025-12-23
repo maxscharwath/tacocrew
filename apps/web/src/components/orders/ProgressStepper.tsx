@@ -18,14 +18,25 @@ export function ProgressStepper({ steps }: ProgressStepperProps) {
 
   const completedSteps = steps.filter((s) => s.completed).length;
   const progressPercentage = (completedSteps / steps.length) * 100;
+  
+  // Detect mystery mode: if we have exactly 2 steps and the second is "ready", it's a mystery taco
+  const isMystery = steps.length === 2 && steps[1]?.key === 'ready';
 
   return (
-    <div className="mb-6 border-white/10 border-b pb-6">
+    <div className={cn(
+      "mb-6 border-b pb-6",
+      isMystery ? "border-purple-500/20" : "border-white/10"
+    )}>
       <div className="space-y-3">
         {/* Progress bar */}
         <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-800/60">
           <div
-            className="h-full rounded-full bg-gradient-to-r from-brand-400 via-brand-500 to-sky-500 shadow-[0_0_8px_rgba(99,102,241,0.4)] transition-all duration-700 ease-out"
+            className={cn(
+              "h-full rounded-full transition-all duration-700 ease-out",
+              isMystery
+                ? "bg-gradient-to-r from-purple-400 via-purple-500 to-indigo-500 shadow-[0_0_8px_rgba(139,92,246,0.4)]"
+                : "bg-gradient-to-r from-brand-400 via-brand-500 to-sky-500 shadow-[0_0_8px_rgba(99,102,241,0.4)]"
+            )}
             style={{ width: `${progressPercentage}%` }}
           />
         </div>
@@ -43,25 +54,40 @@ export function ProgressStepper({ steps }: ProgressStepperProps) {
                   className={cn(
                     'relative z-10 grid h-7 w-7 shrink-0 place-items-center rounded-full border-2 transition-all duration-300',
                     isActive
-                      ? 'scale-105 border-brand-400/60 bg-linear-to-br from-brand-500/30 to-sky-500/20 shadow-[0_2px_8px_rgba(99,102,241,0.3)]'
+                      ? isMystery
+                        ? 'scale-105 border-purple-400/60 bg-linear-to-br from-purple-500/30 to-indigo-500/20 shadow-[0_2px_8px_rgba(139,92,246,0.3)]'
+                        : 'scale-105 border-brand-400/60 bg-linear-to-br from-brand-500/30 to-sky-500/20 shadow-[0_2px_8px_rgba(99,102,241,0.3)]'
                       : isCurrent
-                        ? 'border-brand-400/40 bg-brand-500/10 shadow-[0_1px_4px_rgba(99,102,241,0.2)]'
+                        ? isMystery
+                          ? 'border-purple-400/40 bg-purple-500/10 shadow-[0_1px_4px_rgba(139,92,246,0.2)]'
+                          : 'border-brand-400/40 bg-brand-500/10 shadow-[0_1px_4px_rgba(99,102,241,0.2)]'
                         : 'border-white/20 bg-slate-800/50'
                   )}
                 >
                   {isActive ? (
-                    <CheckCircle2 size={14} className="text-brand-300" />
+                    <CheckCircle2 
+                      size={14} 
+                      className={isMystery ? 'text-purple-300' : 'text-brand-300'} 
+                    />
                   ) : (
                     <StepIcon
                       size={12}
-                      className={isCurrent ? 'text-brand-400' : 'text-slate-500'}
+                      className={cn(
+                        isCurrent 
+                          ? isMystery ? 'text-purple-400' : 'text-brand-400'
+                          : 'text-slate-500'
+                      )}
                     />
                   )}
                 </div>
                 <p
                   className={cn(
                     'w-full truncate text-center font-medium text-[10px] transition-colors',
-                    isActive ? 'text-brand-100' : isCurrent ? 'text-slate-300' : 'text-slate-500'
+                    isActive 
+                      ? isMystery ? 'text-purple-100' : 'text-brand-100'
+                      : isCurrent 
+                        ? 'text-slate-300' 
+                        : 'text-slate-500'
                   )}
                   title={step.label}
                 >

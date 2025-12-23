@@ -14,8 +14,9 @@ export function calculateUserOrderPrice(items: UserOrderItems): number {
   let total = 0;
 
   // Sum taco prices (price includes base size + meats)
+  // Each taco in the array represents one taco
   for (const taco of items.tacos) {
-    total += (taco.price ?? 0) * (taco.quantity ?? 1);
+    total += taco.price ?? 0;
   }
 
   // Sum extra prices

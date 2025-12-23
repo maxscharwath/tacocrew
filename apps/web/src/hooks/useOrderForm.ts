@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { StockResponse } from '@/lib/api';
 import type { UserOrderDetail } from '@/lib/api/orders';
+import { TacoKind } from '@/lib/api/types';
 import type { MeatSelection, TacoSizeItem } from '@/types/orders';
 import { calculateOrderTotalPrice, generatePriceBreakdown } from '@/utils/priceCalculations';
 
@@ -28,20 +29,24 @@ export function useOrderForm({ stock, myOrder }: UseOrderFormProps) {
     }
 
     const taco = myOrder.items.tacos[0];
+    const isMystery = taco?.kind === TacoKind.MYSTERY;
     return {
       size: taco?.size ?? '',
-      meats: taco
-        ? taco.meats.map((item: { id: string; quantity?: number }) => ({
-            id: item.id,
-            quantity: item.quantity ?? 1,
-          }))
-        : [],
-      sauces: taco ? taco.sauces.map((item: { id: string }) => item.id) : [],
-      garnitures: taco ? taco.garnitures.map((item: { id: string }) => item.id) : [],
+      meats:
+        taco && !isMystery && taco.meats
+          ? taco.meats.map((item: { id: string; quantity?: number }) => ({
+              id: item.id,
+              quantity: item.quantity ?? 1,
+            }))
+          : [],
+      sauces: taco && !isMystery && taco.sauces ? taco.sauces.map((item: { id: string }) => item.id) : [],
+      garnitures:
+        taco && !isMystery && taco.garnitures ? taco.garnitures.map((item: { id: string }) => item.id) : [],
       extras: myOrder.items.extras.map((extra: { id: string }) => extra.id),
       drinks: myOrder.items.drinks.map((drink: { id: string }) => drink.id),
       desserts: myOrder.items.desserts.map((dessert: { id: string }) => dessert.id),
       note: taco?.note ?? '',
+      kind: taco?.kind ?? TacoKind.REGULAR,
     };
   };
 
@@ -55,6 +60,7 @@ export function useOrderForm({ stock, myOrder }: UseOrderFormProps) {
   const [drinks, setDrinks] = useState<string[]>(defaultSelections.drinks);
   const [desserts, setDesserts] = useState<string[]>(defaultSelections.desserts);
   const [note, setNote] = useState(defaultSelections.note);
+  const [kind, setKind] = useState<TacoKind>(defaultSelections.kind ?? TacoKind.REGULAR);
 
   const selectedTacoSize: TacoSizeItem | null = size
     ? (stock.tacos.find((t) => t.code === size) ?? null)
@@ -182,23 +188,63 @@ export function useOrderForm({ stock, myOrder }: UseOrderFormProps) {
    */
   const prefillTaco = (taco: {
     size: string;
-    meats: Array<{ id: string; quantity: number }>;
-    sauces: Array<{ id: string }>;
-    garnitures: Array<{ id: string }>;
+    meats?: Array<{ id: string; quantity: number }>;
+    sauces?: Array<{ id: string }>;
+    garnitures?: Array<{ id: string }>;
     note?: string;
+    kind?: TacoKind;
   }) => {
     // Only update form state - no validation, no submission
     setSize(taco.size);
-    setMeats(taco.meats.map((m) => ({ id: m.id, quantity: m.quantity ?? 1 })));
-    setSauces(taco.sauces.map((s) => s.id));
-    setGarnitures(taco.garnitures.map((g) => g.id));
+    setMeats(taco.meats?.map((m) => ({ id: m.id, quantity: m.quantity ?? 1 })) ?? []);
+    setSauces(taco.sauces?.map((s) => s.id) ?? []);
+    setGarnitures(taco.garnitures?.map((g) => g.id) ?? []);
     setNote(taco.note ?? '');
+    setKind(taco.kind ?? TacoKind.REGULAR);
+  };
+
+  /**
+   * Add a mystery taco - chef chooses everything (meats, sauces, garnitures)
+   */
+  const addMysteryTaco = (tacoSize: string) => {
+    setSize(tacoSize);
+    setMeats([]); // No meats - chef decides
+    setSauces([]); // No sauces - chef decides
+    setGarnitures([]); // No garnitures - chef decides
+    setNote('');
+    setKind(TacoKind.MYSTERY);
+  };
+
+  /**
+   * Clear mystery state when user manually selects a size
+   */
+  const handleSetSize = (newSize: string) => {
+    setSize(newSize);
+    if (kind === TacoKind.MYSTERY) {
+      setKind(TacoKind.REGULAR);
+    }
+  };
+
+  /**
+   * Toggle mystery mode - when enabled, clears all ingredients (chef picks everything)
+   */
+  const toggleMystery = () => {
+    if (kind === TacoKind.MYSTERY) {
+      // Turning off mystery - keep the size, just clear mystery flag
+      setKind(TacoKind.REGULAR);
+    } else {
+      // Turning on mystery - clear all ingredients
+      setMeats([]);
+      setSauces([]);
+      setGarnitures([]);
+      setKind(TacoKind.MYSTERY);
+    }
   };
 
   return {
     // State
     size,
-    setSize,
+    setSize: handleSetSize,
     meats,
     sauces,
     setSauces,
@@ -212,6 +258,7 @@ export function useOrderForm({ stock, myOrder }: UseOrderFormProps) {
     setDesserts,
     note,
     setNote,
+    kind,
     // Computed
     selectedTacoSize,
     totalPrice,
@@ -220,5 +267,7 @@ export function useOrderForm({ stock, myOrder }: UseOrderFormProps) {
     toggleSelection,
     updateMeatQuantity,
     prefillTaco,
+    addMysteryTaco,
+    toggleMystery,
   };
 }

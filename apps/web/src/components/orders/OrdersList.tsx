@@ -20,7 +20,7 @@ import { OrderCard } from './OrderCard';
 type OrdersListProps = Readonly<{
   userOrders: UserOrderSummary[];
   groupOrder: GroupOrder;
-  currentUserId: string;
+  currentUserId: string | undefined;
   isLeader: boolean;
   orderId: string;
   isSubmitting: boolean;
@@ -59,13 +59,16 @@ export function OrdersList({
       </CardHeader>
       <CardContent className="gap-4">
         {userOrders.length > 0 ? (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 items-stretch">
             {userOrders.map((order) => {
               const { canEdit, canDelete, isMyOrder } = getOrderPermissions(
                 order,
                 currentUserId,
-                isLeader
+                isLeader,
+                groupOrder.status
               );
+
+              const isSubmitted = groupOrder.status === 'submitted' || groupOrder.status === 'completed';
 
               return (
                 <OrderCard
@@ -76,6 +79,8 @@ export function OrdersList({
                   canDelete={canDelete}
                   orderId={orderId}
                   isSubmitting={isSubmitting}
+                  isLeader={isLeader}
+                  isSubmitted={isSubmitted}
                   onDuplicate={() => {
                     revalidator.revalidate();
                   }}

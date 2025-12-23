@@ -8,8 +8,9 @@ import {
   CardHeader,
   CardTitle,
 } from '@tacocrew/ui-kit';
-import { ShoppingBag } from 'lucide-react';
+import { Dices, ShoppingBag } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { TacoKind } from '@/lib/api/types';
 import type { StockResponse } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import type { MeatSelection, PriceBreakdownItem, ProgressStep, TacoSizeItem } from '@/types/orders';
@@ -42,6 +43,7 @@ type OrderSummaryProps = Readonly<{
   formId: string;
   isSubmitting: boolean;
   editOrderId: string | null;
+  kind?: TacoKind;
   onCancel: () => void;
 }>;
 
@@ -67,9 +69,11 @@ export function OrderSummary({
   formId,
   isSubmitting,
   editOrderId,
+  kind,
   onCancel,
 }: OrderSummaryProps) {
   const { t } = useTranslation();
+  const isMystery = kind === TacoKind.MYSTERY;
 
   return (
     <Card className="flex h-full max-h-[calc(100vh-4rem)] flex-col border-brand-400/30 bg-linear-to-br from-brand-500/10 via-slate-900/80 to-slate-950/90 shadow-[0_30px_90px_rgba(8,47,73,0.35)]">
@@ -100,19 +104,37 @@ export function OrderSummary({
           {hasTaco || hasOtherItems ? (
             <div className="space-y-3">
               {selectedTacoSize && (
-                <div className="rounded-xl border border-white/10 bg-slate-900/50 p-4">
+                <div
+                  className={cn(
+                    'rounded-xl border p-4',
+                    isMystery
+                      ? 'border-purple-500/30 bg-gradient-to-br from-purple-900/30 to-slate-900/50'
+                      : 'border-white/10 bg-slate-900/50'
+                  )}
+                >
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0 flex-1">
-                      <p className="truncate font-semibold text-sm text-white">
-                        {selectedTacoSize.name}
-                      </p>
+                      <div className="flex items-center gap-2">
+                        {isMystery && <Dices className="h-4 w-4 text-purple-400" />}
+                        <p className="truncate font-semibold text-sm text-white">
+                          {isMystery
+                            ? t('orders.create.mystery.summaryTitle')
+                            : selectedTacoSize.name}
+                        </p>
+                      </div>
                       <div className="mt-1.5 flex flex-wrap gap-1.5 text-xs">
-                        {meats.length > 0 && (
-                          <span className="rounded-full bg-slate-800/60 px-2 py-0.5 text-slate-300">
-                            {t('orders.create.summary.tags.meats', {
-                              count: meats.reduce((sum, m) => sum + m.quantity, 0),
-                            })}
+                        {isMystery ? (
+                          <span className="rounded-full bg-purple-800/60 px-2 py-0.5 text-purple-200">
+                            {t('orders.create.mystery.summaryMeats')}
                           </span>
+                        ) : (
+                          meats.length > 0 && (
+                            <span className="rounded-full bg-slate-800/60 px-2 py-0.5 text-slate-300">
+                              {t('orders.create.summary.tags.meats', {
+                                count: meats.reduce((sum, m) => sum + m.quantity, 0),
+                              })}
+                            </span>
+                          )
                         )}
                         {sauces.length > 0 && (
                           <span className="rounded-full bg-slate-800/60 px-2 py-0.5 text-slate-300">
@@ -127,7 +149,7 @@ export function OrderSummary({
                           </span>
                         )}
                       </div>
-                      {meats.length > 0 && (
+                      {!isMystery && meats.length > 0 && (
                         <div className="mt-2 space-y-1">
                           {meats.map((meat) => {
                             const meatItem = stock.meats.find((m) => m.id === meat.id);
@@ -140,7 +162,12 @@ export function OrderSummary({
                         </div>
                       )}
                     </div>
-                    <p className="shrink-0 font-semibold text-brand-100 text-sm">
+                    <p
+                      className={cn(
+                        'shrink-0 font-semibold text-sm',
+                        isMystery ? 'text-purple-200' : 'text-brand-100'
+                      )}
+                    >
                       {selectedTacoSize.price.value.toFixed(2)} {selectedTacoSize.price.currency}
                     </p>
                   </div>

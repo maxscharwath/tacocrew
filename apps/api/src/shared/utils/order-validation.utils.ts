@@ -4,6 +4,7 @@
  */
 
 import type { Taco } from '@/schemas/taco.schema';
+import { TacoKind } from '@/schemas/taco.schema';
 import type { StockAvailability, UserOrderItems } from '@/shared/types/types';
 import { StockCategory } from '@/shared/types/types';
 import { ValidationError } from '@/shared/utils/errors.utils';
@@ -36,6 +37,11 @@ function validateTacos(
   outOfStock: string[]
 ): void {
   for (const taco of tacos) {
+    // Mystery tacos don't have ingredients to validate
+    if (taco.kind === TacoKind.MYSTERY) {
+      continue;
+    }
+
     for (const meat of taco.meats) {
       checkItem(meat, stock[StockCategory.Meats], 'Meat', notFound, outOfStock);
     }
@@ -93,6 +99,11 @@ function sortByName<T extends { name: string }>(items: readonly T[]): T[] {
  * Sort ingredients alphabetically by name for consistent ordering
  */
 export function sortTacoIngredients(taco: Taco): Taco {
+  // Mystery tacos don't have ingredients to sort
+  if (taco.kind === TacoKind.MYSTERY) {
+    return taco;
+  }
+
   return {
     ...taco,
     meats: sortByName(taco.meats),

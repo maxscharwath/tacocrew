@@ -46,6 +46,7 @@ import {
   Separator,
   Skeleton,
   StatusBadge,
+  Switch,
   Textarea,
   Toaster,
   Tooltip,
@@ -130,6 +131,8 @@ function PlaygroundContent() {
   const [phone, setPhone] = useState('');
   const [notifications, setNotifications] = useState(true);
   const [marketing, setMarketing] = useState(false);
+  const [mysteryMode, setMysteryMode] = useState(false);
+  const [autoSubmit, setAutoSubmit] = useState(true);
 
   return (
     <div className="min-h-screen bg-linear-to-b from-slate-950 via-slate-900 to-slate-950 px-6 py-10 text-white">
@@ -379,15 +382,28 @@ function PlaygroundContent() {
                 <Divider label="Preferences" />
 
                 <div className="space-y-3">
-                  <Checkbox
+                  <Switch
                     label="Enable notifications"
-                    defaultChecked={notifications}
-                    onChange={(e) => setNotifications(e.target.checked)}
+                    checked={notifications}
+                    onCheckedChange={setNotifications}
                   />
-                  <Checkbox
+                  <Switch
                     label="Receive marketing emails"
-                    defaultChecked={marketing}
-                    onChange={(e) => setMarketing(e.target.checked)}
+                    checked={marketing}
+                    onCheckedChange={setMarketing}
+                    color="rose"
+                  />
+                  <Switch
+                    label="Mystery taco mode"
+                    checked={mysteryMode}
+                    onCheckedChange={setMysteryMode}
+                    color="violet"
+                  />
+                  <Switch
+                    label="Auto-submit when ready"
+                    checked={autoSubmit}
+                    onCheckedChange={setAutoSubmit}
+                    color="emerald"
                   />
                 </div>
 

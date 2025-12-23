@@ -53,7 +53,7 @@ export class SubmitUserOrderUseCase {
     }
 
     // Re-validate availability before submitting
-    const stock = await this.resourceService.getStock();
+    const stock = await this.resourceService.getStockForProcessing();
     validateItemAvailability(userOrder.items, stock);
 
     // Return the user order (status is managed by the group order)

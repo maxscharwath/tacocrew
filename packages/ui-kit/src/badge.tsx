@@ -1,9 +1,9 @@
 import { cva, type VariantProps } from 'class-variance-authority';
-import type { ComponentPropsWithoutRef } from 'react';
+import { Children, isValidElement, type ComponentPropsWithoutRef } from 'react';
 import { cn } from './utils';
 
 const badgeVariants = cva(
-  'inline-flex items-center gap-1 border px-2 py-0.5 font-semibold text-xs uppercase',
+  'inline-flex items-center gap-1 border px-2 py-0.5 font-semibold text-xs uppercase min-w-0 max-w-full overflow-hidden',
   {
     variants: {
       tone: {
@@ -29,6 +29,23 @@ const badgeVariants = cva(
 
 type BadgeProps = ComponentPropsWithoutRef<'span'> & VariantProps<typeof badgeVariants>;
 
-export function Badge({ tone, pill, className, ...props }: BadgeProps) {
-  return <span className={cn(badgeVariants({ tone, pill }), className)} {...props} />;
+export function Badge({ tone, pill, className, children, ...props }: BadgeProps) {
+  // Process children to wrap text nodes in truncate span, but keep non-text elements as-is
+  const processedChildren = Children.map(children, (child) => {
+    // If it's a React element (like Avatar, icon, etc.), keep it as-is
+    if (isValidElement(child)) {
+      return child;
+    }
+    // If it's text, wrap it in a truncate span
+    if (typeof child === 'string' || typeof child === 'number') {
+      return <span className="truncate min-w-0">{child}</span>;
+    }
+    return child;
+  });
+
+  return (
+    <span className={cn(badgeVariants({ tone, pill }), className)} {...props}>
+      {processedChildren}
+    </span>
+  );
 }

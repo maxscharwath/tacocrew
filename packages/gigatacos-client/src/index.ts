@@ -10,4 +10,5 @@ export * from './http-client';
 export * from './parsers';
 export * from './types';
 export { noopLogger } from './utils/logger';
+export { normalizeTacoFormData } from './utils/taco-form-normalizer';
 

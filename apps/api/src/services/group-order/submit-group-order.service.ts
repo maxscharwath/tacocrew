@@ -60,7 +60,7 @@ export class SubmitGroupOrderUseCase {
   ): Promise<ExecuteResult> {
     const groupOrder = await this.validateGroupOrder(groupOrderId);
     const userOrders = await this.getAndValidateUserOrders(groupOrderId);
-    const stock = await this.resourceService.getStock();
+    const stock = await this.resourceService.getStockForProcessing();
 
     this.validateUserOrders(userOrders, stock);
 

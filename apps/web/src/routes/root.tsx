@@ -69,7 +69,7 @@ export function RootLayout() {
   return (
     <div className="relative min-h-screen bg-slate-950 text-slate-100">
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute -top-24 right-1/2 h-72 w-72 rounded-full bg-brand-500/20 blur-3xl" />
+        <div className="-top-24 absolute right-1/2 h-72 w-72 rounded-full bg-brand-500/20 blur-3xl" />
         <div className="absolute bottom-0 left-1/2 h-72 w-72 rounded-full bg-purple-500/20 blur-3xl" />
       </div>
 
@@ -183,7 +183,7 @@ export function RootLayout() {
           </nav>
         </Card>
 
-        <main className="mt-3 flex-1 bg-slate-950 sm:mt-6">
+        <main className="mt-3 flex-1 sm:mt-6">
           <Outlet />
         </main>
       </div>

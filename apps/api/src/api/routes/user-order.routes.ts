@@ -24,6 +24,7 @@ import { OrganizationService } from '@/services/organization/organization.servic
 import { CreateUserOrderUseCase } from '@/services/user-order/create-user-order.service';
 import { DeleteUserOrderUseCase } from '@/services/user-order/delete-user-order.service';
 import { GetUserOrderUseCase } from '@/services/user-order/get-user-order.service';
+import { RevealMysteryTacosService } from '@/services/user-order/reveal-mystery-tacos.service';
 import { UpdateUserOrderReimbursementStatusUseCase } from '@/services/user-order/update-user-order-reimbursement.service';
 import { UpdateUserOrderUserPaymentStatusUseCase } from '@/services/user-order/update-user-order-user-payment.service';
 import { TimeSlotSchema } from '@/shared/types/time-slot';
@@ -499,6 +500,71 @@ app.openapi(
       },
       200
     );
+  }
+);
+
+app.openapi(
+  createRoute({
+    method: 'get',
+    path: '/orders/{id}/items/{itemId}/reveal-mystery',
+    tags: ['Orders'],
+    security: authSecurity,
+    request: {
+      params: z.object({
+        id: GroupOrderId,
+        itemId: UserOrderId,
+      }),
+    },
+    responses: {
+      200: {
+        description: 'User order with revealed mystery taco ingredients',
+        content: jsonContent(UserOrderItemsSchema),
+      },
+      403: {
+        description: 'Forbidden - Only the group order leader can reveal mystery tacos before submission, or anyone after submission',
+        content: jsonContent(ErrorResponseSchema),
+      },
+      404: {
+        description: 'Group order or user order not found',
+        content: jsonContent(ErrorResponseSchema),
+      },
+    },
+  }),
+  async (c) => {
+    const { id: groupOrderId, itemId: userOrderId } = c.req.valid('param');
+    const requesterId = c.var.user.id;
+
+    // Get group order
+    const groupOrderRepository = inject(GroupOrderRepository);
+    const groupOrder = await groupOrderRepository.findById(groupOrderId);
+    if (!groupOrder) {
+      throw new NotFoundError({ resource: 'GroupOrder', id: groupOrderId });
+    }
+
+    // Check permissions: leader can always reveal, or anyone if order is submitted/completed
+    const isSubmitted = groupOrder.status === 'submitted' || groupOrder.status === 'completed';
+    const isLeader = groupOrder.leaderId === requesterId;
+
+    if (!isLeader && !isSubmitted) {
+      throw new ForbiddenError({
+        message: 'Only the group order leader can reveal mystery tacos before submission',
+      });
+    }
+
+    // Get user order
+    const getUserOrderUseCase = inject(GetUserOrderUseCase);
+    const userOrder = await getUserOrderUseCase.execute(userOrderId);
+
+    // Verify user order belongs to the group order
+    if (userOrder.groupOrderId !== groupOrderId) {
+      throw new NotFoundError({ resource: 'UserOrder', id: userOrderId });
+    }
+
+    // Reveal mystery tacos
+    const revealMysteryTacosService = inject(RevealMysteryTacosService);
+    const revealedOrder = await revealMysteryTacosService.revealMysteryTacos(userOrder);
+
+    return c.json(sanitizeUserOrderItems(revealedOrder.items), 200);
   }
 );
 

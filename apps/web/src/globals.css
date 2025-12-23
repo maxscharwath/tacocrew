@@ -69,6 +69,24 @@ input[type="search"]::-webkit-search-cancel-button {
     }
 }
 
+@keyframes cardFlip {
+    0% {
+        transform: rotateY(0deg);
+    }
+    100% {
+        transform: rotateY(180deg);
+    }
+}
+
+@keyframes cardFlipReverse {
+    0% {
+        transform: rotateY(180deg);
+    }
+    100% {
+        transform: rotateY(0deg);
+    }
+}
+
 @keyframes skeleton-pulse {
     0%,
     100% {

@@ -17,15 +17,20 @@ import { deterministicUUID } from '@/shared/utils/uuid.utils';
 export class ResourceService {
   private readonly backendClient = inject(BackendIntegrationClient);
 
+  getStockForProcessing(): Promise<import('@/shared/types/types').StockAvailability> {
+    return this.getStock();
+  }
+
   async getStock() {
-    // Create new session context for stock request (no existing session needed)
     const sessionContext = await this.backendClient.createNewSession();
     const { csrfToken, cookies } = sessionContext;
-
-    // Fetch stock from backend
     const backendStock = await this.backendClient.getStock(csrfToken, cookies);
+    return this.transformStock(backendStock);
+  }
 
-    // Transform dictionaries to arrays with deterministic IDs and convert prices to Amount objects
+  private transformStock(
+    backendStock: Awaited<ReturnType<typeof this.backendClient.getStock>>
+  ) {
     return {
       meats: Object.entries(backendStock.viandes || {}).map(([code, info]) => ({
         id: deterministicUUID(code, StockCategory.Meats),

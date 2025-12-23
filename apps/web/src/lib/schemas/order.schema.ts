@@ -24,26 +24,9 @@ export const createUserOrderSchema = z
     note: z.string().max(500, validationKeys.noteMax).optional(),
   })
   .superRefine((data, ctx) => {
-    // If user selected a taco size, they must have meats and sauces
-    if (data.tacoSize) {
-      if (data.meats.length === 0) {
-        ctx.addIssue({
-          code: 'custom',
-          message: validationKeys.meatRequired,
-          path: ['meats'],
-        });
-      }
-      if (data.sauces.length === 0) {
-        ctx.addIssue({
-          code: 'custom',
-          message: validationKeys.sauceRequired,
-          path: ['sauces'],
-        });
-      }
-    }
-
-    // Must have either a taco OR other items
-    const hasTaco = data.tacoSize && data.meats.length > 0 && data.sauces.length > 0;
+    // Meats and sauces will be added automatically if not selected (handled on submit)
+    // Must have either a taco size OR other items
+    const hasTaco = data.tacoSize !== undefined;
     const hasOtherItems =
       data.extras.length > 0 || data.drinks.length > 0 || data.desserts.length > 0;
 

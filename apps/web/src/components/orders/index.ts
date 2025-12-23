@@ -4,6 +4,7 @@ export { DeliveryTypeSelector } from './DeliveryTypeSelector';
 export { ExtrasSection } from './ExtrasSection';
 export { GroupOrderReceipts } from './GroupOrderReceipts';
 export { MeatSelector } from './MeatSelector';
+export { MysteryTacoCard } from './MysteryTacoCard';
 export { OrderCard } from './OrderCard';
 export { OrderConfirmationModal } from './OrderConfirmationModal';
 export { OrderCreateHero } from './OrderCreateHero';

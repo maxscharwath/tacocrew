@@ -36,6 +36,14 @@ export function OrderCardActions({
     }
   };
 
+  // Check if there are any actions to show
+  const hasActions = tacoID || canEdit || canDelete;
+
+  // Hide container completely if no actions available
+  if (!hasActions) {
+    return null;
+  }
+
   return (
     <div className="absolute top-4 right-4 z-10 flex items-center gap-1 rounded-2xl border border-white/10 bg-slate-900/70 p-2 opacity-0 shadow-[0_20px_60px_rgba(0,0,0,0.3)] backdrop-blur-sm transition-opacity delay-150 group-hover:opacity-100">
       {tacoID && (
@@ -54,16 +62,19 @@ export function OrderCardActions({
           )}
         </Button>
       )}
-      <Button
-        type="button"
-        variant="ghost"
-        size="sm"
-        onClick={onDuplicate}
-        className="h-7 w-7 rounded-lg p-0 transition-transform hover:scale-110 hover:bg-blue-500/25"
-        title="Duplicate order"
-      >
-        <Copy size={14} className="text-blue-300" />
-      </Button>
+      {canEdit && (
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={onDuplicate}
+          disabled={isSubmitting}
+          className="h-7 w-7 rounded-lg p-0 transition-transform hover:scale-110 hover:bg-blue-500/25 disabled:opacity-50 disabled:cursor-not-allowed"
+          title="Duplicate order"
+        >
+          <Copy size={14} className="text-blue-300" />
+        </Button>
+      )}
       {canEdit && (
         <Link
           to={routes.root.orderCreate({ orderId, search: { orderId: itemId } })}

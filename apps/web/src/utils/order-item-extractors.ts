@@ -1,3 +1,4 @@
+import { TacoKind } from '@/lib/api/types';
 import type { UserOrderSummary } from '@/lib/api/types';
 
 /**
@@ -5,16 +6,19 @@ import type { UserOrderSummary } from '@/lib/api/types';
  */
 export function extractOrderItems(order: UserOrderSummary) {
   const taco = order.items.tacos?.[0];
+  const isMystery = taco?.kind === TacoKind.Mystery;
 
   return {
-    meats: taco
-      ? taco.meats.map((item: { name: string; quantity?: number }) => ({
-          name: item.name,
-          quantity: item.quantity ?? 1,
-        }))
-      : [],
-    sauces: taco ? taco.sauces.map((item: { name: string }) => item.name) : [],
-    garnitures: taco ? taco.garnitures.map((item: { name: string }) => item.name) : [],
+    meats:
+      taco && !isMystery && taco.meats
+        ? taco.meats.map((item: { name: string; quantity?: number }) => ({
+            name: item.name,
+            quantity: item.quantity ?? 1,
+          }))
+        : [],
+    sauces: taco && !isMystery && taco.sauces ? taco.sauces.map((item: { name: string }) => item.name) : [],
+    garnitures:
+      taco && !isMystery && taco.garnitures ? taco.garnitures.map((item: { name: string }) => item.name) : [],
     extras: order.items.extras.map((extra: { name: string }) => extra.name),
     drinks: order.items.drinks.map((drink: { name: string }) => drink.name),
     desserts: order.items.desserts.map((dessert: { name: string }) => dessert.name),

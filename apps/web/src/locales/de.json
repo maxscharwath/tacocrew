@@ -845,6 +845,29 @@
         "missingMeat": "Wähle mindestens ein Fleisch.",
         "missingSauce": "Wähle mindestens eine Soße.",
         "missingSelection": "Wähle mindestens einen Taco oder einige Extras/Getränke/Desserts."
+      },
+      "mystery": {
+        "button": "Überrasch mich!",
+        "customizeSubtitle": "Der Koch wählt alles - genieße die Überraschung!",
+        "customizeTitle": "Mystery Taco",
+        "description": "Lass dich von unserem Koch überraschen!",
+        "explanation": "Kannst du dich nicht entscheiden? Lass unseren Koch alles für dich auswählen - ein Abenteuer bei jedem Bissen!",
+        "fullSurprise": "Volle Überraschung!",
+        "fullSurpriseHint": "Der Koch wählt Fleisch, Soßen und Beilagen je nach dem, was frisch und lecker ist",
+        "progress": {
+          "ready": "Bereit",
+          "readyDescription": "Der Koch wird dich überraschen!"
+        },
+        "startingAt": "Ab",
+        "summaryMeats": "Volle Überraschung",
+        "summaryTitle": "Mystery Taco",
+        "surpriseGarnitures": "Überraschung",
+        "surpriseMeats": "Überraschung",
+        "surpriseSauces": "Überraschung",
+        "title": "Fühlst du dich glücklich?",
+        "toggleActiveHint": "Koch wählt alles - klicke zum Anpassen",
+        "toggleHint": "Lass den Koch dich mit dem perfekten Combo überraschen",
+        "toggleTitle": "Mystery-Modus"
       }
     },
     "detail": {
@@ -913,6 +936,10 @@
       },
       "list": {
         "description": "Alle Bestellungen in dieser Gruppenbestellung anzeigen",
+        "revealMystery": "Mysterium anzeigen",
+        "revealing": "Wird angezeigt...",
+        "revealed": "Angezeigt",
+        "revealedHint": "Zutaten unten angezeigt",
         "emptyState": {
           "cta": "Meine Bestellung erstellen",
           "description": {

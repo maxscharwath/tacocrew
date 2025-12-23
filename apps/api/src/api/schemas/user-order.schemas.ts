@@ -38,17 +38,29 @@ export const GarnitureSchema = z.object({
   name: z.string(),
 });
 
-export const TacoSchema = z.object({
+import { TacoKind } from '@/schemas/taco.schema';
+
+const RegularTacoSchema = z.object({
   id: TacoId,
   size: z.enum(TacoSize),
   meats: z.array(MeatSchema),
   sauces: z.array(SauceSchema),
   garnitures: z.array(GarnitureSchema),
   note: z.string().optional(),
-  quantity: z.number().int().min(1),
   price: AmountSchema,
-  tacoID: z.string().min(1), // base58-encoded tacoID (Bitcoin-style identifier) - always required
+  tacoID: z.string().min(1), // base58-encoded tacoID - required for regular tacos
+  kind: z.literal(TacoKind.REGULAR),
 });
+
+const MysteryTacoSchema = z.object({
+  id: TacoId,
+  size: z.enum(TacoSize),
+  note: z.string().optional(),
+  price: AmountSchema,
+  kind: z.literal(TacoKind.MYSTERY),
+});
+
+export const TacoSchema = z.discriminatedUnion('kind', [RegularTacoSchema, MysteryTacoSchema]);
 
 export const ExtraSchema = z.object({
   id: ExtraId,
@@ -104,7 +116,7 @@ export const GarnitureRequestSchema = z.object({
   id: GarnitureId,
 });
 
-// Taco request (size, meats, sauces, garnitures, note, quantity)
+// Taco request (size, meats, sauces, garnitures, note, quantity, kind)
 export const TacoRequestSchema = z.object({
   size: z.enum(TacoSize),
   meats: z.array(MeatRequestSchema),
@@ -112,6 +124,7 @@ export const TacoRequestSchema = z.object({
   garnitures: z.array(GarnitureRequestSchema),
   note: z.string().optional(),
   quantity: z.number().int().min(1).optional().default(1),
+  kind: z.enum(TacoKind).optional().default(TacoKind.REGULAR),
 });
 
 // Extra, Drink, Dessert requests (id with optional quantity)

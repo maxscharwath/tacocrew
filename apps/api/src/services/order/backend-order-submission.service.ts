@@ -16,11 +16,15 @@ import { injectable } from 'tsyringe';
 import { BackendIntegrationClient } from '@/infrastructure/api/backend-integration.client';
 import type { SessionId } from '@/schemas/session.schema';
 import type { UserOrder } from '@/schemas/user-order.schema';
+import { ResourceService } from '@/services/resource/resource.service';
 import { SessionService } from '@/services/session/session.service';
 import type { Customer, DeliveryInfo } from '@/shared/types/types';
 import { formatAddressForBackend } from '@/shared/utils/address-formatter.utils';
 import { inject } from '@/shared/utils/inject.utils';
 import { logger } from '@/shared/utils/logger.utils';
+import { convertMysteryTacoToRegular } from '@/shared/utils/mystery-taco-converter.utils';
+import { TacoKind } from '@/schemas/taco.schema';
+import type { StockAvailability } from '@/shared/types/types';
 
 /**
  * Backend order submission service
@@ -30,6 +34,7 @@ import { logger } from '@/shared/utils/logger.utils';
 export class BackendOrderSubmissionService {
   private readonly backendIntegration = inject(BackendIntegrationClient);
   private readonly sessionService = inject(SessionService);
+  private readonly resourceService = inject(ResourceService);
 
   /**
    * Submit multiple user orders as a single combined order to the backend
@@ -56,8 +61,11 @@ export class BackendOrderSubmissionService {
     const sessionId = session.sessionId;
 
     try {
-      // Combine all items from all user orders
-      const combinedItems = this.combineUserOrderItems(userOrders);
+      // Get stock for generating mystery taco ingredients
+      const stock = await this.resourceService.getStockForProcessing();
+      
+      // Combine all items from all user orders (converting mystery tacos to regular tacos)
+      const combinedItems = this.combineUserOrderItems(userOrders, stock);
 
       // Add all combined items to cart
       await this.addItemsToCart(sessionId, combinedItems);
@@ -162,8 +170,12 @@ export class BackendOrderSubmissionService {
 
   /**
    * Combine items from all user orders into a single order
+   * Converts mystery tacos to regular tacos with ingredients generated deterministically from taco ID
    */
-  private combineUserOrderItems(userOrders: UserOrder[]): UserOrder['items'] {
+  private combineUserOrderItems(
+    userOrders: UserOrder[],
+    stock: StockAvailability
+  ): UserOrder['items'] {
     const combined: UserOrder['items'] = {
       tacos: [],
       extras: [],
@@ -172,13 +184,32 @@ export class BackendOrderSubmissionService {
     };
 
     for (const userOrder of userOrders) {
-      combined.tacos.push(...userOrder.items.tacos);
+      // Convert mystery tacos to regular tacos with ingredients (generated deterministically from ID)
+      const convertedTacos = userOrder.items.tacos.map((taco) => {
+        if (taco.kind === TacoKind.MYSTERY) {
+          // Generate ingredients deterministically using taco ID as seed
+          return this.convertMysteryTacoToRegular(taco, stock);
+        }
+        return taco;
+      });
+
+      combined.tacos.push(...convertedTacos);
       combined.extras.push(...userOrder.items.extras);
       combined.drinks.push(...userOrder.items.drinks);
       combined.desserts.push(...userOrder.items.desserts);
     }
 
     return combined;
+  }
+
+  /**
+   * Convert a mystery taco to a regular taco with ingredients generated deterministically from taco ID
+   */
+  private convertMysteryTacoToRegular(
+    mysteryTaco: UserOrder['items']['tacos'][number],
+    stock: StockAvailability
+  ): UserOrder['items']['tacos'][number] {
+    return convertMysteryTacoToRegular(mysteryTaco, stock);
   }
 
   /**
@@ -217,12 +248,25 @@ export class BackendOrderSubmissionService {
     sessionId: SessionId,
     taco: UserOrder['items']['tacos'][number]
   ): Promise<void> {
+    // All mystery tacos should have been converted to regular tacos in combineUserOrderItems
+    if (taco.kind === 'mystery') {
+      throw new Error(
+        `Cannot submit mystery taco without ingredients. Taco ID: ${taco.id}. ` +
+        'Mystery tacos should have been converted to regular tacos with deterministically generated ingredients.'
+      );
+    }
+
+    // At this point, TypeScript knows taco is RegularTaco
+    const meats = taco.meats;
+    const sauces = taco.sauces;
+    const garnitures = taco.garnitures;
+
     const formData = {
       taille: taco.size, // Use 'taille' instead of 'selectProduct'
       tacosNote: taco.note ?? '',
-      'viande[]': taco.meats.map((meat) => meat.code),
-      'sauce[]': taco.sauces.map((sauce) => sauce.code),
-      'garniture[]': taco.garnitures.map((garniture) => garniture.code),
+      'viande[]': meats.map((meat) => meat.code),
+      'sauce[]': sauces.map((sauce) => sauce.code),
+      'garniture[]': garnitures.map((garniture) => garniture.code),
     } as {
       taille: string;
       tacosNote: string;
@@ -234,7 +278,7 @@ export class BackendOrderSubmissionService {
     };
 
     // Add meat quantities (meat_quantity[{slug}])
-    for (const meat of taco.meats) {
+    for (const meat of meats) {
       (formData as Record<string, number>)[`meat_quantity[${meat.code}]`] = meat.quantity;
     }
 

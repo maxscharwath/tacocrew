@@ -62,6 +62,7 @@ describe('SubmitUserOrderUseCase', () => {
 
   const mockResourceService = {
     getStock: mock(),
+    getStockForProcessing: mock(),
   };
 
   beforeEach(() => {
@@ -69,8 +70,9 @@ describe('SubmitUserOrderUseCase', () => {
     mockGroupOrderRepository.findById.mockReset();
     mockUserOrderRepository.findById.mockReset();
     mockResourceService.getStock.mockReset();
+    mockResourceService.getStockForProcessing.mockReset();
 
-    mockResourceService.getStock.mockResolvedValue({
+    const mockStock = {
       meats: [],
       sauces: [],
       garnishes: [],
@@ -78,7 +80,9 @@ describe('SubmitUserOrderUseCase', () => {
       drinks: [],
       desserts: [],
       tacos: [],
-    });
+    };
+    mockResourceService.getStock.mockResolvedValue(mockStock);
+    mockResourceService.getStockForProcessing.mockResolvedValue(mockStock);
 
     container.registerInstance(
       GroupOrderRepository,

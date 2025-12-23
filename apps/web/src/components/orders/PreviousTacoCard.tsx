@@ -58,7 +58,7 @@ export function PreviousTacoCard({ order, stock, disabled, onSelect }: PreviousT
                 {t('orders.detail.list.tagCounts.tacos', { count: taco.quantity })}
               </span>
             )}
-            {taco.meats.length > 0 &&
+            {taco.meats && taco.meats.length > 0 &&
               taco.meats.map((meat, idx) => (
                 <span
                   key={`meat-${meat.name}-${meat.quantity ?? 1}-${idx}`}
@@ -68,7 +68,7 @@ export function PreviousTacoCard({ order, stock, disabled, onSelect }: PreviousT
                   {meat.quantity > 1 && <span className="text-orange-300">×{meat.quantity}</span>}
                 </span>
               ))}
-            {taco.sauces.length > 0 &&
+            {taco.sauces && taco.sauces.length > 0 &&
               taco.sauces.map((sauce, idx) => (
                 <span
                   key={`sauce-${sauce.name}-${idx}`}
@@ -77,7 +77,7 @@ export function PreviousTacoCard({ order, stock, disabled, onSelect }: PreviousT
                   {sauce.name}
                 </span>
               ))}
-            {taco.garnitures.length > 0 &&
+            {taco.garnitures && taco.garnitures.length > 0 &&
               taco.garnitures.map((garniture, idx) => (
                 <span
                   key={`garniture-${garniture.name}-${idx}`}

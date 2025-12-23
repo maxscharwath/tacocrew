@@ -2,7 +2,7 @@ import { injectable } from 'tsyringe';
 import { z } from 'zod';
 import { PrismaService } from '@/infrastructure/database/prisma.service';
 import type { Taco } from '@/schemas/taco.schema';
-import { TacoSchema } from '@/schemas/taco.schema';
+import { MysteryTacoSchema, RegularTacoSchema, TacoKind } from '@/schemas/taco.schema';
 import type { UserId } from '@/schemas/user.schema';
 import { UserOrderItemsSchema } from '@/schemas/user-order.schema';
 import { inject } from '@/shared/utils/inject.utils';
@@ -15,9 +15,15 @@ export interface PreviousOrder {
   recentGroupOrderName?: string | null;
 }
 
-const TacoWithTacoIDSchema = TacoSchema.extend({
-  tacoIdHex: z.string().min(1).optional(), // Still stored as hex tacoId in DB, converted to tacoID for display
+// Extend regular taco schema with tacoIdHex (mystery tacos don't need it)
+const RegularTacoWithHexSchema = RegularTacoSchema.extend({
+  tacoIdHex: z.string().min(1).optional(),
 });
+
+const TacoWithTacoIDSchema = z.discriminatedUnion('kind', [
+  RegularTacoWithHexSchema,
+  MysteryTacoSchema, // Mystery tacos don't have tacoIdHex
+]);
 
 @injectable()
 export class GetPreviousOrdersUseCase {
@@ -48,7 +54,10 @@ export class GetPreviousOrdersUseCase {
         const tacoWithHex = TacoWithTacoIDSchema.safeParse(taco);
         if (!tacoWithHex.success) continue;
 
-        // Use stored tacoID (always present per TacoSchema)
+        // Skip mystery tacos - they don't have tacoID
+        if (tacoWithHex.data.kind === TacoKind.MYSTERY) continue;
+
+        // Use stored tacoID (always present for regular tacos)
         const tacoID = tacoWithHex.data.tacoID;
         this.updateOrCreateTacoIDEntry(byTacoID, tacoID, tacoWithHex.data, order);
       }

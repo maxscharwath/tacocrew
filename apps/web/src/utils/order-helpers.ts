@@ -41,13 +41,17 @@ export function useEmptyStateDescription(canAddOrders: boolean, groupOrder: Grou
  */
 export function getOrderPermissions(
   order: UserOrderSummary,
-  currentUserId: string,
-  isLeader: boolean
+  currentUserId: string | undefined,
+  isLeader: boolean,
+  groupOrderStatus?: string
 ) {
+  const isMyOrder = currentUserId ? order.userId === currentUserId : false;
+  // Disable edit/delete when group order is submitted or completed
+  const isSubmitted = groupOrderStatus === 'submitted' || groupOrderStatus === 'completed';
   return {
-    canEdit: isLeader || order.userId === currentUserId,
-    canDelete: isLeader || order.userId === currentUserId,
-    isMyOrder: order.userId === currentUserId,
+    canEdit: (isLeader || isMyOrder) && !isSubmitted,
+    canDelete: (isLeader || isMyOrder) && !isSubmitted,
+    isMyOrder,
   };
 }
 

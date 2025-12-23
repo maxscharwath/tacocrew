@@ -150,12 +150,17 @@ export class NotFoundError extends ApiError {
  * Forbidden error
  */
 export class ForbiddenError extends ApiError {
-  constructor() {
+  constructor({ message }: { message?: string } = {}) {
     super({
       errorCode: ErrorCodes.FORBIDDEN,
       statusCode: 403,
     });
     this.name = 'ForbiddenError';
+
+    // Override message if provided
+    if (message) {
+      this.message = message;
+    }
   }
 }
 

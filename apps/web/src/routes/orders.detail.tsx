@@ -10,9 +10,7 @@ import {
   useLoaderData,
   useNavigation,
   useParams,
-  useRouteLoaderData,
 } from 'react-router';
-import type { RootLoaderData } from '@/routes/root.loader';
 import {
   CookieInjectionModal,
   GroupOrderReceipts,
@@ -22,6 +20,7 @@ import {
 } from '@/components/orders';
 import { OrderDetailSkeleton } from '@/components/skeletons';
 import { useDeveloperMode } from '@/hooks/useDeveloperMode';
+import { useSession } from '@/lib/auth-client';
 import type { UpsertUserOrderBody } from '@/lib/api';
 import { OrdersApi, StockApi } from '@/lib/api';
 import { type Amount, Currency } from '@/lib/api/types';
@@ -48,22 +47,20 @@ type GroupOrderData = {
   userOrders: LoaderData['userOrders'];
 };
 
-async function loadOrderDetail(groupOrderId: string) {
-  const [groupOrderWithUsers, stockData] = await Promise.all([
+function loadOrderDetail(groupOrderId: string) {
+  return Promise.all([
     createDeferredWithAuth(() => OrdersApi.getGroupOrderWithOrders(groupOrderId)),
     createDeferredWithAuth(() => StockApi.getStock()),
-  ]);
-
-  return {
+  ]).then(([groupOrderWithUsers, stockData]) => ({
     groupOrderData: {
       groupOrder: groupOrderWithUsers.groupOrder,
       userOrders: groupOrderWithUsers.userOrders,
     },
     stock: stockData,
-  };
+  }));
 }
 
-export async function orderDetailLoader({ params }: LoaderFunctionArgs) {
+export function orderDetailLoader({ params }: LoaderFunctionArgs) {
   const groupOrderId = params.orderId;
   if (!groupOrderId) {
     throw new Response('Order not found', { status: 404 });
@@ -121,15 +118,18 @@ async function handleUpsertUserOrder(groupOrderId: string, request: Request) {
   type TacoSize = UpsertUserOrderBody['items']['tacos'][number]['size'];
 
   const tacoQuantity = Number(rawData.tacoQuantity) || 1;
+  const meats = toArray(rawData.meats);
+  const sauces = toArray(rawData.sauces);
+  const garnitures = toArray(rawData.garnitures);
 
   await OrdersApi.upsertUserOrder(groupOrderId, {
     items: {
       tacos: [
         {
           size: rawData.tacoSize as TacoSize,
-          meats: toArray(rawData.meats).map((id) => ({ id, quantity: 1 })),
-          sauces: toArray(rawData.sauces).map((id) => ({ id })),
-          garnitures: toArray(rawData.garnitures).map((id) => ({ id })),
+          meats: meats.map((id) => ({ id, quantity: 1 })),
+          sauces: sauces.map((id) => ({ id })),
+          garnitures: garnitures.map((id) => ({ id })),
           note: rawData.note,
           quantity: tacoQuantity,
         },
@@ -208,9 +208,9 @@ function OrderDetailContent({
   const { t } = useTranslation();
   const tt = (key: string, options?: Record<string, unknown>) => t(`orders.detail.${key}`, options);
   const { groupOrder, userOrders } = groupOrderData;
-  const rootData = useRouteLoaderData('root') as RootLoaderData | undefined;
-  const currentUserId = rootData?.profile?.id ?? '';
-  const isLeader = groupOrder.leader.id === currentUserId;
+  const { data: session } = useSession();
+  const currentUserId = session?.user?.id;
+  const isLeader = currentUserId ? groupOrder.leader.id === currentUserId : false;
   const navigation = useNavigation();
   const params = useParams();
   const isSubmitting = navigation.state === 'submitting';

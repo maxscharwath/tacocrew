@@ -91,7 +91,7 @@ export function TacoCard({ taco, badge, footer, showTacoID = false, className }:
               </Badge>
             </div>
           )}
-          {taco.meats.length > 0 && (
+          {taco.meats && taco.meats.length > 0 && (
             <div className="flex flex-wrap items-center gap-1.5">
               {taco.meats.map((meat, idx) => (
                 <Badge
@@ -105,7 +105,7 @@ export function TacoCard({ taco, badge, footer, showTacoID = false, className }:
               ))}
             </div>
           )}
-          {taco.sauces.length > 0 && (
+          {taco.sauces && taco.sauces.length > 0 && (
             <div className="flex flex-wrap items-center gap-1.5">
               {taco.sauces.map((sauce, idx) => (
                 <Badge
@@ -118,7 +118,7 @@ export function TacoCard({ taco, badge, footer, showTacoID = false, className }:
               ))}
             </div>
           )}
-          {taco.garnitures.length > 0 && (
+          {taco.garnitures && taco.garnitures.length > 0 && (
             <div className="flex flex-wrap items-center gap-1.5">
               {taco.garnitures.map((garniture, idx) => (
                 <Badge

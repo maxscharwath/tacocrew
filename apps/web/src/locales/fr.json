@@ -845,6 +845,29 @@
         "missingMeat": "Ajoute au moins une viande.",
         "missingSauce": "Ajoute au moins une sauce.",
         "missingSelection": "Choisis un taco ou des suppléments."
+      },
+      "mystery": {
+        "button": "Laisse-toi surprendre !",
+        "customizeSubtitle": "Le chef choisit tout - profite de la surprise !",
+        "customizeTitle": "Taco Mystère",
+        "description": "Laisse notre chef te surprendre !",
+        "explanation": "Tu n'arrives pas à choisir ? Laisse notre chef tout sélectionner - une aventure à chaque bouchée !",
+        "fullSurprise": "Mode Surprise Total !",
+        "fullSurpriseHint": "Le chef choisira les viandes, sauces et garnitures selon ce qui est frais et délicieux",
+        "progress": {
+          "ready": "Prêt",
+          "readyDescription": "Le chef va te surprendre !"
+        },
+        "startingAt": "À partir de",
+        "summaryMeats": "Surprise totale",
+        "summaryTitle": "Taco Mystère",
+        "surpriseGarnitures": "Surprise",
+        "surpriseMeats": "Surprise",
+        "surpriseSauces": "Surprise",
+        "title": "Tu te sens chanceux ?",
+        "toggleActiveHint": "Le chef choisit tout - clique pour personnaliser",
+        "toggleHint": "Laisse le chef te surprendre avec le combo parfait",
+        "toggleTitle": "Mode Mystère"
       }
     },
     "detail": {
@@ -913,6 +936,10 @@
       },
       "list": {
         "description": "Consulte toutes les commandes de ce groupe.",
+        "revealMystery": "Révéler le mystère",
+        "revealing": "Révélation...",
+        "revealed": "Révélé",
+        "revealedHint": "Ingrédients affichés ci-dessous",
         "emptyState": {
           "cta": "Créer ma commande",
           "description": {

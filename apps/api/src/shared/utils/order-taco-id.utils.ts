@@ -6,6 +6,7 @@
 import { createHash } from 'node:crypto';
 import bs58 from 'bs58';
 import type { Taco } from '@/schemas/taco.schema';
+import { TacoKind } from '@/schemas/taco.schema';
 
 /**
  * Normalized taco structure for generating tacoId
@@ -23,8 +24,14 @@ interface NormalizedTaco {
  * Normalize a single taco for tacoId generation
  * Ignores quantity - only matches the recipe (size + ingredients)
  * Sorts all arrays to ensure consistent hashing
+ * Mystery tacos don't have ingredients, so this should only be called for regular tacos
  */
 function normalizeTaco(taco: Taco): NormalizedTaco {
+  // Mystery tacos don't have ingredients - this function should only be called for regular tacos
+  if (taco.kind === TacoKind.MYSTERY) {
+    throw new Error('Cannot normalize mystery taco - mystery tacos do not have ingredients');
+  }
+  
   return {
     size: taco.size,
     meats: taco.meats.map((m) => m.id).sort(),
@@ -86,7 +93,10 @@ export function tacoIDToHex(tacoID: string): string {
  * Extract all taco IDs in hex format from user order items
  * Returns an array of unique hex tacoIds (one per taco)
  * Returns empty array if no tacos
+ * Mystery tacos are excluded (they don't have tacoID)
  */
 export function extractTacoIdsHex(items: { tacos: Taco[] }): string[] {
-  return items.tacos.map((taco) => generateTacoIdHex(taco));
+  return items.tacos
+    .filter((taco): taco is Extract<Taco, { tacoID: string }> => taco.kind === TacoKind.REGULAR)
+    .map((taco) => generateTacoIdHex(taco));
 }

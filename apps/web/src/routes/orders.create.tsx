@@ -1,4 +1,5 @@
 import { TacoSize } from '@tacocrew/gigatacos-client';
+import { TacoKind } from '@/lib/api/types';
 import { Alert } from '@tacocrew/ui-kit';
 import { ArrowLeft } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -25,12 +26,15 @@ import {
 import { useOrderForm } from '@/hooks/useOrderForm';
 import { useOrderValidation } from '@/hooks/useOrderValidation';
 import { useProgressSteps } from '@/hooks/useProgressSteps';
-import { OrdersApi, StockApi, UserApi } from '@/lib/api';
-import type { UpsertUserOrderBody } from '@/lib/api/orders';
+import { StockApi, UserApi } from '@/lib/api';
+import { OrdersApi } from '@/lib/api';
 import { routes } from '@/lib/routes';
 import { createActionHandler } from '@/lib/utils/action-handler';
 import { createLoader } from '@/lib/utils/loader-factory';
 import { requireParam } from '@/lib/utils/param-validators';
+import { upsertUserOrder } from '@/services/order.service';
+import { buildUpsertOrderRequest } from '@/utils/order-request-builder';
+import { parseOrderFormData, type ParsedOrderFormData } from '@/utils/order-form-parser';
 import { getSummaryBreakdown } from '@/utils/order-helpers';
 
 type ActionData = {
@@ -85,56 +89,26 @@ type LoaderData = {
   previousOrders: Awaited<ReturnType<typeof UserApi.getPreviousOrders>>;
 };
 
-/**
- * Parse meats with quantities from form data
- */
-function parseMeatsFromFormData(formData: FormData): Array<{ id: string; quantity: number }> {
-  const meatIds = formData.getAll('meats').map((value) => value.toString());
-  return meatIds
-    .map((id) => {
-      const quantityStr = formData.get(`meat_quantity_${id}`);
-      const quantity = quantityStr ? Number(quantityStr) : 0;
-      return quantity > 0 ? { id, quantity } : null;
-    })
-    .filter((m): m is { id: string; quantity: number } => m !== null);
-}
-
-/**
- * Parse simple item lists from form data
- */
-function parseItemsFromFormData(
-  formData: FormData,
-  fieldName: string
-): Array<{ id: string; quantity: number }> {
-  return formData.getAll(fieldName).map((value) => ({ id: value.toString(), quantity: 1 }));
-}
 
 /**
  * Validate taco selection and ingredients
  */
-function validateTacoSelection(params: Readonly<{
-  size: string | undefined;
-  meats: ReadonlyArray<Readonly<{ id: string; quantity: number }>>;
-  sauces: ReadonlyArray<Readonly<{ id: string }>>;
-  garnitures: ReadonlyArray<Readonly<{ id: string }>>;
-  extras: ReadonlyArray<Readonly<{ id: string; quantity: number }>>;
-  drinks: ReadonlyArray<Readonly<{ id: string; quantity: number }>>;
-  desserts: ReadonlyArray<Readonly<{ id: string; quantity: number }>>;
-  tacoSize: Readonly<{ allowGarnitures: boolean }> | undefined;
-}>): void {
-  const { size, meats, sauces, garnitures, extras, drinks, desserts, tacoSize } = params;
-  const hasTaco = size && meats.length > 0 && sauces.length > 0;
-  const hasOtherItems = extras.length > 0 || drinks.length > 0 || desserts.length > 0;
+function validateOrderForm(
+  data: ParsedOrderFormData,
+  tacoSize: { allowGarnitures: boolean } | undefined
+): void {
+  const isMystery = data.kind === TacoKind.MYSTERY;
+  // Meats and sauces will be added automatically if not selected (handled in buildUpsertOrderRequest)
+  const hasTaco = data.size !== undefined;
+  const hasOtherItems = data.extras.length > 0 || data.drinks.length > 0 || data.desserts.length > 0;
 
   if (!hasTaco && !hasOtherItems) {
     throw new Response('Missing selection', { status: 400 });
   }
 
-  if (size && (!meats.length || !sauces.length)) {
-    throw new Response('Missing fillings', { status: 400 });
-  }
-
-  if (size && tacoSize && !tacoSize.allowGarnitures && garnitures.length > 0) {
+  // Don't validate missing meats/sauces - they'll be added automatically
+  // Only validate garnitures if they're not allowed
+  if (data.size && tacoSize && !tacoSize.allowGarnitures && data.garnitures.length > 0) {
     throw new Response('Garnish not available', { status: 400 });
   }
 }
@@ -145,63 +119,14 @@ export const orderCreateAction = createActionHandler({
       const groupOrderId = params?.orderId;
       if (!groupOrderId) throw new Response('Order not found', { status: 404 });
 
-      type TacoSize = UpsertUserOrderBody['items']['tacos'][number]['size'];
-
-      const size = formData.get('tacoSize')?.toString() as TacoSize | undefined;
-      const editOrderId = formData.get('editOrderId')?.toString();
-
-      const meats = parseMeatsFromFormData(formData);
-      const sauces = formData.getAll('sauces').map((value) => ({ id: value.toString() }));
-      const garnitures = formData.getAll('garnitures').map((value) => ({ id: value.toString() }));
-      const extras = parseItemsFromFormData(formData, 'extras');
-      const drinks = parseItemsFromFormData(formData, 'drinks');
-      const desserts = parseItemsFromFormData(formData, 'desserts');
-      const note = formData.get('note')?.toString().trim();
-
+      const formDataParsed = parseOrderFormData(formData);
       const stock = await StockApi.getStock();
-      const tacoSize = stock.tacos.find((t) => t.code === size);
+      const tacoSize = stock.tacos.find((t) => t.code === formDataParsed.size);
 
-      validateTacoSelection({
-        size,
-        meats,
-        sauces,
-        garnitures,
-        extras,
-        drinks,
-        desserts,
-        tacoSize,
-      });
+      validateOrderForm(formDataParsed, tacoSize);
 
-      if (editOrderId) {
-        try {
-          await OrdersApi.deleteUserOrder(groupOrderId, editOrderId);
-        } catch {
-          // If delete fails, continue to create
-        }
-      }
-
-      const hasTaco = size && meats.length > 0 && sauces.length > 0;
-
-      await OrdersApi.upsertUserOrder(groupOrderId, {
-        items: {
-          tacos:
-            hasTaco && size
-              ? [
-                  {
-                    size,
-                    meats,
-                    sauces,
-                    garnitures,
-                    note,
-                    quantity: 1,
-                  },
-                ]
-              : [],
-          extras,
-          drinks,
-          desserts,
-        },
-      });
+      const requestBody = buildUpsertOrderRequest(formDataParsed);
+      await upsertUserOrder(groupOrderId, requestBody, formDataParsed.editOrderId);
     },
   },
   getFormName: () => 'create',
@@ -243,12 +168,14 @@ export function OrderCreateRoute() {
     setDesserts,
     note,
     setNote,
+    kind,
     selectedTacoSize,
     totalPrice,
     priceBreakdown,
     toggleSelection,
     updateMeatQuantity,
     prefillTaco,
+    toggleMystery,
   } = useOrderForm({ stock, myOrder });
 
   const { hasTaco, hasOtherItems, validationMessages, canSubmit } = useOrderValidation({
@@ -260,6 +187,7 @@ export function OrderCreateRoute() {
     drinks,
     desserts,
     selectedTacoSize,
+    kind,
   });
 
   const totalMeatQuantity = meats.reduce((sum, m) => sum + m.quantity, 0);
@@ -270,6 +198,7 @@ export function OrderCreateRoute() {
     totalMeatQuantity,
     sauces,
     garnitures,
+    kind,
   });
 
   return (
@@ -290,6 +219,7 @@ export function OrderCreateRoute() {
       <div className="grid gap-4 sm:gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,400px)]">
         <Form method="post" className="space-y-4 sm:space-y-8" id="order-form">
           <input type="hidden" name="tacoSize" value={size} />
+          <input type="hidden" name="kind" value={kind} />
           {editOrderId && <input type="hidden" name="editOrderId" value={editOrderId} />}
 
           <PreviousTacos
@@ -298,10 +228,11 @@ export function OrderCreateRoute() {
             onSelectTaco={(taco) => {
               prefillTaco({
                 size: taco.size,
-                meats: taco.meats.map((m) => ({ id: m.id, quantity: m.quantity ?? 1 })),
-                sauces: taco.sauces.map((s) => ({ id: s.id })),
-                garnitures: taco.garnitures.map((g) => ({ id: g.id })),
+                meats: taco.meats?.map((m) => ({ id: m.id, quantity: m.quantity ?? 1 })) ?? [],
+                sauces: taco.sauces?.map((s) => ({ id: s.id })) ?? [],
+                garnitures: taco.garnitures?.map((g) => ({ id: g.id })) ?? [],
                 note: taco.note,
+                kind: taco.kind,
               });
             }}
             disabled={isSubmitting}
@@ -321,12 +252,14 @@ export function OrderCreateRoute() {
               }}
               stock={stock}
               isSubmitting={isSubmitting}
+              kind={kind}
               onUpdateMeatQuantity={updateMeatQuantity}
               onToggleSauce={(id) =>
                 toggleSelection(id, sauces, setSauces, selectedTacoSize?.maxSauces)
               }
               onToggleGarniture={(id) => toggleSelection(id, garnitures, setGarnitures)}
               onNoteChange={setNote}
+              onToggleMystery={toggleMystery}
             />
           )}
 
@@ -374,6 +307,7 @@ export function OrderCreateRoute() {
             formId="order-form"
             isSubmitting={isSubmitting}
             editOrderId={editOrderId}
+            kind={kind}
             onCancel={() => {
               navigate(routes.root.orderDetail({ orderId: params.orderId ?? '' }));
             }}

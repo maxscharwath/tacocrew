@@ -845,6 +845,29 @@
         "missingMeat": "Select at least one meat.",
         "missingSauce": "Select at least one sauce.",
         "missingSelection": "Select at least a taco or some extras/drinks/desserts."
+      },
+      "mystery": {
+        "button": "Surprise Me!",
+        "customizeSubtitle": "The chef picks everything - just enjoy the surprise!",
+        "customizeTitle": "Mystery Taco",
+        "description": "Let our chef surprise you!",
+        "explanation": "Can't decide? Let our chef pick everything for you - it's an adventure in every bite!",
+        "fullSurprise": "Full Surprise Mode!",
+        "fullSurpriseHint": "The chef will choose the meats, sauces, and garnitures based on what's fresh and delicious",
+        "progress": {
+          "ready": "Ready",
+          "readyDescription": "Chef will surprise you!"
+        },
+        "startingAt": "Starting at",
+        "summaryMeats": "Full surprise",
+        "summaryTitle": "Mystery Taco",
+        "surpriseGarnitures": "Surprise",
+        "surpriseMeats": "Surprise",
+        "surpriseSauces": "Surprise",
+        "title": "Feeling Lucky?",
+        "toggleActiveHint": "Chef picks everything - click to customize instead",
+        "toggleHint": "Let the chef surprise you with the perfect combo",
+        "toggleTitle": "Mystery Mode"
       }
     },
     "detail": {
@@ -913,6 +936,10 @@
       },
       "list": {
         "description": "View all orders in this group order",
+        "revealMystery": "Reveal Mystery",
+        "revealing": "Revealing...",
+        "revealed": "Revealed",
+        "revealedHint": "Ingredients shown below",
         "emptyState": {
           "cta": "Create my order",
           "description": {

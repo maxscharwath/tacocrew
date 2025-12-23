@@ -1,5 +1,6 @@
-import { Droplets, Ham, Leaf, Ruler } from 'lucide-react';
+import { CheckCircle2, Dices, Droplets, Ham, Leaf, Ruler } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { TacoKind } from '@/lib/api/types';
 import type { TacoSizeItem } from '@/types/orders';
 
 type ProgressStep = {
@@ -16,6 +17,7 @@ type UseProgressStepsProps = {
   totalMeatQuantity: number;
   sauces: string[];
   garnitures: string[];
+  kind?: TacoKind;
 };
 
 export function useProgressSteps({
@@ -24,13 +26,36 @@ export function useProgressSteps({
   totalMeatQuantity,
   sauces,
   garnitures,
+  kind = TacoKind.REGULAR,
 }: UseProgressStepsProps): ProgressStep[] {
   const { t } = useTranslation();
+  const isMystery = kind === TacoKind.MYSTERY;
 
   if (!size) {
     return [];
   }
 
+  // Mystery tacos only need size - show simplified progress
+  if (isMystery) {
+    return [
+      {
+        key: 'size',
+        completed: true,
+        label: t('orders.create.progress.size.label'),
+        icon: Ruler,
+        description: selectedTacoSize?.name ?? t('orders.create.progress.size.empty'),
+      },
+      {
+        key: 'ready',
+        completed: true,
+        label: t('orders.create.mystery.progress.ready'),
+        icon: Dices,
+        description: t('orders.create.mystery.progress.readyDescription'),
+      },
+    ];
+  }
+
+  // Regular tacos show full progress
   return [
     {
       key: 'size',

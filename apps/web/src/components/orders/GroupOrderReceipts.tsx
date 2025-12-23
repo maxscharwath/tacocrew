@@ -48,13 +48,13 @@ type ProcessingState = {
 
 function formatTacoDetails(order: UserOrderSummary['items']['tacos'][number]) {
   const details: string[] = [];
-  if (order.meats.length > 0) {
+  if (order.meats && order.meats.length > 0) {
     details.push(order.meats.map((meat) => meat.name).join(', '));
   }
-  if (order.garnitures.length > 0) {
+  if (order.garnitures && order.garnitures.length > 0) {
     details.push(order.garnitures.map((item) => item.name).join(', '));
   }
-  if (order.sauces.length > 0) {
+  if (order.sauces && order.sauces.length > 0) {
     details.push(order.sauces.map((item) => item.name).join(', '));
   }
   return details.join(' • ');
@@ -108,7 +108,7 @@ type GroupOrderReceiptsProps = {
   readonly groupOrder: GroupOrder;
   readonly userOrders: UserOrderSummary[];
   readonly isLeader: boolean;
-  readonly currentUserId: string;
+  readonly currentUserId: string | undefined;
 };
 
 export function GroupOrderReceipts({
@@ -266,7 +266,7 @@ export function GroupOrderReceipts({
           subtotal: receipt.subtotal,
           participantPaid: receipt.participantPaid,
           reimbursementComplete: receipt.reimbursementComplete,
-          canShowParticipantAction: receipt.group.userId === currentUserId && !isLeader,
+          canShowParticipantAction: currentUserId ? receipt.group.userId === currentUserId && !isLeader : false,
           canShowReimbursementAction: isLeader && !receipt.isLeaderReceipt,
           canShowSendReminder: receipt.canSendReminder,
         } satisfies ReceiptTicketModel,

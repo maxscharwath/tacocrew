@@ -250,6 +250,7 @@ export interface TacoOrderInput {
   garnitures: SimpleSelection[];
   note?: string;
   quantity?: number;
+  kind?: TacoKind;
 }
 
 export interface UpsertUserOrderBody {
@@ -268,15 +269,33 @@ export interface MenuItem {
   price: Amount;
 }
 
-export interface TacoOrder extends MenuItem {
+export enum TacoKind {
+  REGULAR = 'regular',
+  MYSTERY = 'mystery',
+}
+
+export interface RegularTacoOrder extends MenuItem {
   size: TacoSize;
   meats: (MenuItem & { quantity: number })[];
   sauces: MenuItem[];
   garnitures: MenuItem[];
   note?: string;
   quantity: number;
-  tacoID: string; // base58-encoded tacoID (Bitcoin-style identifier) - always required
+  tacoID: string; // base58-encoded tacoID (Bitcoin-style identifier) - required for regular tacos
+  kind: TacoKind.REGULAR;
 }
+
+export interface MysteryTacoOrder extends MenuItem {
+  size: TacoSize;
+  meats: (MenuItem & { quantity: number })[];
+  sauces: MenuItem[];
+  garnitures: MenuItem[];
+  note?: string;
+  quantity: number;
+  kind: TacoKind.MYSTERY;
+}
+
+export type TacoOrder = RegularTacoOrder | MysteryTacoOrder;
 
 export interface PricedSelection extends MenuItem {
   quantity: number;

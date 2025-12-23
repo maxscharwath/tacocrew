@@ -25,9 +25,12 @@ import type {
   SessionContext,
   StockAvailability,
   StockAvailabilityBackend,
+  StockInfo,
   Taco,
   TacoFormData,
 } from './types';
+import { EMPTY_GARNITURE_CODE, EMPTY_MEAT_CODE, EMPTY_SAUCE_CODE } from './config/empty-items.config';
+import { normalizeTacoFormData } from './utils/taco-form-normalizer';
 import { noopLogger } from './utils/logger';
 
 /**
@@ -133,7 +136,9 @@ export class GigatacosClient {
     stockData?: StockAvailability
   ): Promise<{ data: Taco | null; cookies: Record<string, string> }> {
     const config = this.buildRequestConfig(session);
-    const result = await this.httpClient.postForm<string>('/ajax/owt.php', formData, config);
+    // Normalize form data to ensure empty items are added when arrays are empty
+    const normalizedFormData = normalizeTacoFormData(formData);
+    const result = await this.httpClient.postForm<string>('/ajax/owt.php', normalizedFormData, config);
     
     const taco = parseTacoCard(result.data, tacoId, stockData, this.logger);
     return { data: taco, cookies: result.cookies };
@@ -461,10 +466,11 @@ export class GigatacosClient {
 
   /**
    * Get stock availability from backend
+   * Filters out "sans_*" placeholder items - these are added automatically when submitting
    * Requires a CSRF token (can be obtained via refreshCsrfToken)
    * @param csrfToken CSRF token for authentication
    * @param cookies Optional cookies to include in the request
-   * @returns Stock availability data
+   * @returns Stock availability data (without placeholder items)
    * @throws {CsrfError} If CSRF token is invalid
    * @throws {RateLimitError} If rate limit is exceeded
    * @throws {NetworkError} If network request fails
@@ -485,6 +491,19 @@ export class GigatacosClient {
       config
     );
     
-    return result.data;
+    // Filter out empty placeholder items - these are added automatically when submitting
+    const filterEmptyItem = <T extends Record<string, StockInfo>>(
+      items: T | undefined,
+      emptyCode: string
+    ): T => Object.fromEntries(Object.entries(items || {}).filter(([code]) => code !== emptyCode)) as T;
+
+    return {
+      viandes: filterEmptyItem(result.data.viandes, EMPTY_MEAT_CODE),
+      sauces: filterEmptyItem(result.data.sauces, EMPTY_SAUCE_CODE),
+      garnitures: filterEmptyItem(result.data.garnitures, EMPTY_GARNITURE_CODE),
+      desserts: result.data.desserts || {},
+      boissons: result.data.boissons || {},
+      extras: result.data.extras || {},
+    };
   }
 }

@@ -29,6 +29,7 @@ export * from './select';
 export * from './separator';
 export * from './skeleton';
 export * from './status-badge';
+export * from './switch';
 export * from './textarea';
 export * from './toast';
 export * from './tooltip';

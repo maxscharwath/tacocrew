@@ -2,16 +2,25 @@ import { injectable } from 'tsyringe';
 import { z } from 'zod';
 import { PrismaService } from '@/infrastructure/database/prisma.service';
 import type { Taco } from '@/schemas/taco.schema';
-import { TacoSchema } from '@/schemas/taco.schema';
+import { RegularTacoSchema, MysteryTacoSchema, TacoKind } from '@/schemas/taco.schema';
 import { UserOrderItemsSchema } from '@/schemas/user-order.schema';
 import { NotFoundError } from '@/shared/utils/errors.utils';
 import { inject } from '@/shared/utils/inject.utils';
 import { logger } from '@/shared/utils/logger.utils';
 import { generateTacoID, generateTacoIdHex, tacoIDToHex } from '@/shared/utils/order-taco-id.utils';
 
-const TacoWithTacoIdHexSchema = TacoSchema.extend({
+const RegularTacoWithTacoIdHexSchema = RegularTacoSchema.extend({
   tacoIdHex: z.string().min(1).optional(),
 });
+
+const MysteryTacoWithTacoIdHexSchema = MysteryTacoSchema.extend({
+  tacoIdHex: z.string().min(1).optional(),
+});
+
+const TacoWithTacoIdHexSchema = z.discriminatedUnion('kind', [
+  RegularTacoWithTacoIdHexSchema,
+  MysteryTacoWithTacoIdHexSchema,
+]);
 
 @injectable()
 export class GetTacoByTacoIDUseCase {
@@ -64,6 +73,11 @@ export class GetTacoByTacoIDUseCase {
         error: tacoWithHex.error,
         tacoKeys: typeof taco === 'object' && taco !== null ? Object.keys(taco) : [],
       });
+      return null;
+    }
+
+    // Mystery tacos don't have tacoID, skip them
+    if (tacoWithHex.data.kind === TacoKind.MYSTERY) {
       return null;
     }
 
