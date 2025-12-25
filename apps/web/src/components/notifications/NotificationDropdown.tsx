@@ -22,10 +22,10 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 import { useRelativeTime } from '@/hooks';
 import {
-  markAsRead,
   type Notification,
   useArchiveAllNotifications,
   useArchiveNotification,
+  useMarkAsRead,
 } from '@/lib/api/notifications';
 import {
   useInfiniteNotifications,
@@ -261,6 +261,7 @@ export function NotificationDropdown({ onClose, onMarkAsRead }: NotificationDrop
   const unreadCountQuery = useUnreadNotificationsCount();
   const archiveNotificationMutation = useArchiveNotification();
   const archiveAllNotificationsMutation = useArchiveAllNotifications();
+  const markAsReadMutation = useMarkAsRead();
 
   // Flatten pages into a single notifications list
   const notifications = notificationsQuery.data?.pages.flatMap((page) => page.items) ?? [];
@@ -297,9 +298,8 @@ export function NotificationDropdown({ onClose, onMarkAsRead }: NotificationDrop
   const handleClick = async (notification: Notification) => {
     if (!notification.read) {
       try {
-        await markAsRead(notification.id);
+        await markAsReadMutation.mutateAsync(notification.id);
         refreshAfterAction();
-        notificationsQuery.refetch();
       } catch {
         // Silently fail
       }

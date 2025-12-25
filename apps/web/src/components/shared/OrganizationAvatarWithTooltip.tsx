@@ -6,6 +6,7 @@ type OrganizationAvatarWithTooltipProps = {
   readonly name: string;
   readonly size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl';
   readonly className?: string;
+  readonly imageUrl?: string | null;
 };
 
 /**
@@ -16,12 +17,13 @@ export function OrganizationAvatarWithTooltip({
   name,
   size = 'md',
   className,
+  imageUrl,
 }: OrganizationAvatarWithTooltipProps) {
   return (
     <Tooltip>
       <TooltipTrigger asChild>
         <div className={className}>
-          <OrganizationAvatar organizationId={organizationId} name={name} size={size} />
+          <OrganizationAvatar organizationId={organizationId} name={name} size={size} imageUrl={imageUrl} />
         </div>
       </TooltipTrigger>
       <TooltipContent>

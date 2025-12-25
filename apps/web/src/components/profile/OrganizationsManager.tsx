@@ -6,9 +6,9 @@ import { useRevalidator } from 'react-router';
 import { OrganizationCreateForm } from '@/components/profile/OrganizationCreateForm';
 import { OrganizationDetails } from '@/components/profile/OrganizationDetails';
 import { OrganizationsList } from '@/components/profile/OrganizationsList';
-import { createOrganization } from '@/lib/api/organization';
+import { useCreateOrganization } from '@/lib/api/organization';
 import type { Organization, OrganizationPayload } from '@/lib/api/types';
-import { getProfile } from '@/lib/api/user';
+import { useProfile } from '@/lib/api/user';
 
 type OrganizationsManagerProps = Readonly<{
   organizations: Organization[];
@@ -91,14 +91,16 @@ export function OrganizationsManager({
 }: OrganizationsManagerProps) {
   const { t } = useTranslation();
   const revalidator = useRevalidator();
+  const profileQuery = useProfile();
+  const createMutation = useCreateOrganization();
   const [organizations, setOrganizations] = useState<Organization[]>(initialOrganizations);
   const [selectedId, setSelectedId] = useState<string>(organizations[0]?.id ?? '');
   const [isCreating, setIsCreating] = useState(false);
-  const [currentUserId, setCurrentUserId] = useState<string>('');
   const [userRole, setUserRole] = useState<'ADMIN' | 'MEMBER' | null>(null);
   const [userStatus, setUserStatus] = useState<'ACTIVE' | 'PENDING' | null>(null);
 
   const selectedOrganization = organizations.find((org) => org.id === selectedId);
+  const currentUserId = profileQuery.data?.id ?? '';
 
   // Sync local state with loader data when it changes
   useEffect(() => {
@@ -111,19 +113,6 @@ export function OrganizationsManager({
       return currentSelectedId;
     });
   }, [initialOrganizations]);
-
-  // Load current user ID
-  useEffect(() => {
-    const loadUserInfo = async () => {
-      try {
-        const profile = await getProfile();
-        setCurrentUserId(profile.id);
-      } catch (_error) {
-        // Silently fail - current user ID is optional for display purposes
-      }
-    };
-    loadUserInfo();
-  }, []);
 
   // Load user role and status when organization is selected
   useEffect(() => {
@@ -155,30 +144,37 @@ export function OrganizationsManager({
     setIsCreating(true);
   };
 
-  const handleCreateSubmit = async (
+  const handleCreateSubmit = (
     data: OrganizationPayload,
     avatarFile: File | null,
     backgroundColor: string | null
   ) => {
     const loadingToastId = toast.loading(t('organizations.messages.creating'));
-    try {
-      const newOrg = await createOrganization(data, avatarFile, backgroundColor);
-      setOrganizations((prev) => [...prev, newOrg]);
-      setSelectedId(newOrg.id);
-      setIsCreating(false);
-      toast.success(t('organizations.messages.createdWithName', { name: newOrg.name }), {
-        id: loadingToastId,
-      });
-      // Revalidate loader data to sync with server
-      revalidator.revalidate();
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : t('organizations.messages.genericError');
-      toast.error(t('organizations.messages.createFailed', { error: errorMessage }), {
-        id: loadingToastId,
-      });
-      throw error; // Re-throw so form can handle it
-    }
+    return new Promise<void>((resolve, reject) => {
+      createMutation.mutate(
+        { body: data, avatarFile, backgroundColor },
+        {
+          onSuccess: (newOrg) => {
+            setOrganizations((prev) => [...prev, newOrg]);
+            setSelectedId(newOrg.id);
+            setIsCreating(false);
+            toast.success(t('organizations.messages.createdWithName', { name: newOrg.name }), {
+              id: loadingToastId,
+            });
+            revalidator.revalidate();
+            resolve();
+          },
+          onError: (error) => {
+            const errorMessage =
+              error instanceof Error ? error.message : t('organizations.messages.genericError');
+            toast.error(t('organizations.messages.createFailed', { error: errorMessage }), {
+              id: loadingToastId,
+            });
+            reject(error);
+          },
+        }
+      );
+    });
   };
 
   const handleCreateCancel = () => {

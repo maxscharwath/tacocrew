@@ -32,7 +32,6 @@ import { useOrderForm } from '@/hooks/useOrderForm';
 import { useOrderFormUI } from '@/hooks/useOrderFormUI';
 import { useOrderValidation } from '@/hooks/useOrderValidation';
 import { useProgressSteps } from '@/hooks/useProgressSteps';
-import { getStock } from '@/lib/api';
 import { routes } from '@/lib/routes';
 import { createActionHandler } from '@/lib/utils/action-handler';
 import { requireParam } from '@/lib/utils/param-validators';

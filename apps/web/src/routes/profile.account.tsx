@@ -29,7 +29,7 @@ import { ImageUploader } from '@/components/profile/ImageUploader';
 import { PushNotificationManager } from '@/components/profile/PushNotificationManager';
 import { EditActionButtons } from '@/components/shared';
 import { usePasskeys } from '@/hooks/usePasskeys';
-import { updateUserPhone, useProfile } from '@/lib/api/user';
+import { useProfile, useUpdateUserPhone } from '@/lib/api/user';
 import { authClient, useSession } from '@/lib/auth-client';
 import { ENV } from '@/lib/env';
 import { formatPhoneNumber } from '@/utils/phone-formatter';
@@ -305,6 +305,7 @@ export function AccountRoute() {
   const { data: session } = useSession();
   const profileQuery = useProfile();
   const passkeysQuery = usePasskeys();
+  const updatePhone = useUpdateUserPhone();
   const [isRegistering, setIsRegistering] = useState(false);
   const [showDeletePasskeyDialog, setShowDeletePasskeyDialog] = useState<string | null>(null);
 
@@ -515,13 +516,20 @@ export function AccountRoute() {
             <PhoneEditor
               currentPhone={profile?.phone}
               onUpdate={async (newPhone) => {
-                try {
-                  await updateUserPhone(newPhone);
-                  toast.success(t('account.phoneUpdate.success'));
-                  await profileQuery.refetch();
-                } catch (err) {
-                  toast.error(err instanceof Error ? err.message : t('account.phoneUpdate.failed'));
-                }
+                return new Promise<void>((resolve, reject) => {
+                  updatePhone.mutate(newPhone, {
+                    onSuccess: () => {
+                      toast.success(t('account.phoneUpdate.success'));
+                      resolve();
+                    },
+                    onError: (err) => {
+                      toast.error(
+                        err instanceof Error ? err.message : t('account.phoneUpdate.failed')
+                      );
+                      reject(err);
+                    },
+                  });
+                });
               }}
             />
             <div className="space-y-2 border-white/10 border-t pt-4">

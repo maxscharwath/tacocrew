@@ -1,13 +1,12 @@
 /**
  * Push Notification Client
  * Wrapper around the Web Push API for easier subscription management
+ *
+ * Note: This class uses direct fetch calls instead of React Query hooks
+ * since it needs to work outside of React context (e.g., in service workers).
  */
 
-import {
-  getPushPublicKey,
-  subscribeToPushNotifications,
-  unsubscribeFromPushNotifications,
-} from '@/lib/api/push-notifications';
+import { apiClient } from '@/lib/api/http';
 
 export interface PushSubscriptionData {
   endpoint: string;
@@ -111,7 +110,7 @@ export class PushNotificationClient {
 
     // Get VAPID public key from server
     try {
-      const response = await getPushPublicKey();
+      const response = await apiClient.get<{ publicKey: string }>('/api/v1/push/public-key');
       this.publicKey = response.publicKey;
       if (!this.publicKey) {
         throw new PushNotificationError('VAPID public key not available');
@@ -173,9 +172,11 @@ export class PushNotificationClient {
 
       // Send subscription to server
       try {
-        await subscribeToPushNotifications({
-          ...subscriptionData,
-          userAgent: navigator.userAgent,
+        await apiClient.post<{ success: boolean }>('/api/v1/push/subscribe', {
+          body: {
+            ...subscriptionData,
+            userAgent: navigator.userAgent,
+          },
         });
       } catch (error) {
         // If server registration fails, unsubscribe from push service
@@ -215,7 +216,9 @@ export class PushNotificationClient {
 
       // Remove subscription from server
       try {
-        await unsubscribeFromPushNotifications(subscription.endpoint);
+        await apiClient.delete<{ success: boolean }>('/api/v1/push/unsubscribe', {
+          body: { endpoint: subscription.endpoint },
+        });
       } catch (_error) {
         // Log but don't throw - subscription is already removed from browser
       }

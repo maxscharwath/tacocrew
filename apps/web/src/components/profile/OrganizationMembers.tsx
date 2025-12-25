@@ -15,19 +15,19 @@ import {
   toast,
 } from '@tacocrew/ui-kit';
 import { Check, Crown, Mail, User, UserPlus, X } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { RoleSelector } from '@/components/profile/RoleSelector';
 import { UserAvatar } from '@/components/shared/UserAvatar';
 import {
-  acceptJoinRequest,
-  addUserToOrganization,
-  getOrganizationMembers,
-  getPendingRequests,
-  rejectJoinRequest,
-  removeUserFromOrganization,
-  requestToJoinOrganization,
-  updateUserRole,
+  useAcceptJoinRequest,
+  useAddUserToOrganization,
+  useOrganizationMembers,
+  usePendingRequests,
+  useRejectJoinRequest,
+  useRemoveUserFromOrganization,
+  useRequestToJoinOrganization,
+  useUpdateUserRole,
 } from '@/lib/api/organization';
 import type { OrganizationMember, OrganizationRole, PendingRequest } from '@/lib/api/types';
 
@@ -43,154 +43,152 @@ export function OrganizationMembers({
   currentUserId,
 }: OrganizationMembersProps) {
   const { t } = useTranslation();
-  const [members, setMembers] = useState<OrganizationMember[]>([]);
-  const [pendingRequests, setPendingRequests] = useState<PendingRequest[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [addUserEmail, setAddUserEmail] = useState('');
   const [addUserRole, setAddUserRole] = useState<OrganizationRole>('MEMBER');
-  const [isAddingUser, setIsAddingUser] = useState(false);
 
-  const loadData = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const [membersData, pendingData] = await Promise.all([
-        getOrganizationMembers(organizationId).catch(() => []),
-        isAdmin ? getPendingRequests(organizationId).catch(() => []) : Promise.resolve([]),
-      ]);
-      setMembers(membersData);
-      setPendingRequests(pendingData);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : t('organizations.messages.genericError'));
-    } finally {
-      setLoading(false);
-    }
-  };
+  const membersQuery = useOrganizationMembers(organizationId);
+  const pendingRequestsQuery = usePendingRequests(organizationId, isAdmin);
+  const acceptRequestMutation = useAcceptJoinRequest();
+  const rejectRequestMutation = useRejectJoinRequest();
+  const updateRoleMutation = useUpdateUserRole();
+  const removeMemberMutation = useRemoveUserFromOrganization();
+  const requestToJoinMutation = useRequestToJoinOrganization();
+  const addUserMutation = useAddUserToOrganization();
 
-  useEffect(() => {
-    loadData();
-  }, [organizationId, isAdmin]);
+  const members = membersQuery.data ?? [];
+  const pendingRequests = pendingRequestsQuery.data ?? [];
+  const loading = membersQuery.isLoading || pendingRequestsQuery.isLoading;
+  const error = membersQuery.error ?? pendingRequestsQuery.error;
 
-  const handleAcceptRequest = async (userId: string) => {
+  const handleAcceptRequest = (userId: string) => {
     const user = pendingRequests.find((r) => r.userId === userId);
     const userName = user?.user.name || t('organizations.members.user');
 
-    setBusy(true);
-    try {
-      await acceptJoinRequest(organizationId, userId);
-      toast.success(t('organizations.members.requestAcceptedWithName', { name: userName }));
-      await loadData();
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : t('organizations.messages.genericError');
-      toast.error(t('organizations.members.requestAcceptFailed', { error: errorMessage }));
-    } finally {
-      setBusy(false);
-    }
+    acceptRequestMutation.mutate(
+      { organizationId, userId },
+      {
+        onSuccess: () => {
+          toast.success(t('organizations.members.requestAcceptedWithName', { name: userName }));
+        },
+        onError: (err) => {
+          const errorMessage =
+            err instanceof Error ? err.message : t('organizations.messages.genericError');
+          toast.error(t('organizations.members.requestAcceptFailed', { error: errorMessage }));
+        },
+      }
+    );
   };
 
-  const handleRejectRequest = async (userId: string) => {
+  const handleRejectRequest = (userId: string) => {
     const user = pendingRequests.find((r) => r.userId === userId);
     const userName = user?.user.name || t('organizations.members.user');
 
-    setBusy(true);
-    try {
-      await rejectJoinRequest(organizationId, userId);
-      toast.success(t('organizations.members.requestRejectedWithName', { name: userName }));
-      await loadData();
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : t('organizations.messages.genericError');
-      toast.error(t('organizations.members.requestRejectFailed', { error: errorMessage }));
-    } finally {
-      setBusy(false);
-    }
+    rejectRequestMutation.mutate(
+      { organizationId, userId },
+      {
+        onSuccess: () => {
+          toast.success(t('organizations.members.requestRejectedWithName', { name: userName }));
+        },
+        onError: (err) => {
+          const errorMessage =
+            err instanceof Error ? err.message : t('organizations.messages.genericError');
+          toast.error(t('organizations.members.requestRejectFailed', { error: errorMessage }));
+        },
+      }
+    );
   };
 
-  const handleUpdateRole = async (userId: string, newRole: OrganizationRole) => {
+  const handleUpdateRole = (userId: string, newRole: OrganizationRole) => {
     const member = members.find((m) => m.userId === userId);
     const userName = member?.user.name || t('organizations.members.user');
     const roleName =
       newRole === 'ADMIN' ? t('organizations.roles.admin') : t('organizations.roles.member');
 
-    setBusy(true);
-    try {
-      await updateUserRole(organizationId, userId, newRole);
-      toast.success(
-        t('organizations.members.roleUpdatedWithDetails', { name: userName, role: roleName })
-      );
-      await loadData();
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : t('organizations.messages.genericError');
-      toast.error(t('organizations.members.roleUpdateFailed', { error: errorMessage }));
-    } finally {
-      setBusy(false);
-    }
+    updateRoleMutation.mutate(
+      { organizationId, userId, role: newRole },
+      {
+        onSuccess: () => {
+          toast.success(
+            t('organizations.members.roleUpdatedWithDetails', { name: userName, role: roleName })
+          );
+        },
+        onError: (err) => {
+          const errorMessage =
+            err instanceof Error ? err.message : t('organizations.messages.genericError');
+          toast.error(t('organizations.members.roleUpdateFailed', { error: errorMessage }));
+        },
+      }
+    );
   };
 
-  const handleRemoveMember = async (userId: string) => {
+  const handleRemoveMember = (userId: string) => {
     const member = members.find((m) => m.userId === userId);
     const userName = member?.user.name || t('organizations.members.user');
 
     if (!confirm(t('organizations.members.confirmRemoveWithName', { name: userName }))) return;
 
-    setBusy(true);
-    try {
-      await removeUserFromOrganization(organizationId, userId);
-      toast.success(t('organizations.members.memberRemovedWithName', { name: userName }));
-      await loadData();
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : t('organizations.messages.genericError');
-      toast.error(t('organizations.members.memberRemoveFailed', { error: errorMessage }));
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const handleRequestToJoin = async () => {
-    setBusy(true);
-    try {
-      await requestToJoinOrganization(organizationId);
-      toast.success(t('organizations.members.joinRequested'));
-      await loadData();
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : t('organizations.messages.genericError');
-      if (err instanceof Error && err.message.includes('already')) {
-        toast.error(err.message);
-      } else {
-        toast.error(t('organizations.members.joinRequestFailed', { error: errorMessage }));
+    removeMemberMutation.mutate(
+      { organizationId, userId },
+      {
+        onSuccess: () => {
+          toast.success(t('organizations.members.memberRemovedWithName', { name: userName }));
+        },
+        onError: (err) => {
+          const errorMessage =
+            err instanceof Error ? err.message : t('organizations.messages.genericError');
+          toast.error(t('organizations.members.memberRemoveFailed', { error: errorMessage }));
+        },
       }
-    } finally {
-      setBusy(false);
-    }
+    );
   };
 
-  const handleAddUser = async () => {
+  const handleRequestToJoin = () => {
+    requestToJoinMutation.mutate(organizationId, {
+      onSuccess: () => {
+        toast.success(t('organizations.members.joinRequested'));
+      },
+      onError: (err) => {
+        const errorMessage =
+          err instanceof Error ? err.message : t('organizations.messages.genericError');
+        if (err instanceof Error && err.message.includes('already')) {
+          toast.error(err.message);
+        } else {
+          toast.error(t('organizations.members.joinRequestFailed', { error: errorMessage }));
+        }
+      },
+    });
+  };
+
+  const handleAddUser = () => {
     if (!addUserEmail.trim()) {
       toast.error(t('organizations.members.addUser.emailRequired'));
       return;
     }
 
-    setIsAddingUser(true);
-    try {
-      await addUserToOrganization(organizationId, addUserEmail.trim(), addUserRole);
-      toast.success(t('organizations.members.addUser.success', { email: addUserEmail.trim() }));
-      setAddUserEmail('');
-      setAddUserRole('MEMBER');
-      await loadData();
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : t('organizations.messages.genericError');
-      toast.error(t('organizations.members.addUser.failed', { error: errorMessage }));
-    } finally {
-      setIsAddingUser(false);
-    }
+    addUserMutation.mutate(
+      { organizationId, email: addUserEmail.trim(), role: addUserRole },
+      {
+        onSuccess: () => {
+          toast.success(t('organizations.members.addUser.success', { email: addUserEmail.trim() }));
+          setAddUserEmail('');
+          setAddUserRole('MEMBER');
+        },
+        onError: (err) => {
+          const errorMessage =
+            err instanceof Error ? err.message : t('organizations.messages.genericError');
+          toast.error(t('organizations.members.addUser.failed', { error: errorMessage }));
+        },
+      }
+    );
   };
+
+  const busy =
+    acceptRequestMutation.isPending ||
+    rejectRequestMutation.isPending ||
+    updateRoleMutation.isPending ||
+    removeMemberMutation.isPending ||
+    requestToJoinMutation.isPending ||
+    addUserMutation.isPending;
 
   const activeMembers = members.filter((m) => m.status === 'ACTIVE');
   const currentUserMember = activeMembers.find((m) => m.userId === currentUserId);
@@ -212,7 +210,9 @@ export function OrganizationMembers({
       <Card>
         <CardContent className="py-12">
           <Alert tone="error">
-            <p>{error}</p>
+            <p>
+              {error instanceof Error ? error.message : t('organizations.messages.genericError')}
+            </p>
           </Alert>
         </CardContent>
       </Card>
@@ -335,9 +335,9 @@ export function OrganizationMembers({
                     placeholder={t('organizations.members.addUser.emailPlaceholder')}
                     value={addUserEmail}
                     onChange={(e) => setAddUserEmail(e.target.value)}
-                    disabled={isAddingUser}
+                    disabled={addUserMutation.isPending}
                     onKeyDown={(e) => {
-                      if (e.key === 'Enter' && !isAddingUser && addUserEmail.trim()) {
+                      if (e.key === 'Enter' && !addUserMutation.isPending && addUserEmail.trim()) {
                         handleAddUser();
                       }
                     }}
@@ -352,15 +352,15 @@ export function OrganizationMembers({
                   id="add-user-role"
                   value={addUserRole}
                   onValueChange={setAddUserRole}
-                  disabled={isAddingUser}
+                  disabled={addUserMutation.isPending}
                   triggerClassName="w-full"
                 />
               </div>
               <div className="flex items-end">
                 <Button
                   onClick={handleAddUser}
-                  disabled={isAddingUser || !addUserEmail.trim()}
-                  loading={isAddingUser}
+                  disabled={addUserMutation.isPending || !addUserEmail.trim()}
+                  loading={addUserMutation.isPending}
                   className="gap-2"
                   variant="default"
                 >

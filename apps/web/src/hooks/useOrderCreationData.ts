@@ -4,9 +4,9 @@
  * Returns Result type for functional error handling
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router';
-import { getUserOrder, useGroupOrderWithOrders, usePreviousOrders, useStock } from '@/lib/api';
+import { useGroupOrderWithOrders, usePreviousOrders, useStock, useUserOrder } from '@/lib/api';
 import type { UserOrderDetail } from '@/lib/api/orders';
 import type { GroupOrderWithUserOrders, PreviousOrder, StockResponse } from '@/lib/api/types';
 import { routes } from '@/lib/routes';
@@ -36,33 +36,25 @@ export function useOrderCreationData(
   editOrderId?: string | null
 ): OrderCreationDataState {
   const navigate = useNavigate();
-  const [editingOrder, setEditingOrder] = useState<UserOrderDetail | null>(null);
-  const [editingOrderError, setEditingOrderError] = useState<OrderError | null>(null);
 
   // Queries
   const groupQuery = useGroupOrderWithOrders(groupOrderId);
   const stockQuery = useStock();
   const previousOrdersQuery = usePreviousOrders();
+  const editingOrderQuery = useUserOrder(groupOrderId, editOrderId ?? '', !!editOrderId);
 
-  // Fetch editing order if provided
+  // Redirect if editing order not found
   useEffect(() => {
-    if (editOrderId) {
-      setEditingOrderError(null);
-      getUserOrder(groupOrderId, editOrderId)
-        .then(setEditingOrder)
-        .catch((error) => {
-          const orderError = OrderErrorFactory.userOrderNotFound(editOrderId);
-          setEditingOrderError(orderError);
-          // Redirect if order not found
-          navigate(routes.root.orderCreate({ orderId: groupOrderId }), { replace: true });
-        });
-    } else {
-      setEditingOrder(null);
-      setEditingOrderError(null);
+    if (editOrderId && editingOrderQuery.error) {
+      navigate(routes.root.orderCreate({ orderId: groupOrderId }), { replace: true });
     }
-  }, [editOrderId, groupOrderId, navigate]);
+  }, [editOrderId, editingOrderQuery.error, groupOrderId, navigate]);
 
-  const isLoading = groupQuery.isPending || stockQuery.isPending || previousOrdersQuery.isPending;
+  const isLoading =
+    groupQuery.isPending ||
+    stockQuery.isPending ||
+    previousOrdersQuery.isPending ||
+    (editingOrderQuery.isPending && !!editOrderId);
 
   // Build result from all queries
   const result: Result<OrderCreationData, OrderError> = (() => {
@@ -76,8 +68,8 @@ export function useOrderCreationData(
     if (previousOrdersQuery.error) {
       return Err(OrderErrorFactory.ordersLoadFailed(previousOrdersQuery.error as Error));
     }
-    if (editingOrderError) {
-      return Err(editingOrderError);
+    if (editOrderId && editingOrderQuery.error) {
+      return Err(OrderErrorFactory.userOrderNotFound(editOrderId));
     }
 
     // Check if all required data is loaded
@@ -86,12 +78,17 @@ export function useOrderCreationData(
       return Err(OrderErrorFactory.unknown(new Error('Data not yet loaded')));
     }
 
+    // If editing, wait for editing order data
+    if (editOrderId && !editingOrderQuery.data) {
+      return Err(OrderErrorFactory.unknown(new Error('Data not yet loaded')));
+    }
+
     // All data loaded successfully
     return Ok({
       group: groupQuery.data,
       stock: stockQuery.data,
       previousOrders: previousOrdersQuery.data ?? [],
-      editingOrder,
+      editingOrder: editingOrderQuery.data ?? null,
     });
   })();
 
@@ -99,9 +96,12 @@ export function useOrderCreationData(
     result,
     isLoading,
     refetch: () => {
-      groupQuery.refetch();
-      stockQuery.refetch();
-      previousOrdersQuery.refetch();
+      void groupQuery.refetch();
+      void stockQuery.refetch();
+      void previousOrdersQuery.refetch();
+      if (editOrderId) {
+        void editingOrderQuery.refetch();
+      }
     },
   };
 }

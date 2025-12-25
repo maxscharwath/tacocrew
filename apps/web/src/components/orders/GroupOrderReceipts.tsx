@@ -211,10 +211,7 @@ export function GroupOrderReceipts({
 
           // Show button if: not owner, not leader receipt, and not confirmed by leader yet
           const canShowPayForOther =
-            hasCurrentUser &&
-            isNotOrderOwner &&
-            isNotLeaderReceipt &&
-            !reimbursementComplete;
+            hasCurrentUser && isNotOrderOwner && isNotLeaderReceipt && !reimbursementComplete;
 
           // Get who paid for this order - check all orders and get the first paidBy found
           // Show regardless of payment status - if someone paid, show who it was

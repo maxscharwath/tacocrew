@@ -10,6 +10,7 @@ type OrganizationAvatarProps = {
   readonly color?: AvatarProps['color'];
   readonly className?: string;
   readonly alt?: string;
+  readonly imageUrl?: string | null;
 };
 
 /**
@@ -36,9 +37,21 @@ export function OrganizationAvatar({
   color = 'brand',
   className,
   alt,
+  imageUrl,
 }: OrganizationAvatarProps) {
   const avatarSize = size ? getAvatarSizePixels(size) : 48;
-  const avatarUrl = getOrganizationAvatarUrl(organizationId, { size: avatarSize });
+
+  // Use provided image URL with optimized size parameters, or generate one
+  const avatarUrl = imageUrl
+    ? (() => {
+        const url = new URL(imageUrl, window.location.origin);
+        url.searchParams.set('w', avatarSize.toString());
+        url.searchParams.set('h', avatarSize.toString());
+        url.searchParams.set('dpr', '2');
+        return url.toString();
+      })()
+    : getOrganizationAvatarUrl(organizationId, { size: avatarSize });
+
   return (
     <Avatar size={size} variant={variant} color={color} className={className}>
       <AvatarImage src={avatarUrl} alt={alt ?? name} />

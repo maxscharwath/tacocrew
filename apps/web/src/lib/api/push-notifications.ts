@@ -1,3 +1,4 @@
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api/http';
 
 export interface PushSubscription {
@@ -9,26 +10,6 @@ export interface PushSubscription {
   userAgent?: string;
 }
 
-export function subscribeToPushNotifications(subscription: PushSubscription) {
-  return apiClient.post<{ success: boolean }>('/api/v1/push/subscribe', {
-    body: subscription,
-  });
-}
-
-export function unsubscribeFromPushNotifications(endpoint: string) {
-  return apiClient.delete<{ success: boolean }>('/api/v1/push/unsubscribe', {
-    body: { endpoint },
-  });
-}
-
-export function getPushPublicKey() {
-  return apiClient.get<{ publicKey: string }>('/api/v1/push/public-key');
-}
-
-export function sendTestNotification() {
-  return apiClient.post<{ success: boolean; message: string }>('/api/v1/push/test');
-}
-
 export interface PushSubscriptionInfo {
   id: string;
   endpoint: string;
@@ -37,10 +18,69 @@ export interface PushSubscriptionInfo {
   updatedAt: string;
 }
 
-export function getPushSubscriptions() {
-  return apiClient.get<PushSubscriptionInfo[]>('/api/v1/push/subscriptions');
+/** Internal query key factory for push notifications */
+const pushNotificationsKeys = {
+  all: () => ['pushNotifications'] as const,
+  publicKey: () => [...pushNotificationsKeys.all(), 'publicKey'] as const,
+  subscriptions: () => [...pushNotificationsKeys.all(), 'subscriptions'] as const,
+} as const;
+
+export function useSubscribeToPushNotifications() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (subscription: PushSubscription) =>
+      apiClient.post<{ success: boolean }>('/api/v1/push/subscribe', {
+        body: subscription,
+      }),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: pushNotificationsKeys.subscriptions() });
+    },
+  });
 }
 
-export function deletePushSubscription(subscriptionId: string) {
-  return apiClient.delete<{ success: boolean }>(`/api/v1/push/subscriptions/${subscriptionId}`);
+export function useUnsubscribeFromPushNotifications() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (endpoint: string) =>
+      apiClient.delete<{ success: boolean }>('/api/v1/push/unsubscribe', {
+        body: { endpoint },
+      }),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: pushNotificationsKeys.subscriptions() });
+    },
+  });
+}
+
+export function usePushPublicKey() {
+  return useQuery({
+    queryKey: pushNotificationsKeys.publicKey(),
+    queryFn: () => apiClient.get<{ publicKey: string }>('/api/v1/push/public-key'),
+    staleTime: Number.POSITIVE_INFINITY, // Public key rarely changes
+  });
+}
+
+export function useSendTestNotification() {
+  return useMutation({
+    mutationFn: () => apiClient.post<{ success: boolean; message: string }>('/api/v1/push/test'),
+  });
+}
+
+export function usePushSubscriptions(enabled = true) {
+  return useQuery({
+    queryKey: pushNotificationsKeys.subscriptions(),
+    queryFn: () => apiClient.get<PushSubscriptionInfo[]>('/api/v1/push/subscriptions'),
+    enabled,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
+}
+
+export function useDeletePushSubscription() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (subscriptionId: string) =>
+      apiClient.delete<{ success: boolean }>(`/api/v1/push/subscriptions/${subscriptionId}`),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: pushNotificationsKeys.subscriptions() });
+    },
+  });
 }

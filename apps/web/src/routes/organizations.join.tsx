@@ -110,6 +110,7 @@ export function OrganizationJoinRoute() {
                   organizationId={organization.id}
                   name={organization.name}
                   color="brandHero"
+                  imageUrl={organization.image}
                   size="2xl"
                   variant="elevated"
                   className="shadow-lg"

@@ -1,4 +1,3 @@
-import { useQueries } from '@tanstack/react-query';
 import { useCallback, useMemo } from 'react';
 import {
   BADGES,
@@ -7,10 +6,10 @@ import {
 } from '@/config/badges.config';
 import {
   type BadgeProgress,
-  getUserBadgeProgress,
-  getUserBadgeStats,
-  getUserBadges,
   type UserBadgeContext,
+  useUserBadgeProgress,
+  useUserBadgeStats,
+  useUserBadges,
 } from '@/lib/api/badges';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -49,13 +48,6 @@ interface UseBadgesReturn {
   readonly getProgress: (badgeId: string) => BadgeProgress | undefined;
 }
 
-const badgesKeys = {
-  all: ['badges'] as const,
-  earned: () => [...badgesKeys.all, 'earned'] as const,
-  progress: () => [...badgesKeys.all, 'progress'] as const,
-  stats: () => [...badgesKeys.all, 'stats'] as const,
-} as const;
-
 /**
  * Hook for managing badge data
  *
@@ -64,25 +56,9 @@ const badgesKeys = {
  * Stats (byTier, byCategory) are computed client-side from FE definitions.
  */
 export function useBadges(): UseBadgesReturn {
-  const [earnedQuery, progressQuery, statsQuery] = useQueries({
-    queries: [
-      {
-        queryKey: badgesKeys.earned(),
-        queryFn: getUserBadges,
-        staleTime: 1000 * 60 * 5, // 5 minutes
-      },
-      {
-        queryKey: badgesKeys.progress(),
-        queryFn: getUserBadgeProgress,
-        staleTime: 1000 * 60 * 5, // 5 minutes
-      },
-      {
-        queryKey: badgesKeys.stats(),
-        queryFn: getUserBadgeStats,
-        staleTime: 1000 * 60 * 5, // 5 minutes
-      },
-    ],
-  });
+  const earnedQuery = useUserBadges();
+  const progressQuery = useUserBadgeProgress();
+  const statsQuery = useUserBadgeStats();
 
   // Map earned badges to use FE config definitions
   const earned = useMemo((): UserBadge[] => {
@@ -143,9 +119,9 @@ export function useBadges(): UseBadgesReturn {
   }, [isLoading, statsQuery.data, earned.length]);
 
   const refresh = useCallback(() => {
-    earnedQuery.refetch();
-    progressQuery.refetch();
-    statsQuery.refetch();
+    void earnedQuery.refetch();
+    void progressQuery.refetch();
+    void statsQuery.refetch();
   }, [earnedQuery, progressQuery, statsQuery]);
 
   return {

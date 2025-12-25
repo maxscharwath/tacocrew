@@ -9,65 +9,26 @@ import type {
   UserOrderHistoryEntry,
   UserProfile,
 } from '@/lib/api/types';
+
+/** Internal query key factory */
+const userKeys = {
+  all: () => ['userProfile'] as const,
+  deliveryProfiles: () => [...userKeys.all(), 'deliveryProfiles'] as const,
+  orderHistory: () => [...userKeys.all(), 'orderHistory'] as const,
+  groupOrders: () => [...userKeys.all(), 'groupOrders'] as const,
+  previousOrders: () => [...userKeys.all(), 'previousOrders'] as const,
+};
+
+/**
+ * Get user profile
+ * NOTE: This raw API function is exported ONLY for use in loaders.
+ * Components should use the useProfile hook instead.
+ */
 export function getProfile() {
   return apiClient.get<UserProfile>('/api/v1/users/me');
 }
 
-export function getOrderHistory() {
-  return apiClient.get<UserOrderHistoryEntry[]>('/api/v1/users/me/orders');
-}
-
-export function getGroupOrders() {
-  return apiClient.get<UserGroupOrder[]>('/api/v1/users/me/group-orders');
-}
-
-export function getPreviousOrders() {
-  return apiClient.get<PreviousOrder[]>('/api/v1/users/me/previous-orders');
-}
-
-export function getDeliveryProfiles() {
-  return apiClient.get<DeliveryProfile[]>('/api/v1/users/me/delivery-profiles');
-}
-
-export function createDeliveryProfile(body: DeliveryProfilePayload) {
-  return apiClient.post<DeliveryProfile>('/api/v1/users/me/delivery-profiles', { body });
-}
-
-export function updateDeliveryProfile(id: string, body: DeliveryProfilePayload) {
-  return apiClient.put<DeliveryProfile>(`/api/v1/users/me/delivery-profiles/${id}`, { body });
-}
-
-export function deleteDeliveryProfile(id: string) {
-  return apiClient.delete<void>(`/api/v1/users/me/delivery-profiles/${id}`);
-}
-
-export function updateUserLanguage(language: 'en' | 'fr' | 'de') {
-  return apiClient.patch<UserProfile>('/api/v1/users/me/language', {
-    body: { language },
-  });
-}
-
-export function updateUserPhone(phone: string | null) {
-  return apiClient.patch<UserProfile>('/api/v1/users/me/phone', {
-    body: { phone },
-  });
-}
-
-export function uploadAvatar(imageFile: File, backgroundColor?: string | null) {
-  const formData = new FormData();
-  formData.append('image', imageFile);
-  if (backgroundColor && backgroundColor !== 'transparent') {
-    formData.append('backgroundColor', backgroundColor);
-  }
-  return apiClient.post<UserProfile>('/api/v1/users/me/avatar', {
-    body: formData,
-  });
-}
-
-export function deleteAvatar() {
-  return apiClient.delete<UserProfile>('/api/v1/users/me/avatar');
-}
-
+/** Utility function for avatar URLs */
 export function getAvatarUrl(
   userId: string,
   options?: { size?: number; w?: number; h?: number; dpr?: number }
@@ -80,40 +41,40 @@ export function getAvatarUrl(
 
 export function useProfile(enabled = true) {
   return useQuery<UserProfile>({
-    queryKey: ['userProfile'],
-    queryFn: () => getProfile(),
+    queryKey: userKeys.all(),
+    queryFn: () => apiClient.get<UserProfile>('/api/v1/users/me'),
     enabled,
   });
 }
 
 export function useOrderHistory(enabled = true) {
   return useQuery<UserOrderHistoryEntry[]>({
-    queryKey: ['orderHistory'],
-    queryFn: () => getOrderHistory(),
+    queryKey: userKeys.orderHistory(),
+    queryFn: () => apiClient.get<UserOrderHistoryEntry[]>('/api/v1/users/me/orders'),
     enabled,
   });
 }
 
 export function useGroupOrders(enabled = true) {
   return useQuery<UserGroupOrder[]>({
-    queryKey: ['userGroupOrders'],
-    queryFn: () => getGroupOrders(),
+    queryKey: userKeys.groupOrders(),
+    queryFn: () => apiClient.get<UserGroupOrder[]>('/api/v1/users/me/group-orders'),
     enabled,
   });
 }
 
 export function usePreviousOrders(enabled = true) {
   return useQuery<PreviousOrder[]>({
-    queryKey: ['previousOrders'],
-    queryFn: () => getPreviousOrders(),
+    queryKey: userKeys.previousOrders(),
+    queryFn: () => apiClient.get<PreviousOrder[]>('/api/v1/users/me/previous-orders'),
     enabled,
   });
 }
 
 export function useDeliveryProfiles(enabled = true) {
   return useQuery<DeliveryProfile[]>({
-    queryKey: ['deliveryProfiles'],
-    queryFn: () => getDeliveryProfiles(),
+    queryKey: userKeys.deliveryProfiles(),
+    queryFn: () => apiClient.get<DeliveryProfile[]>('/api/v1/users/me/delivery-profiles'),
     enabled,
   });
 }
@@ -121,9 +82,10 @@ export function useDeliveryProfiles(enabled = true) {
 export function useCreateDeliveryProfile() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (body: DeliveryProfilePayload) => createDeliveryProfile(body),
+    mutationFn: (body: DeliveryProfilePayload) =>
+      apiClient.post<DeliveryProfile>('/api/v1/users/me/delivery-profiles', { body }),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['deliveryProfiles'] });
+      void queryClient.invalidateQueries({ queryKey: userKeys.deliveryProfiles() });
     },
   });
 }
@@ -132,9 +94,9 @@ export function useUpdateDeliveryProfile() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ id, body }: { id: string; body: DeliveryProfilePayload }) =>
-      updateDeliveryProfile(id, body),
+      apiClient.put<DeliveryProfile>(`/api/v1/users/me/delivery-profiles/${id}`, { body }),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['deliveryProfiles'] });
+      void queryClient.invalidateQueries({ queryKey: userKeys.deliveryProfiles() });
     },
   });
 }
@@ -142,9 +104,9 @@ export function useUpdateDeliveryProfile() {
 export function useDeleteDeliveryProfile() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (id: string) => deleteDeliveryProfile(id),
+    mutationFn: (id: string) => apiClient.delete<void>(`/api/v1/users/me/delivery-profiles/${id}`),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['deliveryProfiles'] });
+      void queryClient.invalidateQueries({ queryKey: userKeys.deliveryProfiles() });
     },
   });
 }
@@ -152,9 +114,12 @@ export function useDeleteDeliveryProfile() {
 export function useUpdateUserLanguage() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (language: 'en' | 'fr' | 'de') => updateUserLanguage(language),
+    mutationFn: (language: 'en' | 'fr' | 'de') =>
+      apiClient.patch<UserProfile>('/api/v1/users/me/language', {
+        body: { language },
+      }),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['userProfile'] });
+      void queryClient.invalidateQueries({ queryKey: userKeys.all() });
     },
   });
 }
@@ -162,9 +127,12 @@ export function useUpdateUserLanguage() {
 export function useUpdateUserPhone() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (phone: string | null) => updateUserPhone(phone),
+    mutationFn: (phone: string | null) =>
+      apiClient.patch<UserProfile>('/api/v1/users/me/phone', {
+        body: { phone },
+      }),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['userProfile'] });
+      void queryClient.invalidateQueries({ queryKey: userKeys.all() });
     },
   });
 }
@@ -178,9 +146,18 @@ export function useUploadAvatar() {
     }: {
       imageFile: File;
       backgroundColor?: string | null;
-    }) => uploadAvatar(imageFile, backgroundColor),
+    }) => {
+      const formData = new FormData();
+      formData.append('image', imageFile);
+      if (backgroundColor && backgroundColor !== 'transparent') {
+        formData.append('backgroundColor', backgroundColor);
+      }
+      return apiClient.post<UserProfile>('/api/v1/users/me/avatar', {
+        body: formData,
+      });
+    },
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['userProfile'] });
+      void queryClient.invalidateQueries({ queryKey: userKeys.all() });
     },
   });
 }
@@ -188,9 +165,9 @@ export function useUploadAvatar() {
 export function useDeleteAvatar() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: () => deleteAvatar(),
+    mutationFn: () => apiClient.delete<UserProfile>('/api/v1/users/me/avatar'),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['userProfile'] });
+      void queryClient.invalidateQueries({ queryKey: userKeys.all() });
     },
   });
 }

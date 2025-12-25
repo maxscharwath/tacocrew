@@ -12,8 +12,8 @@ import type {
   UserOrderResponse,
 } from '@/lib/api/types';
 
-/** Query key factory for orders */
-export const ordersKeys = {
+/** Internal query key factory for orders */
+const ordersKeys = {
   all: () => ['orders'] as const,
   lists: () => [...ordersKeys.all(), 'list'] as const,
   list: () => [...ordersKeys.lists()] as const,
@@ -53,68 +53,12 @@ export interface OrderCookiesResponse {
   instructions: string;
 }
 
+/**
+ * Raw API functions for server-side handlers and services
+ * These should only be used outside React components where hooks cannot be used
+ */
 export function createGroupOrder(body: CreateGroupOrderBody) {
   return apiClient.post<GroupOrder>('/api/v1/orders', { body });
-}
-
-export function getGroupOrder(id: string) {
-  return apiClient.get<GroupOrder>(`/api/v1/orders/${id}`);
-}
-
-export function getGroupOrderWithOrders(id: string) {
-  return apiClient.get<GroupOrderWithUserOrders>(`/api/v1/orders/${id}/items`);
-}
-
-export function getGroupOrderReceipts(id: string) {
-  return apiClient.get<GroupOrderWithUserOrders>(`/api/v1/orders/${id}/receipts`);
-}
-
-export function revealMysteryTacos(groupOrderId: string, userOrderId: string) {
-  return apiClient.get<UserOrderItems>(
-    `/api/v1/orders/${groupOrderId}/items/${userOrderId}/reveal-mystery`
-  );
-}
-
-export function upsertUserOrder(groupOrderId: string, body: UpsertUserOrderBody) {
-  return apiClient.post<UserOrderResponse>(`/api/v1/orders/${groupOrderId}/items`, { body });
-}
-
-export function getUserOrder(groupOrderId: string, itemId: string) {
-  return apiClient.get<UserOrderDetail>(`/api/v1/orders/${groupOrderId}/items/${itemId}`);
-}
-
-export function deleteUserOrder(groupOrderId: string, itemId: string) {
-  return apiClient.delete<void>(`/api/v1/orders/${groupOrderId}/items/${itemId}`);
-}
-
-export function updateUserOrderReimbursementStatus(
-  groupOrderId: string,
-  itemId: string,
-  reimbursed: boolean
-) {
-  return apiClient.patch<UserOrderResponse>(
-    `/api/v1/orders/${groupOrderId}/items/${itemId}/reimbursement`,
-    {
-      body: { reimbursed },
-    }
-  );
-}
-
-export function updateUserOrderParticipantPayment(
-  groupOrderId: string,
-  itemId: string,
-  paid: boolean
-) {
-  return apiClient.patch<UserOrderResponse>(
-    `/api/v1/orders/${groupOrderId}/items/${itemId}/payment`,
-    {
-      body: { paid },
-    }
-  );
-}
-
-export function deleteGroupOrder(groupOrderId: string) {
-  return apiClient.delete<void>(`/api/v1/orders/${groupOrderId}`);
 }
 
 export function submitGroupOrder(groupOrderId: string, body: GroupOrderSubmissionBody) {
@@ -123,29 +67,26 @@ export function submitGroupOrder(groupOrderId: string, body: GroupOrderSubmissio
   });
 }
 
+export function upsertUserOrder(groupOrderId: string, body: UpsertUserOrderBody) {
+  return apiClient.post<UserOrderResponse>(`/api/v1/orders/${groupOrderId}/items`, { body });
+}
+
+export function deleteUserOrder(groupOrderId: string, itemId: string) {
+  return apiClient.delete<void>(`/api/v1/orders/${groupOrderId}/items/${itemId}`);
+}
+
 export function updateGroupOrderStatus(
   groupOrderId: string,
   status: 'open' | 'closed' | 'submitted'
 ) {
-  return apiClient.post<GroupOrder>(`/api/v1/orders/${groupOrderId}/status`, {
-    body: { status },
-  });
-}
-
-export function updateGroupOrder(groupOrderId: string, body: UpdateGroupOrderBody) {
-  return apiClient.patch<GroupOrder>(`/api/v1/orders/${groupOrderId}`, {
-    body,
-  });
-}
-
-export function getOrderCookies(groupOrderId: string) {
-  return apiClient.get<OrderCookiesResponse>(`/api/v1/orders/${groupOrderId}/cookies`);
+  return apiClient.post<GroupOrder>(`/api/v1/orders/${groupOrderId}/status`, { body: { status } });
 }
 
 export function useCreateGroupOrder() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (body: CreateGroupOrderBody) => createGroupOrder(body),
+    mutationFn: (body: CreateGroupOrderBody) =>
+      apiClient.post<GroupOrder>('/api/v1/orders', { body }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ordersKeys.lists() });
     },
@@ -155,7 +96,7 @@ export function useCreateGroupOrder() {
 export function useGroupOrder(id: string, enabled = true) {
   return useQuery<GroupOrder>({
     queryKey: ordersKeys.detail(id),
-    queryFn: () => getGroupOrder(id),
+    queryFn: () => apiClient.get<GroupOrder>(`/api/v1/orders/${id}`),
     enabled: enabled && !!id,
   });
 }
@@ -163,7 +104,7 @@ export function useGroupOrder(id: string, enabled = true) {
 export function useGroupOrderWithOrders(id: string, enabled = true) {
   return useQuery<GroupOrderWithUserOrders>({
     queryKey: ordersKeys.detail(id),
-    queryFn: () => getGroupOrderWithOrders(id),
+    queryFn: () => apiClient.get<GroupOrderWithUserOrders>(`/api/v1/orders/${id}/items`),
     enabled: enabled && !!id,
   });
 }
@@ -171,7 +112,8 @@ export function useGroupOrderWithOrders(id: string, enabled = true) {
 export function useGroupOrderReceipts(groupOrderId: string, enabled = true) {
   return useQuery<GroupOrderWithUserOrders>({
     queryKey: ordersKeys.receipts(groupOrderId),
-    queryFn: () => getGroupOrderReceipts(groupOrderId),
+    queryFn: () =>
+      apiClient.get<GroupOrderWithUserOrders>(`/api/v1/orders/${groupOrderId}/receipts`),
     enabled: enabled && !!groupOrderId,
     staleTime: 0,
   });
@@ -182,9 +124,18 @@ export function useRevealMysteryTacos(
   userOrderId: string,
   onSuccess?: (data: UserOrderItems) => void
 ) {
+  const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: () => revealMysteryTacos(groupOrderId, userOrderId),
-    onSuccess,
+    mutationFn: () =>
+      apiClient.get<UserOrderItems>(
+        `/api/v1/orders/${groupOrderId}/items/${userOrderId}/reveal-mystery`
+      ),
+    onSuccess: (data) => {
+      void queryClient.invalidateQueries({
+        queryKey: ordersKeys.userOrder(groupOrderId, userOrderId),
+      });
+      onSuccess?.(data);
+    },
   });
 }
 
@@ -192,7 +143,7 @@ export function useUpsertUserOrder() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ groupOrderId, body }: { groupOrderId: string; body: UpsertUserOrderBody }) =>
-      upsertUserOrder(groupOrderId, body),
+      apiClient.post<UserOrderResponse>(`/api/v1/orders/${groupOrderId}/items`, { body }),
     onSuccess: (_, variables) => {
       void queryClient.invalidateQueries({ queryKey: ordersKeys.detail(variables.groupOrderId) });
     },
@@ -202,7 +153,7 @@ export function useUpsertUserOrder() {
 export function useUserOrder(groupOrderId: string, itemId: string, enabled = true) {
   return useQuery<UserOrderDetail>({
     queryKey: ordersKeys.userOrder(groupOrderId, itemId),
-    queryFn: () => getUserOrder(groupOrderId, itemId),
+    queryFn: () => apiClient.get<UserOrderDetail>(`/api/v1/orders/${groupOrderId}/items/${itemId}`),
     enabled: enabled && !!groupOrderId && !!itemId,
   });
 }
@@ -211,7 +162,7 @@ export function useDeleteUserOrder() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ groupOrderId, itemId }: { groupOrderId: string; itemId: string }) =>
-      deleteUserOrder(groupOrderId, itemId),
+      apiClient.delete<void>(`/api/v1/orders/${groupOrderId}/items/${itemId}`),
     onSuccess: (_, variables) => {
       void queryClient.invalidateQueries({ queryKey: ordersKeys.detail(variables.groupOrderId) });
     },
@@ -229,7 +180,11 @@ export function useUpdateUserOrderReimbursementStatus() {
       groupOrderId: string;
       itemId: string;
       reimbursed: boolean;
-    }) => updateUserOrderReimbursementStatus(groupOrderId, itemId, reimbursed),
+    }) =>
+      apiClient.patch<UserOrderResponse>(
+        `/api/v1/orders/${groupOrderId}/items/${itemId}/reimbursement`,
+        { body: { reimbursed } }
+      ),
     onSuccess: (_, variables) => {
       void queryClient.invalidateQueries({ queryKey: ordersKeys.receipts(variables.groupOrderId) });
       void queryClient.invalidateQueries({ queryKey: ordersKeys.detail(variables.groupOrderId) });
@@ -248,7 +203,10 @@ export function useUpdateUserOrderParticipantPayment() {
       groupOrderId: string;
       itemId: string;
       paid: boolean;
-    }) => updateUserOrderParticipantPayment(groupOrderId, itemId, paid),
+    }) =>
+      apiClient.patch<UserOrderResponse>(`/api/v1/orders/${groupOrderId}/items/${itemId}/payment`, {
+        body: { paid },
+      }),
     onSuccess: (_, variables) => {
       void queryClient.invalidateQueries({ queryKey: ordersKeys.receipts(variables.groupOrderId) });
       void queryClient.invalidateQueries({ queryKey: ordersKeys.detail(variables.groupOrderId) });
@@ -259,7 +217,7 @@ export function useUpdateUserOrderParticipantPayment() {
 export function useDeleteGroupOrder() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (groupOrderId: string) => deleteGroupOrder(groupOrderId),
+    mutationFn: (groupOrderId: string) => apiClient.delete<void>(`/api/v1/orders/${groupOrderId}`),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ordersKeys.lists() });
     },
@@ -275,7 +233,10 @@ export function useSubmitGroupOrder() {
     }: {
       groupOrderId: string;
       body: GroupOrderSubmissionBody;
-    }) => submitGroupOrder(groupOrderId, body),
+    }) =>
+      apiClient.post<GroupOrderSubmissionResponse>(`/api/v1/orders/${groupOrderId}/submit`, {
+        body,
+      }),
     onSuccess: (_, variables) => {
       void queryClient.invalidateQueries({ queryKey: ordersKeys.detail(variables.groupOrderId) });
     },
@@ -291,7 +252,7 @@ export function useUpdateGroupOrderStatus() {
     }: {
       groupOrderId: string;
       status: 'open' | 'closed' | 'submitted';
-    }) => updateGroupOrderStatus(groupOrderId, status),
+    }) => apiClient.post<GroupOrder>(`/api/v1/orders/${groupOrderId}/status`, { body: { status } }),
     onSuccess: (_, variables) => {
       void queryClient.invalidateQueries({ queryKey: ordersKeys.detail(variables.groupOrderId) });
     },
@@ -302,7 +263,7 @@ export function useUpdateGroupOrder() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ groupOrderId, body }: { groupOrderId: string; body: UpdateGroupOrderBody }) =>
-      updateGroupOrder(groupOrderId, body),
+      apiClient.patch<GroupOrder>(`/api/v1/orders/${groupOrderId}`, { body }),
     onSuccess: (_, variables) => {
       void queryClient.invalidateQueries({ queryKey: ordersKeys.detail(variables.groupOrderId) });
     },
@@ -312,7 +273,7 @@ export function useUpdateGroupOrder() {
 export function useOrderCookies(groupOrderId: string, enabled = true) {
   return useQuery<OrderCookiesResponse>({
     queryKey: ordersKeys.cookies(groupOrderId),
-    queryFn: () => getOrderCookies(groupOrderId),
+    queryFn: () => apiClient.get<OrderCookiesResponse>(`/api/v1/orders/${groupOrderId}/cookies`),
     enabled: enabled && !!groupOrderId,
   });
 }

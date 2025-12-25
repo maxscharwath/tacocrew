@@ -20,16 +20,17 @@ import {
   toast,
 } from '@tacocrew/ui-kit';
 import { Copy, Pencil, Save, Trash2, Upload, X } from 'lucide-react';
-import { type ChangeEvent, useRef, useState } from 'react';
+import { type ChangeEvent, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { OrganizationMembers } from '@/components/profile/OrganizationMembers';
 import { OrganizationAvatar } from '@/components/shared/OrganizationAvatar';
 import { useCopyFeedback } from '@/hooks/useCopyFeedback';
 import {
-  deleteOrganization,
-  deleteOrganizationAvatar,
-  updateOrganization,
-  uploadOrganizationAvatar,
+  useDeleteOrganization,
+  useDeleteOrganizationAvatar,
+  useOrganization,
+  useUpdateOrganization,
+  useUploadOrganizationAvatar,
 } from '@/lib/api/organization';
 import type { Organization, OrganizationPayload } from '@/lib/api/types';
 import { routes } from '@/lib/routes';
@@ -59,9 +60,13 @@ export function OrganizationDetails({
 }: OrganizationDetailsProps) {
   const { t } = useTranslation();
   const { isCopied, copyToClipboard } = useCopyFeedback();
+  
+  // Subscribe to organization detail query to get updates from mutations
+  const organizationQuery = useOrganization(organization.id);
+  const displayOrganization = organizationQuery.data ?? organization;
+  
   const [isEditing, setIsEditing] = useState(false);
-  const [form, setForm] = useState<OrganizationPayload>({ name: organization.name });
-  const [busy, setBusy] = useState(false);
+  const [form, setForm] = useState<OrganizationPayload>({ name: displayOrganization.name });
   const [feedback, setFeedback] = useState<{ tone: 'success' | 'error'; text: string } | null>(
     null
   );
@@ -69,95 +74,115 @@ export function OrganizationDetails({
   const [showDeleteAvatarDialog, setShowDeleteAvatarDialog] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleSave = async () => {
+  const updateMutation = useUpdateOrganization();
+  const deleteMutation = useDeleteOrganization();
+  const uploadAvatarMutation = useUploadOrganizationAvatar();
+  const deleteAvatarMutation = useDeleteOrganizationAvatar();
+
+  // Update form when organization data refreshes
+  useEffect(() => {
+    if (!isEditing) {
+      setForm({ name: displayOrganization.name });
+    }
+  }, [displayOrganization.name, isEditing]);
+
+  const handleSave = () => {
     if (!form.name.trim()) {
       setFeedback({ tone: 'error', text: t('organizations.messages.missingName') });
       return;
     }
 
-    setBusy(true);
     setFeedback(null);
     const loadingToastId = toast.loading(t('organizations.messages.updating'));
-    try {
-      const updated = await updateOrganization(organization.id, form);
-      onUpdate(updated);
-      setIsEditing(false);
-      toast.success(t('organizations.messages.updated'), { id: loadingToastId });
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : t('organizations.messages.genericError');
-      toast.error(t('organizations.messages.updateFailed', { error: errorMessage }), {
-        id: loadingToastId,
-      });
-      setFeedback({ tone: 'error', text: errorMessage });
-    } finally {
-      setBusy(false);
-    }
+    updateMutation.mutate(
+      { organizationId: displayOrganization.id, body: form },
+      {
+        onSuccess: (updated) => {
+          onUpdate(updated);
+          setIsEditing(false);
+          toast.success(t('organizations.messages.updated'), { id: loadingToastId });
+        },
+        onError: (error) => {
+          const errorMessage =
+            error instanceof Error ? error.message : t('organizations.messages.genericError');
+          toast.error(t('organizations.messages.updateFailed', { error: errorMessage }), {
+            id: loadingToastId,
+          });
+          setFeedback({ tone: 'error', text: errorMessage });
+        },
+      }
+    );
   };
 
-  const handleDelete = async () => {
+  const handleDelete = () => {
     setShowDeleteDialog(false);
-    setBusy(true);
     setFeedback(null);
     const loadingToastId = toast.loading(t('organizations.messages.deleting'));
-    try {
-      await deleteOrganization(organization.id);
-      toast.success(t('organizations.messages.deleted'), { id: loadingToastId });
-      onDelete();
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : t('organizations.messages.genericError');
-      toast.error(t('organizations.messages.deleteFailed', { error: errorMessage }), {
-        id: loadingToastId,
-      });
-      setFeedback({ tone: 'error', text: errorMessage });
-    } finally {
-      setBusy(false);
-    }
+    deleteMutation.mutate(displayOrganization.id, {
+      onSuccess: () => {
+        toast.success(t('organizations.messages.deleted'), { id: loadingToastId });
+        onDelete();
+      },
+      onError: (error) => {
+        const errorMessage =
+          error instanceof Error ? error.message : t('organizations.messages.genericError');
+        toast.error(t('organizations.messages.deleteFailed', { error: errorMessage }), {
+          id: loadingToastId,
+        });
+        setFeedback({ tone: 'error', text: errorMessage });
+      },
+    });
   };
 
-  const handleAvatarUpload = async (file: File, backgroundColor?: string | null) => {
-    setBusy(true);
+  const handleAvatarUpload = (file: File, backgroundColor?: string | null) => {
     setFeedback(null);
     const loadingToastId = toast.loading(t('organizations.messages.uploadingAvatar'));
-    try {
-      const updated = await uploadOrganizationAvatar(organization.id, file, backgroundColor);
-      onUpdate(updated);
-      toast.success(t('organizations.messages.avatarUploaded'), { id: loadingToastId });
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : t('organizations.messages.genericError');
-      toast.error(t('organizations.messages.avatarUploadFailed', { error: errorMessage }), {
-        id: loadingToastId,
-      });
-      setFeedback({ tone: 'error', text: errorMessage });
-    } finally {
-      setBusy(false);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
+    uploadAvatarMutation.mutate(
+      {
+        organizationId: displayOrganization.id,
+        imageFile: file,
+        backgroundColor: backgroundColor ?? undefined,
+      },
+      {
+        onSuccess: (updated) => {
+          onUpdate(updated);
+          toast.success(t('organizations.messages.avatarUploaded'), { id: loadingToastId });
+        },
+        onError: (error) => {
+          const errorMessage =
+            error instanceof Error ? error.message : t('organizations.messages.genericError');
+          toast.error(t('organizations.messages.avatarUploadFailed', { error: errorMessage }), {
+            id: loadingToastId,
+          });
+          setFeedback({ tone: 'error', text: errorMessage });
+        },
+        onSettled: () => {
+          if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+          }
+        },
       }
-    }
+    );
   };
 
-  const handleAvatarDelete = async () => {
+  const handleAvatarDelete = () => {
     setShowDeleteAvatarDialog(false);
-    setBusy(true);
     setFeedback(null);
     const loadingToastId = toast.loading(t('organizations.messages.deletingAvatar'));
-    try {
-      const updated = await deleteOrganizationAvatar(organization.id);
-      onUpdate(updated);
-      toast.success(t('organizations.messages.avatarDeleted'), { id: loadingToastId });
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : t('organizations.messages.genericError');
-      toast.error(t('organizations.messages.avatarDeleteFailed', { error: errorMessage }), {
-        id: loadingToastId,
-      });
-      setFeedback({ tone: 'error', text: errorMessage });
-    } finally {
-      setBusy(false);
-    }
+    deleteAvatarMutation.mutate(displayOrganization.id, {
+      onSuccess: (updated) => {
+        onUpdate(updated);
+        toast.success(t('organizations.messages.avatarDeleted'), { id: loadingToastId });
+      },
+      onError: (error) => {
+        const errorMessage =
+          error instanceof Error ? error.message : t('organizations.messages.genericError');
+        toast.error(t('organizations.messages.avatarDeleteFailed', { error: errorMessage }), {
+          id: loadingToastId,
+        });
+        setFeedback({ tone: 'error', text: errorMessage });
+      },
+    });
   };
 
   const handleFileSelect = (e: ChangeEvent<HTMLInputElement>) => {
@@ -167,6 +192,12 @@ export function OrganizationDetails({
     }
   };
 
+  const busy =
+    updateMutation.isPending ||
+    deleteMutation.isPending ||
+    uploadAvatarMutation.isPending ||
+    deleteAvatarMutation.isPending;
+
   return (
     <>
       <Card>
@@ -174,10 +205,11 @@ export function OrganizationDetails({
           <div className="flex items-start gap-6">
             <div className="shrink-0">
               <OrganizationAvatar
-                organizationId={organization.id}
-                name={organization.name}
+                organizationId={displayOrganization.id}
+                name={displayOrganization.name}
                 size="2xl"
                 color="brand"
+                imageUrl={displayOrganization.image}
               />
             </div>
             <div className="min-w-0 flex-1">
@@ -214,7 +246,7 @@ export function OrganizationDetails({
                   <Button
                     variant="default"
                     onClick={handleSave}
-                    loading={busy}
+                    loading={updateMutation.isPending}
                     disabled={busy || disabled}
                     aria-label={t('common.save')}
                   >
@@ -224,7 +256,7 @@ export function OrganizationDetails({
               ) : (
                 <>
                   <div className="flex items-center gap-3">
-                    <CardTitle className="text-2xl">{organization.name}</CardTitle>
+                    <CardTitle className="text-2xl">{displayOrganization.name}</CardTitle>
                     {isAdmin && (
                       <Button
                         variant="ghost"
@@ -243,7 +275,7 @@ export function OrganizationDetails({
                   </div>
                   <CardDescription className="mt-1">
                     {t('organizations.details.created', {
-                      date: new Date(organization.createdAt ?? '').toLocaleDateString(undefined, {
+                      date: new Date(displayOrganization.createdAt ?? '').toLocaleDateString(undefined, {
                         year: 'numeric',
                         month: 'long',
                         day: 'numeric',
@@ -257,7 +289,7 @@ export function OrganizationDetails({
                         size="sm"
                         onClick={() => {
                           const joinUrl = routes.organizationJoin.url({
-                            id: organization.id,
+                            id: displayOrganization.id,
                           });
                           copyToClipboard(joinUrl);
                           toast.success(t('organizations.join.linkCopied'));
@@ -318,11 +350,11 @@ export function OrganizationDetails({
                   className="gap-2"
                 >
                   <Upload size={16} />
-                  {organization.image
+                  {displayOrganization.image
                     ? t('organizations.details.avatar.change')
                     : t('organizations.details.avatar.upload')}
                 </Button>
-                {organization.image && (
+                {displayOrganization.image && (
                   <Button
                     variant="destructive"
                     onClick={() => setShowDeleteAvatarDialog(true)}
@@ -353,7 +385,7 @@ export function OrganizationDetails({
       {/* Members Management - Only show for ACTIVE members */}
       {currentUserId && userStatus === 'ACTIVE' && (
         <OrganizationMembers
-          organizationId={organization.id}
+          organizationId={displayOrganization.id}
           isAdmin={isAdmin}
           currentUserId={currentUserId}
         />
@@ -383,7 +415,7 @@ export function OrganizationDetails({
           <AlertDialogHeader>
             <AlertDialogTitle>{t('organizations.details.deleteTitle')}</AlertDialogTitle>
             <AlertDialogDescription>
-              {t('organizations.details.deleteDescription', { name: organization.name })}
+              {t('organizations.details.deleteDescription', { name: displayOrganization.name })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

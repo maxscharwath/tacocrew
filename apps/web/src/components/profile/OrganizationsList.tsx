@@ -52,7 +52,7 @@ export function OrganizationsList({
               onClick={() => onSelect(org.id)}
               disabled={disabled}
             >
-              <OrganizationAvatar organizationId={org.id} name={org.name} size="sm" />
+              <OrganizationAvatar organizationId={org.id} name={org.name} size="sm" imageUrl={org.image} />
               <div className="min-w-0 flex-1">
                 <p className="truncate font-medium text-sm">{org.name}</p>
               </div>

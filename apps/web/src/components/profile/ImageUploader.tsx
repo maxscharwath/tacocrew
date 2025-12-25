@@ -14,7 +14,7 @@ import {
 import { Camera, Check, Plus, RotateCcw, Trash2, X } from 'lucide-react';
 import { type ChangeEvent, type DragEvent, useEffect, useId, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { deleteAvatar, uploadAvatar } from '@/lib/api/user';
+import { useDeleteAvatar, useUploadAvatar } from '@/lib/api/user';
 import { imageUrlToFile, PREDEFINED_AVATAR_THUMBNAILS, PREDEFINED_AVATARS } from '@/lib/avatars';
 import { ENV } from '@/lib/env';
 import { cn } from '@/lib/utils';
@@ -74,6 +74,9 @@ export function ImageUploader({ currentImage, onImageUpdate }: ImageUploaderProp
   const colorInputRef = useRef<HTMLInputElement>(null);
   const successTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  const uploadAvatar = useUploadAvatar();
+  const deleteAvatarMutation = useDeleteAvatar();
+
   // Initialize preview with currentImage immediately - resolve URL if needed
   const getInitialPreview = (): string | null => {
     if (currentImage?.trim()) {
@@ -90,12 +93,13 @@ export function ImageUploader({ currentImage, onImageUpdate }: ImageUploaderProp
   const [preview, setPreview] = useState<string | null>(() => getInitialPreview());
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [pendingAvatarUrl, setPendingAvatarUrl] = useState<string | null>(null);
-  const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [backgroundColor, setBackgroundColor] = useState<string>(PRESET_COLORS[0].value);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+
+  const isUploading = uploadAvatar.isPending || deleteAvatarMutation.isPending;
 
   const hasPendingSelection = Boolean(pendingFile || pendingAvatarUrl);
   const showDeleteButton = Boolean(preview && !hasPendingSelection && !isUploading);
@@ -171,40 +175,45 @@ export function ImageUploader({ currentImage, onImageUpdate }: ImageUploaderProp
       (pendingAvatarUrl ? await imageUrlToFile(pendingAvatarUrl, 'avatar.webp') : null);
     if (!fileToUpload) return;
 
-    setIsUploading(true);
     setError(null);
     setSuccess(false);
 
-    try {
-      const updatedProfile = await uploadAvatar(fileToUpload, backgroundColor);
+    uploadAvatar.mutate(
+      { imageFile: fileToUpload, backgroundColor },
+      {
+        onSuccess: (updatedProfile) => {
+          const endpointUrl = updatedProfile.image || null;
+          setPreview(endpointUrl);
+          setPendingFile(null);
+          setPendingAvatarUrl(null);
+          setSuccess(true);
+          toast.success(
+            t('account.avatar.uploadSuccess') || 'Profile image uploaded successfully!'
+          );
+          onImageUpdate?.(endpointUrl);
 
-      const endpointUrl = updatedProfile.image || null;
-      setPreview(endpointUrl);
-      setPendingFile(null);
-      setPendingAvatarUrl(null);
-      setSuccess(true);
-      toast.success(t('account.avatar.uploadSuccess') || 'Profile image uploaded successfully!');
-      onImageUpdate?.(endpointUrl);
+          globalThis.dispatchEvent(
+            new CustomEvent('userImageUpdated', {
+              detail: { ...updatedProfile, image: endpointUrl },
+            })
+          );
+        },
+        onError: (err) => {
+          setError(
+            err instanceof Error
+              ? err.message
+              : t('account.avatar.uploadFailed') || 'Failed to upload image. Please try again.'
+          );
 
-      globalThis.dispatchEvent(
-        new CustomEvent('userImageUpdated', { detail: { ...updatedProfile, image: endpointUrl } })
-      );
-    } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : t('account.avatar.uploadFailed') || 'Failed to upload image. Please try again.'
-      );
-
-      // Revert preview on error
-      if (currentImage && !currentImage.startsWith('data:')) {
-        setPreview(currentImage);
-      } else {
-        setPreview(null);
+          // Revert preview on error
+          if (currentImage && !currentImage.startsWith('data:')) {
+            setPreview(currentImage);
+          } else {
+            setPreview(null);
+          }
+        },
       }
-    } finally {
-      setIsUploading(false);
-    }
+    );
   };
 
   const handleCancelPreview = () => {
@@ -228,27 +237,26 @@ export function ImageUploader({ currentImage, onImageUpdate }: ImageUploaderProp
 
   const handleConfirmDelete = async () => {
     setShowDeleteDialog(false);
-    setIsUploading(true);
     setError(null);
     setSuccess(false);
 
-    try {
-      const updatedProfile = await deleteAvatar();
-      setPreview(null);
-      onImageUpdate?.(null);
+    deleteAvatarMutation.mutate(undefined, {
+      onSuccess: (updatedProfile) => {
+        setPreview(null);
+        onImageUpdate?.(null);
 
-      globalThis.dispatchEvent(
-        new CustomEvent('userImageUpdated', { detail: { ...updatedProfile, image: null } })
-      );
-    } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : t('account.avatar.deleteFailed') || 'Failed to delete image. Please try again.'
-      );
-    } finally {
-      setIsUploading(false);
-    }
+        globalThis.dispatchEvent(
+          new CustomEvent('userImageUpdated', { detail: { ...updatedProfile, image: null } })
+        );
+      },
+      onError: (err) => {
+        setError(
+          err instanceof Error
+            ? err.message
+            : t('account.avatar.deleteFailed') || 'Failed to delete image. Please try again.'
+        );
+      },
+    });
   };
 
   const handleDragOver = (e: DragEvent) => {

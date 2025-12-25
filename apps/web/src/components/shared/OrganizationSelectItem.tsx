@@ -16,6 +16,7 @@ export function OrganizationSelectItem({ organization, size = 'sm' }: Organizati
         organizationId={organization.id}
         name={organization.name}
         size={size}
+        imageUrl={organization.image}
         className="shrink-0"
       />
       <span className="truncate">{organization.name}</span>

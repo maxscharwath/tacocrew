@@ -22,11 +22,11 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { usePushNotifications } from '@/hooks';
 import {
-  deletePushSubscription,
   type PushSubscriptionInfo,
-  sendTestNotification,
+  useDeletePushSubscription,
+  usePushSubscriptions,
+  useSendTestNotification,
 } from '@/lib/api/push-notifications';
-import { usePushSubscriptions } from '@/lib/api/push-notifications.hooks';
 
 /**
  * Parse user agent string to get a friendly device name
@@ -129,7 +129,6 @@ function PushSubscriptionsList({
 
 export function PushNotificationManager() {
   const { t } = useTranslation();
-  const [isTestingNotification, setIsTestingNotification] = useState(false);
   const [showDeleteSubscriptionDialog, setShowDeleteSubscriptionDialog] = useState<string | null>(
     null
   );
@@ -149,13 +148,16 @@ export function PushNotificationManager() {
   const pushSubscriptions = pushSubscriptionsQuery.data ?? [];
   const isLoadingSubscriptions = pushSubscriptionsQuery.isLoading;
 
+  const deletePushSubscriptionMutation = useDeletePushSubscription();
+  const sendTestNotificationMutation = useSendTestNotification();
+
   const handleConfirmDeleteSubscription = async () => {
     const subscriptionId = showDeleteSubscriptionDialog;
     if (!subscriptionId) return;
 
     setShowDeleteSubscriptionDialog(null);
     try {
-      await deletePushSubscription(subscriptionId);
+      await deletePushSubscriptionMutation.mutateAsync(subscriptionId);
       toast.success(t('account.pushNotifications.devices.deleteSuccess'));
       await pushSubscriptionsQuery.refetch();
       await refreshPushStatus();
@@ -274,8 +276,7 @@ export function PushNotificationManager() {
                       <Button
                         onClick={async () => {
                           try {
-                            setIsTestingNotification(true);
-                            const result = await sendTestNotification();
+                            const result = await sendTestNotificationMutation.mutateAsync();
                             if (result.success) {
                               toast.success(t('account.pushNotifications.test.success'));
                             } else {
@@ -287,14 +288,12 @@ export function PushNotificationManager() {
                                 ? err.message
                                 : t('account.pushNotifications.test.failed')
                             );
-                          } finally {
-                            setIsTestingNotification(false);
                           }
                         }}
-                        disabled={isTestingNotification}
+                        disabled={sendTestNotificationMutation.isPending}
                         variant="outline"
                         size="sm"
-                        loading={isTestingNotification}
+                        loading={sendTestNotificationMutation.isPending}
                         className="w-full shrink-0 sm:ml-2 sm:w-auto"
                       >
                         {t('account.pushNotifications.test.button')}

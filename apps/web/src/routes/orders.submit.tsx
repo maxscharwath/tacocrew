@@ -20,12 +20,7 @@ import {
 import { Lock, Send, Truck } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  type LoaderFunctionArgs,
-  useLoaderData,
-  useNavigate,
-  useParams,
-} from 'react-router';
+import { type LoaderFunctionArgs, useLoaderData, useNavigate, useParams } from 'react-router';
 import { DeliveryFormFields } from '@/components/orders/DeliveryFormFields';
 import { OrderConfirmationModal } from '@/components/orders/OrderConfirmationModal';
 import { PreferencesSection } from '@/components/orders/PreferencesSection';
@@ -61,7 +56,6 @@ export function OrderSubmitRoute() {
   // Initialize form with data from queries (even if loading)
   const deliveryProfiles = deliveryProfilesQuery.data ?? [];
   const form = useDeliveryForm({ initialProfiles: deliveryProfiles });
-
 
   // Handle loading and error states AFTER all hooks
   if (groupOrderQuery.isLoading || deliveryProfilesQuery.isLoading) {
@@ -243,11 +237,7 @@ export function OrderSubmitRoute() {
               </label>
             )}
 
-            {submitError ? (
-              <Alert tone="error">
-                {submitError.message}
-              </Alert>
-            ) : null}
+            {submitError ? <Alert tone="error">{submitError.message}</Alert> : null}
 
             <div className="flex flex-wrap items-center gap-4">
               <BackButton

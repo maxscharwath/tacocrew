@@ -1,5 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api/http';
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Types
+// ─────────────────────────────────────────────────────────────────────────────
+
 export interface UserBadgeContext {
   readonly orderId?: string;
   readonly groupOrderId?: string;
@@ -25,38 +30,39 @@ export interface BadgeStatsResponse {
   readonly earnedIds: readonly string[];
 }
 
-export function getUserBadges() {
-  return apiClient.get<EarnedBadgeResponse[]>('/api/v1/users/me/badges');
-}
+// ─────────────────────────────────────────────────────────────────────────────
+// Query Keys
+// ─────────────────────────────────────────────────────────────────────────────
 
-export function getUserBadgeStats() {
-  return apiClient.get<BadgeStatsResponse>('/api/v1/users/me/badges/stats');
-}
+const badgesKeys = {
+  all: () => ['badges'] as const,
+  userBadges: (userId: string) => [...badgesKeys.all(), 'user', userId] as const,
+};
 
-export function getUserBadgeProgress() {
-  return apiClient.get<BadgeProgress[]>('/api/v1/users/me/badges/progress');
-}
+// ─────────────────────────────────────────────────────────────────────────────
+// Hooks
+// ─────────────────────────────────────────────────────────────────────────────
 
 export function useUserBadges(enabled = true) {
   return useQuery<EarnedBadgeResponse[]>({
-    queryKey: ['userBadges'],
-    queryFn: () => getUserBadges(),
+    queryKey: badgesKeys.userBadges('me'),
+    queryFn: () => apiClient.get<EarnedBadgeResponse[]>('/api/v1/users/me/badges'),
     enabled,
   });
 }
 
 export function useUserBadgeStats(enabled = true) {
   return useQuery<BadgeStatsResponse>({
-    queryKey: ['userBadgeStats'],
-    queryFn: () => getUserBadgeStats(),
+    queryKey: [...badgesKeys.userBadges('me'), 'stats'] as const,
+    queryFn: () => apiClient.get<BadgeStatsResponse>('/api/v1/users/me/badges/stats'),
     enabled,
   });
 }
 
 export function useUserBadgeProgress(enabled = true) {
   return useQuery<BadgeProgress[]>({
-    queryKey: ['userBadgeProgress'],
-    queryFn: () => getUserBadgeProgress(),
+    queryKey: [...badgesKeys.userBadges('me'), 'progress'] as const,
+    queryFn: () => apiClient.get<BadgeProgress[]>('/api/v1/users/me/badges/progress'),
     enabled,
   });
 }

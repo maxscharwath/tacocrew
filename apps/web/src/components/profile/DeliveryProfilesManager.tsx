@@ -36,9 +36,9 @@ import {
 import { useZodForm } from '@/hooks/useZodForm';
 import type { DeliveryProfile } from '@/lib/api/types';
 import {
-  createDeliveryProfile,
-  deleteDeliveryProfile,
-  updateDeliveryProfile,
+  useCreateDeliveryProfile,
+  useDeleteDeliveryProfile,
+  useUpdateDeliveryProfile,
 } from '@/lib/api/user';
 import { type DeliveryProfileFormData, deliveryProfileSchema } from '@/lib/schemas';
 import { formatPhoneNumber } from '@/utils/phone-formatter';
@@ -374,6 +374,10 @@ export function DeliveryProfilesManager({ profiles }: DeliveryProfilesManagerPro
   );
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
+  const createMutation = useCreateDeliveryProfile();
+  const updateMutation = useUpdateDeliveryProfile();
+  const deleteMutation = useDeleteDeliveryProfile();
+
   const form = useZodForm({
     schema: deliveryProfileSchema,
     defaultValues: profileToFormData(profiles[0]),
@@ -386,39 +390,48 @@ export function DeliveryProfilesManager({ profiles }: DeliveryProfilesManagerPro
     setFeedback(null);
   };
 
-  const handleSave = async (data: DeliveryProfileFormData) => {
+  const handleSave = (data: DeliveryProfileFormData) => {
     setFeedback(null);
-    try {
-      const profile = await createDeliveryProfile(data);
-      setItems((prev) => [...prev, profile]);
-      setSelectedId(profile.id);
-      setFeedback({ tone: 'success', text: t(`orders.submit.saved.messages.saved`) });
-    } catch (error) {
-      setFeedback({
-        tone: 'error',
-        text:
-          error instanceof Error ? error.message : t(`orders.submit.saved.messages.genericError`),
-      });
-    }
+    createMutation.mutate(data, {
+      onSuccess: (profile) => {
+        setItems((prev) => [...prev, profile]);
+        setSelectedId(profile.id);
+        setFeedback({ tone: 'success', text: t(`orders.submit.saved.messages.saved`) });
+      },
+      onError: (error) => {
+        setFeedback({
+          tone: 'error',
+          text:
+            error instanceof Error ? error.message : t(`orders.submit.saved.messages.genericError`),
+        });
+      },
+    });
   };
 
-  const handleUpdate = async (data: DeliveryProfileFormData) => {
+  const handleUpdate = (data: DeliveryProfileFormData) => {
     if (!selectedId) {
       setFeedback({ tone: 'error', text: t(`orders.submit.saved.messages.selectProfile`) });
       return;
     }
     setFeedback(null);
-    try {
-      const profile = await updateDeliveryProfile(selectedId, data);
-      setItems((prev) => prev.map((item) => (item.id === profile.id ? profile : item)));
-      setFeedback({ tone: 'success', text: t(`orders.submit.saved.messages.updated`) });
-    } catch (error) {
-      setFeedback({
-        tone: 'error',
-        text:
-          error instanceof Error ? error.message : t(`orders.submit.saved.messages.genericError`),
-      });
-    }
+    updateMutation.mutate(
+      { id: selectedId, body: data },
+      {
+        onSuccess: (profile) => {
+          setItems((prev) => prev.map((item) => (item.id === profile.id ? profile : item)));
+          setFeedback({ tone: 'success', text: t(`orders.submit.saved.messages.updated`) });
+        },
+        onError: (error) => {
+          setFeedback({
+            tone: 'error',
+            text:
+              error instanceof Error
+                ? error.message
+                : t(`orders.submit.saved.messages.genericError`),
+          });
+        },
+      }
+    );
   };
 
   const handleDelete = () => {
@@ -429,29 +442,37 @@ export function DeliveryProfilesManager({ profiles }: DeliveryProfilesManagerPro
     setShowDeleteDialog(true);
   };
 
-  const handleConfirmDelete = async () => {
+  const handleConfirmDelete = () => {
     if (!selectedId) return;
 
     setShowDeleteDialog(false);
     setFeedback(null);
-    try {
-      await deleteDeliveryProfile(selectedId);
-      setItems((prev) => prev.filter((item) => item.id !== selectedId));
-      setSelectedId('');
-      selectProfile('');
-      setFeedback({ tone: 'success', text: t(`orders.submit.saved.messages.deleted`) });
-    } catch (error) {
-      setFeedback({
-        tone: 'error',
-        text:
-          error instanceof Error ? error.message : t(`orders.submit.saved.messages.genericError`),
-      });
-    }
+    deleteMutation.mutate(selectedId, {
+      onSuccess: () => {
+        setItems((prev) => prev.filter((item) => item.id !== selectedId));
+        setSelectedId('');
+        selectProfile('');
+        setFeedback({ tone: 'success', text: t(`orders.submit.saved.messages.deleted`) });
+      },
+      onError: (error) => {
+        setFeedback({
+          tone: 'error',
+          text:
+            error instanceof Error ? error.message : t(`orders.submit.saved.messages.genericError`),
+        });
+      },
+    });
   };
 
   const handleClearSelection = () => {
     selectProfile('');
   };
+
+  const isBusy =
+    form.formState.isSubmitting ||
+    createMutation.isPending ||
+    updateMutation.isPending ||
+    deleteMutation.isPending;
 
   return (
     <div className="grid gap-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)] lg:items-start">
@@ -464,7 +485,8 @@ export function DeliveryProfilesManager({ profiles }: DeliveryProfilesManagerPro
               type="button"
               variant="secondary"
               onClick={form.handleSubmit(handleSave)}
-              disabled={form.formState.isSubmitting}
+              disabled={isBusy}
+              loading={createMutation.isPending}
               className="gap-1"
             >
               {t(`orders.submit.saved.actions.save`)}
@@ -473,7 +495,8 @@ export function DeliveryProfilesManager({ profiles }: DeliveryProfilesManagerPro
               type="button"
               variant="ghost"
               onClick={form.handleSubmit(handleUpdate)}
-              disabled={form.formState.isSubmitting || !selectedId}
+              disabled={isBusy || !selectedId}
+              loading={updateMutation.isPending}
             >
               {t(`orders.submit.saved.actions.update`)}
             </Button>
@@ -482,7 +505,7 @@ export function DeliveryProfilesManager({ profiles }: DeliveryProfilesManagerPro
               variant="ghost"
               className="text-rose-300 hover:text-rose-200"
               onClick={handleDelete}
-              disabled={form.formState.isSubmitting || !selectedId}
+              disabled={isBusy || !selectedId}
             >
               <Trash2 size={16} />
               {t(`orders.submit.saved.actions.delete`)}

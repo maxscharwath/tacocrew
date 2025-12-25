@@ -1,8 +1,7 @@
 import { Alert, Card, CardContent, CardHeader, CardTitle, Modal } from '@tacocrew/ui-kit';
 import { Lock, Terminal } from 'lucide-react';
-import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { getOrderCookies } from '@/lib/api/orders';
+import { useOrderCookies } from '@/lib/api/orders';
 
 type CookieInjectionModalProps = {
   isOpen: boolean;
@@ -10,40 +9,13 @@ type CookieInjectionModalProps = {
   groupOrderId: string;
 };
 
-interface CookieData {
-  cookies: Record<string, string>;
-  csrfToken: string;
-  orderId?: string;
-  transactionId?: string;
-  sessionId?: string;
-}
-
 export function CookieInjectionModal({
   isOpen,
   onClose,
   groupOrderId,
 }: Readonly<CookieInjectionModalProps>) {
   const { t } = useTranslation();
-  const [cookieData, setCookieData] = useState<CookieData | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (isOpen && groupOrderId) {
-      setLoading(true);
-      setError(null);
-      getOrderCookies(groupOrderId)
-        .then((data: CookieData) => {
-          setCookieData(data);
-        })
-        .catch((err: unknown) => {
-          setError(err instanceof Error ? err.message : t('orders.common.cookies.error'));
-        })
-        .finally(() => {
-          setLoading(false);
-        });
-    }
-  }, [isOpen, groupOrderId, t]);
+  const { data: cookieData, isLoading: loading, error } = useOrderCookies(groupOrderId, isOpen);
 
   return (
     <Modal
@@ -60,7 +32,11 @@ export function CookieInjectionModal({
           </div>
         )}
 
-        {error && <Alert tone="error">{error}</Alert>}
+        {error && (
+          <Alert tone="error">
+            {error instanceof Error ? error.message : t('orders.common.cookies.error')}
+          </Alert>
+        )}
 
         {cookieData && (
           <>

@@ -38,6 +38,7 @@ export function OrderListItem({
               organizationId={order.organization.id}
               name={order.organization.name}
               size="md"
+              imageUrl={order.organization.image}
             />
           </div>
         )}
@@ -54,6 +55,7 @@ export function OrderListItem({
                     organizationId={order.organization.id}
                     name={order.organization.name}
                     size="sm"
+                    imageUrl={order.organization.image}
                   />
                 </div>
               )}

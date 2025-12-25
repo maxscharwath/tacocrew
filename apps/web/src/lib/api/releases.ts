@@ -23,36 +23,35 @@ export type GitHubRelease = {
   }>;
 };
 
-async function fetchGitHubReleases(): Promise<GitHubRelease[]> {
-  try {
-    const response = await fetch(
-      `${pkg.repository.url.replace('github.com', 'api.github.com/repos')}/releases`,
-      {
-        headers: {
-          Accept: 'application/vnd.github.v3+json',
-        },
-      }
-    );
-
-    if (!response.ok) {
-      return [];
-    }
-
-    return await response.json();
-  } catch (_error) {
-    return [];
-  }
-}
-
+/** Internal query key factory for releases */
 const releasesKeys = {
-  all: ['releases'] as const,
-  list: () => [...releasesKeys.all, 'list'] as const,
+  all: () => ['releases'] as const,
+  list: () => [...releasesKeys.all(), 'list'] as const,
 } as const;
 
 export function useReleases() {
   return useQuery({
     queryKey: releasesKeys.list(),
-    queryFn: fetchGitHubReleases,
+    queryFn: async (): Promise<GitHubRelease[]> => {
+      try {
+        const response = await fetch(
+          `${pkg.repository.url.replace('github.com', 'api.github.com/repos')}/releases`,
+          {
+            headers: {
+              Accept: 'application/vnd.github.v3+json',
+            },
+          }
+        );
+
+        if (!response.ok) {
+          return [];
+        }
+
+        return await response.json();
+      } catch (_error) {
+        return [];
+      }
+    },
     staleTime: 1000 * 60 * 60, // 1 hour
   });
 }

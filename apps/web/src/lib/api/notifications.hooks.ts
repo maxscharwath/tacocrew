@@ -1,22 +1,20 @@
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
-import { getNotifications, getUnreadCount } from './notifications';
+import { apiClient } from '@/lib/api/http';
+import type { Notification, Page, UnreadCountResponse } from './notifications';
 
-const unreadNotificationsKeys = {
-  all: ['unreadNotifications'] as const,
-  count: () => [...unreadNotificationsKeys.all, 'count'] as const,
-} as const;
-
+// Internal query key factory
 const notificationsKeys = {
-  all: ['notifications'] as const,
-  list: () => [...notificationsKeys.all, 'list'] as const,
-  infinite: (archived: boolean) => [...notificationsKeys.list(), 'infinite', archived] as const,
+  all: () => ['notifications'] as const,
+  list: (archived?: boolean) => [...notificationsKeys.all(), 'list', { archived }] as const,
+  unread: () => [...notificationsKeys.all(), 'unread'] as const,
+  infinite: (archived?: boolean) => [...notificationsKeys.all(), 'infinite', { archived }] as const,
 } as const;
 
 export function useUnreadNotificationsCount() {
   return useQuery({
-    queryKey: unreadNotificationsKeys.count(),
+    queryKey: notificationsKeys.unread(),
     queryFn: async () => {
-      const data = await getUnreadCount();
+      const data = await apiClient.get<UnreadCountResponse>('/api/v1/notifications/unread-count');
       return data.count;
     },
     staleTime: 10 * 1000, // 10 seconds
@@ -29,11 +27,13 @@ export function useInfiniteNotifications(archived: boolean, enabled: boolean = t
   return useInfiniteQuery({
     queryKey: notificationsKeys.infinite(archived),
     queryFn: ({ pageParam }) => {
-      return getNotifications({
-        limit: 15,
-        cursor: pageParam,
-        archived,
-      });
+      const params = new URLSearchParams();
+      params.set('limit', '15');
+      if (pageParam) params.set('cursor', pageParam);
+      params.set('archived', archived.toString());
+      const query = params.toString();
+      const url = `/api/v1/notifications?${query}`;
+      return apiClient.get<Page<Notification>>(url);
     },
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
