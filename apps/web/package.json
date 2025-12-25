@@ -1,7 +1,7 @@
 {
   "name": "@tacocrew/web",
   "private": true,
-  "version": "0.2512.1",
+  "version": "0.2512.2",
   "type": "module",
   "description": "TacoCrew - Order French tacos together with your team",
   "repository": {

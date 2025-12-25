@@ -1,7 +1,7 @@
 {
   "name": "tacocrew",
   "private": true,
-  "version": "0.2512.1",
+  "version": "0.2512.2",
   "type": "module",
   "packageManager": "bun@1.2.14",
   "workspaces": ["apps/*", "packages/*"],

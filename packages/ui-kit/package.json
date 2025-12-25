@@ -1,6 +1,6 @@
 {
   "name": "@tacocrew/ui-kit",
-  "version": "0.2512.1",
+  "version": "0.2512.2",
   "description": "Shared UI component library for TacoCrew",
   "type": "module",
   "main": "./src/index.ts",
