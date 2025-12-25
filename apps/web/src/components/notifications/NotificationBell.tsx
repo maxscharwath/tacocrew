@@ -3,8 +3,7 @@ import { Bell } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
-import { usePolling } from '@/hooks';
-import { getUnreadCount } from '@/lib/api/notifications';
+import { useUnreadNotificationsCount } from '@/lib/api/notifications.hooks';
 import { NotificationDropdown } from './NotificationDropdown';
 
 // Hook to detect mobile screen size
@@ -28,32 +27,10 @@ function useIsMobile() {
 
 export function NotificationBell() {
   const { t } = useTranslation();
-  const [unreadCount, setUnreadCount] = useState(0);
+  const unreadCountQuery = useUnreadNotificationsCount();
   const [open, setOpen] = useState(false);
   const isMobile = useIsMobile();
-
-  const fetchUnreadCount = async () => {
-    try {
-      const data = await getUnreadCount();
-      setUnreadCount(data.count);
-    } catch {
-      // Silently fail
-    }
-  };
-
-  // Smart polling - only when tab is visible
-  usePolling(fetchUnreadCount, {
-    interval: 30000, // 30 seconds when visible
-    onlyWhenVisible: true,
-    enabled: !open, // Pause polling when dropdown is open
-  });
-
-  // Listen for manual refresh events
-  useEffect(() => {
-    const handler = () => fetchUnreadCount();
-    globalThis.addEventListener('notificationUpdated', handler);
-    return () => globalThis.removeEventListener('notificationUpdated', handler);
-  }, []);
+  const unreadCount = unreadCountQuery.data ?? 0;
 
   const triggerButton = (
     <button
@@ -119,7 +96,7 @@ export function NotificationBell() {
               <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
                 <NotificationDropdown
                   onClose={() => setOpen(false)}
-                  onMarkAsRead={fetchUnreadCount}
+                  onMarkAsRead={() => unreadCountQuery.refetch()}
                 />
               </div>
             </div>,
@@ -133,7 +110,10 @@ export function NotificationBell() {
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>{triggerButton}</DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-80 p-0 sm:w-96">
-        <NotificationDropdown onClose={() => setOpen(false)} onMarkAsRead={fetchUnreadCount} />
+        <NotificationDropdown
+          onClose={() => setOpen(false)}
+          onMarkAsRead={() => unreadCountQuery.refetch()}
+        />
       </DropdownMenuContent>
     </DropdownMenu>
   );

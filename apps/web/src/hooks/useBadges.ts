@@ -1,14 +1,15 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useQueries } from '@tanstack/react-query';
+import { useCallback, useMemo } from 'react';
 import {
   BADGES,
-  getBadgeById as getBadgeDefById,
   type BadgeDefinition,
+  getBadgeById as getBadgeDefById,
 } from '@/config/badges.config';
 import {
-  getUserBadges,
+  type BadgeProgress,
   getUserBadgeProgress,
   getUserBadgeStats,
-  type BadgeProgress,
+  getUserBadges,
   type UserBadgeContext,
 } from '@/lib/api/badges';
 
@@ -35,30 +36,25 @@ export interface BadgeStats {
 // Hook
 // ─────────────────────────────────────────────────────────────────────────────
 
-interface UseBadgesState {
+interface UseBadgesReturn {
+  readonly badges: readonly BadgeDefinition[];
   readonly earned: UserBadge[];
   readonly progress: BadgeProgress[];
-  readonly earnedIds: readonly string[];
+  readonly stats: BadgeStats | null;
   readonly isLoading: boolean;
   readonly error: string | null;
-}
-
-interface UseBadgesReturn extends Omit<UseBadgesState, 'earnedIds'> {
-  readonly badges: readonly BadgeDefinition[];
-  readonly stats: BadgeStats | null;
-  readonly refresh: () => Promise<void>;
+  readonly refresh: () => void;
   readonly getBadgeById: (id: string) => BadgeDefinition | undefined;
   readonly hasBadge: (badgeId: string) => boolean;
   readonly getProgress: (badgeId: string) => BadgeProgress | undefined;
 }
 
-const INITIAL_STATE: UseBadgesState = {
-  earned: [],
-  progress: [],
-  earnedIds: [],
-  isLoading: true,
-  error: null,
-};
+const badgesKeys = {
+  all: ['badges'] as const,
+  earned: () => [...badgesKeys.all, 'earned'] as const,
+  progress: () => [...badgesKeys.all, 'progress'] as const,
+  stats: () => [...badgesKeys.all, 'stats'] as const,
+} as const;
 
 /**
  * Hook for managing badge data
@@ -68,70 +64,66 @@ const INITIAL_STATE: UseBadgesState = {
  * Stats (byTier, byCategory) are computed client-side from FE definitions.
  */
 export function useBadges(): UseBadgesReturn {
-  const [state, setState] = useState<UseBadgesState>(INITIAL_STATE);
+  const [earnedQuery, progressQuery, statsQuery] = useQueries({
+    queries: [
+      {
+        queryKey: badgesKeys.earned(),
+        queryFn: getUserBadges,
+        staleTime: 1000 * 60 * 5, // 5 minutes
+      },
+      {
+        queryKey: badgesKeys.progress(),
+        queryFn: getUserBadgeProgress,
+        staleTime: 1000 * 60 * 5, // 5 minutes
+      },
+      {
+        queryKey: badgesKeys.stats(),
+        queryFn: getUserBadgeStats,
+        staleTime: 1000 * 60 * 5, // 5 minutes
+      },
+    ],
+  });
 
-  const fetchData = useCallback(async () => {
-    setState((prev) => ({ ...prev, isLoading: true, error: null }));
+  // Map earned badges to use FE config definitions
+  const earned = useMemo((): UserBadge[] => {
+    if (!earnedQuery.data) return [];
+    return earnedQuery.data
+      .map((ub) => {
+        const badge = getBadgeDefById(ub.badgeId);
+        if (!badge) return null;
+        return {
+          badge,
+          earnedAt: ub.earnedAt,
+          context: ub.context,
+        };
+      })
+      .filter((b): b is UserBadge => b !== null);
+  }, [earnedQuery.data]);
 
-    try {
-      const [earnedRaw, progress, statsRaw] = await Promise.all([
-        getUserBadges(),
-        getUserBadgeProgress(),
-        getUserBadgeStats(),
-      ]);
-
-      // Map earned badges to use FE config definitions (with optimized images)
-      const earned: UserBadge[] = earnedRaw
-        .map((ub) => {
-          const badge = getBadgeDefById(ub.badgeId);
-          if (!badge) return null;
-          return {
-            badge,
-            earnedAt: ub.earnedAt,
-            context: ub.context,
-          };
-        })
-        .filter((b): b is UserBadge => b !== null);
-
-      setState({
-        earned,
-        progress,
-        earnedIds: statsRaw.earnedIds,
-        isLoading: false,
-        error: null,
-      });
-    } catch (err) {
-      setState((prev) => ({
-        ...prev,
-        isLoading: false,
-        error: err instanceof Error ? err.message : 'Failed to load badges',
-      }));
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+  const isLoading = earnedQuery.isLoading || progressQuery.isLoading || statsQuery.isLoading;
+  const error = earnedQuery.error || progressQuery.error || statsQuery.error;
+  const errorMessage =
+    error instanceof Error ? error.message : error ? 'Failed to load badges' : null;
 
   const hasBadge = useCallback(
     (badgeId: string): boolean => {
-      return state.earned.some((b) => b.badge.id === badgeId);
+      return earned.some((b) => b.badge.id === badgeId);
     },
-    [state.earned]
+    [earned]
   );
 
   const getProgress = useCallback(
     (badgeId: string): BadgeProgress | undefined => {
-      return state.progress.find((p) => p.badgeId === badgeId);
+      return progressQuery.data?.find((p) => p.badgeId === badgeId);
     },
-    [state.progress]
+    [progressQuery.data]
   );
 
   // Compute stats from FE definitions and earned IDs
   const stats = useMemo((): BadgeStats | null => {
-    if (state.isLoading) return null;
+    if (isLoading || !statsQuery.data) return null;
 
-    const earnedSet = new Set(state.earnedIds);
+    const earnedSet = new Set(statsQuery.data.earnedIds);
     const byTier: Record<string, number> = {};
     const byCategory: Record<string, number> = {};
 
@@ -144,20 +136,26 @@ export function useBadges(): UseBadgesReturn {
 
     return {
       total: BADGES.length,
-      earned: state.earned.length,
+      earned: earned.length,
       byTier,
       byCategory,
     };
-  }, [state.isLoading, state.earnedIds, state.earned.length]);
+  }, [isLoading, statsQuery.data, earned.length]);
+
+  const refresh = useCallback(() => {
+    earnedQuery.refetch();
+    progressQuery.refetch();
+    statsQuery.refetch();
+  }, [earnedQuery, progressQuery, statsQuery]);
 
   return {
     badges: BADGES,
-    earned: state.earned,
-    progress: state.progress,
+    earned,
+    progress: progressQuery.data ?? [],
     stats,
-    isLoading: state.isLoading,
-    error: state.error,
-    refresh: fetchData,
+    isLoading,
+    error: errorMessage,
+    refresh,
     getBadgeById: getBadgeDefById,
     hasBadge,
     getProgress,

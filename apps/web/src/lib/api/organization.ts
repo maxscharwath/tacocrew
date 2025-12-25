@@ -1,3 +1,4 @@
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api/http';
 import { resolveImageUrl } from '@/lib/api/image-utils';
 import type {
@@ -7,7 +8,6 @@ import type {
   OrganizationRole,
   PendingRequest,
 } from '@/lib/api/types';
-
 export function getMyOrganizations() {
   return apiClient.get<Organization[]>('/api/v1/users/me/organizations');
 }
@@ -25,7 +25,6 @@ export function createOrganization(
   avatarFile?: File | null,
   backgroundColor?: string | null
 ) {
-  // If avatar is provided, send as multipart/form-data
   if (avatarFile) {
     const formData = new FormData();
     formData.append('name', body.name);
@@ -35,7 +34,6 @@ export function createOrganization(
     }
     return apiClient.post<Organization>('/api/v1/organizations', { body: formData });
   }
-  // Otherwise, send as JSON (backward compatible)
   return apiClient.post<Organization>('/api/v1/organizations', { body });
 }
 
@@ -115,13 +113,213 @@ export function updateUserRole(organizationId: string, userId: string, role: Org
   );
 }
 
-/**
- * Get avatar image URL for an organization with optional size parameters
- */
 export function getOrganizationAvatarUrl(
   organizationId: string,
   options?: { size?: number; w?: number; h?: number; dpr?: number }
 ): string {
   const path = `/api/v1/organizations/${organizationId}/avatar`;
   return resolveImageUrl(path, options) ?? path;
+}
+
+export function useMyOrganizations(enabled = true) {
+  return useQuery<Organization[]>({
+    queryKey: ['myOrganizations'],
+    queryFn: () => getMyOrganizations(),
+    enabled,
+  });
+}
+
+export function useAllOrganizations(enabled = true) {
+  return useQuery<Organization[]>({
+    queryKey: ['allOrganizations'],
+    queryFn: () => getAllOrganizations(),
+    enabled,
+  });
+}
+
+export function useOrganization(organizationId: string, enabled = true) {
+  return useQuery<Organization>({
+    queryKey: ['organization', organizationId],
+    queryFn: () => getOrganizationById(organizationId),
+    enabled: enabled && !!organizationId,
+  });
+}
+
+export function useCreateOrganization() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      body,
+      avatarFile,
+      backgroundColor,
+    }: {
+      body: OrganizationPayload;
+      avatarFile?: File | null;
+      backgroundColor?: string | null;
+    }) => createOrganization(body, avatarFile, backgroundColor),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['myOrganizations'] });
+      queryClient.invalidateQueries({ queryKey: ['allOrganizations'] });
+    },
+  });
+}
+
+export function useUpdateOrganization() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ organizationId, body }: { organizationId: string; body: OrganizationPayload }) =>
+      updateOrganization(organizationId, body),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['organization', variables.organizationId] });
+      queryClient.invalidateQueries({ queryKey: ['myOrganizations'] });
+      queryClient.invalidateQueries({ queryKey: ['allOrganizations'] });
+    },
+  });
+}
+
+export function useDeleteOrganization() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (organizationId: string) => deleteOrganization(organizationId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['myOrganizations'] });
+      queryClient.invalidateQueries({ queryKey: ['allOrganizations'] });
+    },
+  });
+}
+
+export function useAddUserToOrganization() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      organizationId,
+      email,
+      role,
+    }: {
+      organizationId: string;
+      email: string;
+      role?: OrganizationRole;
+    }) => addUserToOrganization(organizationId, email, role),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: ['organizationMembers', variables.organizationId],
+      });
+    },
+  });
+}
+
+export function useRemoveUserFromOrganization() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ organizationId, userId }: { organizationId: string; userId: string }) =>
+      removeUserFromOrganization(organizationId, userId),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: ['organizationMembers', variables.organizationId],
+      });
+    },
+  });
+}
+
+export function useUploadOrganizationAvatar() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      organizationId,
+      imageFile,
+      backgroundColor,
+    }: {
+      organizationId: string;
+      imageFile: File;
+      backgroundColor?: string | null;
+    }) => uploadOrganizationAvatar(organizationId, imageFile, backgroundColor),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['organization', variables.organizationId] });
+      queryClient.invalidateQueries({ queryKey: ['myOrganizations'] });
+      queryClient.invalidateQueries({ queryKey: ['allOrganizations'] });
+    },
+  });
+}
+
+export function useDeleteOrganizationAvatar() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (organizationId: string) => deleteOrganizationAvatar(organizationId),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['organization', variables] });
+      queryClient.invalidateQueries({ queryKey: ['myOrganizations'] });
+      queryClient.invalidateQueries({ queryKey: ['allOrganizations'] });
+    },
+  });
+}
+
+export function useRequestToJoinOrganization() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (organizationId: string) => requestToJoinOrganization(organizationId),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['pendingRequests', variables] });
+    },
+  });
+}
+
+export function useOrganizationMembers(organizationId: string, enabled = true) {
+  return useQuery<OrganizationMember[]>({
+    queryKey: ['organizationMembers', organizationId],
+    queryFn: () => getOrganizationMembers(organizationId),
+    enabled: enabled && !!organizationId,
+  });
+}
+
+export function usePendingRequests(organizationId: string, enabled = true) {
+  return useQuery<PendingRequest[]>({
+    queryKey: ['pendingRequests', organizationId],
+    queryFn: () => getPendingRequests(organizationId),
+    enabled: enabled && !!organizationId,
+  });
+}
+
+export function useAcceptJoinRequest() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ organizationId, userId }: { organizationId: string; userId: string }) =>
+      acceptJoinRequest(organizationId, userId),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['pendingRequests', variables.organizationId] });
+      queryClient.invalidateQueries({
+        queryKey: ['organizationMembers', variables.organizationId],
+      });
+    },
+  });
+}
+
+export function useRejectJoinRequest() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ organizationId, userId }: { organizationId: string; userId: string }) =>
+      rejectJoinRequest(organizationId, userId),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['pendingRequests', variables.organizationId] });
+    },
+  });
+}
+
+export function useUpdateUserRole() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      organizationId,
+      userId,
+      role,
+    }: {
+      organizationId: string;
+      userId: string;
+      role: OrganizationRole;
+    }) => updateUserRole(organizationId, userId, role),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: ['organizationMembers', variables.organizationId],
+      });
+    },
+  });
 }

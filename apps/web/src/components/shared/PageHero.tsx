@@ -58,11 +58,13 @@ const VARIANT_STYLES: Record<
  *
  * @example
  * ```typescript
+ * const { t } = useTranslation();
+ *
  * <PageHero
  *   variant="amber"
  *   icon={Lock}
- *   title={tt('title')}
- *   subtitle={tt('subtitle')}
+ *   title={t('profile.delivery.title')}
+ *   subtitle={t('profile.delivery.subtitle')}
  * >
  *   <Card>
  *     <CardContent>

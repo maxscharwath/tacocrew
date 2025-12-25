@@ -4,7 +4,7 @@
  */
 
 import type { CreateUserOrderRequestDto } from '@/api/schemas/user-order.schemas';
-import { TacoId, TacoKind, type RegularTaco } from '@/schemas/taco.schema';
+import { type RegularTaco, TacoId, TacoKind } from '@/schemas/taco.schema';
 import type { StockAvailability } from '@/shared/types/types';
 import { generateTacoID } from '@/shared/utils/order-taco-id.utils';
 import { IngredientProcessor } from '../processors/ingredient-processor';
@@ -41,4 +41,3 @@ export class RegularTacoBuilder implements TacoBuilder {
     };
   }
 }
-

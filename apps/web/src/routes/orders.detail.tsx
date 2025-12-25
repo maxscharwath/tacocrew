@@ -1,15 +1,13 @@
 import { Button } from '@tacocrew/ui-kit';
 import { Terminal } from 'lucide-react';
-import { Suspense, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  Await,
   Link,
   type LoaderFunctionArgs,
   redirect,
   useLoaderData,
   useNavigation,
-  useParams,
 } from 'react-router';
 import {
   CookieInjectionModal,
@@ -18,152 +16,34 @@ import {
   OrdersList,
   ShareButton,
 } from '@/components/orders';
-import { OrderDetailSkeleton } from '@/components/skeletons';
+import { GroupOrderReceiptsSkeleton } from '@/components/orders/GroupOrderReceiptsSkeleton';
+import { OrderHeroSkeleton } from '@/components/orders/OrderHeroSkeleton';
+import { OrdersListSkeleton } from '@/components/orders/OrdersListSkeleton';
+import { SectionWrapper } from '@/components/sections';
 import { useDeveloperMode } from '@/hooks/useDeveloperMode';
-import { useSession } from '@/lib/auth-client';
-import type { UpsertUserOrderBody } from '@/lib/api';
-import { OrdersApi, StockApi } from '@/lib/api';
+import { useGroupOrderWithOrders } from '@/lib/api';
 import { type Amount, Currency } from '@/lib/api/types';
+import { useSession } from '@/lib/auth-client';
+import {
+  getFormHandlerName,
+  handleDeleteUserOrder,
+  handleSubmitGroupOrder,
+  handleUpdateOrderStatus,
+  handleUpsertUserOrder,
+} from '@/lib/handlers/order-detail-handlers';
 import { routes } from '@/lib/routes';
-import type {
-  DeleteUserOrderFormData,
-  ManageOrderStatusFormData,
-  SubmitGroupOrderFormData,
-  UserOrderFormData,
-} from '@/lib/types/form-data';
 import { createActionHandler } from '@/lib/utils/action-handler';
-import { defer } from '@/lib/utils/defer';
-import { parseFormData } from '@/lib/utils/form-data';
-import { createDeferredWithAuth } from '@/lib/utils/loader-helpers';
-
-type LoaderData = {
-  groupOrder: Awaited<ReturnType<typeof OrdersApi.getGroupOrderWithOrders>>['groupOrder'];
-  userOrders: Awaited<ReturnType<typeof OrdersApi.getGroupOrderWithOrders>>['userOrders'];
-  stock: Awaited<ReturnType<typeof StockApi.getStock>>;
-};
-
-type GroupOrderData = {
-  groupOrder: LoaderData['groupOrder'];
-  userOrders: LoaderData['userOrders'];
-};
-
-function loadOrderDetail(groupOrderId: string) {
-  return Promise.all([
-    createDeferredWithAuth(() => OrdersApi.getGroupOrderWithOrders(groupOrderId)),
-    createDeferredWithAuth(() => StockApi.getStock()),
-  ]).then(([groupOrderWithUsers, stockData]) => ({
-    groupOrderData: {
-      groupOrder: groupOrderWithUsers.groupOrder,
-      userOrders: groupOrderWithUsers.userOrders,
-    },
-    stock: stockData,
-  }));
-}
+import { getGroupOrderIdFromParams, getGroupOrderIdFromUrl } from '@/lib/utils/order-id-extractors';
 
 export function orderDetailLoader({ params }: LoaderFunctionArgs) {
-  const groupOrderId = params.orderId;
-  if (!groupOrderId) {
-    throw new Response('Order not found', { status: 404 });
-  }
-
-  return defer({
-    data: loadOrderDetail(groupOrderId),
-  });
-}
-
-/**
- * Helper to convert form data to array format
- */
-function toArray(val: string | string[]): string[] {
-  if (Array.isArray(val)) {
-    return val;
-  }
-  if (val) {
-    return [val];
-  }
-  return [];
-}
-
-/**
- * Handle group order submission
- */
-async function handleSubmitGroupOrder(groupOrderId: string, request: Request) {
-  const data = await parseFormData<SubmitGroupOrderFormData>(request);
-  await OrdersApi.submitGroupOrder(groupOrderId, {
-    customer: {
-      name: data.customerName,
-      phone: data.customerPhone,
-    },
-    delivery: {
-      type: data.deliveryType,
-      address: {
-        road: data.road,
-        house_number: data.houseNumber,
-        postcode: data.postcode,
-        city: data.city,
-        state: data.state,
-        country: data.country,
-      },
-      requestedFor: data.requestedFor,
-    },
-    paymentMethod: data.paymentMethod,
-  });
-}
-
-/**
- * Handle user order creation/update
- */
-async function handleUpsertUserOrder(groupOrderId: string, request: Request) {
-  const rawData = await parseFormData<UserOrderFormData>(request);
-  type TacoSize = UpsertUserOrderBody['items']['tacos'][number]['size'];
-
-  const tacoQuantity = Number(rawData.tacoQuantity) || 1;
-  const meats = toArray(rawData.meats);
-  const sauces = toArray(rawData.sauces);
-  const garnitures = toArray(rawData.garnitures);
-
-  await OrdersApi.upsertUserOrder(groupOrderId, {
-    items: {
-      tacos: [
-        {
-          size: rawData.tacoSize as TacoSize,
-          meats: meats.map((id) => ({ id, quantity: 1 })),
-          sauces: sauces.map((id) => ({ id })),
-          garnitures: garnitures.map((id) => ({ id })),
-          note: rawData.note,
-          quantity: tacoQuantity,
-        },
-      ],
-      extras: toArray(rawData.extras).map((id) => ({ id, quantity: 1 })),
-      drinks: toArray(rawData.drinks).map((id) => ({ id, quantity: 1 })),
-      desserts: toArray(rawData.desserts).map((id) => ({ id, quantity: 1 })),
-    },
-  });
-}
-
-/**
- * Get group order ID from params or throw 404
- */
-function getGroupOrderId(params?: Record<string, string | undefined>): string {
-  const groupOrderId = params?.orderId;
-  if (!groupOrderId) throw new Response('Order not found', { status: 404 });
-  return groupOrderId;
-}
-
-/**
- * Get group order ID from URL path
- */
-function getGroupOrderIdFromUrl(url: URL): string {
-  const groupOrderId = url.pathname.split('/').pop();
-  if (!groupOrderId) throw new Response('Order not found', { status: 404 });
-  return groupOrderId;
+  const groupOrderId = getGroupOrderIdFromParams(params);
+  return { groupOrderId };
 }
 
 export const orderDetailAction = createActionHandler({
   handlers: {
     POST: async ({ formData }, request, params) => {
-      const groupOrderId = getGroupOrderId(params);
-
+      const groupOrderId = getGroupOrderIdFromParams(params);
       if (formData.has('customerName')) {
         await handleSubmitGroupOrder(groupOrderId, request);
       } else if (formData.has('tacoSize')) {
@@ -174,117 +54,151 @@ export const orderDetailAction = createActionHandler({
     },
     DELETE: async (_, request) => {
       const groupOrderId = getGroupOrderIdFromUrl(new URL(request.url));
-      const data = await parseFormData<DeleteUserOrderFormData>(request);
-      await OrdersApi.deleteUserOrder(groupOrderId, data.itemId);
+      await handleDeleteUserOrder(groupOrderId, request);
     },
     PATCH: async (_, request) => {
       const groupOrderId = getGroupOrderIdFromUrl(new URL(request.url));
-      const data = await parseFormData<ManageOrderStatusFormData>(request);
-      await OrdersApi.updateGroupOrderStatus(groupOrderId, data.status);
+      await handleUpdateOrderStatus(groupOrderId, request);
     },
   },
   getFormName: async (method, request) => {
     if (method === 'POST') {
       const formData = await request.clone().formData();
-      if (formData.has('customerName')) return 'submit';
-      if (formData.has('tacoSize')) return 'user-order';
+      return getFormHandlerName(formData);
     }
     if (method === 'DELETE') return 'delete';
     if (method === 'PATCH') return 'status';
     return 'unknown';
   },
   onSuccess: (_request, params) => {
-    const groupOrderId = getGroupOrderId(params);
+    const groupOrderId = getGroupOrderIdFromParams(params);
     return redirect(routes.root.orderDetail({ orderId: groupOrderId }));
   },
 });
 
-function OrderDetailContent({
-  groupOrderData,
-}: Readonly<{
-  groupOrderData: GroupOrderData;
-  stock: LoaderData['stock'];
-}>) {
+function OrderDetailContent({ groupOrderId }: Readonly<{ groupOrderId: string }>) {
   const { t } = useTranslation();
-  const tt = (key: string, options?: Record<string, unknown>) => t(`orders.detail.${key}`, options);
-  const { groupOrder, userOrders } = groupOrderData;
+
+  const groupOrderQuery = useGroupOrderWithOrders(groupOrderId);
   const { data: session } = useSession();
-  const currentUserId = session?.user?.id;
-  const isLeader = currentUserId ? groupOrder.leader.id === currentUserId : false;
   const navigation = useNavigation();
-  const params = useParams();
   const isSubmitting = navigation.state === 'submitting';
   const { isEnabled: isDeveloperMode } = useDeveloperMode();
   const [isCookieModalOpen, setIsCookieModalOpen] = useState(false);
 
-  // Check if the group order can accept new orders
-  const canAddOrders = groupOrder.canAcceptOrders;
-  const canSubmit = isLeader && groupOrder.canSubmitGroupOrder;
-  const isSubmitted = groupOrder.status === 'submitted' || groupOrder.status === 'completed';
-  const isClosedManually = groupOrder.status === 'closed';
-  // Calculate total price from API response
-  const totalPrice: Amount = userOrders.reduce<Amount>(
-    (acc, order) => ({
-      value: acc.value + order.totalPrice.value,
-      currency: order.totalPrice.currency,
-    }),
-    { value: 0, currency: Currency.CHF }
-  );
+  const currentUserId = session?.user?.id;
 
   return (
     <div className="space-y-8">
-      <OrderHero
-        groupOrder={groupOrder}
-        userOrders={userOrders}
-        totalPrice={totalPrice}
-        canAddOrders={canAddOrders}
-        canSubmit={canSubmit}
-        orderId={params.orderId ?? ''}
-        isClosedManually={isClosedManually}
-        isSubmitting={isSubmitting}
-        isLeader={isLeader}
-        isDeveloperMode={isDeveloperMode}
-        isSubmitted={isSubmitted}
-      />
+      {/* Hero section with independent skeleton */}
+      <SectionWrapper query={groupOrderQuery} skeleton={<OrderHeroSkeleton />}>
+        {(data) => {
+          const { groupOrder, userOrders } = data;
+          const isLeader = currentUserId ? groupOrder.leader.id === currentUserId : false;
+          const canSubmit = isLeader && groupOrder.canSubmitGroupOrder;
+          const isSubmitted =
+            groupOrder.status === 'submitted' || groupOrder.status === 'completed';
+          const isClosedManually = groupOrder.status === 'closed';
+          const totalPrice: Amount = userOrders.reduce<Amount>(
+            (acc, order) => ({
+              value: acc.value + order.totalPrice.value,
+              currency: order.totalPrice.currency,
+            }),
+            { value: 0, currency: Currency.CHF }
+          );
 
+          return (
+            <OrderHero
+              groupOrder={groupOrder}
+              userOrders={userOrders}
+              totalPrice={totalPrice}
+              canAddOrders={groupOrder.canAcceptOrders}
+              canSubmit={canSubmit}
+              orderId={groupOrderId}
+              isClosedManually={isClosedManually}
+              isSubmitting={isSubmitting}
+              isLeader={isLeader}
+              isDeveloperMode={isDeveloperMode}
+              isSubmitted={isSubmitted}
+            />
+          );
+        }}
+      </SectionWrapper>
+
+      {/* Orders list and sidebar */}
       <div className="grid gap-4 sm:gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,400px)]">
-        <OrdersList
-          userOrders={userOrders}
-          groupOrder={groupOrder}
-          currentUserId={currentUserId}
-          isLeader={isLeader}
-          orderId={params.orderId ?? ''}
-          isSubmitting={isSubmitting}
-          canAddOrders={canAddOrders}
-        />
+        {/* Orders list section with independent skeleton */}
+        <SectionWrapper query={groupOrderQuery} skeleton={<OrdersListSkeleton />}>
+          {(data) => {
+            const { groupOrder, userOrders } = data;
+            const isLeader = currentUserId ? groupOrder.leader.id === currentUserId : false;
 
-        <div className="space-y-3 lg:sticky lg:top-8 lg:h-fit">
-          <ShareButton groupOrderId={groupOrder.id} />
-          {isDeveloperMode && isSubmitted && (
-            <Button
-              variant="outline"
-              fullWidth
-              onClick={() => setIsCookieModalOpen(true)}
-              className="gap-2"
-            >
-              <Terminal size={16} />
-              Cookie Injection
-            </Button>
-          )}
-        </div>
+            return (
+              <OrdersList
+                userOrders={userOrders}
+                groupOrder={groupOrder}
+                currentUserId={currentUserId}
+                isLeader={isLeader}
+                orderId={groupOrderId}
+                isSubmitting={isSubmitting}
+                canAddOrders={groupOrder.canAcceptOrders}
+              />
+            );
+          }}
+        </SectionWrapper>
+
+        {/* Sidebar */}
+        <SectionWrapper
+          query={groupOrderQuery}
+          skeleton={<div className="h-32 rounded-lg bg-slate-900/50" />}
+        >
+          {(data) => {
+            const { groupOrder } = data;
+            const isSubmitted =
+              groupOrder.status === 'submitted' || groupOrder.status === 'completed';
+
+            return (
+              <div className="space-y-3 lg:sticky lg:top-8 lg:h-fit">
+                <ShareButton groupOrderId={groupOrder.id} />
+                {isDeveloperMode && isSubmitted && (
+                  <Button
+                    variant="outline"
+                    fullWidth
+                    onClick={() => setIsCookieModalOpen(true)}
+                    className="gap-2"
+                  >
+                    <Terminal size={16} />
+                    Cookie Injection
+                  </Button>
+                )}
+              </div>
+            );
+          }}
+        </SectionWrapper>
       </div>
 
-      <GroupOrderReceipts
-        groupOrder={groupOrder}
-        userOrders={userOrders}
-        isLeader={isLeader}
-        currentUserId={currentUserId}
-      />
+      {/* Receipts section with independent skeleton */}
+      <SectionWrapper query={groupOrderQuery} skeleton={<GroupOrderReceiptsSkeleton />}>
+        {(data) => {
+          const { groupOrder, userOrders } = data;
+          const isLeader = currentUserId ? groupOrder.leader.id === currentUserId : false;
 
+          return (
+            <GroupOrderReceipts
+              groupOrder={groupOrder}
+              userOrders={userOrders}
+              isLeader={isLeader}
+              currentUserId={currentUserId}
+            />
+          );
+        }}
+      </SectionWrapper>
+
+      {/* Modal and footer */}
       <CookieInjectionModal
         isOpen={isCookieModalOpen}
         onClose={() => setIsCookieModalOpen(false)}
-        groupOrderId={params.orderId ?? ''}
+        groupOrderId={groupOrderId}
       />
 
       <div className="flex flex-col gap-3 border-white/10 border-t pt-4 text-slate-400 text-sm sm:flex-row sm:items-center sm:justify-between">
@@ -292,10 +206,10 @@ function OrderDetailContent({
           to={routes.root.orders()}
           className="inline-flex cursor-pointer items-center gap-2 text-brand-100 transition-colors hover:text-brand-50"
         >
-          {tt('list.footer.backToOrders')}
+          {t('orders.detail.list.footer.backToOrders')}
         </Link>
         <span className="text-slate-500 text-xs uppercase tracking-[0.3em]">
-          {tt('list.footer.orderId')} {params.orderId}
+          {t('orders.detail.list.footer.orderId')} {groupOrderId}
         </span>
       </div>
     </div>
@@ -303,23 +217,6 @@ function OrderDetailContent({
 }
 
 export function OrderDetailRoute() {
-  const { data } = useLoaderData<{
-    data: Promise<{
-      groupOrderData: GroupOrderData;
-      stock: LoaderData['stock'];
-    }>;
-  }>();
-
-  return (
-    <Suspense fallback={<OrderDetailSkeleton />}>
-      <Await resolve={data}>
-        {(resolvedData) => (
-          <OrderDetailContent
-            groupOrderData={resolvedData.groupOrderData}
-            stock={resolvedData.stock}
-          />
-        )}
-      </Await>
-    </Suspense>
-  );
+  const { groupOrderId } = useLoaderData<{ groupOrderId: string }>();
+  return <OrderDetailContent groupOrderId={groupOrderId} />;
 }

@@ -2,23 +2,19 @@ import { Card, CardContent, EmptyState } from '@tacocrew/ui-kit';
 import { Building2 } from 'lucide-react';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useLoaderData, useNavigate } from 'react-router';
-import { OrganizationApi } from '@/lib/api';
+import { useNavigate } from 'react-router';
+import { useMyOrganizations } from '@/lib/api/organization';
 import { routes } from '@/lib/routes';
-import type { LoaderData } from '@/lib/types/loader-types';
-import { createLoader } from '@/lib/utils/loader-factory';
 
-export const profileOrganizationsIndexLoader = createLoader(
-  async () => {
-    const organizations = await OrganizationApi.getMyOrganizations();
-    return { organizations };
-  }
-);
+export function profileOrganizationsIndexLoader() {
+  return Response.json({});
+}
 
 export function ProfileOrganizationsIndexRoute() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { organizations } = useLoaderData<LoaderData<typeof profileOrganizationsIndexLoader>>();
+  const organizationsQuery = useMyOrganizations();
+  const organizations = organizationsQuery.data || [];
 
   // Redirect to first organization if available
   useEffect(() => {

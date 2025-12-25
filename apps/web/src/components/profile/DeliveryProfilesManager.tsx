@@ -34,8 +34,12 @@ import {
   SWITZERLAND_COUNTRY,
 } from '@/constants/location';
 import { useZodForm } from '@/hooks/useZodForm';
-import { UserApi } from '@/lib/api';
 import type { DeliveryProfile } from '@/lib/api/types';
+import {
+  createDeliveryProfile,
+  deleteDeliveryProfile,
+  updateDeliveryProfile,
+} from '@/lib/api/user';
 import { type DeliveryProfileFormData, deliveryProfileSchema } from '@/lib/schemas';
 import { formatPhoneNumber } from '@/utils/phone-formatter';
 
@@ -385,7 +389,7 @@ export function DeliveryProfilesManager({ profiles }: DeliveryProfilesManagerPro
   const handleSave = async (data: DeliveryProfileFormData) => {
     setFeedback(null);
     try {
-      const profile = await UserApi.createDeliveryProfile(data);
+      const profile = await createDeliveryProfile(data);
       setItems((prev) => [...prev, profile]);
       setSelectedId(profile.id);
       setFeedback({ tone: 'success', text: t(`orders.submit.saved.messages.saved`) });
@@ -405,7 +409,7 @@ export function DeliveryProfilesManager({ profiles }: DeliveryProfilesManagerPro
     }
     setFeedback(null);
     try {
-      const profile = await UserApi.updateDeliveryProfile(selectedId, data);
+      const profile = await updateDeliveryProfile(selectedId, data);
       setItems((prev) => prev.map((item) => (item.id === profile.id ? profile : item)));
       setFeedback({ tone: 'success', text: t(`orders.submit.saved.messages.updated`) });
     } catch (error) {
@@ -431,7 +435,7 @@ export function DeliveryProfilesManager({ profiles }: DeliveryProfilesManagerPro
     setShowDeleteDialog(false);
     setFeedback(null);
     try {
-      await UserApi.deleteDeliveryProfile(selectedId);
+      await deleteDeliveryProfile(selectedId);
       setItems((prev) => prev.filter((item) => item.id !== selectedId));
       setSelectedId('');
       selectProfile('');

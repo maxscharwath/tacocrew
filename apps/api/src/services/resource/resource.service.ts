@@ -28,9 +28,7 @@ export class ResourceService {
     return this.transformStock(backendStock);
   }
 
-  private transformStock(
-    backendStock: Awaited<ReturnType<typeof this.backendClient.getStock>>
-  ) {
+  private transformStock(backendStock: Awaited<ReturnType<typeof this.backendClient.getStock>>) {
     return {
       meats: Object.entries(backendStock.viandes || {}).map(([code, info]) => ({
         id: deterministicUUID(code, StockCategory.Meats),

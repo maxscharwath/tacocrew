@@ -7,7 +7,7 @@ import type { CreateUserOrderRequestDto } from '@/api/schemas/user-order.schemas
 import { DessertId } from '@/schemas/dessert.schema';
 import { DrinkId } from '@/schemas/drink.schema';
 import { ExtraId } from '@/schemas/extra.schema';
-import { StockCategory, type StockAvailability } from '@/shared/types/types';
+import { type StockAvailability, StockCategory } from '@/shared/types/types';
 import { ValidationError } from '@/shared/utils/errors.utils';
 
 export class ItemProcessor {
@@ -62,4 +62,3 @@ export class ItemProcessor {
     };
   }
 }
-

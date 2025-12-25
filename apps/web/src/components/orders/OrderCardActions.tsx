@@ -31,8 +31,8 @@ export function OrderCardActions({
       await navigator.clipboard.writeText(tacoID);
       setCopiedTacoID(tacoID);
       setTimeout(() => setCopiedTacoID(null), 2000);
-    } catch (err) {
-      console.error('Failed to copy tacoID:', err);
+    } catch (_err) {
+      // Clipboard access may fail in some contexts, silently ignore
     }
   };
 
@@ -69,7 +69,7 @@ export function OrderCardActions({
           size="sm"
           onClick={onDuplicate}
           disabled={isSubmitting}
-          className="h-7 w-7 rounded-lg p-0 transition-transform hover:scale-110 hover:bg-blue-500/25 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="h-7 w-7 rounded-lg p-0 transition-transform hover:scale-110 hover:bg-blue-500/25 disabled:cursor-not-allowed disabled:opacity-50"
           title="Duplicate order"
         >
           <Copy size={14} className="text-blue-300" />

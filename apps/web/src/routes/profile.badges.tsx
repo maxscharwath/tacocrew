@@ -13,9 +13,10 @@ import { Link } from 'react-router';
 import { BadgeGrid, BadgeStats } from '@/components/badges';
 import { useBadges } from '@/hooks';
 import { routes } from '@/lib/routes';
-import { createLoader } from '@/lib/utils/loader-factory';
 
-export const badgesLoader = createLoader(async () => ({}));
+export function badgesLoader() {
+  return Response.json({});
+}
 
 function BadgesSkeleton() {
   return (

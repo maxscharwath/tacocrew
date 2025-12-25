@@ -214,6 +214,7 @@ export const { routes, routerConfig } = defineRoutes({
           new: {
             path: 'new',
             element: ProfileOrganizationsNewRoute,
+            hydrateFallback: ProfileSkeleton,
           },
           detail: {
             path: ':id',

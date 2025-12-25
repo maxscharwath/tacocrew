@@ -1,9 +1,8 @@
-import { toast } from '@tacocrew/ui-kit';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useRevalidator } from 'react-router';
 import { OrganizationCreateForm } from '@/components/profile/OrganizationCreateForm';
-import { OrganizationApi } from '@/lib/api';
 import type { OrganizationPayload } from '@/lib/api/types';
+import { handleCreateOrganization } from '@/lib/handlers/organization-handlers';
 import { routes } from '@/lib/routes';
 
 export function ProfileOrganizationsNewRoute() {
@@ -16,22 +15,16 @@ export function ProfileOrganizationsNewRoute() {
     avatarFile: File | null,
     backgroundColor: string | null
   ) => {
-    const loadingToastId = toast.loading(t('organizations.messages.creating'));
-    try {
-      const newOrg = await OrganizationApi.createOrganization(data, avatarFile, backgroundColor);
-      toast.success(t('organizations.messages.createdWithName', { name: newOrg.name }), {
-        id: loadingToastId,
-      });
-      revalidator.revalidate();
-      navigate(routes.root.profileOrganizations.detail({ id: newOrg.id }));
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : t('organizations.messages.genericError');
-      toast.error(t('organizations.messages.createFailed', { error: errorMessage }), {
-        id: loadingToastId,
-      });
-      throw error; // Re-throw so form can handle it
-    }
+    await handleCreateOrganization(data, avatarFile, backgroundColor, {
+      onSuccess: (orgId) => {
+        revalidator.revalidate();
+        navigate(routes.root.profileOrganizations.detail({ id: orgId }));
+      },
+      onError: () => {
+        // Error toast already shown by handler
+      },
+      t,
+    });
   };
 
   const handleCancel = () => {

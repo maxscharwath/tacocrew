@@ -1,4 +1,3 @@
-import * as pkg from '@build/package';
 import { SiGithub } from '@icons-pack/react-simple-icons';
 import {
   Accordion,
@@ -19,64 +18,15 @@ import { ArrowLeft, Calendar, Download, ExternalLink, Package, Sparkles, Tag } f
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import Markdown from 'react-markdown';
-import { Link, useLoaderData } from 'react-router';
-import { DeferredRoute } from '@/components/shared';
+import { Link } from 'react-router';
+import { SectionWrapper } from '@/components/sections';
 import { useDateFormat } from '@/hooks/useDateFormat';
+import { type GitHubRelease, useReleases } from '@/lib/api/releases';
 import { routes } from '@/lib/routes';
-import type { DeferredLoaderData } from '@/lib/types/loader-types';
-import { createDeferredLoader } from '@/lib/utils/loader-factory';
 
-type GitHubRelease = {
-  id: number;
-  tag_name: string;
-  name: string;
-  body: string;
-  html_url: string;
-  published_at: string;
-  prerelease: boolean;
-  draft: boolean;
-  author: {
-    login: string;
-    avatar_url: string;
-    html_url: string;
-  };
-  assets: Array<{
-    name: string;
-    size: number;
-    download_count: number;
-    browser_download_url: string;
-  }>;
-};
-
-async function fetchGitHubReleases(): Promise<GitHubRelease[]> {
-  try {
-    const response = await fetch(
-      `${pkg.repository.url.replace('github.com', 'api.github.com/repos')}/releases`,
-      {
-        headers: {
-          Accept: 'application/vnd.github.v3+json',
-        },
-      }
-    );
-
-    if (!response.ok) {
-      console.error('Failed to fetch releases:', response.statusText);
-      return [];
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error('Failed to fetch releases:', error);
-    return [];
-  }
+export function releasesLoader() {
+  return Response.json({});
 }
-
-export const releasesLoader = createDeferredLoader(async () => {
-  const releases = await fetchGitHubReleases();
-  return { releases };
-});
-
-type ReleasesLoaderData = DeferredLoaderData<typeof releasesLoader>;
 
 function formatBytes(bytes: number): string {
   if (bytes === 0) return '0 B';
@@ -329,9 +279,18 @@ function ReleasesList({ releases }: Readonly<{ releases: GitHubRelease[] }>) {
   );
 }
 
+function ReleasesContent() {
+  const releasesQuery = useReleases();
+
+  return (
+    <SectionWrapper query={releasesQuery} skeleton={<ReleasesListSkeleton />}>
+      {(releases) => <ReleasesList releases={releases} />}
+    </SectionWrapper>
+  );
+}
+
 export function ReleasesRoute() {
   const { t } = useTranslation();
-  const { data } = useLoaderData<ReleasesLoaderData>();
 
   return (
     <div className="space-y-8">
@@ -349,8 +308,8 @@ export function ReleasesRoute() {
 
       {/* Hero */}
       <section className="relative overflow-hidden rounded-3xl border border-white/10 bg-linear-to-br from-purple-500/15 via-slate-900/90 to-brand-900/30 p-8 shadow-[0_40px_120px_rgba(8,47,73,0.35)] backdrop-blur-sm">
-        <div className="-top-24 absolute right-0 h-60 w-60 animate-pulse rounded-full bg-purple-400/20 blur-3xl" />
-        <div className="-bottom-16 absolute left-10 h-56 w-56 rounded-full bg-brand-500/20 blur-3xl" />
+        <div className="absolute -top-24 right-0 h-60 w-60 animate-pulse rounded-full bg-purple-400/20 blur-3xl" />
+        <div className="absolute -bottom-16 left-10 h-56 w-56 rounded-full bg-brand-500/20 blur-3xl" />
 
         <div className="relative">
           <Badge tone="brand" pill className="mb-4 uppercase tracking-[0.3em]">
@@ -366,9 +325,7 @@ export function ReleasesRoute() {
       </section>
 
       {/* Releases */}
-      <DeferredRoute data={data} fallback={<ReleasesListSkeleton />}>
-        {({ releases }) => <ReleasesList releases={releases} />}
-      </DeferredRoute>
+      <ReleasesContent />
     </div>
   );
 }

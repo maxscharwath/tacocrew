@@ -64,4 +64,3 @@ class SeededRandom {
 export function createSeededRandom(seed: string): SeededRandom {
   return new SeededRandom(seed);
 }
-

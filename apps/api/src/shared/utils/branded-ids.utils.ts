@@ -30,8 +30,8 @@ type IdSchema<T extends Id> = z.ZodType<T> & {
 export function zId<T extends Id>(): IdSchema<T> {
   const baseSchema = z.uuid().transform((val) => val as T);
   const schema = baseSchema as unknown as IdSchema<T>;
-  
+
   schema.create = () => baseSchema.parse(randomUUID()) as T;
-  
+
   return schema;
 }

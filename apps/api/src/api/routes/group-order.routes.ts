@@ -26,6 +26,7 @@ import { UpdateGroupOrderStatusUseCase } from '@/services/group-order/update-gro
 import { OrganizationService } from '@/services/organization/organization.service';
 import { SessionService } from '@/services/session/session.service';
 import { UserService } from '@/services/user/user.service';
+import { RevealMysteryTacosService } from '@/services/user-order/reveal-mystery-tacos.service';
 import { Currency, GroupOrderStatus } from '@/shared/types/types';
 import { ForbiddenError, NotFoundError } from '@/shared/utils/errors.utils';
 import { buildAvatarUrl } from '@/shared/utils/image.utils';
@@ -319,7 +320,68 @@ app.openapi(
     },
     responses: {
       200: {
-        description: 'Group order with user orders',
+        description: 'Group order with user orders (no payment status)',
+        content: jsonContent(GroupOrderSchemas.GroupOrderWithUserOrdersItemsSchema),
+      },
+      403: {
+        description: 'Forbidden - User is not an active member of the organization',
+        content: jsonContent(GroupOrderSchemas.ErrorResponseSchema),
+      },
+      404: {
+        description: 'Group order not found',
+        content: jsonContent(GroupOrderSchemas.ErrorResponseSchema),
+      },
+    },
+  }),
+  async (c) => {
+    const { id } = c.req.valid('param');
+    const userId = c.var.user.id;
+
+    await requireGroupOrderAccess(id, userId);
+
+    const getGroupOrderWithUserOrdersUseCase = inject(GetGroupOrderWithUserOrdersUseCase);
+    const result = await getGroupOrderWithUserOrdersUseCase.execute(id);
+    const groupOrder = await serializeGroupOrderResponse(result.groupOrder);
+
+    // Keep mystery tacos hidden for order list (NEVER reveal)
+    // No payment status needed for items endpoint
+    return c.json(
+      {
+        groupOrder,
+        userOrders: result.userOrders.map((uo) => ({
+          id: uo.id,
+          groupOrderId: uo.groupOrderId,
+          userId: uo.userId,
+          name: uo.name,
+          items: sanitizeGroupUserOrderItems(uo.items),
+          totalPrice: {
+            value: calculateUserOrderPrice(uo.items),
+            currency: Currency.CHF,
+          },
+          createdAt: uo.createdAt.toISOString(),
+          updatedAt: uo.updatedAt.toISOString(),
+        })),
+      },
+      200
+    );
+  }
+);
+
+// Separate endpoint for receipts - always reveals mystery tacos
+app.openapi(
+  createRoute({
+    method: 'get',
+    path: '/orders/{id}/receipts',
+    tags: ['Orders'],
+    security: authSecurity,
+    request: {
+      params: z.object({
+        id: GroupOrderId,
+      }),
+    },
+    responses: {
+      200: {
+        description: 'Group order with user orders (mystery tacos revealed for receipts)',
         content: jsonContent(GroupOrderSchemas.GroupOrderWithUserOrdersSchema),
       },
       403: {
@@ -342,10 +404,16 @@ app.openapi(
     const result = await getGroupOrderWithUserOrdersUseCase.execute(id);
     const groupOrder = await serializeGroupOrderResponse(result.groupOrder);
 
+    // Always reveal mystery tacos for receipts
+    const revealMysteryTacosService = inject(RevealMysteryTacosService);
+    const userOrdersWithRevealedMystery = await Promise.all(
+      result.userOrders.map((uo) => revealMysteryTacosService.revealMysteryTacos(uo))
+    );
+
     return c.json(
       {
         groupOrder,
-        userOrders: result.userOrders.map((uo) => ({
+        userOrders: userOrdersWithRevealedMystery.map((uo) => ({
           id: uo.id,
           groupOrderId: uo.groupOrderId,
           userId: uo.userId,

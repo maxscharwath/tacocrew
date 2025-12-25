@@ -37,6 +37,7 @@
     "@tacocrew/gigatacos-client": "workspace:^",
     "@tacocrew/ui-kit": "workspace:^",
     "@tailwindcss/vite": "^4.1.17",
+    "@tanstack/react-query": "^5.90.12",
     "better-auth": "^1.3.34",
     "bs58": "^6.0.0",
     "class-variance-authority": "^0.7.1",

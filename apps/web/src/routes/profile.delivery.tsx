@@ -1,28 +1,25 @@
 import { Badge, Card, CardContent, CardDescription, CardHeader, CardTitle } from '@tacocrew/ui-kit';
 import { Lock, Truck } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { useLoaderData } from 'react-router';
 import { DeliveryProfilesManager } from '@/components/profile/DeliveryProfilesManager';
 import { BackButton, PageHero } from '@/components/shared';
-import { UserApi } from '@/lib/api';
+import { useDeliveryProfiles } from '@/lib/api/user';
 import { routes } from '@/lib/routes';
-import type { LoaderData } from '@/lib/types/loader-types';
-import { createLoader } from '@/lib/utils/loader-factory';
+import { createSavedCountText } from '@/lib/utils/organization-utils';
 
-export const profileDeliveryLoader = createLoader(
-  async () => {
-    const profiles = await UserApi.getDeliveryProfiles();
-    return { profiles };
-  }
-);
+export function profileDeliveryLoader() {
+  return Response.json({});
+}
 
 export function ProfileDeliveryRoute() {
   const { t } = useTranslation();
-  const tt = (key: string, options?: Record<string, unknown>) =>
-    t(`profile.delivery.${key}`, options);
-  const { profiles } = useLoaderData<LoaderData<typeof profileDeliveryLoader>>();
-  const savedCountText =
-    profiles.length === 0 ? tt('stats.empty') : tt('stats.count', { count: profiles.length });
+  const profilesQuery = useDeliveryProfiles();
+  const profiles = profilesQuery.data || [];
+  const savedCountText = createSavedCountText(
+    profiles.length,
+    t('profile.delivery.stats.empty'),
+    (count) => t('profile.delivery.stats.count', { count })
+  );
 
   return (
     <div className="space-y-8">
@@ -31,10 +28,17 @@ export function ProfileDeliveryRoute() {
         label={t('profile.history.backToProfile', 'Back to profile')}
       />
 
-      <PageHero variant="amber" icon={Lock} title={tt('title')} subtitle={tt('subtitle')}>
+      <PageHero
+        variant="amber"
+        icon={Lock}
+        title={t('profile.delivery.title')}
+        subtitle={t('profile.delivery.subtitle')}
+      >
         <Card className="border-white/10 bg-slate-900/50">
           <CardContent className="p-4">
-            <p className="text-slate-400 text-xs uppercase tracking-[0.2em]">{tt('stats.label')}</p>
+            <p className="text-slate-400 text-xs uppercase tracking-[0.2em]">
+              {t('profile.delivery.stats.label')}
+            </p>
             <div className="mt-2 flex items-baseline gap-2">
               <p className="font-semibold text-2xl text-white">{profiles.length}</p>
               <Badge tone="neutral" pill>
@@ -52,8 +56,8 @@ export function ProfileDeliveryRoute() {
               <Truck size={20} className="text-white" />
             </div>
             <div>
-              <CardTitle className="text-white">{tt('formCard.title')}</CardTitle>
-              <CardDescription>{tt('formCard.description')}</CardDescription>
+              <CardTitle className="text-white">{t('profile.delivery.formCard.title')}</CardTitle>
+              <CardDescription>{t('profile.delivery.formCard.description')}</CardDescription>
             </div>
           </div>
         </CardHeader>

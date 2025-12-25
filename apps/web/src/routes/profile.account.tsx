@@ -22,18 +22,16 @@ import {
   toast,
 } from '@tacocrew/ui-kit';
 import { Edit, Globe, Key, Laptop, Lock, Mail, Phone, User } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { LoaderFunctionArgs } from 'react-router';
 import { LanguageSwitcher } from '@/components/language-switcher';
 import { ImageUploader } from '@/components/profile/ImageUploader';
 import { PushNotificationManager } from '@/components/profile/PushNotificationManager';
 import { EditActionButtons } from '@/components/shared';
-import type { UserProfile } from '@/lib/api/types';
-import { getProfile, updateUserPhone } from '@/lib/api/user';
+import { usePasskeys } from '@/hooks/usePasskeys';
+import { updateUserPhone, useProfile } from '@/lib/api/user';
 import { authClient, useSession } from '@/lib/auth-client';
 import { ENV } from '@/lib/env';
-import { createLoader } from '@/lib/utils/loader-factory';
 import { formatPhoneNumber } from '@/utils/phone-formatter';
 
 // Reusable hook for editable field logic
@@ -298,59 +296,21 @@ function PasskeyNameEditor({
   );
 }
 
-type Passkey = {
-  id: string;
-  name?: string;
-  deviceType: string;
-  createdAt: string;
-};
-
-export const accountLoader = createLoader(
-  // No data to load - this route only requires authentication
-  (_: LoaderFunctionArgs) => Promise.resolve({})
-);
+export function accountLoader() {
+  return Response.json({});
+}
 
 export function AccountRoute() {
   const { t } = useTranslation();
   const { data: session } = useSession();
-  const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [passkeys, setPasskeys] = useState<Passkey[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const profileQuery = useProfile();
+  const passkeysQuery = usePasskeys();
   const [isRegistering, setIsRegistering] = useState(false);
-  const isLoadingRef = useRef(false);
   const [showDeletePasskeyDialog, setShowDeletePasskeyDialog] = useState<string | null>(null);
 
-  const loadData = async () => {
-    // Prevent concurrent calls
-    if (isLoadingRef.current) {
-      return;
-    }
-
-    try {
-      isLoadingRef.current = true;
-      setIsLoading(true);
-
-      // Fetch user profile to get image URL
-      const userProfile = await getProfile();
-      setProfile(userProfile);
-
-      // Fetch passkeys
-      const passkeysResult = await authClient.passkey.listUserPasskeys();
-      if (passkeysResult.data) {
-        setPasskeys(passkeysResult.data as unknown as Passkey[]);
-      }
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : t('account.loadFailed'));
-    } finally {
-      setIsLoading(false);
-      isLoadingRef.current = false;
-    }
-  };
-
-  useEffect(() => {
-    void loadData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Only run once on mount
+  const isLoading = profileQuery.isLoading || passkeysQuery.isLoading;
+  const profile = profileQuery.data ?? null;
+  const passkeys = passkeysQuery.data ?? [];
 
   const handleRegisterPasskey = async () => {
     try {
@@ -371,16 +331,8 @@ export function AccountRoute() {
 
       toast.success(t('account.passkeys.registerSuccess'));
 
-      // Only reload passkeys, not the entire session
-      try {
-        const passkeysResult = await authClient.passkey.listUserPasskeys();
-        if (passkeysResult.data) {
-          setPasskeys(passkeysResult.data as unknown as Passkey[]);
-        }
-      } catch {
-        // If passkey list fails, fall back to full reload
-        await loadData();
-      }
+      // Refetch passkeys after successful registration
+      await passkeysQuery.refetch();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : t('account.passkeys.registerFailed'));
     } finally {
@@ -429,11 +381,8 @@ export function AccountRoute() {
         return;
       }
 
-      // Reload passkeys list
-      const passkeysResult = await authClient.passkey.listUserPasskeys();
-      if (passkeysResult.data) {
-        setPasskeys(passkeysResult.data as unknown as Passkey[]);
-      }
+      // Refetch passkeys list after deletion
+      await passkeysQuery.refetch();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : t('account.passkeys.deleteFailed'));
     }
@@ -459,8 +408,8 @@ export function AccountRoute() {
 
       toast.success(t('account.passkeys.updateSuccess'));
 
-      // Update the passkey in the local state
-      setPasskeys((prev) => prev.map((p) => (p.id === passkeyId ? { ...p, name: newName } : p)));
+      // Refetch passkeys to get updated list
+      await passkeysQuery.refetch();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : t('account.passkeys.updateFailed'));
     }
@@ -510,7 +459,7 @@ export function AccountRoute() {
           <ImageUploader
             currentImage={profile?.image || null}
             onImageUpdate={async () => {
-              await loadData(); // Reload to get updated profile
+              await profileQuery.refetch();
             }}
           />
         </div>
@@ -536,8 +485,7 @@ export function AccountRoute() {
                     return;
                   }
                   toast.success(t('account.nameUpdate.success'));
-                  await loadData(); // Reload to get updated session
-                  // Trigger a custom event to notify other components
+                  await profileQuery.refetch();
                   globalThis.dispatchEvent(new CustomEvent('userNameUpdated'));
                 } catch (err) {
                   toast.error(err instanceof Error ? err.message : t('account.nameUpdate.failed'));
@@ -570,7 +518,7 @@ export function AccountRoute() {
                 try {
                   await updateUserPhone(newPhone);
                   toast.success(t('account.phoneUpdate.success'));
-                  await loadData();
+                  await profileQuery.refetch();
                 } catch (err) {
                   toast.error(err instanceof Error ? err.message : t('account.phoneUpdate.failed'));
                 }

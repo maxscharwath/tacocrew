@@ -25,7 +25,6 @@ export function OrderTags({
   kind,
 }: OrderTagsProps) {
   const { t } = useTranslation();
-  const tt = (key: string, options?: Record<string, unknown>) => t(`orders.detail.${key}`, options);
   const isMystery = kind === TacoKind.MYSTERY;
 
   return (
@@ -40,7 +39,7 @@ export function OrderTags({
           )}
         >
           {isMystery && <Dices className="mr-1 h-3 w-3" />}
-          {tt('list.tagCounts.tacos', { count: taco.quantity ?? 1 })}
+          {t('orders.detail.list.tagCounts.tacos', { count: taco.quantity ?? 1 })}
         </span>
       )}
       {isMystery ? (
@@ -79,17 +78,17 @@ export function OrderTags({
       )}
       {extras.length > 0 && (
         <span className="inline-flex items-center rounded-lg border border-amber-400/25 bg-amber-500/12 px-2.5 py-1 font-semibold text-[11px] text-amber-100">
-          {tt('list.tagCounts.extras', { count: extras.length })}
+          {t('orders.detail.list.tagCounts.extras', { count: extras.length })}
         </span>
       )}
       {drinks.length > 0 && (
         <span className="inline-flex items-center rounded-lg border border-sky-400/25 bg-sky-500/12 px-2.5 py-1 font-semibold text-[11px] text-sky-100">
-          {tt('list.tagCounts.drinks', { count: drinks.length })}
+          {t('orders.detail.list.tagCounts.drinks', { count: drinks.length })}
         </span>
       )}
       {desserts.length > 0 && (
         <span className="inline-flex items-center rounded-lg border border-rose-400/25 bg-rose-500/12 px-2.5 py-1 font-semibold text-[11px] text-rose-100">
-          {tt('list.tagCounts.desserts', { count: desserts.length })}
+          {t('orders.detail.list.tagCounts.desserts', { count: desserts.length })}
         </span>
       )}
     </div>

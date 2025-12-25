@@ -1,25 +1,22 @@
 import { Button, Card, CardContent, EmptyState } from '@tacocrew/ui-kit';
 import { Building2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { Outlet, useLoaderData, useLocation, useNavigate } from 'react-router';
+import { Outlet, useLocation, useNavigate } from 'react-router';
 import { OrganizationsList } from '@/components/profile/OrganizationsList';
-import { OrganizationApi } from '@/lib/api';
+import { useOrganizationsListData } from '@/hooks/useOrganizationsListData';
 import { routes } from '@/lib/routes';
-import type { LoaderData } from '@/lib/types/loader-types';
-import { createLoader } from '@/lib/utils/loader-factory';
+import { extractSelectedOrgIdFromPath, isOrgCreationRoute } from '@/lib/utils/organization-utils';
 
-export const profileOrganizationsLoader = createLoader(
-  async () => {
-    const organizations = await OrganizationApi.getMyOrganizations();
-    return { organizations };
-  }
-);
+export function profileOrganizationsLoader() {
+  return Response.json({});
+}
 
 export function ProfileOrganizationsRoute() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
-  const { organizations } = useLoaderData<LoaderData<typeof profileOrganizationsLoader>>();
+  const { organizationsQuery } = useOrganizationsListData();
+  const organizations = organizationsQuery.data || [];
 
   const handleSelect = (orgId: string) => {
     navigate(routes.root.profileOrganizations.detail({ id: orgId }));
@@ -29,11 +26,10 @@ export function ProfileOrganizationsRoute() {
     navigate(routes.root.profileOrganizations.new());
   };
 
-  // Get selected organization ID from URL
+  // Get selected organization ID and route status from URL
   const currentPath = location.pathname;
-  const detailMatch = new RegExp(/\/profile\/organizations\/([^/]+)$/).exec(currentPath);
-  const selectedId = detailMatch && !currentPath.endsWith('/new') ? detailMatch[1] : undefined;
-  const isNewRoute = currentPath.endsWith('/new');
+  const selectedId = extractSelectedOrgIdFromPath(currentPath);
+  const isNewRoute = isOrgCreationRoute(currentPath);
 
   return (
     <div className="space-y-6">
@@ -65,7 +61,7 @@ export function ProfileOrganizationsRoute() {
           {/* Organizations List Sidebar */}
           <OrganizationsList
             organizations={organizations}
-            selectedId={selectedId ?? ''}
+            selectedId={selectedId || ''}
             onSelect={handleSelect}
             onCreateNew={handleCreateNew}
             disabled={false}

@@ -19,7 +19,16 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { RoleSelector } from '@/components/profile/RoleSelector';
 import { UserAvatar } from '@/components/shared/UserAvatar';
-import { OrganizationApi } from '@/lib/api';
+import {
+  acceptJoinRequest,
+  addUserToOrganization,
+  getOrganizationMembers,
+  getPendingRequests,
+  rejectJoinRequest,
+  removeUserFromOrganization,
+  requestToJoinOrganization,
+  updateUserRole,
+} from '@/lib/api/organization';
 import type { OrganizationMember, OrganizationRole, PendingRequest } from '@/lib/api/types';
 
 type OrganizationMembersProps = Readonly<{
@@ -48,10 +57,8 @@ export function OrganizationMembers({
       setLoading(true);
       setError(null);
       const [membersData, pendingData] = await Promise.all([
-        OrganizationApi.getOrganizationMembers(organizationId).catch(() => []),
-        isAdmin
-          ? OrganizationApi.getPendingRequests(organizationId).catch(() => [])
-          : Promise.resolve([]),
+        getOrganizationMembers(organizationId).catch(() => []),
+        isAdmin ? getPendingRequests(organizationId).catch(() => []) : Promise.resolve([]),
       ]);
       setMembers(membersData);
       setPendingRequests(pendingData);
@@ -72,7 +79,7 @@ export function OrganizationMembers({
 
     setBusy(true);
     try {
-      await OrganizationApi.acceptJoinRequest(organizationId, userId);
+      await acceptJoinRequest(organizationId, userId);
       toast.success(t('organizations.members.requestAcceptedWithName', { name: userName }));
       await loadData();
     } catch (err) {
@@ -90,7 +97,7 @@ export function OrganizationMembers({
 
     setBusy(true);
     try {
-      await OrganizationApi.rejectJoinRequest(organizationId, userId);
+      await rejectJoinRequest(organizationId, userId);
       toast.success(t('organizations.members.requestRejectedWithName', { name: userName }));
       await loadData();
     } catch (err) {
@@ -110,7 +117,7 @@ export function OrganizationMembers({
 
     setBusy(true);
     try {
-      await OrganizationApi.updateUserRole(organizationId, userId, newRole);
+      await updateUserRole(organizationId, userId, newRole);
       toast.success(
         t('organizations.members.roleUpdatedWithDetails', { name: userName, role: roleName })
       );
@@ -132,7 +139,7 @@ export function OrganizationMembers({
 
     setBusy(true);
     try {
-      await OrganizationApi.removeUserFromOrganization(organizationId, userId);
+      await removeUserFromOrganization(organizationId, userId);
       toast.success(t('organizations.members.memberRemovedWithName', { name: userName }));
       await loadData();
     } catch (err) {
@@ -147,7 +154,7 @@ export function OrganizationMembers({
   const handleRequestToJoin = async () => {
     setBusy(true);
     try {
-      await OrganizationApi.requestToJoinOrganization(organizationId);
+      await requestToJoinOrganization(organizationId);
       toast.success(t('organizations.members.joinRequested'));
       await loadData();
     } catch (err) {
@@ -171,7 +178,7 @@ export function OrganizationMembers({
 
     setIsAddingUser(true);
     try {
-      await OrganizationApi.addUserToOrganization(organizationId, addUserEmail.trim(), addUserRole);
+      await addUserToOrganization(organizationId, addUserEmail.trim(), addUserRole);
       toast.success(t('organizations.members.addUser.success', { email: addUserEmail.trim() }));
       setAddUserEmail('');
       setAddUserRole('MEMBER');

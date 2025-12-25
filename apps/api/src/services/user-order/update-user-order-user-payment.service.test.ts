@@ -134,14 +134,109 @@ describe('UpdateUserOrderUserPaymentStatusUseCase', () => {
     );
   });
 
-  it('should throw ValidationError when user is not owner', async () => {
+  it('should allow paying for someone else when they have not paid', async () => {
+    const updatedOrder = createUserOrderFromDb({
+      id: userOrderId,
+      groupOrderId,
+      userId,
+      items: { tacos: [], extras: [], drinks: [], desserts: [] },
+      reimbursed: false,
+      paidByUser: true,
+      paidByUserAt: new Date(),
+      paidByUserId: otherUserId,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      user: {
+        name: 'testuser',
+      },
+      paidByUserRef: {
+        id: otherUserId,
+        name: 'Other User',
+      },
+    });
+
     mockGroupOrderRepository.findById.mockResolvedValue(mockGroupOrder);
     mockUserOrderRepository.findById.mockResolvedValue(mockUserOrder);
+    mockUserOrderRepository.update.mockResolvedValue(updatedOrder);
+    mockUserRepository.findById.mockResolvedValue({
+      id: otherUserId,
+      name: 'Other User',
+    });
+    mockNotificationService.sendToUser.mockResolvedValue(undefined);
+
+    const useCase = container.resolve(UpdateUserOrderUserPaymentStatusUseCase);
+    const result = await useCase.execute(groupOrderId, userOrderId, otherUserId, true);
+
+    expect(result).toEqual(updatedOrder);
+    expect(mockUserOrderRepository.update).toHaveBeenCalledWith(userOrderId, {
+      paidByUser: true,
+      paidByUserAt: expect.any(Date),
+      paidByUserId: otherUserId,
+    });
+    expect(mockNotificationService.sendToUser).toHaveBeenCalled();
+  });
+
+  it('should throw ValidationError when trying to pay for someone who already paid', async () => {
+    const alreadyPaidOrder = createUserOrderFromDb({
+      id: userOrderId,
+      groupOrderId,
+      userId,
+      items: { tacos: [], extras: [], drinks: [], desserts: [] },
+      reimbursed: false,
+      paidByUser: true,
+      paidByUserAt: new Date(),
+      paidByUserId: userId,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      user: {
+        name: 'testuser',
+      },
+      paidByUserRef: {
+        id: userId,
+        name: 'testuser',
+      },
+    });
+
+    mockGroupOrderRepository.findById.mockResolvedValue(mockGroupOrder);
+    mockUserOrderRepository.findById.mockResolvedValue(alreadyPaidOrder);
 
     const useCase = container.resolve(UpdateUserOrderUserPaymentStatusUseCase);
 
     await expect(useCase.execute(groupOrderId, userOrderId, otherUserId, true)).rejects.toThrow(
       ValidationError
     );
+    expect(mockUserOrderRepository.update).not.toHaveBeenCalled();
+  });
+
+  it('should throw ValidationError when unpaying someone else order that you did not pay for', async () => {
+    const paidOrder = createUserOrderFromDb({
+      id: userOrderId,
+      groupOrderId,
+      userId,
+      items: { tacos: [], extras: [], drinks: [], desserts: [] },
+      reimbursed: false,
+      paidByUser: true,
+      paidByUserAt: new Date(),
+      paidByUserId: userId,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      user: {
+        name: 'testuser',
+      },
+      paidByUserRef: {
+        id: userId,
+        name: 'testuser',
+      },
+    });
+
+    mockGroupOrderRepository.findById.mockResolvedValue(mockGroupOrder);
+    mockUserOrderRepository.findById.mockResolvedValue(paidOrder);
+
+    const useCase = container.resolve(UpdateUserOrderUserPaymentStatusUseCase);
+
+    await expect(useCase.execute(groupOrderId, userOrderId, otherUserId, false)).rejects.toThrow(
+      ValidationError
+    );
+    expect(mockUserOrderRepository.update).not.toHaveBeenCalled();
   });
 });

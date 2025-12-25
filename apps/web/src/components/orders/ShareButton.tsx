@@ -26,8 +26,8 @@ export function ShareButton({ groupOrderId }: ShareButtonProps) {
       await navigator.clipboard.writeText(shareUrl);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-    } catch (error) {
-      console.error('Failed to copy:', error);
+    } catch (_error) {
+      // Clipboard access may fail in some contexts, silently ignore
     }
   };
 

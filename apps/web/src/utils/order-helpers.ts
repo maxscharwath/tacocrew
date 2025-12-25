@@ -65,11 +65,12 @@ export function getSummaryBreakdown(
   desserts: string[],
   t: (key: string, options?: Record<string, unknown>) => string
 ): string {
-  const tt = (key: string, options?: Record<string, unknown>) => t(`orders.create.${key}`, options);
   return [
-    size ? tt('summary.breakdown.tacos', { count: 1 }) : tt('summary.breakdown.noTaco'),
-    tt('summary.breakdown.extras', { count: extras.length }),
-    tt('summary.breakdown.drinks', { count: drinks.length }),
-    tt('summary.breakdown.desserts', { count: desserts.length }),
+    size
+      ? t('orders.create.summary.breakdown.tacos', { count: 1 })
+      : t('orders.create.summary.breakdown.noTaco'),
+    t('orders.create.summary.breakdown.extras', { count: extras.length }),
+    t('orders.create.summary.breakdown.drinks', { count: drinks.length }),
+    t('orders.create.summary.breakdown.desserts', { count: desserts.length }),
   ].join(' · ');
 }

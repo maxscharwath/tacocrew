@@ -53,8 +53,14 @@ const inputGroupAddonVariants = cva(
 function InputGroupAddon({
   className,
   align = 'inline-start',
+  children,
   ...props
 }: React.ComponentProps<'div'> & VariantProps<typeof inputGroupAddonVariants>) {
+  // Check if there's an interactive element (button) inside this addon
+  const hasButton = React.Children.toArray(children).some(
+    (child) => React.isValidElement(child) && child.type === InputGroupButton
+  );
+
   const handleInteraction = (e: React.MouseEvent | React.KeyboardEvent) => {
     if ((e.target as HTMLElement).closest('button')) {
       return;
@@ -75,9 +81,11 @@ function InputGroupAddon({
       className={cn(inputGroupAddonVariants({ align }), className)}
       onClick={handleInteraction}
       onKeyDown={handleInteraction}
-      tabIndex={0}
+      tabIndex={hasButton ? 0 : undefined}
       {...props}
-    />
+    >
+      {children}
+    </div>
   );
 }
 

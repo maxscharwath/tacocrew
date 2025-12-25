@@ -27,7 +27,8 @@ import { Link, useNavigate, useRevalidator } from 'react-router';
 import { EditGroupOrderDialog } from '@/components/orders/EditGroupOrderDialog';
 import { useDateFormat } from '@/hooks/useDateFormat';
 import type { GroupOrder, UserOrderSummary } from '@/lib/api';
-import { OrdersApi, resolveImageUrl } from '@/lib/api';
+import { resolveImageUrl } from '@/lib/api/image-utils';
+import { useDeleteGroupOrder, useUpdateGroupOrderStatus } from '@/lib/api/orders';
 import type { Amount } from '@/lib/api/types';
 import { routes } from '@/lib/routes';
 import { toDate } from '@/lib/utils/date';
@@ -67,6 +68,8 @@ export function OrderHero({
   const { formatDateTimeRange } = useDateFormat();
   const revalidator = useRevalidator();
   const navigate = useNavigate();
+  const deleteGroupOrder = useDeleteGroupOrder();
+  const updateGroupOrderStatus = useUpdateGroupOrderStatus();
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showErrorDialog, setShowErrorDialog] = useState(false);
@@ -121,10 +124,9 @@ export function OrderHero({
     setIsDeleting(true);
     setShowDeleteDialog(false);
     try {
-      await OrdersApi.deleteGroupOrder(groupOrder.id);
+      await deleteGroupOrder.mutateAsync(groupOrder.id);
       navigate(routes.root.orders());
-    } catch (error) {
-      console.error('Failed to delete group order:', error);
+    } catch (_error) {
       setIsDeleting(false);
       setShowErrorDialog(true);
     }
@@ -137,18 +139,20 @@ export function OrderHero({
   const handleStatusChange = async () => {
     const newStatus = isReopening ? 'open' : 'closed';
     try {
-      await OrdersApi.updateGroupOrderStatus(groupOrder.id, newStatus);
+      await updateGroupOrderStatus.mutateAsync({
+        groupOrderId: groupOrder.id,
+        status: newStatus,
+      });
       revalidator.revalidate();
-    } catch (error) {
-      console.error('Failed to update group order status:', error);
+    } catch (_error) {
       setShowErrorDialog(true);
     }
   };
 
   return (
     <Card className="relative overflow-hidden border-brand-400/30 bg-linear-to-br from-brand-500/20 via-slate-900/80 to-slate-950/90 p-6 lg:p-8">
-      <div className="-top-24 pointer-events-none absolute right-0 h-60 w-60 rounded-full bg-brand-400/30 blur-3xl" />
-      <div className="-bottom-16 pointer-events-none absolute left-10 h-56 w-56 rounded-full bg-purple-500/25 blur-3xl" />
+      <div className="pointer-events-none absolute -top-24 right-0 h-60 w-60 rounded-full bg-brand-400/30 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-16 left-10 h-56 w-56 rounded-full bg-purple-500/25 blur-3xl" />
       <CardContent className="relative space-y-4 p-0">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="flex flex-wrap items-center gap-3">
@@ -209,6 +213,7 @@ export function OrderHero({
                       onClick={handleStatusChange}
                       disabled={
                         isSubmitting ||
+                        updateGroupOrderStatus.isPending ||
                         (isDeveloperMode && isSubmitted && revalidator.state === 'loading')
                       }
                     >
@@ -220,7 +225,7 @@ export function OrderHero({
                     <DropdownMenuItem
                       destructive
                       onClick={handleDeleteClick}
-                      disabled={isDeleting || isSubmitting}
+                      disabled={isDeleting || isSubmitting || deleteGroupOrder.isPending}
                     >
                       <Trash2 size={16} />
                       {t('orders.detail.hero.actions.deleteOrder')}

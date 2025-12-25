@@ -25,7 +25,12 @@ import { useTranslation } from 'react-i18next';
 import { OrganizationMembers } from '@/components/profile/OrganizationMembers';
 import { OrganizationAvatar } from '@/components/shared/OrganizationAvatar';
 import { useCopyFeedback } from '@/hooks/useCopyFeedback';
-import { OrganizationApi } from '@/lib/api';
+import {
+  deleteOrganization,
+  deleteOrganizationAvatar,
+  updateOrganization,
+  uploadOrganizationAvatar,
+} from '@/lib/api/organization';
 import type { Organization, OrganizationPayload } from '@/lib/api/types';
 import { routes } from '@/lib/routes';
 
@@ -74,7 +79,7 @@ export function OrganizationDetails({
     setFeedback(null);
     const loadingToastId = toast.loading(t('organizations.messages.updating'));
     try {
-      const updated = await OrganizationApi.updateOrganization(organization.id, form);
+      const updated = await updateOrganization(organization.id, form);
       onUpdate(updated);
       setIsEditing(false);
       toast.success(t('organizations.messages.updated'), { id: loadingToastId });
@@ -96,7 +101,7 @@ export function OrganizationDetails({
     setFeedback(null);
     const loadingToastId = toast.loading(t('organizations.messages.deleting'));
     try {
-      await OrganizationApi.deleteOrganization(organization.id);
+      await deleteOrganization(organization.id);
       toast.success(t('organizations.messages.deleted'), { id: loadingToastId });
       onDelete();
     } catch (error) {
@@ -116,11 +121,7 @@ export function OrganizationDetails({
     setFeedback(null);
     const loadingToastId = toast.loading(t('organizations.messages.uploadingAvatar'));
     try {
-      const updated = await OrganizationApi.uploadOrganizationAvatar(
-        organization.id,
-        file,
-        backgroundColor
-      );
+      const updated = await uploadOrganizationAvatar(organization.id, file, backgroundColor);
       onUpdate(updated);
       toast.success(t('organizations.messages.avatarUploaded'), { id: loadingToastId });
     } catch (error) {
@@ -144,7 +145,7 @@ export function OrganizationDetails({
     setFeedback(null);
     const loadingToastId = toast.loading(t('organizations.messages.deletingAvatar'));
     try {
-      const updated = await OrganizationApi.deleteOrganizationAvatar(organization.id);
+      const updated = await deleteOrganizationAvatar(organization.id);
       onUpdate(updated);
       toast.success(t('organizations.messages.avatarDeleted'), { id: loadingToastId });
     } catch (error) {

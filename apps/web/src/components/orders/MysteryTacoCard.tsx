@@ -33,7 +33,7 @@ export function MysteryTacoCard({ stock, onAddMysteryTaco, disabled }: MysteryTa
         <div className="flex items-center gap-3">
           <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-purple-500 to-indigo-500 shadow-lg shadow-purple-500/25 sm:h-12 sm:w-12 sm:rounded-2xl">
             <Dices className="h-5 w-5 text-white sm:h-6 sm:w-6" />
-            <div className="-top-1 -right-1 absolute flex h-4 w-4 items-center justify-center rounded-full bg-yellow-400 sm:h-5 sm:w-5">
+            <div className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-yellow-400 sm:h-5 sm:w-5">
               <Sparkles className="h-2.5 w-2.5 text-yellow-900 sm:h-3 sm:w-3" />
             </div>
           </div>

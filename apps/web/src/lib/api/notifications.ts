@@ -1,9 +1,5 @@
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api/http';
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Pagination Types
-// ─────────────────────────────────────────────────────────────────────────────
-
 export interface Page<T> {
   items: T[];
   nextCursor: string | null;
@@ -14,11 +10,6 @@ export interface CursorPaginationParams {
   limit?: number;
   cursor?: string;
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Notification Types
-// ─────────────────────────────────────────────────────────────────────────────
-
 export interface Notification {
   id: string;
   type: string;
@@ -36,11 +27,6 @@ export interface Notification {
 export interface UnreadCountResponse {
   count: number;
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// API Functions
-// ─────────────────────────────────────────────────────────────────────────────
-
 export function getNotifications(
   options?: CursorPaginationParams & { archived?: boolean }
 ): Promise<Page<Notification>> {
@@ -77,4 +63,73 @@ export function sendPaymentReminder(groupOrderId: string, userOrderId: string) {
   return apiClient.post<{ success: boolean }>(
     `/api/v1/orders/${groupOrderId}/items/${userOrderId}/reimbursement/reminder`
   );
+}
+
+export function useNotifications(
+  options?: CursorPaginationParams & { archived?: boolean },
+  enabled = true
+) {
+  return useQuery<Page<Notification>>({
+    queryKey: ['notifications', options],
+    queryFn: () => getNotifications(options),
+    enabled,
+  });
+}
+
+export function useUnreadCount(enabled = true) {
+  return useQuery<UnreadCountResponse>({
+    queryKey: ['unreadCount'],
+    queryFn: () => getUnreadCount(),
+    enabled,
+    refetchInterval: 30000,
+  });
+}
+
+export function useMarkAsRead() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (notificationId: string) => markAsRead(notificationId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notifications'], exact: false });
+      queryClient.invalidateQueries({ queryKey: ['unreadNotifications'], exact: false });
+    },
+  });
+}
+
+export function useMarkAllAsRead() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => markAllAsRead(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notifications'], exact: false });
+      queryClient.invalidateQueries({ queryKey: ['unreadNotifications'], exact: false });
+    },
+  });
+}
+
+export function useArchiveNotification() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (notificationId: string) => archiveNotification(notificationId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notifications'], exact: false });
+    },
+  });
+}
+
+export function useArchiveAllNotifications() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => archiveAllNotifications(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notifications'], exact: false });
+    },
+  });
+}
+
+export function useSendPaymentReminder() {
+  return useMutation({
+    mutationFn: ({ groupOrderId, userOrderId }: { groupOrderId: string; userOrderId: string }) =>
+      sendPaymentReminder(groupOrderId, userOrderId),
+  });
 }

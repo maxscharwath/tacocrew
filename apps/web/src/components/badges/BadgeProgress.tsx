@@ -56,8 +56,13 @@ export function BadgeProgress({ badge, progress, className }: BadgeProgressProps
             <p className="truncate text-slate-500 text-xs">{description}</p>
           </div>
           <div className="shrink-0 text-right">
-            <span className="font-bold text-sm text-white">{formatBadgeProgressValue(badge.id, progress.current)}</span>
-            <span className="text-slate-500 text-sm"> / {formatBadgeProgressValue(badge.id, progress.target)}</span>
+            <span className="font-bold text-sm text-white">
+              {formatBadgeProgressValue(badge.id, progress.current)}
+            </span>
+            <span className="text-slate-500 text-sm">
+              {' '}
+              / {formatBadgeProgressValue(badge.id, progress.target)}
+            </span>
           </div>
         </div>
 

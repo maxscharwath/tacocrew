@@ -521,7 +521,8 @@ app.openapi(
         content: jsonContent(UserOrderItemsSchema),
       },
       403: {
-        description: 'Forbidden - Only the group order leader can reveal mystery tacos before submission, or anyone after submission',
+        description:
+          'Forbidden - Only the group order leader can reveal mystery tacos before submission, or anyone after submission',
         content: jsonContent(ErrorResponseSchema),
       },
       404: {

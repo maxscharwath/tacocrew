@@ -9,59 +9,31 @@ import {
 } from '@tacocrew/ui-kit';
 import { Activity, ArrowUpRight, TrendingUp, Users } from 'lucide-react';
 import { Trans, useTranslation } from 'react-i18next';
-import { Link, useLoaderData } from 'react-router';
+import { Link } from 'react-router';
 import { OrderListItem, StatBubble } from '@/components/orders';
-import { DeferredRoute } from '@/components/shared';
-import { DashboardSkeleton } from '@/components/skeletons';
+import { useDashboardData } from '@/hooks/useDashboardData';
+import { useDashboardMetrics } from '@/hooks/useDashboardMetrics';
 import { useDateFormat } from '@/hooks/useDateFormat';
-import { UserApi } from '@/lib/api';
 import { routes } from '@/lib/routes';
-import type { DeferredLoaderData } from '@/lib/types/loader-types';
-import { toDate } from '@/lib/utils/date';
-import { createDeferredLoader } from '@/lib/utils/loader-factory';
+import { getRecentGroupOrders } from '@/lib/utils/dashboard-metrics';
 
-export const dashboardLoader = createDeferredLoader(
-  async () => {
-    const [groupOrders, orderHistory] = await Promise.all([
-      UserApi.getGroupOrders(),
-      UserApi.getOrderHistory(),
-    ]);
+export function dashboardLoader() {
+  return Response.json({});
+}
 
-    const now = new Date();
-    const activeOrders = groupOrders.filter((order) => toDate(order.endDate) > now);
-    const pendingOrders = groupOrders.filter((order) => order.canAcceptOrders);
-    const historyCount = orderHistory.length;
-
-    return {
-      metrics: {
-        activeOrders: activeOrders.length,
-        pendingOrders: pendingOrders.length,
-        historyCount,
-      },
-      groupOrders,
-      orderHistory: orderHistory.slice(0, 5),
-    };
-  }
-);
-
-type DashboardData = {
-  metrics: {
-    activeOrders: number;
-    pendingOrders: number;
-    historyCount: number;
-  };
-  groupOrders: Awaited<ReturnType<typeof UserApi.getGroupOrders>>;
-  orderHistory: Awaited<ReturnType<typeof UserApi.getOrderHistory>>;
-};
-
-type DashboardLoaderData = DeferredLoaderData<typeof dashboardLoader>;
-
-function DashboardContent({ data }: Readonly<{ data: DashboardData }>) {
+function DashboardContent() {
   const { t } = useTranslation();
   const { formatDateTime, formatDateTimeRange, formatDayName } = useDateFormat();
 
-  const { metrics, groupOrders, orderHistory } = data;
+  // Load data
+  const { groupOrders, orderHistory } = useDashboardData();
+
+  // Calculate metrics
+  const metrics = useDashboardMetrics(groupOrders, orderHistory.length);
   const currentDay = formatDayName();
+
+  // Get recent orders for display
+  const recentOrders = getRecentGroupOrders(groupOrders, 5);
 
   return (
     <div className="space-y-10">
@@ -145,16 +117,14 @@ function DashboardContent({ data }: Readonly<{ data: DashboardData }>) {
                 </Link>
               </div>
             ) : (
-              groupOrders
-                .slice(0, 5)
-                .map((order) => (
-                  <OrderListItem
-                    key={order.id}
-                    order={order}
-                    formatDateTimeRange={formatDateTimeRange}
-                    unnamedOrderText={t('dashboard.recentGroupOrders.untitledOrder')}
-                  />
-                ))
+              recentOrders.map((order) => (
+                <OrderListItem
+                  key={order.id}
+                  order={order}
+                  formatDateTimeRange={formatDateTimeRange}
+                  unnamedOrderText={t('dashboard.recentGroupOrders.untitledOrder')}
+                />
+              ))
             )}
           </CardContent>
         </Card>
@@ -211,11 +181,5 @@ function DashboardContent({ data }: Readonly<{ data: DashboardData }>) {
 }
 
 export function DashboardRoute() {
-  const { data } = useLoaderData<DashboardLoaderData>();
-
-  return (
-    <DeferredRoute data={data} fallback={<DashboardSkeleton />}>
-      {(resolvedData) => <DashboardContent data={resolvedData} />}
-    </DeferredRoute>
-  );
+  return <DashboardContent />;
 }

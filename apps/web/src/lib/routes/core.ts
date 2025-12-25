@@ -274,7 +274,7 @@ const createElementFromRouteElement = (element: RouteElement): ReactNode => {
 };
 
 const toRouteObject = (def: AnyRouteDef): RouteObject => {
-  const node: RouteObject & { hydrateFallback?: ReactNode } = {
+  const node: RouteObject & { hydrateFallbackElement?: ReactNode } = {
     index: def.index,
     path: def.index ? undefined : def.path,
     loader: def.loader,
@@ -283,7 +283,7 @@ const toRouteObject = (def: AnyRouteDef): RouteObject => {
     errorElement: createElementFromRouteElement(def.errorElement),
   };
   if (def.hydrateFallback) {
-    (node as RouteObject & { hydrateFallback: ReactNode }).hydrateFallback =
+    (node as RouteObject & { hydrateFallbackElement: ReactNode }).hydrateFallbackElement =
       createElementFromRouteElement(def.hydrateFallback);
   }
   if (def.children) node.children = Object.values(def.children).map(toRouteObject);

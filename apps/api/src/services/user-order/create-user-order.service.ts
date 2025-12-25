@@ -109,11 +109,7 @@ export class CreateUserOrderUseCase {
     return { ...finalItems, originallyMysteryTacoIds };
   }
 
-  private logOrderCreated(
-    groupOrderId: GroupOrderId,
-    userId: UserId,
-    items: UserOrderItems
-  ): void {
+  private logOrderCreated(groupOrderId: GroupOrderId, userId: UserId, items: UserOrderItems): void {
     logger.info('User order created/updated', {
       groupOrderId,
       userId,

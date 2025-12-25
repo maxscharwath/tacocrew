@@ -23,10 +23,10 @@ const prisma = new PrismaClient({ adapter });
  */
 function deduplicateById<T extends { id: string }>(items: unknown[]): T[] {
   if (!Array.isArray(items)) return [];
-  
+
   const seen = new Set<string>();
   const unique: T[] = [];
-  
+
   for (const item of items) {
     // Handle both string IDs and object with id field
     if (typeof item === 'string') {
@@ -41,7 +41,7 @@ function deduplicateById<T extends { id: string }>(items: unknown[]): T[] {
       }
     }
   }
-  
+
   return unique;
 }
 
@@ -78,7 +78,9 @@ async function cleanupDuplicates() {
       if (deduplicated.length !== original.length) {
         updates.meatsTried = deduplicated;
         needsUpdate = true;
-        console.log(`  👤 User ${stats.userId}: meatsTried had ${original.length} items, now ${deduplicated.length} (removed ${original.length - deduplicated.length} duplicates)`);
+        console.log(
+          `  👤 User ${stats.userId}: meatsTried had ${original.length} items, now ${deduplicated.length} (removed ${original.length - deduplicated.length} duplicates)`
+        );
       }
     }
 
@@ -89,7 +91,9 @@ async function cleanupDuplicates() {
       if (deduplicated.length !== original.length) {
         updates.saucesTried = deduplicated;
         needsUpdate = true;
-        console.log(`  👤 User ${stats.userId}: saucesTried had ${original.length} items, now ${deduplicated.length} (removed ${original.length - deduplicated.length} duplicates)`);
+        console.log(
+          `  👤 User ${stats.userId}: saucesTried had ${original.length} items, now ${deduplicated.length} (removed ${original.length - deduplicated.length} duplicates)`
+        );
       }
     }
 
@@ -100,7 +104,9 @@ async function cleanupDuplicates() {
       if (deduplicated.length !== original.length) {
         updates.garnituresTried = deduplicated;
         needsUpdate = true;
-        console.log(`  👤 User ${stats.userId}: garnituresTried had ${original.length} items, now ${deduplicated.length} (removed ${original.length - deduplicated.length} duplicates)`);
+        console.log(
+          `  👤 User ${stats.userId}: garnituresTried had ${original.length} items, now ${deduplicated.length} (removed ${original.length - deduplicated.length} duplicates)`
+        );
       }
     }
 
@@ -112,11 +118,14 @@ async function cleanupDuplicates() {
       usersFixed++;
       totalFixed +=
         (Array.isArray(stats.meatsTried) ? stats.meatsTried.length : 0) -
-          (updates.meatsTried?.length ?? (Array.isArray(stats.meatsTried) ? stats.meatsTried.length : 0)) +
+        (updates.meatsTried?.length ??
+          (Array.isArray(stats.meatsTried) ? stats.meatsTried.length : 0)) +
         (Array.isArray(stats.saucesTried) ? stats.saucesTried.length : 0) -
-          (updates.saucesTried?.length ?? (Array.isArray(stats.saucesTried) ? stats.saucesTried.length : 0)) +
+        (updates.saucesTried?.length ??
+          (Array.isArray(stats.saucesTried) ? stats.saucesTried.length : 0)) +
         (Array.isArray(stats.garnituresTried) ? stats.garnituresTried.length : 0) -
-          (updates.garnituresTried?.length ?? (Array.isArray(stats.garnituresTried) ? stats.garnituresTried.length : 0));
+        (updates.garnituresTried?.length ??
+          (Array.isArray(stats.garnituresTried) ? stats.garnituresTried.length : 0));
     }
   }
 
@@ -136,4 +145,3 @@ cleanupDuplicates()
   .finally(async () => {
     await prisma.$disconnect();
   });
-

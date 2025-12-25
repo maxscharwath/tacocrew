@@ -7,7 +7,8 @@
       },
       "paymentUpdate": {
         "title": "Order Payment Update",
-        "body": "{{userName}} marked their order as paid"
+        "body": "{{userName}} marked their order as paid",
+        "bodyForOther": "{{payerName}} paid for {{orderOwnerName}}'s order"
       },
       "reimbursementUpdate": {
         "title": "Reimbursement Update",
@@ -65,6 +66,10 @@
         },
         "modify": {
           "invalidStatus": "You can only modify your own orders"
+        },
+        "payment": {
+          "alreadyPaid": "This order has already been paid for",
+          "notPaid": "This order is not marked as paid"
         },
         "submit": {
           "invalidStatus": "Cannot submit order. Group order status is invalid",

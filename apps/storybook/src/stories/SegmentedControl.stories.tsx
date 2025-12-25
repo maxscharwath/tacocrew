@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { action } from 'storybook/actions';
 import { SegmentedControl, SegmentedControlItem } from '@tacocrew/ui-kit';
 import { Bell, Mail, Settings, User } from 'lucide-react';
+import { action } from 'storybook/actions';
 
 /**
  * Tab-like selection control using compound component pattern.

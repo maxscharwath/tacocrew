@@ -2,7 +2,7 @@ import { injectable } from 'tsyringe';
 import { z } from 'zod';
 import { PrismaService } from '@/infrastructure/database/prisma.service';
 import type { Taco } from '@/schemas/taco.schema';
-import { RegularTacoSchema, MysteryTacoSchema, TacoKind } from '@/schemas/taco.schema';
+import { MysteryTacoSchema, RegularTacoSchema, TacoKind } from '@/schemas/taco.schema';
 import { UserOrderItemsSchema } from '@/schemas/user-order.schema';
 import { NotFoundError } from '@/shared/utils/errors.utils';
 import { inject } from '@/shared/utils/inject.utils';

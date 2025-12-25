@@ -983,6 +983,7 @@
         "actions": {
           "confirmReceipt": "Bestätigen",
           "markSelfPaid": "Ich habe bezahlt",
+          "payForOther": "Ich zahle",
           "reopenReceipt": "Bestätigung zurücknehmen",
           "sendReminder": "Erinnerung senden",
           "unmarkSelfPaid": "Ich habe nicht bezahlt"
@@ -994,6 +995,9 @@
         "footer": "Danke!",
         "guest": "Gast",
         "header": "SAMMELBELEG",
+        "paidBy": "Bezahlt von {{name}}",
+        "paidByLabel": "Bezahlt von",
+        "paidBySelf": "Bezahlt von {{name}}",
         "items": "Positionen",
         "leaderPhone": {
           "description": "Sende deine Zahlung an den Teamleiter",
@@ -1016,6 +1020,9 @@
         "summaryTitle": "Rückzahlungsübersicht",
         "summaryTotal": "Gesamtbetrag",
         "toast": {
+          "alreadyPaid": "Diese Bestellung wurde bereits bezahlt",
+          "paymentFailed": "Zahlungsstatus konnte nicht aktualisiert werden. Bitte erneut versuchen.",
+          "paymentUpdated": "Zahlungsstatus aktualisiert!",
           "reminderFailed": "Erinnerung konnte nicht gesendet werden. Bitte erneut versuchen.",
           "reminderSent": "Zahlungserinnerung gesendet!"
         },

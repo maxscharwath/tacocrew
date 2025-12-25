@@ -90,9 +90,8 @@ export function usePushNotifications(): UsePushNotificationsReturn {
         error: null,
         errorCode: null,
       }));
-    } catch (error) {
+    } catch (_error) {
       // Silently fail - subscription check shouldn't block the UI
-      console.warn('Failed to check subscription status:', error);
     }
   };
 

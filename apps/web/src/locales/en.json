@@ -983,6 +983,7 @@
         "actions": {
           "confirmReceipt": "Confirm",
           "markSelfPaid": "I paid",
+          "payForOther": "I got it",
           "reopenReceipt": "Undo confirm",
           "sendReminder": "Send Reminder",
           "unmarkSelfPaid": "Undo paid"
@@ -994,6 +995,9 @@
         "footer": "Merci!",
         "guest": "Guest",
         "header": "GROUP RECEIPT",
+        "paidBy": "Paid by {{name}}",
+        "paidByLabel": "Paid by",
+        "paidBySelf": "Paid by {{name}}",
         "items": "Items",
         "leaderPhone": {
           "description": "Send your payment to the team leader",
@@ -1016,6 +1020,9 @@
         "summaryTitle": "Reimbursement overview",
         "summaryTotal": "Grand total",
         "toast": {
+          "alreadyPaid": "This order has already been paid for",
+          "paymentFailed": "Failed to update payment status. Please try again.",
+          "paymentUpdated": "Payment status updated!",
           "reminderFailed": "Failed to send reminder. Please try again.",
           "reminderSent": "Payment reminder sent!"
         },

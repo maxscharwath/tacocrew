@@ -1,6 +1,6 @@
 import { Avatar, AvatarFallback, AvatarImage, Badge, Button } from '@tacocrew/ui-kit';
 import type { LucideIcon } from 'lucide-react';
-import { Bell, Clock3, RefreshCcw, ShieldCheck, Undo2, Wallet } from 'lucide-react';
+import { Bell, Clock3, Heart, RefreshCcw, ShieldCheck, Undo2, Wallet } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { getUserInitials } from '@/components/orders/user-utils';
 import { useLocaleFormatter } from '@/hooks/useLocaleFormatter';
@@ -51,8 +51,11 @@ export type ReceiptTicketModel = {
   items: ReceiptItem[];
   subtotal: number;
   participantPaid: boolean;
+  paidBy: { id: string; name: string | null } | null;
   reimbursementComplete: boolean;
   canShowParticipantAction: boolean;
+  canShowPayForOther: boolean;
+  currentUserPaidForThis: boolean;
   canShowReimbursementAction: boolean;
   canShowSendReminder: boolean;
 };
@@ -70,6 +73,7 @@ type ReceiptTicketProps = Readonly<{
   isBusy: boolean;
   isSendingReminder?: boolean;
   onParticipantToggle: () => void;
+  onPayForOther?: () => void;
   onReimbursementToggle: () => void;
   onSendReminder?: () => void;
 }>;
@@ -84,6 +88,7 @@ export function ReceiptTicket({
   isBusy,
   isSendingReminder,
   onParticipantToggle,
+  onPayForOther,
   onReimbursementToggle,
   onSendReminder,
 }: ReceiptTicketProps) {
@@ -149,6 +154,7 @@ export function ReceiptTicket({
           total={total}
           feePerPerson={feePerPerson}
           currency={currency}
+          paidBy={ticket.paidBy}
           labels={{
             subtotal: t('orders.detail.receipts.subtotal'),
             feeShare: t('orders.detail.receipts.deliveryFeeShare'),
@@ -161,6 +167,8 @@ export function ReceiptTicket({
           participantPaid={ticket.participantPaid}
           reimbursementComplete={ticket.reimbursementComplete}
           canShowParticipantAction={ticket.canShowParticipantAction}
+          canShowPayForOther={ticket.canShowPayForOther}
+          currentUserPaidForThis={ticket.currentUserPaidForThis}
           canShowReimbursementAction={ticket.canShowReimbursementAction}
           canShowSendReminder={ticket.canShowSendReminder}
           isBusy={isBusy}
@@ -168,11 +176,13 @@ export function ReceiptTicket({
           labels={{
             markSelfPaid: t('orders.detail.receipts.actions.markSelfPaid'),
             unmarkSelfPaid: t('orders.detail.receipts.actions.unmarkSelfPaid'),
+            payForOther: t('orders.detail.receipts.actions.payForOther'),
             confirmReceipt: t('orders.detail.receipts.actions.confirmReceipt'),
             reopenReceipt: t('orders.detail.receipts.actions.reopenReceipt'),
             sendReminder: t('orders.detail.receipts.actions.sendReminder'),
           }}
           onParticipantToggle={onParticipantToggle}
+          onPayForOther={onPayForOther}
           onReimbursementToggle={onReimbursementToggle}
           onSendReminder={onSendReminder}
         />
@@ -190,7 +200,7 @@ type ReceiptItemsListProps = Readonly<{
 function ReceiptItemsList({ items, itemsLabel, currency }: ReceiptItemsListProps) {
   const { formatCurrency } = useLocaleFormatter(currency);
   return (
-    <div className="my-3 flex-1 space-y-2 border-gray-800 border-t border-b border-dashed py-3">
+    <div className="my-3 flex-1 space-y-2 border-gray-800 border-t border-dashed pt-3">
       <p className="font-bold text-[10px] text-gray-500 tracking-[0.3em]">{itemsLabel}</p>
       <div className="max-h-48 space-y-2 overflow-y-auto pr-1">
         {items.map((item, index) => (
@@ -198,9 +208,15 @@ function ReceiptItemsList({ items, itemsLabel, currency }: ReceiptItemsListProps
             key={`${item.name}-${index}`}
             className="border-gray-200 border-b pb-2 last:border-b-0"
           >
-            <div className="flex justify-between font-semibold text-[11px]">
-              <span className="pr-3">{item.name}</span>
-              <span>{formatCurrency(item.price)}</span>
+            <div className="flex items-center justify-between gap-2 font-semibold text-[11px]">
+              <span className="text-gray-900">{item.name}</span>
+              <span
+                className="flex-1 overflow-hidden text-center text-[10px] text-gray-400"
+                style={{ letterSpacing: '2px' }}
+              >
+                {'·'.repeat(50)}
+              </span>
+              <span className="flex-shrink-0 text-gray-900">{formatCurrency(item.price)}</span>
             </div>
             {item.details ? <p className="text-[10px] text-gray-600">{item.details}</p> : null}
           </div>
@@ -215,6 +231,7 @@ type ReceiptTotalsProps = Readonly<{
   total: number;
   feePerPerson: number;
   currency: string;
+  paidBy: { id: string; name: string | null } | null;
   labels: Readonly<{
     subtotal: string;
     feeShare: string;
@@ -223,22 +240,58 @@ type ReceiptTotalsProps = Readonly<{
   }>;
 }>;
 
-function ReceiptTotals({ subtotal, total, feePerPerson, currency, labels }: ReceiptTotalsProps) {
+function ReceiptTotals({
+  subtotal,
+  total,
+  feePerPerson,
+  currency,
+  paidBy,
+  labels,
+}: ReceiptTotalsProps) {
   const { formatCurrency } = useLocaleFormatter(currency);
+  const { t } = useTranslation();
   return (
     <div className="space-y-2 rounded-lg bg-slate-100/70 p-3 text-[11px] text-slate-900">
-      <div className="flex justify-between">
+      {paidBy && (
+        <div className="mb-2 flex items-center gap-2 border-slate-300 border-b pb-2">
+          <span className="text-[10px] text-slate-600 uppercase tracking-[0.2em]">
+            {t('orders.detail.receipts.paidByLabel')}
+          </span>
+          <span className="font-bold text-[11px] text-slate-900">
+            {paidBy.name?.toUpperCase() || t('orders.detail.receipts.unknownGuest').toUpperCase()}
+          </span>
+        </div>
+      )}
+      <div className="flex items-center justify-between gap-2">
         <span>{labels.subtotal}</span>
-        <span>{formatCurrency(subtotal)}</span>
+        <span
+          className="flex-1 overflow-hidden text-center text-[10px] text-slate-400"
+          style={{ letterSpacing: '2px' }}
+        >
+          {'·'.repeat(50)}
+        </span>
+        <span className="flex-shrink-0">{formatCurrency(subtotal)}</span>
       </div>
-      <div className="flex justify-between">
+      <div className="flex items-center justify-between gap-2">
         <span>{labels.feeShare}</span>
-        <span>{formatCurrency(feePerPerson)}</span>
+        <span
+          className="flex-1 overflow-hidden text-center text-[10px] text-slate-400"
+          style={{ letterSpacing: '2px' }}
+        >
+          {'·'.repeat(50)}
+        </span>
+        <span className="flex-shrink-0">{formatCurrency(feePerPerson)}</span>
       </div>
       <p className="text-[10px] text-slate-600">{labels.explanation}</p>
-      <div className="flex justify-between border-slate-300 border-t pt-2 font-black text-base">
+      <div className="flex items-center justify-between gap-2 border-slate-300 border-t pt-2 font-black text-base">
         <span>{labels.total}</span>
-        <span>{formatCurrency(total)}</span>
+        <span
+          className="flex-1 overflow-hidden text-center text-[10px] text-slate-400"
+          style={{ letterSpacing: '2px' }}
+        >
+          {'·'.repeat(50)}
+        </span>
+        <span className="flex-shrink-0">{formatCurrency(total)}</span>
       </div>
     </div>
   );
@@ -248,6 +301,8 @@ type ReceiptActionsProps = Readonly<{
   participantPaid: boolean;
   reimbursementComplete: boolean;
   canShowParticipantAction: boolean;
+  canShowPayForOther: boolean;
+  currentUserPaidForThis: boolean;
   canShowReimbursementAction: boolean;
   canShowSendReminder: boolean;
   isBusy: boolean;
@@ -255,11 +310,13 @@ type ReceiptActionsProps = Readonly<{
   labels: Readonly<{
     markSelfPaid: string;
     unmarkSelfPaid: string;
+    payForOther: string;
     confirmReceipt: string;
     reopenReceipt: string;
     sendReminder: string;
   }>;
   onParticipantToggle: () => void;
+  onPayForOther?: () => void;
   onReimbursementToggle: () => void;
   onSendReminder?: () => void;
 }>;
@@ -268,16 +325,24 @@ function ReceiptActions({
   participantPaid,
   reimbursementComplete,
   canShowParticipantAction,
+  canShowPayForOther,
+  currentUserPaidForThis,
   canShowReimbursementAction,
   canShowSendReminder,
   isBusy,
   isSendingReminder,
   labels,
   onParticipantToggle,
+  onPayForOther,
   onReimbursementToggle,
   onSendReminder,
 }: ReceiptActionsProps) {
-  if (!canShowParticipantAction && !canShowReimbursementAction && !canShowSendReminder) {
+  if (
+    !canShowParticipantAction &&
+    !canShowPayForOther &&
+    !canShowReimbursementAction &&
+    !canShowSendReminder
+  ) {
     return null;
   }
 
@@ -298,6 +363,28 @@ function ReceiptActions({
               <Wallet className="h-3.5 w-3.5" />
             )}
             <span>{participantPaid ? labels.unmarkSelfPaid : labels.markSelfPaid}</span>
+          </div>
+        </Button>
+      )}
+      {canShowPayForOther && onPayForOther && (
+        <Button
+          size="sm"
+          variant="ghost"
+          disabled={isBusy}
+          onClick={onPayForOther}
+          className={`${ACTION_BUTTON_CLASS} border-brand-400/50 text-brand-100`}
+        >
+          <div className="flex items-center gap-2">
+            {participantPaid && currentUserPaidForThis ? (
+              <Undo2 className="h-3.5 w-3.5" />
+            ) : (
+              <Heart className="h-3.5 w-3.5 fill-red-500 text-red-500" />
+            )}
+            <span>
+              {participantPaid && currentUserPaidForThis
+                ? labels.unmarkSelfPaid || 'Cancel payment'
+                : labels.payForOther}
+            </span>
           </div>
         </Button>
       )}

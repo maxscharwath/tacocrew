@@ -3,12 +3,12 @@
  * These match the backend's deterministicUUID function
  */
 
-import { v5, NIL } from 'uuid';
+import { NIL, v5 } from 'uuid';
 
 /**
  * Stock category values matching backend StockCategory enum
  */
-const StockCategory = {
+const _StockCategory = {
   Meats: 'meats',
   Sauces: 'sauces',
   Garnishes: 'garnishes',
@@ -50,8 +50,10 @@ function deterministicUUID(seed: string, namespace?: string): string {
  * Generate stock item ID from code and category
  * This matches the backend's ID generation logic
  */
-export function getStockItemId(code: string, category: 'meats' | 'sauces' | 'garnishes' | 'extras' | 'drinks' | 'desserts'): string {
+export function getStockItemId(
+  code: string,
+  category: 'meats' | 'sauces' | 'garnishes' | 'extras' | 'drinks' | 'desserts'
+): string {
   // Use the category string directly as namespace (backend uses StockCategory enum values)
   return deterministicUUID(code, category);
 }
-

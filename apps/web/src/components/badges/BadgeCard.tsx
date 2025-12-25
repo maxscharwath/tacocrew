@@ -186,7 +186,8 @@ export function BadgeCard({ badge, earned, progress, onClick, className }: Badge
           <div className="mt-2">
             <div className="mb-1 flex items-center justify-between text-[10px]">
               <span className="text-slate-400">
-                {formatBadgeProgressValue(definition.id, progress.current)} / {formatBadgeProgressValue(definition.id, progress.target)}
+                {formatBadgeProgressValue(definition.id, progress.current)} /{' '}
+                {formatBadgeProgressValue(definition.id, progress.target)}
               </span>
               <span className="font-semibold text-white">{progress.percentage}%</span>
             </div>

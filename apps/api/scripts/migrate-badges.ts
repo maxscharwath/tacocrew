@@ -7,9 +7,9 @@
  */
 
 import { PrismaPg } from '@prisma/adapter-pg';
-import { PrismaClient, $Enums } from '../src/generated/client';
 import { BADGES } from '../src/config/badges.config';
 import { getMetricValue } from '../src/config/metrics.config';
+import { $Enums, PrismaClient } from '../src/generated/client';
 
 const { OrganizationRole } = $Enums;
 
@@ -268,7 +268,9 @@ function checkBadgeEligibility(
   }
 
   if (trigger.type === 'combo') {
-    return trigger.conditions.every((condition) => checkBadgeEligibility(stats, condition, userCreatedAt));
+    return trigger.conditions.every((condition) =>
+      checkBadgeEligibility(stats, condition, userCreatedAt)
+    );
   }
 
   if (trigger.type === 'date') {
@@ -492,12 +494,16 @@ async function migrateUserBadges() {
         // Badge is expired if user registered AFTER the until date (for backfillable badges)
         // This is a conservative check - user could have earned it before expiration
         if (until && userCreatedAt > until) {
-          console.log(`  ⏭️  Skipped (expired): ${badge.id} - user registered ${userCreatedAt.toISOString().split('T')[0]}, badge expired on ${until.toISOString().split('T')[0]}`);
+          console.log(
+            `  ⏭️  Skipped (expired): ${badge.id} - user registered ${userCreatedAt.toISOString().split('T')[0]}, badge expired on ${until.toISOString().split('T')[0]}`
+          );
           continue;
         }
         // Badge is not yet available if user registered BEFORE the from date
         if (from && userCreatedAt < from) {
-          console.log(`  ⏭️  Skipped (not yet available): ${badge.id} - user registered ${userCreatedAt.toISOString().split('T')[0]}, badge available from ${from.toISOString().split('T')[0]}`);
+          console.log(
+            `  ⏭️  Skipped (not yet available): ${badge.id} - user registered ${userCreatedAt.toISOString().split('T')[0]}, badge available from ${from.toISOString().split('T')[0]}`
+          );
           continue;
         }
       }
@@ -513,7 +519,9 @@ async function migrateUserBadges() {
 
       // Skip date badges that aren't registeredBefore (they need real-time checking)
       if (badge.trigger.type === 'date' && badge.trigger.condition.type !== 'registeredBefore') {
-        console.log(`  ⏭️  Skipped (date-based, requires real-time event): ${badge.id} (condition: ${badge.trigger.condition.type})`);
+        console.log(
+          `  ⏭️  Skipped (date-based, requires real-time event): ${badge.id} (condition: ${badge.trigger.condition.type})`
+        );
         continue;
       }
 
@@ -541,9 +549,15 @@ async function migrateUserBadges() {
         // Explain why the badge wasn't awarded
         let reason = '';
         if (badge.trigger.type === 'count') {
-          const value = getMetricValue(badge.trigger.metric, statsData as Parameters<typeof getMetricValue>[1]);
+          const value = getMetricValue(
+            badge.trigger.metric,
+            statsData as Parameters<typeof getMetricValue>[1]
+          );
           reason = `needs ${badge.trigger.threshold}, has ${value}`;
-        } else if (badge.trigger.type === 'date' && badge.trigger.condition.type === 'registeredBefore') {
+        } else if (
+          badge.trigger.type === 'date' &&
+          badge.trigger.condition.type === 'registeredBefore'
+        ) {
           const cutoffDateStr = badge.trigger.condition.date;
           const cutoffDate = new Date(cutoffDateStr);
           cutoffDate.setHours(23, 59, 59, 999); // End of day for comparison
@@ -553,13 +567,19 @@ async function migrateUserBadges() {
           reason = `registered ${userDateStr}, cutoff is ${cutoffDateStrFormatted} (${qualifies ? 'SHOULD QUALIFY - check date comparison logic!' : 'registered too late'})`;
         } else if (badge.trigger.type === 'action') {
           if (badge.trigger.action === 'firstOrder') {
-            const ordersPlaced = getMetricValue('ordersPlaced', statsData as Parameters<typeof getMetricValue>[1]);
+            const ordersPlaced = getMetricValue(
+              'ordersPlaced',
+              statsData as Parameters<typeof getMetricValue>[1]
+            );
             reason = `needs first order (ordersPlaced === 1), has ${ordersPlaced}`;
           } else {
             reason = `action ${badge.trigger.action} condition not met`;
           }
         } else if (badge.trigger.type === 'streak') {
-          const value = getMetricValue('longestOrderStreak', statsData as Parameters<typeof getMetricValue>[1]);
+          const value = getMetricValue(
+            'longestOrderStreak',
+            statsData as Parameters<typeof getMetricValue>[1]
+          );
           reason = `needs streak of ${badge.trigger.count}, has ${value}`;
         } else if (badge.trigger.type === 'combo') {
           reason = `combo condition not met (${badge.trigger.conditions.length} conditions)`;

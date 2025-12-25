@@ -83,6 +83,20 @@ const UserOrderResponseSchema = z.object({
 });
 
 /**
+ * User order response schema for items endpoint (no payment status)
+ */
+const UserOrderItemsResponseSchema = z.object({
+  id: z.string(),
+  groupOrderId: z.string(),
+  userId: z.string(),
+  name: z.string().nullable().optional(),
+  items: UserOrderItemsSchema,
+  totalPrice: AmountSchema,
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+});
+
+/**
  * Group order with user orders response schema
  */
 const GroupOrderWithUserOrdersSchema = z.object({
@@ -90,11 +104,21 @@ const GroupOrderWithUserOrdersSchema = z.object({
   userOrders: z.array(UserOrderResponseSchema),
 });
 
+/**
+ * Group order with user orders for items endpoint (no payment status)
+ */
+const GroupOrderWithUserOrdersItemsSchema = z.object({
+  groupOrder: GroupOrderResponseSchema,
+  userOrders: z.array(UserOrderItemsResponseSchema),
+});
+
 export const GroupOrderSchemas = {
   CreateGroupOrderRequestSchema,
   UpdateGroupOrderRequestSchema,
   GroupOrderResponseSchema,
   UserOrderResponseSchema,
+  UserOrderItemsResponseSchema,
   GroupOrderWithUserOrdersSchema,
+  GroupOrderWithUserOrdersItemsSchema,
   ErrorResponseSchema,
 };

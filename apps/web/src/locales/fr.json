@@ -983,6 +983,7 @@
         "actions": {
           "confirmReceipt": "Confirmer",
           "markSelfPaid": "J'ai payé",
+          "payForOther": "Je paie",
           "reopenReceipt": "Annuler",
           "sendReminder": "Envoyer un rappel",
           "unmarkSelfPaid": "J'ai pas payé"
@@ -994,6 +995,9 @@
         "footer": "Merci !",
         "guest": "Invité",
         "header": "COMMANDE GROUPÉE",
+        "paidBy": "Payé par {{name}}",
+        "paidByLabel": "Payé par",
+        "paidBySelf": "Payé par {{name}}",
         "items": "Articles",
         "leaderPhone": {
           "description": "Envoyez votre paiement au chef d'équipe",
@@ -1016,6 +1020,9 @@
         "summaryTitle": "Vue d'ensemble des remboursements",
         "summaryTotal": "Total général",
         "toast": {
+          "alreadyPaid": "Cette commande a déjà été payée",
+          "paymentFailed": "Échec de la mise à jour du statut de paiement. Réessayez.",
+          "paymentUpdated": "Statut de paiement mis à jour !",
           "reminderFailed": "Échec de l'envoi du rappel. Réessayez.",
           "reminderSent": "Rappel de paiement envoyé !"
         },

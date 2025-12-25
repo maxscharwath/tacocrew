@@ -12,10 +12,10 @@ import {
 } from '@tacocrew/ui-kit';
 import { Beef, Dices, Droplets, FileText, Leaf, Sliders } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { TacoKind } from '@/lib/api/types';
 import { MeatSelector } from '@/components/orders/MeatSelector';
 import { SelectionGroup } from '@/components/orders/SelectionGroup';
 import type { StockResponse } from '@/lib/api/types';
+import { TacoKind } from '@/lib/api/types';
 import type { TacoCustomization } from '@/types/orders';
 
 type TacoBuilderProps = Readonly<{

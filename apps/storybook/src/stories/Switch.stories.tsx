@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { useState } from 'react';
 import { Switch } from '@tacocrew/ui-kit';
+import { useState } from 'react';
 
 const meta = {
   title: 'UI Kit/Switch',
@@ -49,13 +49,7 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {
   render: (args) => {
     const [checked, setChecked] = useState(args.checked ?? false);
-    return (
-      <Switch
-        {...args}
-        checked={checked}
-        onCheckedChange={setChecked}
-      />
-    );
+    return <Switch {...args} checked={checked} onCheckedChange={setChecked} />;
   },
 };
 
@@ -63,14 +57,7 @@ export const Default: Story = {
 export const WithoutLabel: Story = {
   render: (args) => {
     const [checked, setChecked] = useState(args.checked ?? false);
-    return (
-      <Switch
-        {...args}
-        label={undefined}
-        checked={checked}
-        onCheckedChange={setChecked}
-      />
-    );
+    return <Switch {...args} label={undefined} checked={checked} onCheckedChange={setChecked} />;
   },
 };
 
@@ -136,13 +123,6 @@ export const Disabled: Story = {
 export const Checked: Story = {
   render: () => {
     const [checked, setChecked] = useState(true);
-    return (
-      <Switch
-        label="Notifications enabled"
-        checked={checked}
-        onCheckedChange={setChecked}
-      />
-    );
+    return <Switch label="Notifications enabled" checked={checked} onCheckedChange={setChecked} />;
   },
 };
-

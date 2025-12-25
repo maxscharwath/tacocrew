@@ -18,15 +18,15 @@ import {
   toast,
 } from '@tacocrew/ui-kit';
 import { Bell, Laptop, RefreshCw } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { usePushNotifications } from '@/hooks';
 import {
   deletePushSubscription,
-  getPushSubscriptions,
   type PushSubscriptionInfo,
   sendTestNotification,
 } from '@/lib/api/push-notifications';
+import { usePushSubscriptions } from '@/lib/api/push-notifications.hooks';
 
 /**
  * Parse user agent string to get a friendly device name
@@ -130,8 +130,6 @@ function PushSubscriptionsList({
 export function PushNotificationManager() {
   const { t } = useTranslation();
   const [isTestingNotification, setIsTestingNotification] = useState(false);
-  const [pushSubscriptions, setPushSubscriptions] = useState<PushSubscriptionInfo[]>([]);
-  const [isLoadingSubscriptions, setIsLoadingSubscriptions] = useState(false);
   const [showDeleteSubscriptionDialog, setShowDeleteSubscriptionDialog] = useState<string | null>(
     null
   );
@@ -147,26 +145,9 @@ export function PushNotificationManager() {
     refresh: refreshPushStatus,
   } = usePushNotifications();
 
-  const loadPushSubscriptions = async () => {
-    if (!isPushSubscribed) {
-      setPushSubscriptions([]);
-      return;
-    }
-
-    try {
-      setIsLoadingSubscriptions(true);
-      const subscriptions = await getPushSubscriptions();
-      setPushSubscriptions(subscriptions);
-    } catch (err) {
-      console.error('Failed to load push subscriptions:', err);
-    } finally {
-      setIsLoadingSubscriptions(false);
-    }
-  };
-
-  useEffect(() => {
-    void loadPushSubscriptions();
-  }, [isPushSubscribed]);
+  const pushSubscriptionsQuery = usePushSubscriptions(isPushSubscribed);
+  const pushSubscriptions = pushSubscriptionsQuery.data ?? [];
+  const isLoadingSubscriptions = pushSubscriptionsQuery.isLoading;
 
   const handleConfirmDeleteSubscription = async () => {
     const subscriptionId = showDeleteSubscriptionDialog;
@@ -176,7 +157,7 @@ export function PushNotificationManager() {
     try {
       await deletePushSubscription(subscriptionId);
       toast.success(t('account.pushNotifications.devices.deleteSuccess'));
-      await loadPushSubscriptions();
+      await pushSubscriptionsQuery.refetch();
       await refreshPushStatus();
     } catch (err) {
       toast.error(
@@ -230,7 +211,7 @@ export function PushNotificationManager() {
                               await pushUnsubscribe();
                               toast.success(t('account.pushNotifications.unsubscribeSuccess'));
                               await refreshPushStatus();
-                              await loadPushSubscriptions();
+                              await pushSubscriptionsQuery.refetch();
                             } catch (err) {
                               toast.error(
                                 err instanceof Error
@@ -254,7 +235,7 @@ export function PushNotificationManager() {
                               await pushSubscribe();
                               toast.success(t('account.pushNotifications.subscribeSuccess'));
                               await refreshPushStatus();
-                              await loadPushSubscriptions();
+                              await pushSubscriptionsQuery.refetch();
                             } catch (err) {
                               toast.error(
                                 err instanceof Error

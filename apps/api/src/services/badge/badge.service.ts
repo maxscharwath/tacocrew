@@ -10,10 +10,10 @@ import { getMetricValue } from '@/config/metrics.config';
 import { BadgeRepository } from '@/infrastructure/repositories/badge.repository';
 import { UserStatsRepository } from '@/infrastructure/repositories/user-stats.repository';
 import {
-  parseBadgeContext,
   type BadgeDefinition,
   type BadgeProgress,
   type EarnedBadgeResponse,
+  parseBadgeContext,
 } from '@/schemas/badge.schema';
 import type { UserId } from '@/schemas/user.schema';
 import { getAllBadges, getBadgeById, getVisibleBadges } from '@/services/badge/badge.utils';

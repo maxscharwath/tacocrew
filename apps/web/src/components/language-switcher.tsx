@@ -23,8 +23,8 @@ export function LanguageSwitcher() {
         i18n.changeLanguage(languageCode);
 
         // Sync to backend (fire and forget - don't block UI)
-        updateUserLanguage(languageCode as 'en' | 'fr' | 'de').catch((error) => {
-          console.error('Failed to update user language preference', error);
+        updateUserLanguage(languageCode as 'en' | 'fr' | 'de').catch(() => {
+          // Intentionally ignored - UI updated regardless of backend sync
         });
       }}
     >

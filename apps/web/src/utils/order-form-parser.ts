@@ -68,7 +68,9 @@ function parseMeats(formData: FormData): Array<{ id: string; quantity: number }>
     .filter((m): m is { id: string; quantity: number } => m !== null);
 }
 
-function parseItems(formData: FormData, fieldName: string): Array<{ id: string; quantity: number }> {
+function parseItems(
+  formData: FormData,
+  fieldName: string
+): Array<{ id: string; quantity: number }> {
   return formData.getAll(fieldName).map((value) => ({ id: value.toString(), quantity: 1 }));
 }
-

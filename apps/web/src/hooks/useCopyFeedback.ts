@@ -8,8 +8,8 @@ export function useCopyFeedback() {
       await navigator.clipboard.writeText(text);
       setIsCopied(true);
       setTimeout(() => setIsCopied(false), 2000);
-    } catch (error) {
-      console.error('Failed to copy to clipboard:', error);
+    } catch (_error) {
+      // Clipboard access may fail in some contexts, silently ignore
     }
   };
 
@@ -18,5 +18,3 @@ export function useCopyFeedback() {
     copyToClipboard,
   };
 }
-
-

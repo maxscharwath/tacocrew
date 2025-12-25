@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { action } from 'storybook/actions';
 import { DateTimePicker } from '@tacocrew/ui-kit';
+import { action } from 'storybook/actions';
 
 const meta = {
   title: 'UI Kit/DateTimePicker',

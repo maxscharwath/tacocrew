@@ -6,8 +6,8 @@
  * All metrics are defined in metrics.config.ts - no switch statements needed here.
  */
 
-import type { UserStats } from '@/generated/client';
 import { getMetricValue } from '@/config/metrics.config';
+import type { UserStats } from '@/generated/client';
 import type {
   ActionTrigger,
   BadgeEvent,
@@ -160,18 +160,23 @@ function evaluateDateTrigger(trigger: DateTrigger, context: EvaluationContext): 
     case 'anniversary': {
       const created = context.userCreatedAt;
       const yearsDiff = date.getFullYear() - created.getFullYear();
-      return yearsDiff >= 1 && date.getMonth() === created.getMonth() && date.getDate() === created.getDate();
+      return (
+        yearsDiff >= 1 &&
+        date.getMonth() === created.getMonth() &&
+        date.getDate() === created.getDate()
+      );
     }
 
     case 'range':
       return date >= new Date(condition.from) && date <= new Date(condition.until);
 
-    case 'registeredBefore':
+    case 'registeredBefore': {
       // Check if user registered on or before the specified date
       // Set cutoff to end of day (23:59:59.999) to include users who registered on that date
       const cutoffDate = new Date(condition.date);
       cutoffDate.setHours(23, 59, 59, 999);
       return context.userCreatedAt <= cutoffDate;
+    }
 
     default:
       return false;

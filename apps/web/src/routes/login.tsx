@@ -1,4 +1,3 @@
-import { zodResolver } from '@hookform/resolvers/zod';
 import {
   Alert,
   Avatar,
@@ -21,16 +20,20 @@ import {
 } from '@tacocrew/ui-kit';
 import { Eye, EyeOff, Lock, Mail, User } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { Controller, useForm } from 'react-hook-form';
+import { Controller } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { type LoaderFunctionArgs, redirect, useLocation, useNavigate } from 'react-router';
 import appIcon from '@/assets/icon.png?format=webp&img';
 import { LanguageSwitcher } from '@/components/language-switcher';
-import { UserApi } from '@/lib/api';
+import { useAuthForm } from '@/hooks/useAuthForm';
+import { usePasswordVisibility } from '@/hooks/usePasswordVisibility';
 import { ApiError } from '@/lib/api/http';
+import { getProfile } from '@/lib/api/user';
 import { authClient, useSession } from '@/lib/auth-client';
+import { handleEmailPasswordAuth, handlePasskeySignIn } from '@/lib/handlers/auth-handlers';
 import { routes } from '@/lib/routes';
-import { type LoginFormData, loginSchema, type SignupFormData, signupSchema } from '@/lib/schemas';
+import type { LoginFormData, SignupFormData } from '@/lib/schemas';
+import { getRedirectUrl, getSubmitButtonText } from '@/lib/utils/auth-helpers';
 
 /**
  * Authentication loader for both signin and signup pages
@@ -44,7 +47,7 @@ export async function authenticationLoader({ request }: LoaderFunctionArgs) {
 
   // Verify the session is actually valid by checking the API
   try {
-    await UserApi.getProfile();
+    await getProfile();
     // If we get here, session is valid, redirect to redirect parameter or home
     const url = new URL(request.url);
     const redirectTo = url.searchParams.get('redirect') || routes.root();
@@ -66,23 +69,17 @@ export function LoginRoute() {
   const location = useLocation();
   const isSignUp = location.pathname === routes.signup();
   const searchParams = new URLSearchParams(location.search);
-  const redirectTo = searchParams.get('redirect') || routes.root();
+  const redirectTo = getRedirectUrl(searchParams, routes.root());
+
+  // State management
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [showPassword, setShowPassword] = useState(false);
 
-  // React Hook Form with dynamic schema based on mode
-  const form = useForm<SignupFormData | LoginFormData>({
-    resolver: zodResolver(isSignUp ? signupSchema : loginSchema),
-    defaultValues: {
-      email: '',
-      password: '',
-      ...(isSignUp && { name: '' }),
-    },
-    mode: 'onBlur',
-  });
+  // Form and UI hooks
+  const { form } = useAuthForm(isSignUp);
+  const { showPassword, togglePasswordVisibility } = usePasswordVisibility();
 
-  // Use Better Auth's useSession hook for reactive, cached session data
+  // Session management
   const { data: session } = useSession();
 
   // Redirect if already authenticated
@@ -93,150 +90,30 @@ export function LoginRoute() {
   }, [session, navigate, redirectTo]);
 
   const handleEmailPasswordSubmit = async (data: LoginFormData | SignupFormData) => {
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      if (isSignUp) {
-        const signupData = data as SignupFormData;
-        const result = await authClient.signUp.email({
-          email: signupData.email,
-          password: signupData.password,
-          name: signupData.name || '',
-        });
-
-        if (result.error) {
-          setError(result.error.message || t('login.signUpFailed'));
-          return;
-        }
-      } else {
-        const result = await authClient.signIn.email(data as LoginFormData);
-
-        if (result.error) {
-          setError(result.error.message || t('login.signInFailed'));
-          return;
-        }
-      }
-
-      // Redirect on success - use redirect parameter if available
-      navigate(redirectTo);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : t('login.unexpectedError'));
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Helper to handle successful passkey authentication
-  const handlePasskeySuccess = () => {
-    setIsLoading(false);
-    navigate(redirectTo);
-  };
-
-  // Helper to handle passkey authentication errors
-  const handlePasskeyError = (error: unknown) => {
-    const errorMessage =
-      error && typeof error === 'object' && 'message' in error
-        ? (error.message as string)
-        : t('login.passkeySignInFailed');
-    setError(errorMessage);
-    setIsLoading(false);
-  };
-
-  // Helper to check if error is a cancellation
-  const isCancellationError = (error: unknown): boolean => {
-    return !!(
-      error &&
-      typeof error === 'object' &&
-      'code' in error &&
-      error.code === 'AUTH_CANCELLED'
+    await handleEmailPasswordAuth(
+      data,
+      isSignUp,
+      {
+        onSuccess: () => navigate(redirectTo),
+        onError: setError,
+        onLoading: setIsLoading,
+      },
+      t
     );
   };
 
-  // Helper function to attempt passkey sign-in
-  const attemptPasskeySignIn = async (useAutoFill: boolean): Promise<boolean> => {
-    try {
-      const result = await authClient.signIn.passkey({
-        autoFill: useAutoFill,
-        fetchOptions: {
-          onSuccess: handlePasskeySuccess,
-          onError: (ctx) => {
-            const isCancelled = isCancellationError(ctx.error);
-            if (!isCancelled) {
-              handlePasskeyError(ctx.error);
-            }
-          },
-        },
-      });
-
-      // Handle result if callbacks didn't fire
-      if (result?.error) {
-        const isCancelled = isCancellationError(result.error);
-        if (isCancelled) {
-          return false;
-        }
-        handlePasskeyError(result.error);
-        return false;
-      }
-
-      if (result?.data) {
-        handlePasskeySuccess();
-        return true;
-      }
-
-      return false;
-    } catch {
-      return false;
-    }
+  const handlePasskeyClick = async () => {
+    await handlePasskeySignIn(
+      {
+        onSuccess: () => navigate(redirectTo),
+        onError: setError,
+        onLoading: setIsLoading,
+      },
+      t
+    );
   };
 
-  const handlePasskeySignIn = async () => {
-    setIsLoading(true);
-    setError(null);
-
-    // Check if WebAuthn is supported
-    if (!globalThis.PublicKeyCredential) {
-      setError(
-        'Passkeys are not supported in this browser. Please use a modern browser that supports WebAuthn.'
-      );
-      setIsLoading(false);
-      return;
-    }
-
-    // Note: You may see a browser console warning "port.close of passkey-signin-prompt failed"
-    // This is harmless and occurs when the WebAuthn prompt is cancelled or closed.
-    // It's a browser internal message and doesn't affect functionality.
-
-    try {
-      // First try with autoFill
-      const success = await attemptPasskeySignIn(true);
-
-      // If autoFill was cancelled, try without autoFill (user will see selection dialog)
-      if (!success) {
-        const retrySuccess = await attemptPasskeySignIn(false);
-
-        if (!retrySuccess) {
-          // Both attempts failed or were canceled
-          setError(
-            'Passkey sign-in was cancelled. Please try again and select your passkey when prompted.'
-          );
-          setIsLoading(false);
-        }
-      }
-    } catch (err) {
-      // Catch any unexpected errors
-      setError(err instanceof Error ? err.message : t('login.passkeyAuthFailed'));
-      setIsLoading(false);
-    }
-  };
-
-  // Determine button text based on state
-  const getSubmitButtonText = () => {
-    if (isLoading) return t('login.pleaseWait');
-    if (isSignUp) return t('login.signUpButton');
-    return t('login.signIn');
-  };
-  const submitButtonText = getSubmitButtonText();
+  const submitButtonText = getSubmitButtonText(isLoading, isSignUp, t);
 
   return (
     <div className="relative min-h-screen bg-slate-950 text-slate-100">
@@ -293,7 +170,7 @@ export function LoginRoute() {
                 <>
                   <Button
                     type="button"
-                    onClick={handlePasskeySignIn}
+                    onClick={handlePasskeyClick}
                     disabled={isLoading}
                     variant="secondary"
                     fullWidth
@@ -388,7 +265,7 @@ export function LoginRoute() {
                             type="button"
                             size="icon-xs"
                             variant="ghost"
-                            onClick={() => setShowPassword(!showPassword)}
+                            onClick={togglePasswordVisibility}
                             aria-label={showPassword ? 'Hide password' : 'Show password'}
                           >
                             {showPassword ? (

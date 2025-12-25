@@ -59,7 +59,7 @@ export function OrdersList({
       </CardHeader>
       <CardContent className="gap-4">
         {userOrders.length > 0 ? (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 items-stretch">
+          <div className="grid grid-cols-1 items-stretch gap-4 sm:grid-cols-2">
             {userOrders.map((order) => {
               const { canEdit, canDelete, isMyOrder } = getOrderPermissions(
                 order,
@@ -68,7 +68,8 @@ export function OrdersList({
                 groupOrder.status
               );
 
-              const isSubmitted = groupOrder.status === 'submitted' || groupOrder.status === 'completed';
+              const isSubmitted =
+                groupOrder.status === 'submitted' || groupOrder.status === 'completed';
 
               return (
                 <OrderCard

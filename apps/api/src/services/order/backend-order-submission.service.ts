@@ -15,16 +15,15 @@ import axios from 'axios';
 import { injectable } from 'tsyringe';
 import { BackendIntegrationClient } from '@/infrastructure/api/backend-integration.client';
 import type { SessionId } from '@/schemas/session.schema';
+import { TacoKind } from '@/schemas/taco.schema';
 import type { UserOrder } from '@/schemas/user-order.schema';
 import { ResourceService } from '@/services/resource/resource.service';
 import { SessionService } from '@/services/session/session.service';
-import type { Customer, DeliveryInfo } from '@/shared/types/types';
+import type { Customer, DeliveryInfo, StockAvailability } from '@/shared/types/types';
 import { formatAddressForBackend } from '@/shared/utils/address-formatter.utils';
 import { inject } from '@/shared/utils/inject.utils';
 import { logger } from '@/shared/utils/logger.utils';
 import { convertMysteryTacoToRegular } from '@/shared/utils/mystery-taco-converter.utils';
-import { TacoKind } from '@/schemas/taco.schema';
-import type { StockAvailability } from '@/shared/types/types';
 
 /**
  * Backend order submission service
@@ -63,7 +62,7 @@ export class BackendOrderSubmissionService {
     try {
       // Get stock for generating mystery taco ingredients
       const stock = await this.resourceService.getStockForProcessing();
-      
+
       // Combine all items from all user orders (converting mystery tacos to regular tacos)
       const combinedItems = this.combineUserOrderItems(userOrders, stock);
 
@@ -252,7 +251,7 @@ export class BackendOrderSubmissionService {
     if (taco.kind === 'mystery') {
       throw new Error(
         `Cannot submit mystery taco without ingredients. Taco ID: ${taco.id}. ` +
-        'Mystery tacos should have been converted to regular tacos with deterministically generated ingredients.'
+          'Mystery tacos should have been converted to regular tacos with deterministically generated ingredients.'
       );
     }
 

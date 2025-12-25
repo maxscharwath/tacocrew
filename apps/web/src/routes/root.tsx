@@ -10,9 +10,10 @@ import {
   Users,
 } from 'lucide-react';
 import type { ComponentType } from 'react';
-import { useEffect } from 'react';
+import { Suspense, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Form, Link, NavLink, Outlet, useLoaderData, useRevalidator } from 'react-router';
+import { HydrateFallback } from '@/components/hydrate-fallback';
 import appIcon from '@/assets/icon.png?w=80&h=80&format=webp&img';
 import { ErrorBoundary } from '@/components/errors/ErrorBoundary';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
@@ -69,7 +70,7 @@ export function RootLayout() {
   return (
     <div className="relative min-h-screen bg-slate-950 text-slate-100">
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="-top-24 absolute right-1/2 h-72 w-72 rounded-full bg-brand-500/20 blur-3xl" />
+        <div className="absolute -top-24 right-1/2 h-72 w-72 rounded-full bg-brand-500/20 blur-3xl" />
         <div className="absolute bottom-0 left-1/2 h-72 w-72 rounded-full bg-purple-500/20 blur-3xl" />
       </div>
 
@@ -184,7 +185,9 @@ export function RootLayout() {
         </Card>
 
         <main className="mt-3 flex-1 sm:mt-6">
-          <Outlet />
+          <Suspense fallback={<HydrateFallback />}>
+            <Outlet />
+          </Suspense>
         </main>
       </div>
     </div>

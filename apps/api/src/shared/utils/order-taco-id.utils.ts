@@ -31,7 +31,7 @@ function normalizeTaco(taco: Taco): NormalizedTaco {
   if (taco.kind === TacoKind.MYSTERY) {
     throw new Error('Cannot normalize mystery taco - mystery tacos do not have ingredients');
   }
-  
+
   return {
     size: taco.size,
     meats: taco.meats.map((m) => m.id).sort(),

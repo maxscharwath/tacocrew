@@ -11,36 +11,52 @@ import {
 import { Loader2 } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useLoaderData, useNavigate } from 'react-router';
+import { useNavigate, useParams } from 'react-router';
 import { OrganizationAvatar } from '@/components/shared/OrganizationAvatar';
-import { OrganizationApi } from '@/lib/api';
 import { ApiError } from '@/lib/api/http';
+import { requestToJoinOrganization, useOrganization } from '@/lib/api/organization';
 import { routes } from '@/lib/routes';
-import type { LoaderData } from '@/lib/types/loader-types';
-import { createLoader } from '@/lib/utils/loader-factory';
 import { requireParam } from '@/lib/utils/param-validators';
 
-export const organizationJoinLoader = createLoader(
-  async ({ params }) => {
-    const organizationId = requireParam(params, 'id', 'Organization ID is required');
-    const organization = await OrganizationApi.getOrganizationById(organizationId);
-    return { organization };
-  }
-);
+export function organizationJoinLoader() {
+  return Response.json({});
+}
 
 export function OrganizationJoinRoute() {
-  const { organization } = useLoaderData<LoaderData<typeof organizationJoinLoader>>();
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const params = useParams<{ id: string }>();
+  const organizationId = requireParam(params, 'id', 'Organization ID is required');
+  const organizationQuery = useOrganization(organizationId);
+  const organization = organizationQuery.data;
+
   const [busy, setBusy] = useState(false);
   const [joined, setJoined] = useState(false);
+
+  if (!organization) {
+    return (
+      <div className="relative min-h-screen bg-slate-950 text-slate-100">
+        <div className="pointer-events-none absolute inset-0 overflow-hidden">
+          <div className="absolute -top-24 right-1/2 h-72 w-72 animate-pulse rounded-full bg-brand-500/20 blur-3xl" />
+          <div className="absolute bottom-0 left-1/2 h-72 w-72 rounded-full bg-purple-500/20 blur-3xl" />
+        </div>
+        <div className="relative flex min-h-screen items-center justify-center p-3 sm:p-6">
+          <Card className="w-full max-w-lg border-brand-400/60 bg-linear-to-br from-brand-500/20 via-slate-900/80 to-slate-950/90">
+            <CardContent className="flex items-center justify-center p-6">
+              <Loader2 className="animate-spin" />
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
 
   const handleJoin = async () => {
     if (busy || joined) return;
 
     setBusy(true);
     try {
-      await OrganizationApi.requestToJoinOrganization(organization.id);
+      await requestToJoinOrganization(organization.id);
       setJoined(true);
       toast.success(t('organizations.join.success'));
     } catch (error) {

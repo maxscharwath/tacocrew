@@ -97,11 +97,11 @@ export class UserStatsRepository {
     try {
       const stats = await this.getOrCreate(userId);
       const currentItems = (stats[field] as unknown[]) || [];
-      
+
       // Deduplicate by id field (for objects) or by value (for strings)
       const seen = new Set<string>();
       const unique: unknown[] = [];
-      
+
       // First, add existing items
       for (const item of currentItems) {
         if (typeof item === 'string') {
@@ -109,14 +109,19 @@ export class UserStatsRepository {
             seen.add(item);
             unique.push(item);
           }
-        } else if (item && typeof item === 'object' && 'id' in item && typeof item.id === 'string') {
+        } else if (
+          item &&
+          typeof item === 'object' &&
+          'id' in item &&
+          typeof item.id === 'string'
+        ) {
           if (!seen.has(item.id)) {
             seen.add(item.id);
             unique.push(item);
           }
         }
       }
-      
+
       // Then, add new items (only strings are passed in, but check for safety)
       for (const item of items) {
         if (typeof item === 'string' && !seen.has(item)) {
@@ -156,7 +161,9 @@ export class UserStatsRepository {
         newStreak = 1;
       } else if (stats.lastOrderYear === currentYear && stats.lastOrderWeek === currentWeek) {
         // Already ordered this week, no change
-      } else if (isConsecutiveWeek(stats.lastOrderYear, stats.lastOrderWeek, currentYear, currentWeek)) {
+      } else if (
+        isConsecutiveWeek(stats.lastOrderYear, stats.lastOrderWeek, currentYear, currentWeek)
+      ) {
         // Consecutive week, increment streak
         newStreak = stats.currentOrderStreak + 1;
       } else {

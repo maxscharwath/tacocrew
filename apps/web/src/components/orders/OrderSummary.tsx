@@ -10,8 +10,8 @@ import {
 } from '@tacocrew/ui-kit';
 import { Dices, ShoppingBag } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { TacoKind } from '@/lib/api/types';
 import type { StockResponse } from '@/lib/api';
+import { TacoKind } from '@/lib/api/types';
 import { cn } from '@/lib/utils';
 import type { MeatSelection, PriceBreakdownItem, ProgressStep, TacoSizeItem } from '@/types/orders';
 import { ProgressStepper } from './ProgressStepper';

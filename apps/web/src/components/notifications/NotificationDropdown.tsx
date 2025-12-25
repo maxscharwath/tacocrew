@@ -17,25 +17,20 @@ import {
   Wallet,
   XCircle,
 } from 'lucide-react';
-import {
-  type MouseEvent,
-  type RefObject,
-  useEffect,
-  useEffectEvent,
-  useRef,
-  useState,
-} from 'react';
+import { type MouseEvent, type RefObject, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 import { useRelativeTime } from '@/hooks';
 import {
-  archiveAllNotifications,
-  archiveNotification,
-  getNotifications,
-  getUnreadCount,
   markAsRead,
   type Notification,
+  useArchiveAllNotifications,
+  useArchiveNotification,
 } from '@/lib/api/notifications';
+import {
+  useInfiniteNotifications,
+  useUnreadNotificationsCount,
+} from '@/lib/api/notifications.hooks';
 import { cn } from '@/lib/utils';
 
 interface NotificationDropdownProps {
@@ -80,6 +75,7 @@ function NotificationItem({
   canArchive,
   formatRelativeTime,
   archiveLabel,
+  isArchiving,
 }: Readonly<{
   notification: Notification;
   onArchive: (id: string) => void;
@@ -87,22 +83,20 @@ function NotificationItem({
   canArchive: boolean;
   formatRelativeTime: (date: string) => string;
   archiveLabel: string;
+  isArchiving: boolean;
 }>) {
-  const [isArchiving, setIsArchiving] = useState(false);
   const { icon: Icon, color } = NOTIFICATION_ICONS[notification.type] ?? DEFAULT_ICON;
 
-  const handleArchive = async (e: MouseEvent) => {
+  const handleArchive = (e: MouseEvent) => {
     e.stopPropagation();
-    setIsArchiving(true);
-    await new Promise((r) => setTimeout(r, 200)); // Animation delay
     onArchive(notification.id);
   };
 
   return (
     <div
       className={cn(
-        'group flex w-full items-start gap-3 px-4 py-3 text-left transition-all duration-200 hover:bg-white/5',
-        !notification.read && 'bg-gradient-to-r from-brand-500/10 via-brand-500/5 to-transparent',
+        'group flex w-full items-start gap-3 px-4 py-3 text-left transition-all duration-300 hover:bg-white/5',
+        !notification.read && 'bg-linear-to-r from-brand-500/10 via-brand-500/5 to-transparent',
         isArchiving && 'translate-x-full opacity-0'
       )}
     >
@@ -146,7 +140,6 @@ function NotificationItem({
           variant="ghost"
           size="sm"
           onClick={handleArchive}
-          disabled={isArchiving}
           className="h-8 w-8 shrink-0 p-0 text-slate-500 opacity-0 transition-all duration-200 hover:text-slate-300 focus:opacity-100 group-hover:opacity-100"
           title={archiveLabel}
         >
@@ -187,6 +180,7 @@ function NotificationListContent({
   onArchive,
   onClick,
   formatRelativeTime,
+  archivingId,
 }: Readonly<{
   isLoading: boolean;
   notifications: Notification[];
@@ -197,6 +191,7 @@ function NotificationListContent({
   onArchive: (id: string) => void;
   onClick: (notification: Notification) => void;
   formatRelativeTime: (date: string) => string;
+  archivingId: string | null;
 }>) {
   const { t } = useTranslation();
 
@@ -238,6 +233,7 @@ function NotificationListContent({
           canArchive={!isArchiveTab}
           formatRelativeTime={formatRelativeTime}
           archiveLabel={t('notifications.archive')}
+          isArchiving={archivingId === n.id}
         />
       ))}
       {hasMore && (
@@ -256,71 +252,34 @@ export function NotificationDropdown({ onClose, onMarkAsRead }: NotificationDrop
   const loadMoreRef = useRef<HTMLDivElement>(null);
 
   const [activeTab, setActiveTab] = useState<TabValue>('inbox');
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [unreadCount, setUnreadCount] = useState(0);
-  const [archivedCount, setArchivedCount] = useState(0);
-  const [nextCursor, setNextCursor] = useState<string | null>(null);
-  const [hasMore, setHasMore] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [isArchivingAll, setIsArchivingAll] = useState(false);
+  const [archivingId, setArchivingId] = useState<string | null>(null);
 
   const isArchiveTab = activeTab === 'archive';
 
-  // Fetch notifications for current tab - always sees latest isArchiveTab value
-  const fetchNotifications = useEffectEvent(async (cursor?: string) => {
-    cursor ? setIsLoadingMore(true) : setIsLoading(true);
+  // Use infinite query for notifications
+  const notificationsQuery = useInfiniteNotifications(isArchiveTab);
+  const unreadCountQuery = useUnreadNotificationsCount();
+  const archiveNotificationMutation = useArchiveNotification();
+  const archiveAllNotificationsMutation = useArchiveAllNotifications();
 
-    try {
-      const data = await getNotifications({ limit: 15, cursor, archived: isArchiveTab });
-      const items = data.items ?? [];
-      setNotifications((prev) => (cursor ? [...prev, ...items] : items));
-      setNextCursor(data.nextCursor ?? null);
-      setHasMore(data.hasMore ?? false);
-    } catch {
-      // Silently fail
-    } finally {
-      setIsLoading(false);
-      setIsLoadingMore(false);
-    }
-  });
+  // Flatten pages into a single notifications list
+  const notifications = notificationsQuery.data?.pages.flatMap((page) => page.items) ?? [];
+  const isLoading = notificationsQuery.isPending;
+  const hasMore = notificationsQuery.hasNextPage ?? false;
+  const isFetchingNextPage = notificationsQuery.isFetchingNextPage ?? false;
+  const unreadCount = unreadCountQuery.data ?? 0;
 
-  // Fetch counts (unread) - regular function since called from event handlers
-  const fetchCounts = async () => {
-    try {
-      const unread = await getUnreadCount();
-      setUnreadCount(unread.count);
-      // Note: Cursor pagination doesn't provide total counts, so archived count is not available
-    } catch {
-      // Silently fail
-    }
-  };
-
-  // Initial load: fetch notifications when tab changes
-  useEffect(() => {
-    setNotifications([]);
-    setNextCursor(null);
-    fetchNotifications().catch(() => {
-      // Error handling is done within fetchNotifications
-    });
-  }, [isArchiveTab]);
-
-  // Fetch counts once on mount
-  useEffect(() => {
-    fetchCounts();
-  }, []);
+  // Tab change is handled automatically by the query key change
 
   // Infinite scroll observer
   useEffect(() => {
     const el = loadMoreRef.current;
-    if (!el || !hasMore || isLoadingMore) return;
+    if (!el || !hasMore || isFetchingNextPage) return;
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry?.isIntersecting && nextCursor) {
-          fetchNotifications(nextCursor).catch(() => {
-            // Error handling is done within fetchNotifications
-          });
+        if (entry?.isIntersecting) {
+          notificationsQuery.fetchNextPage();
         }
       },
       { threshold: 0.1 }
@@ -328,29 +287,21 @@ export function NotificationDropdown({ onClose, onMarkAsRead }: NotificationDrop
 
     observer.observe(el);
     return () => observer.disconnect();
-  }, [hasMore, nextCursor, isLoadingMore]);
+  }, [hasMore, isFetchingNextPage, notificationsQuery]);
 
   const refreshAfterAction = () => {
     onMarkAsRead();
-    fetchCounts();
-    globalThis.dispatchEvent(new CustomEvent('notificationUpdated'));
+    unreadCountQuery.refetch();
   };
 
   const handleClick = async (notification: Notification) => {
     if (!notification.read) {
-      setNotifications((prev) =>
-        prev.map((n) => (n.id === notification.id ? { ...n, read: true } : n))
-      );
-      setUnreadCount((c) => Math.max(0, c - 1));
-
       try {
         await markAsRead(notification.id);
         refreshAfterAction();
+        notificationsQuery.refetch();
       } catch {
-        setNotifications((prev) =>
-          prev.map((n) => (n.id === notification.id ? { ...n, read: false } : n))
-        );
-        setUnreadCount((c) => c + 1);
+        // Silently fail
       }
     }
 
@@ -361,43 +312,20 @@ export function NotificationDropdown({ onClose, onMarkAsRead }: NotificationDrop
   };
 
   const handleArchive = async (id: string) => {
-    const notification = notifications.find((n) => n.id === id);
-    if (!notification) return;
-
-    setNotifications((prev) => prev.filter((n) => n.id !== id));
-    if (!notification.read) setUnreadCount((c) => Math.max(0, c - 1));
-    setArchivedCount((c) => c + 1);
-
+    setArchivingId(id);
     try {
-      await archiveNotification(id);
+      await archiveNotificationMutation.mutateAsync(id);
       refreshAfterAction();
-    } catch {
-      setNotifications((prev) =>
-        [...prev, notification].sort(
-          (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        )
-      );
-      if (!notification.read) setUnreadCount((c) => c + 1);
-      setArchivedCount((c) => Math.max(0, c - 1));
+      await notificationsQuery.refetch();
+    } finally {
+      setArchivingId(null);
     }
   };
 
   const handleArchiveAll = async () => {
-    const prev = { notifications: [...notifications], unread: unreadCount };
-    setNotifications([]);
-    setUnreadCount(0);
-    setIsArchivingAll(true);
-
-    try {
-      await archiveAllNotifications();
-      setArchivedCount((c) => c + prev.notifications.length);
-      refreshAfterAction();
-    } catch {
-      setNotifications(prev.notifications);
-      setUnreadCount(prev.unread);
-    } finally {
-      setIsArchivingAll(false);
-    }
+    await archiveAllNotificationsMutation.mutateAsync();
+    refreshAfterAction();
+    notificationsQuery.refetch();
   };
 
   return (
@@ -415,23 +343,23 @@ export function NotificationDropdown({ onClose, onMarkAsRead }: NotificationDrop
             <span className="flex items-center gap-2">
               <Archive size={14} className="shrink-0" />
               <span>{t('notifications.tabs.archive')}</span>
-              <CountBadge count={archivedCount} variant="muted" />
             </span>
           </SegmentedControlItem>
         </SegmentedControl>
       </div>
 
-      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain sm:max-h-[50vh] sm:min-h-[200px]">
+      <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-contain sm:max-h-[50vh] sm:min-h-[200px]">
         <NotificationListContent
           isLoading={isLoading}
           notifications={notifications}
           isArchiveTab={isArchiveTab}
           hasMore={hasMore}
-          isLoadingMore={isLoadingMore}
+          isLoadingMore={isFetchingNextPage}
           loadMoreRef={loadMoreRef}
           onArchive={handleArchive}
           onClick={handleClick}
           formatRelativeTime={formatRelativeTime}
+          archivingId={archivingId}
         />
       </div>
 
@@ -441,10 +369,10 @@ export function NotificationDropdown({ onClose, onMarkAsRead }: NotificationDrop
             variant="ghost"
             size="sm"
             onClick={handleArchiveAll}
-            disabled={isArchivingAll}
+            disabled={archiveAllNotificationsMutation.isPending}
             className="h-8 w-full gap-1.5 text-slate-400 text-xs hover:text-white"
           >
-            {isArchivingAll ? (
+            {archiveAllNotificationsMutation.isPending ? (
               <Loader2 size={14} className="animate-spin" />
             ) : (
               <ArchiveX size={14} />

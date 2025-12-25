@@ -1,5 +1,9 @@
+/**
+ * Order Creation Route
+ * Professional architecture: Clean separation of concerns, minimal component logic
+ */
+
 import { TacoSize } from '@tacocrew/gigatacos-client';
-import { TacoKind } from '@/lib/api/types';
 import { Alert } from '@tacocrew/ui-kit';
 import { ArrowLeft } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -23,91 +27,44 @@ import {
   TacoBuilder,
   TacoSizeSelector,
 } from '@/components/orders';
+import { useOrderCreationData } from '@/hooks/useOrderCreationData';
 import { useOrderForm } from '@/hooks/useOrderForm';
+import { useOrderFormUI } from '@/hooks/useOrderFormUI';
 import { useOrderValidation } from '@/hooks/useOrderValidation';
 import { useProgressSteps } from '@/hooks/useProgressSteps';
-import { StockApi, UserApi } from '@/lib/api';
-import { OrdersApi } from '@/lib/api';
+import { getStock } from '@/lib/api';
 import { routes } from '@/lib/routes';
 import { createActionHandler } from '@/lib/utils/action-handler';
-import { createLoader } from '@/lib/utils/loader-factory';
 import { requireParam } from '@/lib/utils/param-validators';
 import { upsertUserOrder } from '@/services/order.service';
-import { buildUpsertOrderRequest } from '@/utils/order-request-builder';
-import { parseOrderFormData, type ParsedOrderFormData } from '@/utils/order-form-parser';
+import { type ParsedOrderFormData, parseOrderFormData } from '@/utils/order-form-parser';
 import { getSummaryBreakdown } from '@/utils/order-helpers';
+import { buildUpsertOrderRequest } from '@/utils/order-request-builder';
 
-type ActionData = {
-  errorKey?: string;
-  errorMessage?: string;
-};
+// ============================================================================
+// Loader & Action
+// ============================================================================
 
-async function fetchPrefillOrder(
-  groupOrderId: string,
-  prefillOrderId: string
-): Promise<LoaderData['myOrder']> {
-  try {
-    return await OrdersApi.getUserOrder(groupOrderId, prefillOrderId);
-  } catch {
-    throw redirect(routes.root.orderCreate({ orderId: groupOrderId }));
-  }
+export function orderCreateLoader({ params }: LoaderFunctionArgs) {
+  const groupOrderId = requireParam(params, 'orderId', 'Order not found');
+  return Response.json({ groupOrderId });
 }
 
-export const orderCreateLoader = createLoader(async ({ params, request }: LoaderFunctionArgs) => {
-  const groupOrderId = requireParam(params, 'orderId', 'Order not found');
-
-  const url = new URL(request.url);
-  const orderId = url.searchParams.get('orderId');
-  const duplicateId = url.searchParams.get('duplicate');
-  const prefillOrderId = orderId ?? duplicateId ?? undefined;
-
-  const [groupOrderWithUsers, stock, previousOrders, myOrder] = await Promise.all([
-    OrdersApi.getGroupOrderWithOrders(groupOrderId),
-    StockApi.getStock(),
-    UserApi.getPreviousOrders().catch(() => []),
-    prefillOrderId ? fetchPrefillOrder(groupOrderId, prefillOrderId) : Promise.resolve(undefined),
-  ]);
-
-  const groupOrder = groupOrderWithUsers.groupOrder;
-
-  if (!groupOrder.canAcceptOrders) {
-    throw redirect(routes.root.orderDetail({ orderId: groupOrderId }));
-  }
-
-  return {
-    groupOrder,
-    myOrder,
-    stock,
-    previousOrders,
-  };
-});
-
-type LoaderData = {
-  groupOrder: Awaited<ReturnType<typeof OrdersApi.getGroupOrderWithOrders>>['groupOrder'];
-  myOrder?: Awaited<ReturnType<typeof OrdersApi.getGroupOrderWithOrders>>['userOrders'][number];
-  stock: Awaited<ReturnType<typeof StockApi.getStock>>;
-  previousOrders: Awaited<ReturnType<typeof UserApi.getPreviousOrders>>;
-};
-
-
 /**
- * Validate taco selection and ingredients
+ * Validate order form before submission
  */
 function validateOrderForm(
   data: ParsedOrderFormData,
   tacoSize: { allowGarnitures: boolean } | undefined
 ): void {
-  const isMystery = data.kind === TacoKind.MYSTERY;
-  // Meats and sauces will be added automatically if not selected (handled in buildUpsertOrderRequest)
   const hasTaco = data.size !== undefined;
-  const hasOtherItems = data.extras.length > 0 || data.drinks.length > 0 || data.desserts.length > 0;
+  const hasOtherItems =
+    data.extras.length > 0 || data.drinks.length > 0 || data.desserts.length > 0;
 
   if (!hasTaco && !hasOtherItems) {
     throw new Response('Missing selection', { status: 400 });
   }
 
-  // Don't validate missing meats/sauces - they'll be added automatically
-  // Only validate garnitures if they're not allowed
   if (data.size && tacoSize && !tacoSize.allowGarnitures && data.garnitures.length > 0) {
     throw new Response('Garnish not available', { status: 400 });
   }
@@ -120,7 +77,7 @@ export const orderCreateAction = createActionHandler({
       if (!groupOrderId) throw new Response('Order not found', { status: 404 });
 
       const formDataParsed = parseOrderFormData(formData);
-      const stock = await StockApi.getStock();
+      const stock = await getStock();
       const tacoSize = stock.tacos.find((t) => t.code === formDataParsed.size);
 
       validateOrderForm(formDataParsed, tacoSize);
@@ -137,72 +94,139 @@ export const orderCreateAction = createActionHandler({
   },
 });
 
+// ============================================================================
+// Component
+// ============================================================================
+
+interface ActionData {
+  errorKey?: string;
+  errorMessage?: string;
+}
+
+/**
+ * Main route component - Clean and focused
+ * - Data loading via custom hooks
+ * - Form state via custom hooks
+ * - Rendering via composed components
+ */
 export function OrderCreateRoute() {
   const { t } = useTranslation();
-  const currency = t('common.currency.chf');
-  const { myOrder, stock, previousOrders } = useLoaderData<LoaderData>();
-  const actionData = useActionData<ActionData | undefined>();
+  const { groupOrderId } = useLoaderData<{ groupOrderId: string }>();
+  const actionData = useActionData<ActionData>();
   const navigation = useNavigation();
   const navigate = useNavigate();
   const params = useParams();
   const [searchParams] = useSearchParams();
-  const isSubmitting = navigation.state === 'submitting';
 
+  // Extract query parameters
   const isDuplicating = searchParams.has('duplicate');
   const editOrderId = isDuplicating ? null : searchParams.get('orderId');
+  const prefillOrderId = searchParams.get('orderId') ?? searchParams.get('duplicate') ?? undefined;
 
-  // Use custom hooks for form state and validation
-  const {
-    size,
-    setSize,
-    meats,
-    sauces,
-    setSauces,
-    garnitures,
-    setGarnitures,
-    extras,
-    setExtras,
-    drinks,
-    setDrinks,
-    desserts,
-    setDesserts,
-    note,
-    setNote,
-    kind,
-    selectedTacoSize,
-    totalPrice,
-    priceBreakdown,
-    toggleSelection,
-    updateMeatQuantity,
-    prefillTaco,
-    toggleMystery,
-  } = useOrderForm({ stock, myOrder });
+  // Data loading with Result pattern
+  const { result, isLoading } = useOrderCreationData(groupOrderId, prefillOrderId);
 
-  const { hasTaco, hasOtherItems, validationMessages, canSubmit } = useOrderValidation({
-    size,
-    meats,
-    sauces,
-    garnitures,
-    extras,
-    drinks,
-    desserts,
-    selectedTacoSize,
-    kind,
+  // Handle loading state
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  // Handle error state with Result pattern
+  if (!result.ok) {
+    const error = result.error;
+    // Log error for monitoring
+    if (error.originalError) {
+      console.error(`[${error.code}] ${error.message}`, error.context, error.originalError);
+    } else {
+      console.error(`[${error.code}] ${error.message}`, error.context);
+    }
+
+    // Redirect on not found errors
+    if (error.code === 'USER_ORDER_NOT_FOUND' || error.code === 'GROUP_ORDER_NOT_FOUND') {
+      throw new Response(error.message, { status: 404 });
+    }
+
+    // Show generic error for other cases
+    throw new Response('Failed to load order data', { status: 500 });
+  }
+
+  // Destructure data from successful result
+  const { group, stock, previousOrders, editingOrder } = result.value;
+
+  // Form state
+  const orderForm = useOrderForm({ stock, myOrder: editingOrder });
+
+  // UI state (validation, progress)
+  const _uiState = useOrderFormUI(
+    {
+      taco: orderForm.selectedTacoSize
+        ? {
+            size: orderForm.size as TacoSize,
+            meats: orderForm.meats,
+            sauces: orderForm.sauces,
+            garnitures: orderForm.garnitures,
+            kind: orderForm.kind,
+            note: orderForm.note,
+          }
+        : null,
+      extras: orderForm.extras.map((e) => ({
+        id: e,
+        quantity: 1,
+      })),
+      drinks: orderForm.drinks.map((d) => ({
+        id: d,
+        quantity: 1,
+      })),
+      desserts: orderForm.desserts.map((d) => ({
+        id: d,
+        quantity: 1,
+      })),
+    },
+    stock,
+    orderForm.selectedTacoSize
+  );
+
+  // Validation
+  const orderValidation = useOrderValidation({
+    size: orderForm.size,
+    meats: orderForm.meats,
+    sauces: orderForm.sauces,
+    garnitures: orderForm.garnitures,
+    extras: orderForm.extras,
+    drinks: orderForm.drinks,
+    desserts: orderForm.desserts,
+    selectedTacoSize: orderForm.selectedTacoSize,
+    kind: orderForm.kind,
   });
 
-  const totalMeatQuantity = meats.reduce((sum, m) => sum + m.quantity, 0);
-  const summaryBreakdown = getSummaryBreakdown(size, extras, drinks, desserts, t);
+  // Progress
   const progressSteps = useProgressSteps({
-    size,
-    selectedTacoSize,
-    totalMeatQuantity,
-    sauces,
-    garnitures,
-    kind,
+    size: orderForm.size,
+    selectedTacoSize: orderForm.selectedTacoSize,
+    totalMeatQuantity: orderForm.meats.reduce((sum, m) => sum + m.quantity, 0),
+    sauces: orderForm.sauces,
+    garnitures: orderForm.garnitures,
+    kind: orderForm.kind,
   });
+
+  // Redirect if order not accepting new orders
+  if (!group.groupOrder.canAcceptOrders) {
+    throw redirect(routes.root.orderDetail({ orderId: groupOrderId }));
+  }
+
+  const isSubmitting = navigation.state === 'submitting';
+  const currency = t('common.currency.chf');
+  const summaryBreakdown = getSummaryBreakdown(
+    orderForm.size,
+    orderForm.extras,
+    orderForm.drinks,
+    orderForm.desserts,
+    t
+  );
 
   return (
     <div className="space-y-4 sm:space-y-8">
+      {/* Navigation */}
       <div className="flex items-center gap-2 sm:gap-4">
         <Link
           to={routes.root.orderDetail({ orderId: params.orderId ?? '' })}
@@ -214,100 +238,131 @@ export function OrderCreateRoute() {
         </Link>
       </div>
 
+      {/* Hero */}
       <OrderCreateHero />
 
+      {/* Main Content */}
       <div className="grid gap-4 sm:gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,400px)]">
+        {/* Form */}
         <Form method="post" className="space-y-4 sm:space-y-8" id="order-form">
-          <input type="hidden" name="tacoSize" value={size} />
-          <input type="hidden" name="kind" value={kind} />
+          <input type="hidden" name="tacoSize" value={orderForm.size} />
+          <input type="hidden" name="kind" value={orderForm.kind} />
           {editOrderId && <input type="hidden" name="editOrderId" value={editOrderId} />}
 
-          <PreviousTacos
-            previousOrders={previousOrders}
-            stock={stock}
-            onSelectTaco={(taco) => {
-              prefillTaco({
-                size: taco.size,
-                meats: taco.meats?.map((m) => ({ id: m.id, quantity: m.quantity ?? 1 })) ?? [],
-                sauces: taco.sauces?.map((s) => ({ id: s.id })) ?? [],
-                garnitures: taco.garnitures?.map((g) => ({ id: g.id })) ?? [],
-                note: taco.note,
-                kind: taco.kind,
-              });
-            }}
-            disabled={isSubmitting}
-          />
-
-          <TacoSizeSelector sizes={stock.tacos} selected={size} onSelect={setSize} />
-
-          {size && (
-            <TacoBuilder
-              taco={{
-                size: size as TacoSize,
-                meats,
-                sauces,
-                garnitures,
-                note,
-                selectedTacoSize: selectedTacoSize ?? null,
-              }}
+          {/* Previous Orders */}
+          {previousOrders && previousOrders.length > 0 && (
+            <PreviousTacos
+              previousOrders={previousOrders}
               stock={stock}
-              isSubmitting={isSubmitting}
-              kind={kind}
-              onUpdateMeatQuantity={updateMeatQuantity}
-              onToggleSauce={(id) =>
-                toggleSelection(id, sauces, setSauces, selectedTacoSize?.maxSauces)
-              }
-              onToggleGarniture={(id) => toggleSelection(id, garnitures, setGarnitures)}
-              onNoteChange={setNote}
-              onToggleMystery={toggleMystery}
+              onSelectTaco={(taco) => {
+                orderForm.prefillTaco({
+                  size: taco.size,
+                  meats: taco.meats?.map((m) => ({ id: m.id, quantity: m.quantity ?? 1 })) ?? [],
+                  sauces: taco.sauces?.map((s) => ({ id: s.id })) ?? [],
+                  garnitures: taco.garnitures?.map((g) => ({ id: g.id })) ?? [],
+                  note: taco.note,
+                  kind: taco.kind,
+                });
+              }}
+              disabled={isSubmitting}
             />
           )}
 
-          <ExtrasSection
-            stock={stock}
-            extras={extras}
-            drinks={drinks}
-            desserts={desserts}
-            onToggleExtra={(id) => toggleSelection(id, extras, setExtras)}
-            onToggleDrink={(id) => toggleSelection(id, drinks, setDrinks)}
-            onToggleDessert={(id) => toggleSelection(id, desserts, setDesserts)}
+          {/* Size Selector */}
+          <TacoSizeSelector
+            sizes={stock.tacos}
+            selected={orderForm.size}
+            onSelect={orderForm.setSize}
           />
 
-          {actionData?.errorKey ? (
+          {/* Taco Builder */}
+          {orderForm.size && (
+            <TacoBuilder
+              taco={{
+                size: orderForm.size as TacoSize,
+                meats: orderForm.meats,
+                sauces: orderForm.sauces,
+                garnitures: orderForm.garnitures,
+                note: orderForm.note,
+                selectedTacoSize: orderForm.selectedTacoSize ?? null,
+              }}
+              stock={stock}
+              isSubmitting={isSubmitting}
+              kind={orderForm.kind}
+              onUpdateMeatQuantity={orderForm.updateMeatQuantity}
+              onToggleSauce={(id) =>
+                orderForm.toggleSelection(
+                  id,
+                  orderForm.sauces,
+                  orderForm.setSauces,
+                  orderForm.selectedTacoSize?.maxSauces
+                )
+              }
+              onToggleGarniture={(id) =>
+                orderForm.toggleSelection(id, orderForm.garnitures, orderForm.setGarnitures)
+              }
+              onNoteChange={orderForm.setNote}
+              onToggleMystery={orderForm.toggleMystery}
+            />
+          )}
+
+          {/* Extras Section */}
+          <ExtrasSection
+            stock={stock}
+            extras={orderForm.extras}
+            drinks={orderForm.drinks}
+            desserts={orderForm.desserts}
+            onToggleExtra={(id) =>
+              orderForm.toggleSelection(id, orderForm.extras, orderForm.setExtras)
+            }
+            onToggleDrink={(id) =>
+              orderForm.toggleSelection(id, orderForm.drinks, orderForm.setDrinks)
+            }
+            onToggleDessert={(id) =>
+              orderForm.toggleSelection(id, orderForm.desserts, orderForm.setDesserts)
+            }
+          />
+
+          {/* Error Alert */}
+          {actionData?.errorKey && (
             <Alert tone="error">
               {t(
                 actionData.errorKey,
                 actionData.errorMessage ? { message: actionData.errorMessage } : undefined
               )}
             </Alert>
-          ) : null}
+          )}
         </Form>
 
-        {/* Sticky Order Preview Sidebar */}
+        {/* Order Summary Sidebar */}
         <div className="lg:sticky lg:top-8 lg:h-fit lg:max-h-[calc(100vh-4rem)]">
           <OrderSummary
-            selectedTacoSize={selectedTacoSize ?? null}
-            meats={meats}
-            sauces={sauces}
-            garnitures={garnitures}
-            extras={extras}
-            drinks={drinks}
-            desserts={desserts}
-            note={note}
-            priceBreakdown={priceBreakdown}
-            totalPrice={totalPrice}
+            selectedTacoSize={orderForm.selectedTacoSize ?? null}
+            meats={orderForm.meats}
+            sauces={orderForm.sauces}
+            garnitures={orderForm.garnitures}
+            extras={orderForm.extras}
+            drinks={orderForm.drinks}
+            desserts={orderForm.desserts}
+            note={orderForm.note}
+            priceBreakdown={orderForm.priceBreakdown}
+            totalPrice={orderForm.totalPrice}
             currency={currency}
             summaryBreakdown={summaryBreakdown}
-            hasTaco={!!hasTaco}
-            hasOtherItems={hasOtherItems}
-            canSubmit={canSubmit}
-            validationMessages={validationMessages}
+            hasTaco={!!orderForm.selectedTacoSize}
+            hasOtherItems={
+              orderForm.extras.length > 0 ||
+              orderForm.drinks.length > 0 ||
+              orderForm.desserts.length > 0
+            }
+            canSubmit={orderValidation.canSubmit}
+            validationMessages={orderValidation.validationMessages}
             stock={stock}
             progressSteps={progressSteps}
             formId="order-form"
             isSubmitting={isSubmitting}
             editOrderId={editOrderId}
-            kind={kind}
+            kind={orderForm.kind}
             onCancel={() => {
               navigate(routes.root.orderDetail({ orderId: params.orderId ?? '' }));
             }}

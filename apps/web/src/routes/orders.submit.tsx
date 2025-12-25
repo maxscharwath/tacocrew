@@ -34,16 +34,12 @@ import { OrderConfirmationModal } from '@/components/orders/OrderConfirmationMod
 import { PreferencesSection } from '@/components/orders/PreferencesSection';
 import { ProfileManager } from '@/components/orders/ProfileManager';
 import { BackButton } from '@/components/shared';
-import { SWITZERLAND_COUNTRY } from '@/constants/location';
 import { useDeliveryForm } from '@/hooks/useDeliveryForm';
 import { useDeveloperMode } from '@/hooks/useDeveloperMode';
-import { OrdersApi, UserApi } from '@/lib/api';
+import { useDeliveryProfiles, useGroupOrderWithOrders } from '@/lib/api';
+import { getFieldLabel, handleOrderSubmission } from '@/lib/handlers/order-submit-handlers';
 import { routes } from '@/lib/routes';
-import type { DeliveryFormData } from '@/lib/types/form-data';
-import type { LoaderData } from '@/lib/types/loader-types';
 import { createActionHandler } from '@/lib/utils/action-handler';
-import { parseFormData } from '@/lib/utils/form-data';
-import { createLoader } from '@/lib/utils/loader-factory';
 import { requireParam } from '@/lib/utils/param-validators';
 
 type ActionData = {
@@ -55,56 +51,17 @@ type ActionData = {
   groupOrderId?: string;
 };
 
-export const orderSubmitLoader = createLoader(
-  async ({ params }: LoaderFunctionArgs) => {
-    const groupOrderId = requireParam(params, 'orderId', 'Order not found');
-
-    const [groupOrderWithUsers, deliveryProfiles] = await Promise.all([
-      OrdersApi.getGroupOrderWithOrders(groupOrderId),
-      UserApi.getDeliveryProfiles(),
-    ]);
-
-    return {
-      groupOrder: groupOrderWithUsers.groupOrder,
-      userOrders: groupOrderWithUsers.userOrders,
-      deliveryProfiles,
-    };
-  }
-);
+export function orderSubmitLoader({ params }: LoaderFunctionArgs) {
+  const groupOrderId = requireParam(params, 'orderId', 'Order not found');
+  return Response.json({ groupOrderId });
+}
 
 export const orderSubmitAction = createActionHandler({
   handlers: {
     POST: async (_unused, request, params) => {
       const groupOrderId = params?.orderId;
       if (!groupOrderId) throw new Response('Order not found', { status: 404 });
-
-      const data = await parseFormData<DeliveryFormData>(request);
-      const dryRun = data.dryRun === 'on';
-
-      if (!data.paymentMethod) {
-        throw new Response('Payment method is required', { status: 400 });
-      }
-
-      await OrdersApi.submitGroupOrder(groupOrderId, {
-        customer: {
-          name: data.customerName,
-          phone: data.customerPhone,
-        },
-        delivery: {
-          type: data.deliveryType,
-          address: {
-            road: data.road,
-            house_number: data.houseNumber,
-            postcode: data.postcode,
-            city: data.city,
-            state: data.state,
-            country: SWITZERLAND_COUNTRY,
-          },
-          requestedFor: data.requestedFor,
-        },
-        paymentMethod: data.paymentMethod,
-        dryRun,
-      });
+      await handleOrderSubmission(groupOrderId, request);
     },
   },
   getFormName: () => 'submit',
@@ -118,30 +75,9 @@ export const orderSubmitAction = createActionHandler({
   },
 });
 
-/**
- * Map API field paths to user-friendly field names
- */
-function getFieldLabel(fieldPath: string, t: ReturnType<typeof useTranslation>['t']): string {
-  const fieldMap: Record<string, string> = {
-    'customer.name': t('orders.submit.form.fields.customerName'),
-    'customer.phone': t('orders.submit.form.fields.customerPhone'),
-    'delivery.type': t('orders.submit.form.fields.deliveryType'),
-    'delivery.address.road': t('orders.submit.form.fields.street'),
-    'delivery.address.house_number': t('orders.submit.form.fields.houseNumber'),
-    'delivery.address.postcode': t('orders.submit.form.fields.postcode'),
-    'delivery.address.city': t('orders.submit.form.fields.city'),
-    'delivery.address.state': t('orders.submit.form.fields.state'),
-    'delivery.address.country': t('orders.submit.form.fields.country'),
-    'delivery.requestedFor': t('orders.submit.form.fields.requestedFor'),
-    paymentMethod: t('orders.submit.form.fields.paymentMethod'),
-  };
-
-  return fieldMap[fieldPath] || fieldPath;
-}
-
 export function OrderSubmitRoute() {
   const { t } = useTranslation();
-  const { userOrders, deliveryProfiles } = useLoaderData<LoaderData<typeof orderSubmitLoader>>();
+  const { groupOrderId } = useLoaderData<{ groupOrderId: string }>();
   const actionData = useActionData<ActionData | undefined>();
   const navigation = useNavigation();
   const params = useParams();
@@ -150,6 +86,24 @@ export function OrderSubmitRoute() {
   const [showConfirmation, setShowConfirmation] = useState(false);
   const { isEnabled: isDeveloperMode } = useDeveloperMode();
   const [showDeleteProfileDialog, setShowDeleteProfileDialog] = useState(false);
+
+  const groupOrderQuery = useGroupOrderWithOrders(groupOrderId);
+  const deliveryProfilesQuery = useDeliveryProfiles();
+
+  if (groupOrderQuery.isLoading || deliveryProfilesQuery.isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  if (groupOrderQuery.error || deliveryProfilesQuery.error) {
+    throw new Response('Failed to load data', { status: 500 });
+  }
+
+  if (!groupOrderQuery.data) {
+    throw new Response('Order not found', { status: 404 });
+  }
+
+  const { userOrders } = groupOrderQuery.data;
+  const deliveryProfiles = deliveryProfilesQuery.data ?? [];
 
   const form = useDeliveryForm({ initialProfiles: deliveryProfiles, t });
 

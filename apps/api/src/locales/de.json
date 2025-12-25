@@ -7,7 +7,8 @@
       },
       "paymentUpdate": {
         "title": "Zahlungsaktualisierung",
-        "body": "{{userName}} hat seine Bestellung als bezahlt markiert"
+        "body": "{{userName}} hat seine Bestellung als bezahlt markiert",
+        "bodyForOther": "{{payerName}} hat für {{orderOwnerName}}s Bestellung bezahlt"
       },
       "reimbursementUpdate": {
         "title": "Rückerstattungsaktualisierung",
@@ -65,6 +66,10 @@
         },
         "modify": {
           "invalidStatus": "Sie können nur Ihre eigenen Bestellungen ändern"
+        },
+        "payment": {
+          "alreadyPaid": "Diese Bestellung wurde bereits bezahlt",
+          "notPaid": "Diese Bestellung ist nicht als bezahlt markiert"
         },
         "submit": {
           "invalidStatus": "Bestellung kann nicht übermittelt werden. Der Status der Gruppenbestellung ist ungültig",

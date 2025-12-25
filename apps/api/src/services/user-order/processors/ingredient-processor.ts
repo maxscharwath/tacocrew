@@ -5,7 +5,7 @@
 
 import type { CreateUserOrderRequestDto } from '@/api/schemas/user-order.schemas';
 import { GarnitureId, MeatId, SauceId } from '@/schemas/taco.schema';
-import { StockCategory, type StockAvailability } from '@/shared/types/types';
+import { type StockAvailability, StockCategory } from '@/shared/types/types';
 import { ValidationError } from '@/shared/utils/errors.utils';
 
 export class IngredientProcessor {
@@ -61,4 +61,3 @@ export class IngredientProcessor {
     });
   }
 }
-

@@ -1,8 +1,8 @@
 import { Button, Input } from '@tacocrew/ui-kit';
 import { ArrowRight, Link } from 'lucide-react';
-import { type KeyboardEvent, useState } from 'react';
+import { type KeyboardEvent, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { TacosApi } from '@/lib/api';
+import { useGetTacoByTacoID } from '@/lib/api/tacos';
 import type { TacoOrder } from '@/lib/api/types';
 
 type TacoHashSearchProps = Readonly<{
@@ -13,30 +13,31 @@ type TacoHashSearchProps = Readonly<{
 export function TacoHashSearch({ onSelectTaco, disabled }: TacoHashSearchProps) {
   const { t } = useTranslation();
   const [hash, setHash] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const getTaco = useGetTacoByTacoID();
+
+  // Handle successful fetch
+  useEffect(() => {
+    if (getTaco.data) {
+      onSelectTaco(getTaco.data);
+      setHash('');
+      getTaco.reset();
+    }
+  }, [getTaco.data, onSelectTaco, getTaco]);
 
   const handleSearch = async () => {
     if (!hash.trim()) {
-      setError(t('orders.create.hashSearch.errors.empty'));
       return;
     }
 
-    setIsLoading(true);
-    setError(null);
-
     try {
-      const taco = await TacosApi.getTacoByTacoID(hash.trim());
-      onSelectTaco(taco);
-      setHash('');
-    } catch (error_) {
-      // Log error for debugging but don't expose to user
-      console.error('Failed to fetch taco by hash:', error_);
-      setError(t('orders.create.hashSearch.errors.notFound'));
-    } finally {
-      setIsLoading(false);
+      await getTaco.mutateAsync(hash.trim());
+    } catch (_error_) {
+      // Error is handled by the mutation
     }
   };
+
+  const error = getTaco.error ? t('orders.create.hashSearch.errors.notFound') : null;
+  const isLoading = getTaco.isPending;
 
   const handleKeyPress = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && !isLoading && !disabled) {
@@ -59,7 +60,6 @@ export function TacoHashSearch({ onSelectTaco, disabled }: TacoHashSearchProps) 
           value={hash}
           onChange={(e) => {
             setHash(e.target.value);
-            if (error) setError(null);
           }}
           onKeyDown={handleKeyPress}
           disabled={disabled || isLoading}

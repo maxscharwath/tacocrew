@@ -34,8 +34,8 @@ export function TacoCard({ taco, badge, footer, showTacoID = false, className }:
       await navigator.clipboard.writeText(taco.tacoID);
       setCopiedTacoID(true);
       setTimeout(() => setCopiedTacoID(false), 2000);
-    } catch (err) {
-      console.error('Failed to copy tacoID:', err);
+    } catch (_err) {
+      // Clipboard access may fail in some contexts, silently ignore
     }
   };
 

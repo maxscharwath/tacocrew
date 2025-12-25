@@ -13,10 +13,8 @@ export function createLoader<T extends Record<string, unknown>>(
   };
 }
 
-export function createDeferredLoader<T extends Record<string, unknown>>(
-  handler: LoaderHandler<T>
-) {
-  return async (args: LoaderFunctionArgs) => {
+export function createDeferredLoader<T extends Record<string, unknown>>(handler: LoaderHandler<T>) {
+  return (args: LoaderFunctionArgs) => {
     const data = withAuthErrorHandling(() => handler(args), args.request);
     return defer({ data });
   };

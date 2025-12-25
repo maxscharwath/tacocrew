@@ -3,8 +3,8 @@
  * @module utils/order-request-builder
  */
 
-import { TacoKind } from '@/lib/api/types';
 import type { UpsertUserOrderBody } from '@/lib/api/orders';
+import { TacoKind } from '@/lib/api/types';
 import type { ParsedOrderFormData } from './order-form-parser';
 
 /**
@@ -37,4 +37,3 @@ export function buildUpsertOrderRequest(data: ParsedOrderFormData): UpsertUserOr
     },
   };
 }
-

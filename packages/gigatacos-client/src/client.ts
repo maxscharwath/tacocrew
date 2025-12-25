@@ -4,6 +4,7 @@
  * @module gigatacos-client/client
  */
 
+import { EMPTY_GARNITURE_CODE, EMPTY_MEAT_CODE, EMPTY_SAUCE_CODE } from './config/empty-items.config';
 import { CsrfError } from './errors';
 import { HttpClient } from './http-client';
 import {extractCsrfTokenFromHtml, 
@@ -29,9 +30,8 @@ import type {
   Taco,
   TacoFormData,
 } from './types';
-import { EMPTY_GARNITURE_CODE, EMPTY_MEAT_CODE, EMPTY_SAUCE_CODE } from './config/empty-items.config';
-import { normalizeTacoFormData } from './utils/taco-form-normalizer';
 import { noopLogger } from './utils/logger';
+import { normalizeTacoFormData } from './utils/taco-form-normalizer';
 
 /**
  * Gigatacos Client

@@ -8,4 +8,3 @@ export const EMPTY_SAUCE_CODE = 'sans_sauce';
 export const EMPTY_GARNITURE_CODE = 'sans_garniture';
 
 export const EMPTY_STOCK_CODES = [EMPTY_MEAT_CODE, EMPTY_SAUCE_CODE, EMPTY_GARNITURE_CODE] as const;
-

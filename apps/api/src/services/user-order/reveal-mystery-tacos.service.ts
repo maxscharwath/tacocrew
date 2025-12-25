@@ -7,8 +7,8 @@ import { injectable } from 'tsyringe';
 import { TacoKind } from '@/schemas/taco.schema';
 import type { UserOrder } from '@/schemas/user-order.schema';
 import { ResourceService } from '@/services/resource/resource.service';
-import { convertMysteryTacoToRegular } from '@/shared/utils/mystery-taco-converter.utils';
 import { inject } from '@/shared/utils/inject.utils';
+import { convertMysteryTacoToRegular } from '@/shared/utils/mystery-taco-converter.utils';
 
 @injectable()
 export class RevealMysteryTacosService {
@@ -20,7 +20,7 @@ export class RevealMysteryTacosService {
    */
   async revealMysteryTacos(userOrder: UserOrder): Promise<UserOrder> {
     const stock = await this.resourceService.getStock();
-    
+
     const revealedTacos = userOrder.items.tacos.map((taco) => {
       if (taco.kind === TacoKind.MYSTERY) {
         return convertMysteryTacoToRegular(taco, stock);
@@ -37,4 +37,3 @@ export class RevealMysteryTacosService {
     };
   }
 }
-

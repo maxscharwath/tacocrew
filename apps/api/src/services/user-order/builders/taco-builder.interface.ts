@@ -13,4 +13,3 @@ export interface TacoBuilder {
     stock: StockAvailability
   ): RegularTaco | MysteryTaco;
 }
-

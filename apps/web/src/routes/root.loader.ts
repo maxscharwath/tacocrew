@@ -1,38 +1,31 @@
-import { type LoaderFunctionArgs, redirect } from 'react-router';
-import { UserApi } from '@/lib/api';
-import { authClient } from '@/lib/auth-client';
-import { routes } from '@/lib/routes';
+import { getProfile } from '@/lib/api/user';
+import {
+  getIntentFromFormData,
+  processRootActionIntent,
+} from '@/lib/handlers/root-action-handlers';
 import { createActionHandler } from '@/lib/utils/action-handler';
-import { isLoginRoute, withAuthErrorHandling } from '@/lib/utils/loader-helpers';
+import { createRootLoader } from '@/lib/utils/root-loader-utils';
 
 export type RootLoaderData = {
-  profile: Awaited<ReturnType<typeof UserApi.getProfile>> | null;
+  profile: Awaited<ReturnType<typeof getProfile>> | null;
 };
 
-export async function rootLoader({ request }: LoaderFunctionArgs) {
-  if (isLoginRoute(request)) {
-    return Response.json({ profile: null });
-  }
-
-  // API call handles 401 → redirect to login
-  const profile = await withAuthErrorHandling(() => UserApi.getProfile(), request);
-  return Response.json({ profile });
-}
+/**
+ * Root loader validates authentication by fetching the profile.
+ * If profile fetch fails with 401, user is redirected to login.
+ */
+export const rootLoader = createRootLoader();
 
 export const rootAction = createActionHandler({
   handlers: {
     POST: async ({ formData }) => {
-      const intent = formData.get('_intent');
-      if (intent === 'logout') {
-        await authClient.signOut();
-        return redirect(routes.signin());
-      }
-      throw new Response('Invalid action', { status: 400 });
+      const intent = getIntentFromFormData(formData);
+      return await processRootActionIntent(intent);
     },
   },
   getFormName: async (_method, request) => {
     const formData = await request.clone().formData();
-    return formData.get('_intent')?.toString() || 'unknown';
+    return getIntentFromFormData(formData);
   },
   onSuccess: () => {
     // Should not reach here for logout (throws redirect)

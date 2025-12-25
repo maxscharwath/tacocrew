@@ -1,5 +1,5 @@
 import { cva, type VariantProps } from 'class-variance-authority';
-import { Children, isValidElement, type ComponentPropsWithoutRef } from 'react';
+import { Children, type ComponentPropsWithoutRef, isValidElement } from 'react';
 import { cn } from './utils';
 
 const badgeVariants = cva(

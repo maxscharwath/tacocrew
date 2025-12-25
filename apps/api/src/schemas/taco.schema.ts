@@ -121,10 +121,7 @@ export const MysteryTacoSchema = z.object({
 /**
  * Taco schema - discriminated union of RegularTaco and MysteryTaco
  */
-export const TacoSchema = z.discriminatedUnion('kind', [
-  RegularTacoSchema,
-  MysteryTacoSchema,
-]);
+export const TacoSchema = z.discriminatedUnion('kind', [RegularTacoSchema, MysteryTacoSchema]);
 
 export type RegularTaco = z.infer<typeof RegularTacoSchema>;
 export type MysteryTaco = z.infer<typeof MysteryTacoSchema>;

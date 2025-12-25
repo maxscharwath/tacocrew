@@ -9,11 +9,11 @@
  */
 
 import { injectable } from 'tsyringe';
-import type { UserBadge } from '@/generated/client';
 import { getMetricsForEvent } from '@/config/metrics.config';
+import type { UserBadge } from '@/generated/client';
 import { BadgeRepository } from '@/infrastructure/repositories/badge.repository';
-import { UserStatsRepository } from '@/infrastructure/repositories/user-stats.repository';
 import { UserRepository } from '@/infrastructure/repositories/user.repository';
+import { UserStatsRepository } from '@/infrastructure/repositories/user-stats.repository';
 import type { BadgeDefinition, BadgeEvent, BadgeEventType } from '@/schemas/badge.schema';
 import type { UserId } from '@/schemas/user.schema';
 import { getAllBadges, getAvailableBadges } from '@/services/badge/badge.utils';
@@ -91,7 +91,11 @@ export class BadgeEvaluationService {
   /**
    * Award a badge to a user
    */
-  private async awardBadge(userId: UserId, badge: BadgeDefinition, event: BadgeEvent): Promise<UserBadge | null> {
+  private async awardBadge(
+    userId: UserId,
+    badge: BadgeDefinition,
+    event: BadgeEvent
+  ): Promise<UserBadge | null> {
     try {
       return await this.badgeRepository.create({
         userId,
@@ -108,11 +112,16 @@ export class BadgeEvaluationService {
    * Get badges that are relevant to a specific event type
    * Auto-derived from badge triggers - no manual mapping needed!
    */
-  private getApplicableBadges(badges: BadgeDefinition[], eventType: BadgeEventType): BadgeDefinition[] {
+  private getApplicableBadges(
+    badges: BadgeDefinition[],
+    eventType: BadgeEventType
+  ): BadgeDefinition[] {
     // Get metrics that this event can affect
     const affectedMetrics = new Set(getMetricsForEvent(eventType).map((m) => m.id));
 
-    return badges.filter((badge) => this.isBadgeRelevantToEvent(badge.trigger, eventType, affectedMetrics));
+    return badges.filter((badge) =>
+      this.isBadgeRelevantToEvent(badge.trigger, eventType, affectedMetrics)
+    );
   }
 
   /**
@@ -147,7 +156,9 @@ export class BadgeEvaluationService {
 
       case 'combo':
         // Combo is relevant if any sub-condition is relevant
-        return trigger.conditions.some((c) => this.isBadgeRelevantToEvent(c, eventType, affectedMetrics));
+        return trigger.conditions.some((c) =>
+          this.isBadgeRelevantToEvent(c, eventType, affectedMetrics)
+        );
 
       default:
         return false;

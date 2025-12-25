@@ -13,7 +13,7 @@ import { format } from 'date-fns';
 import { useEffect } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
-import { OrdersApi } from '@/lib/api';
+import { useUpdateGroupOrder } from '@/lib/api/orders';
 import type { GroupOrder } from '@/lib/api/types';
 import { type EditGroupOrderFormData, editGroupOrderSchema } from '@/lib/schemas';
 import { toDate } from '@/lib/utils/date';
@@ -32,6 +32,7 @@ export function EditGroupOrderDialog({
   onSuccess,
 }: EditGroupOrderDialogProps) {
   const { t } = useTranslation();
+  const updateGroupOrder = useUpdateGroupOrder();
 
   const form = useForm<EditGroupOrderFormData>({
     resolver: zodResolver(editGroupOrderSchema),
@@ -55,16 +56,18 @@ export function EditGroupOrderDialog({
 
   const handleSubmit = async (data: EditGroupOrderFormData) => {
     try {
-      await OrdersApi.updateGroupOrder(groupOrder.id, {
-        name: data.name.trim() || null,
-        startDate: data.startDate,
-        endDate: data.endDate,
+      await updateGroupOrder.mutateAsync({
+        groupOrderId: groupOrder.id,
+        body: {
+          name: data.name.trim() || null,
+          startDate: data.startDate,
+          endDate: data.endDate,
+        },
       });
 
       onSuccess();
       onClose();
     } catch (err) {
-      console.error('Failed to update group order:', err);
       form.setError('root', {
         type: 'manual',
         message: err instanceof Error ? err.message : t('orders.detail.edit.error.generic'),
@@ -91,7 +94,7 @@ export function EditGroupOrderDialog({
                 id="orderName"
                 type="text"
                 placeholder={t('common.placeholders.dropName')}
-                disabled={form.formState.isSubmitting}
+                disabled={form.formState.isSubmitting || updateGroupOrder.isPending}
                 aria-invalid={fieldState.invalid}
               />
               {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
@@ -120,7 +123,7 @@ export function EditGroupOrderDialog({
                         const dateStr = format(date, 'yyyy-MM-dd');
                         field.onChange(new Date(`${dateStr}T${newTime}`).toISOString());
                       }}
-                      disabled={form.formState.isSubmitting}
+                      disabled={form.formState.isSubmitting || updateGroupOrder.isPending}
                       required
                     />
                     {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
@@ -149,7 +152,7 @@ export function EditGroupOrderDialog({
                         const dateStr = format(date, 'yyyy-MM-dd');
                         field.onChange(new Date(`${dateStr}T${newTime}`).toISOString());
                       }}
-                      disabled={form.formState.isSubmitting}
+                      disabled={form.formState.isSubmitting || updateGroupOrder.isPending}
                       required
                       minDate={format(startDate, 'yyyy-MM-dd')}
                     />
@@ -170,12 +173,14 @@ export function EditGroupOrderDialog({
             type="button"
             variant="outline"
             onClick={onClose}
-            disabled={form.formState.isSubmitting}
+            disabled={form.formState.isSubmitting || updateGroupOrder.isPending}
           >
             {t('common.cancel')}
           </Button>
           <Button type="submit" variant="default" disabled={form.formState.isSubmitting}>
-            {form.formState.isSubmitting ? t('common.saving') : t('common.save')}
+            {form.formState.isSubmitting || updateGroupOrder.isPending
+              ? t('common.saving')
+              : t('common.save')}
           </Button>
         </div>
       </form>

@@ -28,7 +28,7 @@ export class BadgeTracker {
     const tacoData = items.tacos.map((taco) => {
       // Check if this taco is a mystery taco (mystery tacos stay as mystery in DB)
       const isMystery = taco.kind === TacoKind.MYSTERY;
-      
+
       return {
         isMystery,
         priceCentimes: taco.price,
@@ -64,4 +64,3 @@ export class BadgeTracker {
     }
   }
 }
-

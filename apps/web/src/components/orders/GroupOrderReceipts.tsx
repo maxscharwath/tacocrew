@@ -10,7 +10,6 @@ import {
 import { Phone, ScrollText } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useRevalidator } from 'react-router';
 import { toast } from 'sonner';
 import {
   type ReceiptItem,
@@ -19,8 +18,13 @@ import {
   type ReceiptTicketModel,
 } from '@/components/orders/ReceiptTicket';
 import { useLocaleFormatter } from '@/hooks/useLocaleFormatter';
-import { OrdersApi } from '@/lib/api';
-import { sendPaymentReminder } from '@/lib/api/notifications';
+import { ApiError } from '@/lib/api/http';
+import { useSendPaymentReminder } from '@/lib/api/notifications';
+import {
+  useGroupOrderReceipts,
+  useUpdateUserOrderParticipantPayment,
+  useUpdateUserOrderReimbursementStatus,
+} from '@/lib/api/orders';
 import type { GroupOrder, UserOrderSummary } from '@/lib/api/types';
 import { Currency } from '@/lib/api/types';
 import { formatPhoneNumber } from '@/utils/phone-formatter';
@@ -37,8 +41,10 @@ type ReceiptViewModel = {
   items: ReceiptItem[];
   reimbursementComplete: boolean;
   participantPaid: boolean;
+  paidBy: { id: string; name: string | null } | null;
   isLeaderReceipt: boolean;
   canSendReminder: boolean;
+  canShowPayForOther: boolean;
 };
 
 type ProcessingState = {
@@ -119,69 +125,123 @@ export function GroupOrderReceipts({
 }: GroupOrderReceiptsProps) {
   // ALL hooks must be called unconditionally before any early returns
   const { t } = useTranslation();
-  const revalidator = useRevalidator();
   // Get currency from first order, default to CHF
   const currency = userOrders[0]?.totalPrice.currency ?? Currency.CHF;
   const { formatDate, formatTime } = useLocaleFormatter(currency);
   const [processing, setProcessing] = useState<ProcessingState>(null);
+
+  // Mutation hooks
+  const updateParticipantPayment = useUpdateUserOrderParticipantPayment();
+  const updateReimbursement = useUpdateUserOrderReimbursementStatus();
+  const sendReminder = useSendPaymentReminder();
 
   // Conditional checks
   const hasFee = groupOrder.fee !== undefined && groupOrder.fee !== null;
   const shouldShowReceipts = groupOrder.status === 'submitted' || groupOrder.status === 'completed';
   const canRender = userOrders.length > 0 && hasFee && shouldShowReceipts;
 
-  // Group orders by user (React Compiler will memoize automatically)
-  const groupedOrders: GroupedOrders[] = canRender
-    ? (() => {
-        const map = new Map<string, GroupedOrders>();
+  // Fetch receipts with revealed mystery tacos using React Query
+  const { data: receiptsData, refetch: refetchReceipts } = useGroupOrderReceipts(
+    groupOrder.id,
+    canRender
+  );
+  const receiptOrders = receiptsData?.userOrders ?? [];
 
-        for (const order of userOrders) {
-          const existing = map.get(order.userId);
-          if (existing) {
-            existing.orders.push(order);
-          } else {
-            map.set(order.userId, { userId: order.userId, name: order.name, orders: [order] });
-          }
-        }
+  // Group receipt orders by user (React Compiler will memoize automatically)
+  // Only use receiptOrders (from /receipts endpoint) which has payment status
+  // Don't fallback to userOrders as they don't have payment fields
+  const groupedOrders: GroupedOrders[] =
+    canRender && receiptOrders.length > 0
+      ? (() => {
+          const map = new Map<string, GroupedOrders>();
 
-        return Array.from(map.values()).sort((a, b) => {
-          const nameA = (a.name ?? '').trim().toLowerCase();
-          const nameB = (b.name ?? '').trim().toLowerCase();
-          if (nameA && nameB) {
-            return nameA.localeCompare(nameB);
+          for (const order of receiptOrders) {
+            const existing = map.get(order.userId);
+            if (existing) {
+              existing.orders.push(order);
+            } else {
+              map.set(order.userId, { userId: order.userId, name: order.name, orders: [order] });
+            }
           }
-          if (nameA) return -1;
-          if (nameB) return 1;
-          return a.userId.localeCompare(b.userId);
-        });
-      })()
-    : [];
+
+          return Array.from(map.values()).sort((a, b) => {
+            const nameA = (a.name ?? '').trim().toLowerCase();
+            const nameB = (b.name ?? '').trim().toLowerCase();
+            if (nameA && nameB) {
+              return nameA.localeCompare(nameB);
+            }
+            if (nameA) return -1;
+            if (nameB) return 1;
+            return a.userId.localeCompare(b.userId);
+          });
+        })()
+      : [];
 
   // Build receipt view models (React Compiler will memoize automatically)
-  const receipts: ReceiptViewModel[] = canRender
-    ? groupedOrders.map((group) => {
-        const items = group.orders.flatMap((order) => buildReceiptItems(order));
-        const subtotal = group.orders.reduce((sum, order) => sum + order.totalPrice.value, 0);
-        const reimbursementComplete = group.orders.every((order) => order.reimbursement.settled);
-        const isLeaderReceipt = group.userId === groupOrder.leader.id;
-        const participantPaid = isLeaderReceipt
-          ? true
-          : group.orders.every((order) => order.participantPayment.paid);
+  // Use receiptOrders from /receipts endpoint (has revealed mystery tacos and payment status)
+  // Show receipts even while loading if we have previous data
+  const receipts: ReceiptViewModel[] =
+    canRender && groupedOrders.length > 0
+      ? groupedOrders.map((group) => {
+          const items = group.orders.flatMap((order) => buildReceiptItems(order));
+          const subtotal = group.orders.reduce((sum, order) => sum + order.totalPrice.value, 0);
+          const reimbursementComplete = group.orders.every(
+            (order) => order.reimbursement?.settled ?? false
+          );
+          const isLeaderReceipt = group.userId === groupOrder.leader.id;
+          const participantPaid = isLeaderReceipt
+            ? true
+            : group.orders.every((order) => order.participantPayment?.paid ?? false);
 
-        // Leader can send reminder when order hasn't been confirmed yet (participant might have lied about paying)
-        const canSendReminder = isLeader && !isLeaderReceipt && !reimbursementComplete;
+          // Leader can send reminder when order hasn't been confirmed yet (participant might have lied about paying)
+          const canSendReminder = isLeader && !isLeaderReceipt && !reimbursementComplete;
 
-        return {
-          group,
-          items,
-          subtotal,
-          reimbursementComplete,
-          participantPaid,
-          isLeaderReceipt,
-          canSendReminder,
-        } satisfies ReceiptViewModel;
-      })
-    : [];
+          // Can show "pay for other" button when:
+          // - Current user is not the order owner
+          // - Not the leader's receipt
+          // - Either: order hasn't been paid yet, OR current user is the one who paid
+          const hasCurrentUser = !!currentUserId;
+          const isNotOrderOwner = currentUserId !== group.userId;
+          const isNotLeaderReceipt = !isLeaderReceipt;
+
+          // Check if current user is the one who paid for this order
+          const currentUserPaidForThis = group.orders.some(
+            (order) => order.participantPayment.paidBy?.id === currentUserId
+          );
+
+          // Show button if: not owner, not leader receipt, and (not paid OR user paid for it)
+          const canShowPayForOther =
+            hasCurrentUser &&
+            isNotOrderOwner &&
+            isNotLeaderReceipt &&
+            (!participantPaid || currentUserPaidForThis);
+
+          // Get who paid for this order - check all orders and get the first paidBy found
+          // Show regardless of payment status - if someone paid, show who it was
+          let paidBy: { id: string; name: string | null } | null = null;
+          for (const order of group.orders) {
+            if (order.participantPayment.paidBy) {
+              paidBy = {
+                id: order.participantPayment.paidBy.id,
+                name: order.participantPayment.paidBy.name ?? null,
+              };
+              break;
+            }
+          }
+
+          return {
+            group,
+            items,
+            subtotal,
+            reimbursementComplete,
+            participantPaid,
+            paidBy,
+            isLeaderReceipt,
+            canSendReminder,
+            canShowPayForOther,
+          } satisfies ReceiptViewModel;
+        })
+      : [];
 
   const totalFee = groupOrder.fee ?? 0;
   const participantCount = receipts.length || 1;
@@ -206,12 +266,25 @@ export function GroupOrderReceipts({
     try {
       await Promise.all(
         orders.map((order) =>
-          OrdersApi.updateUserOrderParticipantPayment(groupOrder.id, order.id, paid)
+          updateParticipantPayment.mutateAsync({
+            groupOrderId: groupOrder.id,
+            itemId: order.id,
+            paid,
+          })
         )
       );
-      revalidator.revalidate();
-    } catch (error) {
-      console.error('Failed to update participant payment status', error);
+      // Mutation hook automatically invalidates queries, but we can still refetch for immediate UI update
+      await refetchReceipts();
+      if (paid) {
+        toast.success(t('orders.detail.receipts.toast.paymentUpdated'));
+      }
+    } catch (error: unknown) {
+      // Check if it's the "already paid" error
+      if (error instanceof ApiError && error.key === 'errors.orders.payment.alreadyPaid') {
+        toast.error(t('orders.detail.receipts.toast.alreadyPaid'));
+      } else {
+        toast.error(t('orders.detail.receipts.toast.paymentFailed'));
+      }
     } finally {
       setProcessing(null);
     }
@@ -226,12 +299,17 @@ export function GroupOrderReceipts({
     try {
       await Promise.all(
         orders.map((order) =>
-          OrdersApi.updateUserOrderReimbursementStatus(groupOrder.id, order.id, settled)
+          updateReimbursement.mutateAsync({
+            groupOrderId: groupOrder.id,
+            itemId: order.id,
+            reimbursed: settled,
+          })
         )
       );
-      revalidator.revalidate();
-    } catch (error) {
-      console.error('Failed to update reimbursement status', error);
+      // Mutation hook automatically invalidates queries, but we can still refetch for immediate UI update
+      await refetchReceipts();
+    } catch (_error) {
+      // Refetch failure is non-critical, UI already updated from mutation
     } finally {
       setProcessing(null);
     }
@@ -243,11 +321,13 @@ export function GroupOrderReceipts({
       // Send reminder for the first order
       const order = orders[0];
       if (order) {
-        await sendPaymentReminder(groupOrder.id, order.id);
+        await sendReminder.mutateAsync({
+          groupOrderId: groupOrder.id,
+          userOrderId: order.id,
+        });
         toast.success(t('orders.detail.receipts.toast.reminderSent'));
       }
-    } catch (error) {
-      console.error('Failed to send payment reminder', error);
+    } catch (_error) {
       toast.error(t('orders.detail.receipts.toast.reminderFailed'));
     } finally {
       setProcessing(null);
@@ -265,8 +345,15 @@ export function GroupOrderReceipts({
           items: receipt.items,
           subtotal: receipt.subtotal,
           participantPaid: receipt.participantPaid,
+          paidBy: receipt.paidBy,
           reimbursementComplete: receipt.reimbursementComplete,
-          canShowParticipantAction: currentUserId ? receipt.group.userId === currentUserId && !isLeader : false,
+          canShowParticipantAction: currentUserId
+            ? receipt.group.userId === currentUserId && !isLeader
+            : false,
+          canShowPayForOther: receipt.canShowPayForOther,
+          currentUserPaidForThis: receipt.group.orders.some(
+            (order) => order.participantPayment.paidBy?.id === currentUserId
+          ),
           canShowReimbursementAction: isLeader && !receipt.isLeaderReceipt,
           canShowSendReminder: receipt.canSendReminder,
         } satisfies ReceiptTicketModel,
@@ -353,6 +440,11 @@ export function GroupOrderReceipts({
                 }
                 onParticipantToggle={() =>
                   toggleParticipantPayment(userId, orders, !participantPaid)
+                }
+                onPayForOther={
+                  model.canShowPayForOther
+                    ? () => toggleParticipantPayment(userId, orders, !participantPaid)
+                    : undefined
                 }
                 onReimbursementToggle={() =>
                   toggleReimbursement(userId, orders, !reimbursementComplete)

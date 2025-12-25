@@ -216,9 +216,8 @@ export class PushNotificationClient {
       // Remove subscription from server
       try {
         await unsubscribeFromPushNotifications(subscription.endpoint);
-      } catch (error) {
+      } catch (_error) {
         // Log but don't throw - subscription is already removed from browser
-        console.warn('Failed to remove subscription from server:', error);
       }
 
       this.subscription = null;

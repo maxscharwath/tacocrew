@@ -8,87 +8,37 @@ import {
   CardTitle,
 } from '@tacocrew/ui-kit';
 import { AlertTriangle, CheckCircle2, Copy, Package } from 'lucide-react';
-import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useLoaderData } from 'react-router';
 import { StatBubble } from '@/components/orders';
-import { DeferredRoute } from '@/components/shared';
+import { SectionWrapper } from '@/components/sections';
 import { StockSkeleton } from '@/components/skeletons';
+import { useClipboard } from '@/hooks/useClipboard';
+import { getInitialSectionKey, useStockSections } from '@/hooks/useStockSections';
+import { useStockTabs } from '@/hooks/useStockTabs';
 import type { StockResponse } from '@/lib/api';
-import { StockApi } from '@/lib/api';
-import type { DeferredLoaderData } from '@/lib/types/loader-types';
+import { useStock } from '@/lib/api/stock';
 import { cn } from '@/lib/utils';
-import { createDeferredLoader } from '@/lib/utils/loader-factory';
+import { formatPrice } from '@/lib/utils/stock-price-formatter';
+import { calculateStockStats } from '@/lib/utils/stock-stats';
 
-export const stockLoader = createDeferredLoader(
-  async () => {
-    const stock = await StockApi.getStock();
-    return { stock };
-  }
-);
+export function stockLoader() {
+  return Response.json({});
+}
 
-const STOCK_SECTIONS = [
-  { key: 'meats', tone: 'rose' as const },
-  { key: 'sauces', tone: 'amber' as const },
-  { key: 'garnishes', tone: 'emerald' as const },
-  { key: 'extras', tone: 'violet' as const },
-  { key: 'drinks', tone: 'sky' as const },
-  { key: 'desserts', tone: 'cyan' as const },
-] as const satisfies ReadonlyArray<{
-  key: keyof StockResponse;
-  tone: 'sky' | 'violet' | 'emerald' | 'amber' | 'rose' | 'cyan' | 'brand';
-}>;
-
-type StockSectionKey = (typeof STOCK_SECTIONS)[number]['key'];
-
-type StockLoaderData = DeferredLoaderData<typeof stockLoader>;
-
-function StockContent({
-  stock,
-}: Readonly<{ stock: Awaited<ReturnType<typeof StockApi.getStock>> }>) {
+function StockContent({ stock }: Readonly<{ stock: StockResponse }>) {
   const { t } = useTranslation();
-  const [copiedId, setCopiedId] = useState<string | null>(null);
 
-  const handleCopyId = async (id: string) => {
-    try {
-      await navigator.clipboard.writeText(id);
-      setCopiedId(id);
-      setTimeout(() => setCopiedId(null), 2000);
-    } catch (err) {
-      console.error('Failed to copy ID:', err);
-    }
-  };
+  // Data hooks
+  const sections = useStockSections(stock);
+  const { activeTab, setActiveTab } = useStockTabs(sections, getInitialSectionKey(sections));
+  const { copiedId, handleCopy } = useClipboard();
 
-  const sections = STOCK_SECTIONS.map((section) => ({
-    ...section,
-    label: t(`stock.sections.${section.key}.label`),
-    blurb: t(`stock.sections.${section.key}.blurb`),
-  })).filter((section) => stock[section.key]?.length);
-  const [activeTab, setActiveTab] = useState<StockSectionKey>(
-    sections[0]?.key ?? STOCK_SECTIONS[0].key
-  );
-
-  useEffect(() => {
-    if (sections.length === 0) {
-      return;
-    }
-
-    const stillValid = sections.some((section) => section.key === activeTab);
-    if (!stillValid) {
-      setActiveTab(sections[0].key);
-    }
-  }, [sections, activeTab]);
-
+  // Current section and items
   const currentSection = sections.find((section) => section.key === activeTab) ?? sections[0];
   const items = currentSection ? stock[currentSection.key] : [];
-  const inStockCount = items.filter((item) => item.in_stock).length;
-  const totalCategories = sections.length;
-  const totalItems = Object.values(stock).reduce((acc, category) => acc + category.length, 0);
-  const lowStockCount = Object.values(stock).reduce(
-    (acc, category) =>
-      acc + category.filter((item: { in_stock: boolean }) => !item.in_stock).length,
-    0
-  );
+
+  // Statistics
+  const stats = calculateStockStats(stock, activeTab);
 
   return (
     <div className="w-full space-y-10">
@@ -120,19 +70,19 @@ function StockContent({
             <StatBubble
               icon={Package}
               label={t(`stock.stats.categories`)}
-              value={totalCategories}
+              value={stats.totalCategories}
               tone="brand"
             />
             <StatBubble
               icon={Package}
               label={t(`stock.stats.ingredients`)}
-              value={totalItems}
+              value={stats.totalItems}
               tone="violet"
             />
             <StatBubble
               icon={AlertTriangle}
               label={t(`stock.stats.lowStock`)}
-              value={lowStockCount}
+              value={stats.lowStockCount}
               tone="sunset"
             />
           </div>
@@ -189,7 +139,7 @@ function StockContent({
                     </div>
                     <div className="flex flex-wrap items-center gap-3">
                       <Badge tone="success" pill>
-                        {t(`stock.stats.counts.inStock`, { count: inStockCount })}
+                        {t(`stock.stats.counts.inStock`, { count: stats.inStockCount })}
                       </Badge>
                       <Badge tone="neutral" pill>
                         {t(`stock.stats.counts.total`, { count: items.length })}
@@ -217,7 +167,7 @@ function StockContent({
                             type="button"
                             variant="ghost"
                             size="sm"
-                            onClick={() => handleCopyId(item.id)}
+                            onClick={() => handleCopy(item.id)}
                             className="absolute top-4 right-4 z-10 h-8 w-8 rounded-lg p-0 transition-transform hover:scale-110 hover:bg-emerald-500/25"
                             title={
                               copiedId === item.id
@@ -273,19 +223,12 @@ function StockContent({
   );
 }
 
-function formatPrice(amount: { value: number; currency: string }) {
-  return amount.value.toLocaleString(undefined, {
-    style: 'currency',
-    currency: amount.currency,
-  });
-}
-
 export function StockRoute() {
-  const { data } = useLoaderData<StockLoaderData>();
+  const stockQuery = useStock();
 
   return (
-    <DeferredRoute data={data} fallback={<StockSkeleton />}>
-      {({ stock }) => <StockContent stock={stock} />}
-    </DeferredRoute>
+    <SectionWrapper query={stockQuery} skeleton={<StockSkeleton />}>
+      {(stock) => <StockContent stock={stock} />}
+    </SectionWrapper>
   );
 }

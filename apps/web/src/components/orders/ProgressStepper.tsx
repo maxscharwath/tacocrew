@@ -18,24 +18,23 @@ export function ProgressStepper({ steps }: ProgressStepperProps) {
 
   const completedSteps = steps.filter((s) => s.completed).length;
   const progressPercentage = (completedSteps / steps.length) * 100;
-  
+
   // Detect mystery mode: if we have exactly 2 steps and the second is "ready", it's a mystery taco
   const isMystery = steps.length === 2 && steps[1]?.key === 'ready';
 
   return (
-    <div className={cn(
-      "mb-6 border-b pb-6",
-      isMystery ? "border-purple-500/20" : "border-white/10"
-    )}>
+    <div
+      className={cn('mb-6 border-b pb-6', isMystery ? 'border-purple-500/20' : 'border-white/10')}
+    >
       <div className="space-y-3">
         {/* Progress bar */}
         <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-800/60">
           <div
             className={cn(
-              "h-full rounded-full transition-all duration-700 ease-out",
+              'h-full rounded-full transition-all duration-700 ease-out',
               isMystery
-                ? "bg-gradient-to-r from-purple-400 via-purple-500 to-indigo-500 shadow-[0_0_8px_rgba(139,92,246,0.4)]"
-                : "bg-gradient-to-r from-brand-400 via-brand-500 to-sky-500 shadow-[0_0_8px_rgba(99,102,241,0.4)]"
+                ? 'bg-gradient-to-r from-purple-400 via-purple-500 to-indigo-500 shadow-[0_0_8px_rgba(139,92,246,0.4)]'
+                : 'bg-gradient-to-r from-brand-400 via-brand-500 to-sky-500 shadow-[0_0_8px_rgba(99,102,241,0.4)]'
             )}
             style={{ width: `${progressPercentage}%` }}
           />
@@ -65,16 +64,18 @@ export function ProgressStepper({ steps }: ProgressStepperProps) {
                   )}
                 >
                   {isActive ? (
-                    <CheckCircle2 
-                      size={14} 
-                      className={isMystery ? 'text-purple-300' : 'text-brand-300'} 
+                    <CheckCircle2
+                      size={14}
+                      className={isMystery ? 'text-purple-300' : 'text-brand-300'}
                     />
                   ) : (
                     <StepIcon
                       size={12}
                       className={cn(
-                        isCurrent 
-                          ? isMystery ? 'text-purple-400' : 'text-brand-400'
+                        isCurrent
+                          ? isMystery
+                            ? 'text-purple-400'
+                            : 'text-brand-400'
                           : 'text-slate-500'
                       )}
                     />
@@ -83,10 +84,12 @@ export function ProgressStepper({ steps }: ProgressStepperProps) {
                 <p
                   className={cn(
                     'w-full truncate text-center font-medium text-[10px] transition-colors',
-                    isActive 
-                      ? isMystery ? 'text-purple-100' : 'text-brand-100'
-                      : isCurrent 
-                        ? 'text-slate-300' 
+                    isActive
+                      ? isMystery
+                        ? 'text-purple-100'
+                        : 'text-brand-100'
+                      : isCurrent
+                        ? 'text-slate-300'
                         : 'text-slate-500'
                   )}
                   title={step.label}

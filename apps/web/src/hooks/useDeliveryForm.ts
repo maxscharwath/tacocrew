@@ -6,9 +6,13 @@ import {
   SWITZERLAND_COUNTRY,
   type SwissCanton,
 } from '@/constants/location';
-import { UserApi } from '@/lib/api';
 import { ApiError } from '@/lib/api/http';
 import type { DeliveryProfile, DeliveryProfilePayload, PaymentMethod } from '@/lib/api/types';
+import {
+  createDeliveryProfile,
+  deleteDeliveryProfile,
+  updateDeliveryProfile,
+} from '@/lib/api/user';
 
 type ProfileMessage = {
   type: 'success' | 'error';
@@ -125,7 +129,7 @@ export function useDeliveryForm({ initialProfiles, t }: UseDeliveryFormProps) {
     setProfileMessage(null);
     try {
       const payload = buildProfilePayload();
-      const profile = await UserApi.createDeliveryProfile(payload);
+      const profile = await createDeliveryProfile(payload);
       setDeliveryProfiles((prev) => [...prev, profile]);
       manualProfileClearRef.current = false;
       setSelectedProfileId(profile.id);
@@ -149,7 +153,7 @@ export function useDeliveryForm({ initialProfiles, t }: UseDeliveryFormProps) {
     setProfileMessage(null);
     try {
       const payload = buildProfilePayload();
-      const profile = await UserApi.updateDeliveryProfile(selectedProfileId, payload);
+      const profile = await updateDeliveryProfile(selectedProfileId, payload);
       setDeliveryProfiles((prev) => prev.map((item) => (item.id === profile.id ? profile : item)));
       setProfileMessage({ type: 'success', text: t('orders.submit.saved.messages.updated') });
     } catch (error) {
@@ -168,7 +172,7 @@ export function useDeliveryForm({ initialProfiles, t }: UseDeliveryFormProps) {
     setProfileLoading(true);
     setProfileMessage(null);
     try {
-      await UserApi.deleteDeliveryProfile(selectedProfileId);
+      await deleteDeliveryProfile(selectedProfileId);
       setDeliveryProfiles((prev) => prev.filter((item) => item.id !== selectedProfileId));
       manualProfileClearRef.current = false;
       setSelectedProfileId('');

@@ -6,8 +6,9 @@ import { useRevalidator } from 'react-router';
 import { OrganizationCreateForm } from '@/components/profile/OrganizationCreateForm';
 import { OrganizationDetails } from '@/components/profile/OrganizationDetails';
 import { OrganizationsList } from '@/components/profile/OrganizationsList';
-import { OrganizationApi, UserApi } from '@/lib/api';
+import { createOrganization } from '@/lib/api/organization';
 import type { Organization, OrganizationPayload } from '@/lib/api/types';
+import { getProfile } from '@/lib/api/user';
 
 type OrganizationsManagerProps = Readonly<{
   organizations: Organization[];
@@ -115,10 +116,10 @@ export function OrganizationsManager({
   useEffect(() => {
     const loadUserInfo = async () => {
       try {
-        const profile = await UserApi.getProfile();
+        const profile = await getProfile();
         setCurrentUserId(profile.id);
-      } catch (error) {
-        console.error('Failed to load user profile', error);
+      } catch (_error) {
+        // Silently fail - current user ID is optional for display purposes
       }
     };
     loadUserInfo();
@@ -161,7 +162,7 @@ export function OrganizationsManager({
   ) => {
     const loadingToastId = toast.loading(t('organizations.messages.creating'));
     try {
-      const newOrg = await OrganizationApi.createOrganization(data, avatarFile, backgroundColor);
+      const newOrg = await createOrganization(data, avatarFile, backgroundColor);
       setOrganizations((prev) => [...prev, newOrg]);
       setSelectedId(newOrg.id);
       setIsCreating(false);

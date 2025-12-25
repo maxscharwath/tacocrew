@@ -17,41 +17,28 @@ import {
 } from '@tacocrew/ui-kit';
 import { addHours, format, setHours, setMinutes } from 'date-fns';
 import { ArrowRight, Calendar, Package, Tag, Truck } from 'lucide-react';
-import { Suspense, useEffect } from 'react';
+import { useEffect } from 'react';
 import { Controller } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
-import {
-  Await,
-  Link,
-  type LoaderFunctionArgs,
-  redirect,
-  useActionData,
-  useLoaderData,
-  useSubmit,
-} from 'react-router';
+import { Link, type LoaderFunctionArgs, redirect, useActionData, useSubmit } from 'react-router';
 import { FormField } from '@/components/forms/FormField';
 import { OrderListItem, StatBubble } from '@/components/orders';
+import { SectionWrapper } from '@/components/sections';
 import { OrganizationSelectItem } from '@/components/shared/OrganizationSelectItem';
-import { OrdersSkeleton } from '@/components/skeletons';
+import { OrdersGridSkeleton } from '@/components/skeletons/OrdersGridSkeleton';
 import { useDateFormat } from '@/hooks/useDateFormat';
+import { useOrdersListData } from '@/hooks/useOrdersListData';
 import { useZodForm } from '@/hooks/useZodForm';
-import { OrdersApi, OrganizationApi, UserApi } from '@/lib/api';
 import { routes } from '@/lib/routes';
 import { createGroupOrderSchema } from '@/lib/schemas/order.schema';
 import { combineDateAndTime, toDate } from '@/lib/utils/date';
-import { defer } from '@/lib/utils/defer';
-import { extractErrorMessage, isMultipleOrganizationsError } from '@/lib/utils/error-helpers';
-import { createDeferredWithAuth } from '@/lib/utils/loader-helpers';
-import { getRandomOrderName } from '@/lib/utils/order-name';
 import {
-  getActiveOrganizations,
-  shouldShowOrganizationSelector,
-} from '@/lib/utils/organization-helpers';
-
-type LoaderData = {
-  groupOrders: Awaited<ReturnType<typeof UserApi.getGroupOrders>>;
-  organizations: Awaited<ReturnType<typeof OrganizationApi.getMyOrganizations>>;
-};
+  calculateQuickDeadline,
+  getDefaultEndTime,
+  getMinDateTime,
+  validateAndAdjustEndDate,
+} from '@/lib/utils/order-date-utils';
+import { getRandomOrderName } from '@/lib/utils/order-name';
 
 type ActionData = {
   errorKey?: string;
@@ -59,61 +46,12 @@ type ActionData = {
   requiresOrganization?: boolean;
 };
 
-export async function ordersLoader(_: LoaderFunctionArgs) {
-  return defer({
-    groupOrders: createDeferredWithAuth(() => UserApi.getGroupOrders()),
-    organizations: createDeferredWithAuth(() => OrganizationApi.getMyOrganizations()),
-  });
+export function ordersLoader(_: LoaderFunctionArgs) {
+  return Response.json({});
 }
 
-import type { CreateGroupOrderFormData } from '@/lib/types/form-data';
+import { handleCreateGroupOrder } from '@/lib/handlers/create-group-order-handler';
 import { createActionHandler } from '@/lib/utils/action-handler';
-import { parseFormData } from '@/lib/utils/form-data';
-
-/**
- * Normalize date string by adding seconds if missing
- */
-function normalizeDateString(dateStr: string): string {
-  if (dateStr.includes(':') && !dateStr.includes('Z') && !dateStr.includes('+')) {
-    return `${dateStr}:00`;
-  }
-  return dateStr;
-}
-
-/**
- * Validate and convert date strings to Date objects
- */
-function validateDates(
-  startDateStr: string,
-  endDateStr: string
-): { startDate: Date; endDate: Date } | Response {
-  const startDate = new Date(normalizeDateString(startDateStr));
-  const endDate = new Date(normalizeDateString(endDateStr));
-
-  if (Number.isNaN(startDate.valueOf()) || Number.isNaN(endDate.valueOf())) {
-    return Response.json(
-      {
-        form: 'create',
-        errorKey: 'errors.validation.failed',
-        errorMessage: 'Invalid date format. Please check your dates and times.',
-      },
-      { status: 400 }
-    );
-  }
-
-  if (endDate <= startDate) {
-    return Response.json(
-      {
-        form: 'create',
-        errorKey: 'errors.validation.failed',
-        errorMessage: 'End date must be after start date.',
-      },
-      { status: 400 }
-    );
-  }
-
-  return { startDate, endDate };
-}
 
 export const ordersAction = createActionHandler({
   handlers: {
@@ -122,38 +60,21 @@ export const ordersAction = createActionHandler({
         throw new Response('Invalid action', { status: 400 });
       }
 
-      const data = await parseFormData<CreateGroupOrderFormData>(request);
-      const dateResult = validateDates(data.startDate, data.endDate);
+      const result = await handleCreateGroupOrder(request);
 
-      if (dateResult instanceof Response) {
-        return dateResult;
+      if (!result.id) {
+        return Response.json(
+          {
+            form: 'create',
+            errorKey: result.errorKey,
+            errorMessage: result.errorMessage,
+            requiresOrganization: result.requiresOrganization,
+          },
+          { status: 400 }
+        );
       }
 
-      const { startDate, endDate } = dateResult;
-
-      try {
-        const created = await OrdersApi.createGroupOrder({
-          name: data.name,
-          startDate: startDate.toISOString(),
-          endDate: endDate.toISOString(),
-          organizationId: data.organizationId,
-        });
-
-        return redirect(routes.root.orderDetail({ orderId: created.id }));
-      } catch (error) {
-        if (isMultipleOrganizationsError(error)) {
-          return Response.json(
-            {
-              form: 'create',
-              errorKey: 'errors.validation.failed',
-              errorMessage: extractErrorMessage(error),
-              requiresOrganization: true,
-            },
-            { status: 400 }
-          );
-        }
-        throw error;
-      }
+      return redirect(routes.root.orderDetail({ orderId: result.id }));
     },
   },
   getFormName: (method) => {
@@ -162,57 +83,27 @@ export const ordersAction = createActionHandler({
   },
 });
 
-function OrdersContent({
-  groupOrders,
-  organizations,
-}: Readonly<{
-  groupOrders: LoaderData['groupOrders'];
-  organizations: LoaderData['organizations'];
-}>) {
+function OrdersContent() {
   const { t } = useTranslation();
   const { formatDateTime, formatDate, formatDateOnly, formatDayName, formatTime12Hour } =
     useDateFormat();
   const actionData = useActionData<ActionData | undefined>();
   const submit = useSubmit();
 
-  // Filter to only active organizations
-  const activeOrganizations = getActiveOrganizations(organizations);
-  const hasNoOrganizations = activeOrganizations.length === 0;
-  const showOrganizationSelector = shouldShowOrganizationSelector(
-    organizations,
-    actionData?.requiresOrganization
-  );
+  // Load data from consolidated hook
+  const {
+    groupOrders,
+    groupOrdersQuery,
+    activeOrganizations,
+    upcomingOrders,
+    activeCount,
+    hasNoOrganizations,
+    showOrganizationSelector,
+  } = useOrdersListData(actionData?.requiresOrganization);
 
   // Get current date/time for smart defaults
   const now = new Date();
   const today = format(now, 'yyyy-MM-dd');
-
-  // Calculate default end time based on start date/time (same day, but later)
-  const getDefaultEndTime = (startDateValue: string, startTimeValue: string) => {
-    const startDateTime = toDate(combineDateAndTime(startDateValue, startTimeValue));
-
-    // Default to same day, but find a good deadline time
-    // Try common deadlines: 5pm (17:00), 2pm (14:00), 12pm (12:00), or 3 hours later
-    const commonDeadlines = [17, 14, 12];
-
-    // Find the first common deadline that's at least 1 hour after start time
-    for (const deadlineHour of commonDeadlines) {
-      const endDateTime = setHours(startDateTime, deadlineHour);
-      const hoursDiff = (endDateTime.getTime() - startDateTime.getTime()) / (1000 * 60 * 60);
-      if (hoursDiff >= 1) {
-        return endDateTime.toISOString();
-      }
-    }
-
-    // If no common deadline works, default to 3 hours later (minimum 1 hour)
-    let endDateTime = addHours(startDateTime, 3);
-    // Ensure at least 1-hour difference
-    if (endDateTime <= startDateTime) {
-      endDateTime = addHours(startDateTime, 1);
-    }
-    return endDateTime.toISOString();
-  };
-
   const defaultStartTime = format(now, 'HH:mm');
   const defaultEnd = getDefaultEndTime(today, defaultStartTime);
 
@@ -252,53 +143,27 @@ function OrdersContent({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [startDateValue]);
 
-  // Calculate minimum date/time for closes based on start date/time
-  const getMinDateTime = (startDateValue: string) => {
-    const startDateTime = new Date(startDateValue);
-    const dateStr = format(startDateTime, 'yyyy-MM-dd');
-    return {
-      date: dateStr,
-      datetime: startDateTime,
-    };
-  };
-
   // Auto-adjust end date/time when start date/time changes
   useEffect(() => {
     if (!startDateValue || !endDateValue) return;
-
-    const minDateTime = getMinDateTime(startDateValue);
-    const endDateTime = new Date(endDateValue);
-
-    // If end is before start, recalculate default end time based on new start
-    if (endDateTime < minDateTime.datetime) {
-      const dateStr = format(minDateTime.datetime, 'yyyy-MM-dd');
-      const timeStr = format(minDateTime.datetime, 'HH:mm');
-      const defaultEnd = getDefaultEndTime(dateStr, timeStr);
-      form.setValue('endDate', defaultEnd);
+    const newEndDate = validateAndAdjustEndDate(startDateValue, endDateValue, getDefaultEndTime);
+    if (newEndDate !== endDateValue) {
+      form.setValue('endDate', newEndDate);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [startDateValue]);
 
+  // Set quick deadline helper
   const setQuickDeadline = (hour: number) => {
-    if (!startDateValue) return;
-    const minDateTime = getMinDateTime(startDateValue);
-    // Set hour and minutes to 00 using date-fns
-    let deadline = setMinutes(setHours(minDateTime.datetime, hour), 0);
-
-    // If the deadline time is before or equal to the start time, move to next day
-    if (deadline <= minDateTime.datetime) {
-      deadline = setMinutes(addHours(setHours(minDateTime.datetime, hour), 24), 0);
+    const deadline = calculateQuickDeadline(startDateValue, hour);
+    if (deadline) {
+      form.setValue('endDate', deadline);
     }
-
-    form.setValue('endDate', deadline.toISOString());
   };
 
-  // Get smart label for quick deadline button (just show time, keep it short)
+  // Get quick deadline label (formatted time)
   const getQuickDeadlineLabel = (hour: number): string => {
-    // Create a date object with the specified hour and minutes set to 00 using date-fns
     const date = setMinutes(setHours(new Date(), hour), 0);
-
-    // Use formatTime12Hour from useDateFormat hook for locale-aware time formatting
     return formatTime12Hour(date);
   };
 
@@ -312,12 +177,6 @@ function OrdersContent({
     formData.append('organizationId', data.organizationId || '');
     submit(formData, { method: 'post' });
   });
-
-  const upcomingOrders = [...groupOrders]
-    .filter((order) => toDate(order.endDate) > new Date())
-    .sort((a, b) => toDate(a.startDate).getTime() - toDate(b.startDate).getTime());
-
-  const activeCount = groupOrders.filter((order) => order.canAcceptOrders).length;
 
   return (
     <div className="space-y-10">
@@ -362,37 +221,44 @@ function OrdersContent({
       </section>
 
       <div className="grid gap-4 sm:gap-6 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:gap-8">
-        <section className="space-y-4">
-          <header className="flex items-center justify-between">
-            <div>
-              <h2 className="font-semibold text-lg text-white">{t('orders.list.queue.title')}</h2>
-              <p className="text-slate-300 text-sm">{t('orders.list.queue.subtitle')}</p>
-            </div>
-            <span className="rounded-full border border-white/10 bg-slate-800/80 px-4 py-1 font-medium text-slate-300 text-xs">
-              {t('orders.list.queue.scheduled', { count: groupOrders.length })}
-            </span>
-          </header>
+        {/* Orders list section with independent skeleton */}
+        <SectionWrapper query={groupOrdersQuery} skeleton={<OrdersGridSkeleton />}>
+          {(orders) => (
+            <section className="space-y-4">
+              <header className="flex items-center justify-between">
+                <div>
+                  <h2 className="font-semibold text-lg text-white">
+                    {t('orders.list.queue.title')}
+                  </h2>
+                  <p className="text-slate-300 text-sm">{t('orders.list.queue.subtitle')}</p>
+                </div>
+                <span className="rounded-full border border-white/10 bg-slate-800/80 px-4 py-1 font-medium text-slate-300 text-xs">
+                  {t('orders.list.queue.scheduled', { count: orders.length })}
+                </span>
+              </header>
 
-          <div className="grid gap-4">
-            {groupOrders.length === 0 ? (
-              <div className="flex flex-col items-center gap-3 rounded-2xl border border-white/15 border-dashed bg-slate-900/60 p-10 text-center text-slate-300">
-                <Package size={24} className="text-brand-200" />
-                <p>{t('orders.list.queue.empty')}</p>
+              <div className="grid gap-4">
+                {orders.length === 0 ? (
+                  <div className="flex flex-col items-center gap-3 rounded-2xl border border-white/15 border-dashed bg-slate-900/60 p-10 text-center text-slate-300">
+                    <Package size={24} className="text-brand-200" />
+                    <p>{t('orders.list.queue.empty')}</p>
+                  </div>
+                ) : (
+                  orders.map((order) => (
+                    <OrderListItem
+                      key={order.id}
+                      order={order}
+                      formatDateTimeRange={(start, end) =>
+                        `${formatDateTime(start)} → ${formatDateTime(end)}`
+                      }
+                      unnamedOrderText={t('orders.common.unnamedDrop')}
+                    />
+                  ))
+                )}
               </div>
-            ) : (
-              groupOrders.map((order) => (
-                <OrderListItem
-                  key={order.id}
-                  order={order}
-                  formatDateTimeRange={(start, end) =>
-                    `${formatDateTime(start)} → ${formatDateTime(end)}`
-                  }
-                  unnamedOrderText={t('orders.common.unnamedDrop')}
-                />
-              ))
-            )}
-          </div>
-        </section>
+            </section>
+          )}
+        </SectionWrapper>
 
         <section className="sticky top-4 h-fit space-y-4 rounded-3xl border border-white/10 bg-slate-900/80 p-3 shadow-[0_30px_80px_rgba(8,47,73,0.28)] backdrop-blur-sm sm:space-y-6 sm:p-6">
           <header className="space-y-1">
@@ -563,7 +429,7 @@ function OrdersContent({
                       control={form.control}
                       render={({ field, fieldState }) => {
                         const date = new Date(field.value);
-                        const minDateTime = getMinDateTime(startDateValue);
+                        const { date: minDate } = getMinDateTime(startDateValue);
                         return (
                           <Field data-invalid={fieldState.invalid}>
                             <DateTimePicker
@@ -579,7 +445,7 @@ function OrdersContent({
                                 field.onChange(combineDateAndTime(dateStr, newTime));
                               }}
                               disabled={isSubmitting}
-                              minDate={minDateTime.date}
+                              minDate={minDate}
                               error={fieldState.invalid}
                               required
                             />
@@ -617,18 +483,6 @@ function OrdersContent({
 }
 
 export function OrdersRoute() {
-  const { groupOrders, organizations } = useLoaderData<{
-    groupOrders: Promise<LoaderData['groupOrders']>;
-    organizations: Promise<LoaderData['organizations']>;
-  }>();
-
-  return (
-    <Suspense fallback={<OrdersSkeleton />}>
-      <Await resolve={Promise.all([groupOrders, organizations])}>
-        {([resolvedGroupOrders, resolvedOrganizations]) => (
-          <OrdersContent groupOrders={resolvedGroupOrders} organizations={resolvedOrganizations} />
-        )}
-      </Await>
-    </Suspense>
-  );
+  // Loader now returns empty object - all data loaded via hooks in OrdersContent
+  return <OrdersContent />;
 }

@@ -4,7 +4,7 @@
  */
 
 import { type MeatId } from '@/schemas/taco.schema';
-import { StockCategory, type StockAvailability, type UserOrderItems } from '@/shared/types/types';
+import { type StockAvailability, StockCategory, type UserOrderItems } from '@/shared/types/types';
 
 export class PriceCalculator {
   static calculateRegularTacoPrice(
@@ -37,4 +37,3 @@ export class OrderPriceCalculator {
     return tacoTotal + extraTotal + drinkTotal + dessertTotal;
   }
 }
-

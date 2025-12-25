@@ -54,9 +54,7 @@ export const Truncate: Story = {
       <Badge pill tone="brand">
         Very long pill badge text
       </Badge>
-      <Badge tone="success">
-        Another long badge text example
-      </Badge>
+      <Badge tone="success">Another long badge text example</Badge>
     </div>
   ),
 };

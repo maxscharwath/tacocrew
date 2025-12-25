@@ -29,7 +29,6 @@ export function useOrderValidation({
   kind = TacoKind.REGULAR,
 }: UseOrderValidationProps) {
   const { t } = useTranslation();
-  const tt = (key: string, options?: Record<string, unknown>) => t(`orders.create.${key}`, options);
   const totalMeatQuantity = meats.reduce((sum, m) => sum + m.quantity, 0);
   const isMystery = kind === TacoKind.MYSTERY;
 
@@ -43,7 +42,7 @@ export function useOrderValidation({
     const messages: string[] = [];
     // Only validate if user has selected something (either taco OR other items)
     if (!size && !hasOtherItems) {
-      messages.push(tt('validation.missingSelection'));
+      messages.push(t('orders.create.validation.missingSelection'));
     }
     return messages;
   })();
