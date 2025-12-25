@@ -52,4 +52,7 @@ export const validationKeys = {
   noteMax: 'validation.noteMax',
   customerNameRequired: 'validation.customerNameRequired',
   requestedTimeRequired: 'validation.requestedTimeRequired',
+  deliveryTypeRequired: 'validation.deliveryTypeRequired',
+  paymentMethodRequired: 'validation.paymentMethodRequired',
+  stateRegionRequired: 'validation.stateRegionRequired',
 } as const;

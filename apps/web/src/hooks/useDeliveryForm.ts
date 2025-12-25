@@ -1,18 +1,15 @@
 import { useEffect, useRef, useState } from 'react';
-import type { DeliveryType } from '@/components/orders/DeliveryTypeSelector';
-import {
-  DEFAULT_CANTON_CODE,
-  SWISS_CANTON_CODES,
-  SWITZERLAND_COUNTRY,
-  type SwissCanton,
-} from '@/constants/location';
+import { useTranslation } from 'react-i18next';
+import { DEFAULT_CANTON_CODE, SWITZERLAND_COUNTRY, type SwissCanton } from '@/constants/location';
+import { useZodForm } from '@/hooks/useZodForm';
 import { ApiError } from '@/lib/api/http';
-import type { DeliveryProfile, DeliveryProfilePayload, PaymentMethod } from '@/lib/api/types';
+import type { DeliveryProfile, DeliveryProfilePayload } from '@/lib/api/types';
 import {
-  createDeliveryProfile,
-  deleteDeliveryProfile,
-  updateDeliveryProfile,
+  useCreateDeliveryProfile,
+  useDeleteDeliveryProfile,
+  useUpdateDeliveryProfile,
 } from '@/lib/api/user';
+import { DeliveryFormSchema } from '@/lib/schemas/delivery-form.schema';
 
 type ProfileMessage = {
   type: 'success' | 'error';
@@ -21,48 +18,60 @@ type ProfileMessage = {
 
 type UseDeliveryFormProps = {
   readonly initialProfiles: DeliveryProfile[];
-  readonly t: (key: string) => string;
 };
 
-export function useDeliveryForm({ initialProfiles, t }: UseDeliveryFormProps) {
-  // Payment and delivery preferences
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('especes');
-  const [deliveryType, setDeliveryType] = useState<DeliveryType>('livraison');
-  const [requestedFor, setRequestedFor] = useState<string>('');
+export function useDeliveryForm({ initialProfiles }: UseDeliveryFormProps) {
+  const { t } = useTranslation();
+  const form = useZodForm({
+    schema: DeliveryFormSchema,
+    defaultValues: {
+      customerName: '',
+      customerPhone: '',
+      deliveryType: 'livraison',
+      road: '',
+      houseNumber: '',
+      postcode: '',
+      city: '',
+      stateRegion: DEFAULT_CANTON_CODE,
+      requestedFor: '',
+      paymentMethod: 'especes',
+    },
+  });
 
   // Delivery profiles state
   const [deliveryProfiles, setDeliveryProfiles] = useState(initialProfiles);
   const [selectedProfileId, setSelectedProfileId] = useState<string>(initialProfiles[0]?.id ?? '');
   const manualProfileClearRef = useRef(false);
 
-  // Customer contact information
-  const [customerName, setCustomerName] = useState('');
-  const [customerPhone, setCustomerPhone] = useState('');
-
-  // Address fields
-  const [road, setRoad] = useState('');
-  const [houseNumber, setHouseNumber] = useState('');
-  const [postcode, setPostcode] = useState('');
-  const [city, setCity] = useState('');
-  const [stateRegion, setStateRegion] = useState<SwissCanton>(DEFAULT_CANTON_CODE);
-
   // Profile management state
   const [profileLabel, setProfileLabel] = useState('');
   const [profileMessage, setProfileMessage] = useState<ProfileMessage>(null);
   const [profileLoading, setProfileLoading] = useState(false);
 
+  // Mutation hooks for profile operations with automatic cache invalidation
+  const createMutation = useCreateDeliveryProfile();
+  const updateMutation = useUpdateDeliveryProfile();
+  const deleteMutation = useDeleteDeliveryProfile();
+
+  // Update profiles when initialProfiles prop changes (e.g., after async fetch)
+  useEffect(() => {
+    setDeliveryProfiles(initialProfiles);
+    // Auto-select first profile if no selection and profiles are available
+    if (initialProfiles.length > 0 && !selectedProfileId && !manualProfileClearRef.current) {
+      setSelectedProfileId(initialProfiles[0].id);
+    }
+  }, [initialProfiles]);
+
   // Apply a profile's data to form fields
   const applyProfile = (profile: DeliveryProfile) => {
-    setCustomerName(profile.contactName);
-    setCustomerPhone(profile.phone);
-    setDeliveryType(profile.deliveryType);
-    setRoad(profile.address.road);
-    setHouseNumber(profile.address.houseNumber ?? '');
-    setPostcode(profile.address.postcode);
-    setCity(profile.address.city);
-    setStateRegion(
-      SWISS_CANTON_CODES.find((code) => code === profile.address.state) ?? DEFAULT_CANTON_CODE
-    );
+    form.setValue('customerName', profile.contactName);
+    form.setValue('customerPhone', profile.phone);
+    form.setValue('deliveryType', profile.deliveryType);
+    form.setValue('road', profile.address.road);
+    form.setValue('houseNumber', profile.address.houseNumber ?? '');
+    form.setValue('postcode', profile.address.postcode);
+    form.setValue('city', profile.address.city);
+    form.setValue('stateRegion', profile.address.state);
     setProfileLabel(profile.label ?? '');
     setProfileMessage(null);
   };
@@ -90,46 +99,30 @@ export function useDeliveryForm({ initialProfiles, t }: UseDeliveryFormProps) {
   const resolveProfileError = (error: unknown): string =>
     error instanceof ApiError ? error.message : t('orders.submit.saved.messages.genericError');
 
-  const buildProfilePayload = (labelOverride?: string): DeliveryProfilePayload => ({
-    label: (labelOverride ?? profileLabel).trim() || undefined,
-    contactName: customerName,
-    phone: customerPhone,
-    deliveryType,
-    address: {
-      road,
-      houseNumber: houseNumber || undefined,
-      postcode,
-      city,
-      state: stateRegion,
-      country: SWITZERLAND_COUNTRY,
-    },
-  });
-
-  const ensureProfileFields = (): boolean => {
-    if (!customerName || !customerPhone || !road || !postcode || !city) {
-      setProfileMessage({ type: 'error', text: t('orders.submit.saved.messages.missingFields') });
-      return false;
-    }
-    return true;
-  };
-
-  const ensureProfileLabel = (): boolean => {
-    if (!profileLabel.trim()) {
-      setProfileMessage({ type: 'error', text: t('orders.submit.saved.messages.missingLabel') });
-      return false;
-    }
-    return true;
+  const buildProfilePayload = (labelOverride?: string): DeliveryProfilePayload => {
+    const formData = form.getValues();
+    return {
+      label: (labelOverride ?? profileLabel).trim() || undefined,
+      contactName: formData.customerName,
+      phone: formData.customerPhone,
+      deliveryType: formData.deliveryType,
+      address: {
+        road: formData.road,
+        houseNumber: formData.houseNumber || undefined,
+        postcode: formData.postcode,
+        city: formData.city,
+        state: formData.stateRegion as SwissCanton,
+        country: SWITZERLAND_COUNTRY,
+      },
+    };
   };
 
   const handleSaveProfile = async () => {
-    if (!ensureProfileFields() || !ensureProfileLabel()) {
-      return;
-    }
     setProfileLoading(true);
     setProfileMessage(null);
     try {
       const payload = buildProfilePayload();
-      const profile = await createDeliveryProfile(payload);
+      const profile = await createMutation.mutateAsync(payload);
       setDeliveryProfiles((prev) => [...prev, profile]);
       manualProfileClearRef.current = false;
       setSelectedProfileId(profile.id);
@@ -146,14 +139,11 @@ export function useDeliveryForm({ initialProfiles, t }: UseDeliveryFormProps) {
       setProfileMessage({ type: 'error', text: t('orders.submit.saved.messages.selectProfile') });
       return;
     }
-    if (!ensureProfileFields() || !ensureProfileLabel()) {
-      return;
-    }
     setProfileLoading(true);
     setProfileMessage(null);
     try {
       const payload = buildProfilePayload();
-      const profile = await updateDeliveryProfile(selectedProfileId, payload);
+      const profile = await updateMutation.mutateAsync({ id: selectedProfileId, body: payload });
       setDeliveryProfiles((prev) => prev.map((item) => (item.id === profile.id ? profile : item)));
       setProfileMessage({ type: 'success', text: t('orders.submit.saved.messages.updated') });
     } catch (error) {
@@ -172,7 +162,7 @@ export function useDeliveryForm({ initialProfiles, t }: UseDeliveryFormProps) {
     setProfileLoading(true);
     setProfileMessage(null);
     try {
-      await deleteDeliveryProfile(selectedProfileId);
+      await deleteMutation.mutateAsync(selectedProfileId);
       setDeliveryProfiles((prev) => prev.filter((item) => item.id !== selectedProfileId));
       manualProfileClearRef.current = false;
       setSelectedProfileId('');
@@ -196,31 +186,8 @@ export function useDeliveryForm({ initialProfiles, t }: UseDeliveryFormProps) {
   };
 
   return {
-    // Payment and delivery state
-    paymentMethod,
-    setPaymentMethod,
-    deliveryType,
-    setDeliveryType,
-    requestedFor,
-    setRequestedFor,
-
-    // Customer contact state
-    customerName,
-    setCustomerName,
-    customerPhone,
-    setCustomerPhone,
-
-    // Address state
-    road,
-    setRoad,
-    houseNumber,
-    setHouseNumber,
-    postcode,
-    setPostcode,
-    city,
-    setCity,
-    stateRegion,
-    setStateRegion,
+    // React Hook Form object - use form.register(), form.watch(), form.getValues()
+    form,
 
     // Profile management state
     deliveryProfiles,

@@ -18,15 +18,12 @@ import {
   Label,
 } from '@tacocrew/ui-kit';
 import { Lock, Send, Truck } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  Form,
   type LoaderFunctionArgs,
-  useActionData,
   useLoaderData,
   useNavigate,
-  useNavigation,
   useParams,
 } from 'react-router';
 import { DeliveryFormFields } from '@/components/orders/DeliveryFormFields';
@@ -36,60 +33,37 @@ import { ProfileManager } from '@/components/orders/ProfileManager';
 import { BackButton } from '@/components/shared';
 import { useDeliveryForm } from '@/hooks/useDeliveryForm';
 import { useDeveloperMode } from '@/hooks/useDeveloperMode';
-import { useDeliveryProfiles, useGroupOrderWithOrders } from '@/lib/api';
-import { getFieldLabel, handleOrderSubmission } from '@/lib/handlers/order-submit-handlers';
+import { useDeliveryProfiles, useGroupOrderWithOrders, useSubmitGroupOrder } from '@/lib/api';
 import { routes } from '@/lib/routes';
-import { createActionHandler } from '@/lib/utils/action-handler';
 import { requireParam } from '@/lib/utils/param-validators';
-
-type ActionData = {
-  errorKey?: string;
-  errorMessage?: string;
-  errorDetails?: Record<string, unknown>;
-  fieldErrors?: Record<string, string>;
-  success?: boolean;
-  groupOrderId?: string;
-};
 
 export function orderSubmitLoader({ params }: LoaderFunctionArgs) {
   const groupOrderId = requireParam(params, 'orderId', 'Order not found');
   return Response.json({ groupOrderId });
 }
 
-export const orderSubmitAction = createActionHandler({
-  handlers: {
-    POST: async (_unused, request, params) => {
-      const groupOrderId = params?.orderId;
-      if (!groupOrderId) throw new Response('Order not found', { status: 404 });
-      await handleOrderSubmission(groupOrderId, request);
-    },
-  },
-  getFormName: () => 'submit',
-  onSuccess: (_request, params) => {
-    const groupOrderId = params.orderId;
-    if (!groupOrderId) throw new Response('Order not found', { status: 404 });
-    return Response.json({
-      success: true,
-      groupOrderId,
-    });
-  },
-});
-
 export function OrderSubmitRoute() {
+  // ALL HOOKS MUST BE CALLED HERE UNCONDITIONALLY - BEFORE ANY CONDITIONAL LOGIC
   const { t } = useTranslation();
   const { groupOrderId } = useLoaderData<{ groupOrderId: string }>();
-  const actionData = useActionData<ActionData | undefined>();
-  const navigation = useNavigation();
   const params = useParams();
   const navigate = useNavigate();
-  const isSubmitting = navigation.state === 'submitting';
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const [submitError, setSubmitError] = useState<{ message: string } | null>(null);
+  const [dryRun, setDryRun] = useState(false);
   const { isEnabled: isDeveloperMode } = useDeveloperMode();
   const [showDeleteProfileDialog, setShowDeleteProfileDialog] = useState(false);
+  const submitMutation = useSubmitGroupOrder();
 
   const groupOrderQuery = useGroupOrderWithOrders(groupOrderId);
   const deliveryProfilesQuery = useDeliveryProfiles();
 
+  // Initialize form with data from queries (even if loading)
+  const deliveryProfiles = deliveryProfilesQuery.data ?? [];
+  const form = useDeliveryForm({ initialProfiles: deliveryProfiles });
+
+
+  // Handle loading and error states AFTER all hooks
   if (groupOrderQuery.isLoading || deliveryProfilesQuery.isLoading) {
     return <div>Loading...</div>;
   }
@@ -103,27 +77,15 @@ export function OrderSubmitRoute() {
   }
 
   const { userOrders } = groupOrderQuery.data;
-  const deliveryProfiles = deliveryProfilesQuery.data ?? [];
-
-  const form = useDeliveryForm({ initialProfiles: deliveryProfiles, t });
 
   const participantText =
     userOrders.length === 0
       ? t('orders.submit.hero.participants.none')
       : t('orders.submit.hero.participants.count', { count: userOrders.length });
 
-  // Show confirmation modal when order is successfully submitted
-  useEffect(() => {
-    if (actionData?.success && actionData?.groupOrderId) {
-      setShowConfirmation(true);
-    }
-  }, [actionData]);
-
   const handleCloseConfirmation = () => {
     setShowConfirmation(false);
-    if (actionData?.groupOrderId) {
-      navigate(routes.root.orderDetail({ orderId: actionData.groupOrderId }));
-    }
+    navigate(routes.root.orderDetail({ orderId: groupOrderId }));
   };
 
   const handleDeleteProfile = () => {
@@ -136,6 +98,43 @@ export function OrderSubmitRoute() {
   const handleConfirmDeleteProfile = async () => {
     setShowDeleteProfileDialog(false);
     await form.handleDeleteProfile();
+  };
+
+  const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    form.form.handleSubmit(async (data) => {
+      setSubmitError(null);
+      try {
+        await submitMutation.mutateAsync({
+          groupOrderId,
+          body: {
+            customer: {
+              name: data.customerName,
+              phone: data.customerPhone,
+            },
+            delivery: {
+              type: data.deliveryType,
+              address: {
+                road: data.road,
+                house_number: data.houseNumber,
+                postcode: data.postcode,
+                city: data.city,
+                state: data.stateRegion,
+                country: 'CH',
+              },
+              requestedFor: data.requestedFor,
+            },
+            paymentMethod: data.paymentMethod,
+            dryRun,
+          },
+        });
+        setShowConfirmation(true);
+      } catch (error) {
+        setSubmitError({
+          message: error instanceof Error ? error.message : 'Failed to submit order',
+        });
+      }
+    })();
   };
 
   return (
@@ -184,28 +183,10 @@ export function OrderSubmitRoute() {
           </div>
         </CardHeader>
         <CardContent>
-          <Form method="post" className="space-y-4 sm:space-y-6">
+          <form onSubmit={handleFormSubmit} className="space-y-4 sm:space-y-6">
             <div className="grid gap-4 sm:gap-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(280px,0.85fr)] lg:items-start xl:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)]">
               <div className="space-y-4 sm:space-y-5">
-                <DeliveryFormFields
-                  customerName={form.customerName}
-                  setCustomerName={form.setCustomerName}
-                  customerPhone={form.customerPhone}
-                  setCustomerPhone={form.setCustomerPhone}
-                  deliveryType={form.deliveryType}
-                  setDeliveryType={form.setDeliveryType}
-                  road={form.road}
-                  setRoad={form.setRoad}
-                  houseNumber={form.houseNumber}
-                  setHouseNumber={form.setHouseNumber}
-                  postcode={form.postcode}
-                  setPostcode={form.setPostcode}
-                  city={form.city}
-                  setCity={form.setCity}
-                  stateRegion={form.stateRegion}
-                  setStateRegion={form.setStateRegion}
-                  disabled={isSubmitting}
-                />
+                <DeliveryFormFields form={form.form} disabled={submitMutation.isPending} />
               </div>
 
               <ProfileManager
@@ -220,17 +201,11 @@ export function OrderSubmitRoute() {
                 onSaveProfile={form.handleSaveProfile}
                 onUpdateProfile={form.handleUpdateProfile}
                 onDeleteProfile={handleDeleteProfile}
-                disabled={isSubmitting}
+                disabled={submitMutation.isPending}
               />
             </div>
 
-            <PreferencesSection
-              requestedFor={form.requestedFor}
-              setRequestedFor={form.setRequestedFor}
-              paymentMethod={form.paymentMethod}
-              setPaymentMethod={form.setPaymentMethod}
-              disabled={isSubmitting}
-            />
+            <PreferencesSection form={form.form} disabled={submitMutation.isPending} />
 
             <Alert
               tone="warning"
@@ -245,8 +220,9 @@ export function OrderSubmitRoute() {
                   <div className="flex items-start gap-3">
                     <Checkbox
                       id="dryRun"
-                      name="dryRun"
-                      disabled={isSubmitting}
+                      checked={dryRun}
+                      onChange={(e) => setDryRun(e.currentTarget.checked)}
+                      disabled={submitMutation.isPending}
                       color="amber"
                       className="mt-0.5"
                     />
@@ -267,24 +243,9 @@ export function OrderSubmitRoute() {
               </label>
             )}
 
-            {actionData?.errorKey || actionData?.errorMessage ? (
+            {submitError ? (
               <Alert tone="error">
-                <div className="space-y-2">
-                  <div>
-                    {actionData?.errorKey
-                      ? t(actionData.errorKey, actionData.errorDetails || {})
-                      : actionData?.errorMessage}
-                  </div>
-                  {actionData?.fieldErrors && Object.keys(actionData.fieldErrors).length > 0 && (
-                    <ul className="mt-2 list-inside list-disc space-y-1 text-sm">
-                      {Object.entries(actionData.fieldErrors).map(([field, message]) => (
-                        <li key={field}>
-                          <span className="font-medium">{getFieldLabel(field, t)}:</span> {message}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
+                {submitError.message}
               </Alert>
             ) : null}
 
@@ -295,8 +256,8 @@ export function OrderSubmitRoute() {
               />
               <Button
                 type="submit"
-                loading={isSubmitting}
-                disabled={isSubmitting}
+                loading={submitMutation.isPending}
+                disabled={submitMutation.isPending}
                 variant="default"
                 className="gap-2 shadow-[0_10px_35px_rgba(59,130,246,0.35)]"
               >
@@ -304,7 +265,7 @@ export function OrderSubmitRoute() {
                 {t('orders.submit.form.actions.submit')}
               </Button>
             </div>
-          </Form>
+          </form>
         </CardContent>
       </Card>
 

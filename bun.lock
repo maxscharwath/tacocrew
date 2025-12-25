@@ -7,7 +7,7 @@
       "dependencies": {
         "@hookform/resolvers": "^5.2.2",
         "@radix-ui/react-switch": "^1.2.6",
-        "react-hook-form": "^7.68.0",
+        "react-hook-form": "^7.69.0",
         "zod": "^4.2.0",
       },
       "devDependencies": {
@@ -23,7 +23,7 @@
     },
     "apps/api": {
       "name": "@tacocrew/api",
-      "version": "0.2512.1",
+      "version": "0.2512.2",
       "dependencies": {
         "@better-auth/passkey": "^1.4.5",
         "@hono/node-server": "^1.19.6",
@@ -67,7 +67,7 @@
     },
     "apps/storybook": {
       "name": "@tacocrew/storybook",
-      "version": "0.2512.1",
+      "version": "0.2512.2",
       "dependencies": {
         "@tacocrew/ui-kit": "workspace:*",
         "react": "^19.2.0",
@@ -91,7 +91,7 @@
     },
     "apps/web": {
       "name": "@tacocrew/web",
-      "version": "0.2512.1",
+      "version": "0.2512.2",
       "dependencies": {
         "@better-auth/passkey": "^1.4.5",
         "@icons-pack/react-simple-icons": "^13.8.0",
@@ -139,7 +139,7 @@
     },
     "packages/gigatacos-client": {
       "name": "@tacocrew/gigatacos-client",
-      "version": "0.2512.1",
+      "version": "0.2512.2",
       "dependencies": {
         "@types/tough-cookie": "^4.0.5",
         "axios": "^1.13.2",
@@ -155,7 +155,7 @@
     },
     "packages/ui-kit": {
       "name": "@tacocrew/ui-kit",
-      "version": "0.2512.1",
+      "version": "0.2512.2",
       "dependencies": {
         "@radix-ui/react-accordion": "^1.2.12",
         "@radix-ui/react-alert-dialog": "^1.1.15",
@@ -1958,7 +1958,7 @@
 
     "react-dom": ["react-dom@19.2.1", "", { "dependencies": { "scheduler": "^0.27.0" }, "peerDependencies": { "react": "^19.2.1" } }, "sha512-ibrK8llX2a4eOskq1mXKu/TGZj9qzomO+sNfO98M6d9zIPOEhlBkMkBUBLd1vgS0gQsLDBzA+8jJBVXDnfHmJg=="],
 
-    "react-hook-form": ["react-hook-form@7.68.0", "", { "peerDependencies": { "react": "^16.8.0 || ^17 || ^18 || ^19" } }, "sha512-oNN3fjrZ/Xo40SWlHf1yCjlMK417JxoSJVUXQjGdvdRCU07NTFei1i1f8ApUAts+IVh14e4EdakeLEA+BEAs/Q=="],
+    "react-hook-form": ["react-hook-form@7.69.0", "", { "peerDependencies": { "react": "^16.8.0 || ^17 || ^18 || ^19" } }, "sha512-yt6ZGME9f4F6WHwevrvpAjh42HMvocuSnSIHUGycBqXIJdhqGSPQzTpGF+1NLREk/58IdPxEMfPcFCjlMhclGw=="],
 
     "react-i18next": ["react-i18next@16.4.0", "", { "dependencies": { "@babel/runtime": "^7.27.6", "html-parse-stringify": "^3.0.1", "use-sync-external-store": "^1.6.0" }, "peerDependencies": { "i18next": ">= 25.6.2", "react": ">= 16.8.0", "typescript": "^5" }, "optionalPeers": ["typescript"] }, "sha512-bxVeBA8Ky2UeItNhF4JRxHCFIrpEJHGFG/mOAa4CR0JkqaDEYSLmlEgmC4Os63SBlZ+E5U0YyrNJOSVl2mtVqQ=="],
 

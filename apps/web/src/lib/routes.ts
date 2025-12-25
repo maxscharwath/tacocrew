@@ -16,7 +16,7 @@ import { authenticationLoader, LoginRoute } from '@/routes/login';
 import { orderCreateAction, orderCreateLoader } from '@/routes/orders.create';
 import { orderDetailAction, orderDetailLoader } from '@/routes/orders.detail';
 import { OrdersRoute, ordersAction, ordersLoader } from '@/routes/orders.list';
-import { orderSubmitAction, orderSubmitLoader } from '@/routes/orders.submit';
+import { orderSubmitLoader } from '@/routes/orders.submit';
 import { organizationJoinLoader } from '@/routes/organizations.join';
 import { profileLoader } from '@/routes/profile';
 import { accountLoader } from '@/routes/profile.account';
@@ -136,7 +136,6 @@ export const { routes, routerConfig } = defineRoutes({
           fallback: OrderDetailSkeleton,
         },
         loader: orderSubmitLoader,
-        action: orderSubmitAction,
         hydrateFallback: OrderDetailSkeleton,
       },
       stock: {

@@ -28,11 +28,5 @@
   "module": "index.ts",
   "peerDependencies": {
     "typescript": "^5.9.3"
-  },
-  "dependencies": {
-    "@hookform/resolvers": "^5.2.2",
-    "@radix-ui/react-switch": "^1.2.6",
-    "react-hook-form": "^7.68.0",
-    "zod": "^4.2.0"
   }
 }

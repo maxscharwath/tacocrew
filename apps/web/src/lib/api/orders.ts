@@ -13,7 +13,7 @@ import type {
 } from '@/lib/api/types';
 
 /** Query key factory for orders */
-const ordersKeys = {
+export const ordersKeys = {
   all: () => ['orders'] as const,
   lists: () => [...ordersKeys.all(), 'list'] as const,
   list: () => [...ordersKeys.lists()] as const,

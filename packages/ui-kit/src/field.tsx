@@ -87,7 +87,7 @@ function FieldLabel({
     <label
       data-slot="field-label"
       className={cn(
-        'text-sm font-medium leading-none text-slate-200',
+        'font-semibold text-slate-400 text-xs uppercase tracking-[0.25em]',
         'peer-disabled:cursor-not-allowed peer-disabled:opacity-70',
         className
       )}

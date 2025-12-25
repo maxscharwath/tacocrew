@@ -1,4 +1,7 @@
 import {
+  Field,
+  FieldError,
+  FieldLabel,
   InputGroup,
   InputGroupAddon,
   InputGroupInput,
@@ -11,55 +14,19 @@ import {
   SelectValue,
 } from '@tacocrew/ui-kit';
 import { Globe, Hash, MapPin, User } from 'lucide-react';
+import type { UseFormReturn } from 'react-hook-form';
+import { Controller } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
-import type { DeliveryType } from '@/components/orders/DeliveryTypeSelector';
 import { DeliveryTypeSelector } from '@/components/orders/DeliveryTypeSelector';
-import {
-  getSwissCantons,
-  getSwitzerlandName,
-  SWITZERLAND_COUNTRY,
-  type SwissCanton,
-} from '@/constants/location';
+import { getSwissCantons, getSwitzerlandName, SWITZERLAND_COUNTRY } from '@/constants/location';
+import type { DeliveryFormData } from '@/lib/schemas/delivery-form.schema';
 
 type DeliveryFormFieldsProps = Readonly<{
-  customerName: string;
-  setCustomerName: (value: string) => void;
-  customerPhone: string;
-  setCustomerPhone: (value: string) => void;
-  deliveryType: DeliveryType;
-  setDeliveryType: (value: DeliveryType) => void;
-  road: string;
-  setRoad: (value: string) => void;
-  houseNumber: string;
-  setHouseNumber: (value: string) => void;
-  postcode: string;
-  setPostcode: (value: string) => void;
-  city: string;
-  setCity: (value: string) => void;
-  stateRegion: SwissCanton;
-  setStateRegion: (value: SwissCanton) => void;
+  form: UseFormReturn<DeliveryFormData>;
   disabled?: boolean;
 }>;
 
-export function DeliveryFormFields({
-  customerName,
-  setCustomerName,
-  customerPhone,
-  setCustomerPhone,
-  deliveryType,
-  setDeliveryType,
-  road,
-  setRoad,
-  houseNumber,
-  setHouseNumber,
-  postcode,
-  setPostcode,
-  city,
-  setCity,
-  stateRegion,
-  setStateRegion,
-  disabled = false,
-}: DeliveryFormFieldsProps) {
+export function DeliveryFormFields({ form, disabled = false }: DeliveryFormFieldsProps) {
   const { t } = useTranslation();
 
   return (
@@ -74,147 +41,189 @@ export function DeliveryFormFields({
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <div className="grid gap-2">
-          <Label htmlFor="customerName" required>
-            {t('orders.submit.form.fields.customerName')}
-          </Label>
-          <InputGroup>
-            <InputGroupAddon>
-              <User className="size-4" />
-            </InputGroupAddon>
-            <InputGroupInput
-              id="customerName"
-              name="customerName"
-              type="text"
-              required
-              disabled={disabled}
-              value={customerName}
-              onChange={(event) => setCustomerName(event.target.value)}
-            />
-          </InputGroup>
-        </div>
-        <div className="grid gap-2">
-          <Label htmlFor="customerPhone" required>
-            {t('orders.submit.form.fields.customerPhone')}
-          </Label>
-          <PhoneInput
-            id="customerPhone"
-            name="customerPhone"
-            required
-            disabled={disabled}
-            value={customerPhone}
-            onChange={setCustomerPhone}
-          />
-        </div>
+        <Controller
+          name="customerName"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel htmlFor="customerName" required>
+                {t('orders.submit.form.fields.customerName')}
+              </FieldLabel>
+              <InputGroup>
+                <InputGroupAddon>
+                  <User className="size-4" />
+                </InputGroupAddon>
+                <InputGroupInput
+                  {...field}
+                  id="customerName"
+                  type="text"
+                  required
+                  disabled={disabled}
+                  aria-invalid={fieldState.invalid}
+                />
+              </InputGroup>
+              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+            </Field>
+          )}
+        />
+        <Controller
+          name="customerPhone"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel htmlFor="customerPhone" required>
+                {t('orders.submit.form.fields.customerPhone')}
+              </FieldLabel>
+              <PhoneInput
+                {...field}
+                id="customerPhone"
+                required
+                disabled={disabled}
+                aria-invalid={fieldState.invalid}
+              />
+              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+            </Field>
+          )}
+        />
       </div>
 
       <DeliveryTypeSelector
-        selected={deliveryType}
-        onSelect={setDeliveryType}
+        selected={form.watch('deliveryType')}
+        onSelect={(value) => form.setValue('deliveryType', value)}
         disabled={disabled}
         required
       />
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <div className="grid gap-2">
-          <Label htmlFor="road" required>
-            {t('orders.submit.form.fields.street')}
-          </Label>
-          <InputGroup>
-            <InputGroupAddon>
-              <MapPin className="size-4" />
-            </InputGroupAddon>
-            <InputGroupInput
-              id="road"
-              name="road"
-              type="text"
-              required
-              disabled={disabled}
-              value={road}
-              onChange={(event) => setRoad(event.target.value)}
-            />
-          </InputGroup>
-        </div>
-        <div className="grid gap-2">
-          <Label htmlFor="houseNumber">{t('orders.submit.form.fields.houseNumber')}</Label>
-          <InputGroup>
-            <InputGroupAddon>
-              <Hash className="size-4" />
-            </InputGroupAddon>
-            <InputGroupInput
-              id="houseNumber"
-              name="houseNumber"
-              type="text"
-              disabled={disabled}
-              value={houseNumber}
-              onChange={(event) => setHouseNumber(event.target.value)}
-            />
-          </InputGroup>
-        </div>
+        <Controller
+          name="road"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel htmlFor="road" required>
+                {t('orders.submit.form.fields.street')}
+              </FieldLabel>
+              <InputGroup>
+                <InputGroupAddon>
+                  <MapPin className="size-4" />
+                </InputGroupAddon>
+                <InputGroupInput
+                  {...field}
+                  id="road"
+                  type="text"
+                  required
+                  disabled={disabled}
+                  aria-invalid={fieldState.invalid}
+                />
+              </InputGroup>
+              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+            </Field>
+          )}
+        />
+        <Controller
+          name="houseNumber"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel htmlFor="houseNumber">
+                {t('orders.submit.form.fields.houseNumber')}
+              </FieldLabel>
+              <InputGroup>
+                <InputGroupAddon>
+                  <Hash className="size-4" />
+                </InputGroupAddon>
+                <InputGroupInput
+                  {...field}
+                  id="houseNumber"
+                  type="text"
+                  disabled={disabled}
+                  aria-invalid={fieldState.invalid}
+                />
+              </InputGroup>
+              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+            </Field>
+          )}
+        />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <div className="grid gap-2">
-          <Label htmlFor="postcode" required>
-            {t('orders.submit.form.fields.postcode')}
-          </Label>
-          <InputGroup>
-            <InputGroupAddon>
-              <Hash className="size-4" />
-            </InputGroupAddon>
-            <InputGroupInput
-              id="postcode"
-              name="postcode"
-              type="text"
-              required
-              disabled={disabled}
-              value={postcode}
-              onChange={(event) => setPostcode(event.target.value)}
-            />
-          </InputGroup>
-        </div>
-        <div className="grid gap-2">
-          <Label htmlFor="city" required>
-            {t('orders.submit.form.fields.city')}
-          </Label>
-          <InputGroup>
-            <InputGroupAddon>
-              <MapPin className="size-4" />
-            </InputGroupAddon>
-            <InputGroupInput
-              id="city"
-              name="city"
-              type="text"
-              required
-              disabled={disabled}
-              value={city}
-              onChange={(event) => setCity(event.target.value)}
-            />
-          </InputGroup>
-        </div>
+        <Controller
+          name="postcode"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel htmlFor="postcode" required>
+                {t('orders.submit.form.fields.postcode')}
+              </FieldLabel>
+              <InputGroup>
+                <InputGroupAddon>
+                  <Hash className="size-4" />
+                </InputGroupAddon>
+                <InputGroupInput
+                  {...field}
+                  id="postcode"
+                  type="text"
+                  required
+                  disabled={disabled}
+                  aria-invalid={fieldState.invalid}
+                />
+              </InputGroup>
+              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+            </Field>
+          )}
+        />
+        <Controller
+          name="city"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel htmlFor="city" required>
+                {t('orders.submit.form.fields.city')}
+              </FieldLabel>
+              <InputGroup>
+                <InputGroupAddon>
+                  <MapPin className="size-4" />
+                </InputGroupAddon>
+                <InputGroupInput
+                  {...field}
+                  id="city"
+                  type="text"
+                  required
+                  disabled={disabled}
+                  aria-invalid={fieldState.invalid}
+                />
+              </InputGroup>
+              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+            </Field>
+          )}
+        />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <div className="grid gap-2">
-          <Label htmlFor="state">{t('orders.submit.form.fields.state')}</Label>
-          <input type="hidden" name="state" value={stateRegion} />
-          <Select
-            value={stateRegion}
-            onValueChange={(value) => setStateRegion(value as SwissCanton)}
-            disabled={disabled}
-          >
-            <SelectTrigger id="state" className="w-full">
-              <SelectValue placeholder={t('orders.submit.form.fields.state')} />
-            </SelectTrigger>
-            <SelectContent>
-              {getSwissCantons(t).map((canton) => (
-                <SelectItem key={canton.code} value={canton.code}>
-                  {canton.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+        <Controller
+          name="stateRegion"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel htmlFor="state" required>
+                {t('orders.submit.form.fields.state')}
+              </FieldLabel>
+              <Select value={field.value} onValueChange={field.onChange} disabled={disabled}>
+                <SelectTrigger id="state" className="w-full" aria-invalid={fieldState.invalid}>
+                  <SelectValue placeholder={t('orders.submit.form.fields.state')} />
+                </SelectTrigger>
+                <SelectContent>
+                  {getSwissCantons(t).map((canton) => (
+                    <SelectItem key={canton.code} value={canton.code}>
+                      {canton.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+            </Field>
+          )}
+        />
         <div className="grid gap-2">
           <Label htmlFor="country">{t('orders.submit.form.fields.country')}</Label>
           <InputGroup>

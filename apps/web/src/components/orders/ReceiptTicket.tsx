@@ -337,8 +337,11 @@ function ReceiptActions({
   onReimbursementToggle,
   onSendReminder,
 }: ReceiptActionsProps) {
+  // Only show the "j'ai payé" button if participant hasn't paid yet
+  const shouldShowParticipantAction = canShowParticipantAction && !participantPaid;
+
   if (
-    !canShowParticipantAction &&
+    !shouldShowParticipantAction &&
     !canShowPayForOther &&
     !canShowReimbursementAction &&
     !canShowSendReminder
@@ -348,21 +351,17 @@ function ReceiptActions({
 
   return (
     <div className="mt-auto flex flex-col gap-2 pt-3">
-      {canShowParticipantAction && (
+      {shouldShowParticipantAction && (
         <Button
           size="sm"
           variant="ghost"
           disabled={isBusy}
           onClick={onParticipantToggle}
-          className={`${ACTION_BUTTON_CLASS} ${participantPaid ? 'opacity-80' : ''}`}
+          className={ACTION_BUTTON_CLASS}
         >
           <div className="flex items-center gap-2">
-            {participantPaid ? (
-              <Undo2 className="h-3.5 w-3.5" />
-            ) : (
-              <Wallet className="h-3.5 w-3.5" />
-            )}
-            <span>{participantPaid ? labels.unmarkSelfPaid : labels.markSelfPaid}</span>
+            <Wallet className="h-3.5 w-3.5" />
+            <span>{labels.markSelfPaid}</span>
           </div>
         </Button>
       )}
