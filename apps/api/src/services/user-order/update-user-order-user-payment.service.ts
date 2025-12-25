@@ -1,6 +1,6 @@
 /**
  * Update user payment status use case
- * Allows a user to mark their own order as paid/unpaid
+ * Allows a user to mark their own order as paid/unpaid, or pay for another participant's order
  * @module services/user-order
  */
 
@@ -40,10 +40,6 @@ export class UpdateUserOrderUserPaymentStatusUseCase {
 
     if (userOrder?.groupOrderId !== groupOrderId) {
       throw new NotFoundError({ resource: 'UserOrder', id: userOrderId });
-    }
-
-    if (userOrder.userId !== requesterId) {
-      throw new ValidationError({ requesterId }, 'errors.orders.modify.invalidStatus');
     }
 
     const paidAt = paid ? new Date() : null;

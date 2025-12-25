@@ -199,7 +199,7 @@ export function GroupOrderReceipts({
           // Can show "pay for other" button when:
           // - Current user is not the order owner
           // - Not the leader's receipt
-          // - Either: order hasn't been paid yet, OR current user is the one who paid
+          // - Order hasn't been confirmed by leader yet (can't change after confirmation)
           const hasCurrentUser = !!currentUserId;
           const isNotOrderOwner = currentUserId !== group.userId;
           const isNotLeaderReceipt = !isLeaderReceipt;
@@ -209,12 +209,12 @@ export function GroupOrderReceipts({
             (order) => order.participantPayment.paidBy?.id === currentUserId
           );
 
-          // Show button if: not owner, not leader receipt, and (not paid OR user paid for it)
+          // Show button if: not owner, not leader receipt, and not confirmed by leader yet
           const canShowPayForOther =
             hasCurrentUser &&
             isNotOrderOwner &&
             isNotLeaderReceipt &&
-            (!participantPaid || currentUserPaidForThis);
+            !reimbursementComplete;
 
           // Get who paid for this order - check all orders and get the first paidBy found
           // Show regardless of payment status - if someone paid, show who it was
