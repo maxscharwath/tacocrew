@@ -34,7 +34,7 @@ export interface BadgeStatsResponse {
 // Query Keys
 // ─────────────────────────────────────────────────────────────────────────────
 
-const badgesKeys = {
+export const badgesKeys = {
   all: () => ['badges'] as const,
   userBadges: (userId: string) => [...badgesKeys.all(), 'user', userId] as const,
 };

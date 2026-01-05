@@ -131,6 +131,9 @@ export function useAddUserToOrganization() {
       queryClient.invalidateQueries({
         queryKey: organizationKeys.members(variables.organizationId),
       });
+      // Adding a user might affect myOrganizations if the added user is the current user
+      // We invalidate to be safe (the backend might auto-add in some cases)
+      void queryClient.invalidateQueries({ queryKey: organizationKeys.myOrganizations() });
     },
   });
 }
@@ -146,6 +149,9 @@ export function useRemoveUserFromOrganization() {
       void queryClient.invalidateQueries({
         queryKey: organizationKeys.members(variables.organizationId),
       });
+      // Removing a user might affect myOrganizations if the removed user is the current user
+      // We invalidate to be safe
+      void queryClient.invalidateQueries({ queryKey: organizationKeys.myOrganizations() });
     },
   });
 }
@@ -237,6 +243,8 @@ export function useAcceptJoinRequest() {
       void queryClient.invalidateQueries({
         queryKey: organizationKeys.members(variables.organizationId),
       });
+      // Accepting a join request adds the user to the org, affecting myOrganizations
+      void queryClient.invalidateQueries({ queryKey: organizationKeys.myOrganizations() });
     },
   });
 }

@@ -3,14 +3,12 @@
  * Consolidates data fetching and calculations
  */
 
-import { format } from 'date-fns';
 import { useMyOrganizations } from '@/lib/api/organization';
 import type { Organization, UserGroupOrder } from '@/lib/api/types';
 import { useGroupOrders } from '@/lib/api/user';
 import { toDate } from '@/lib/utils/date';
 import {
   getActiveOrganizations,
-  shouldShowOrganizationSelector,
 } from '@/lib/utils/organization-helpers';
 
 export interface OrdersListData {
@@ -21,7 +19,6 @@ export interface OrdersListData {
   upcomingOrders: UserGroupOrder[];
   activeCount: number;
   hasNoOrganizations: boolean;
-  showOrganizationSelector: (requiresOrg?: boolean) => boolean;
   isLoading: boolean;
   error: Error | null;
 }
@@ -29,7 +26,7 @@ export interface OrdersListData {
 /**
  * Load all data needed for orders list
  */
-export function useOrdersListData(requiresOrganization?: boolean): OrdersListData {
+export function useOrdersListData(): OrdersListData {
   const groupOrdersQuery = useGroupOrders();
   const organizationsQuery = useMyOrganizations();
 
@@ -56,9 +53,7 @@ export function useOrdersListData(requiresOrganization?: boolean): OrdersListDat
     upcomingOrders,
     activeCount,
     hasNoOrganizations,
-    showOrganizationSelector: (requiresOrg?: boolean) =>
-      shouldShowOrganizationSelector(organizations, requiresOrg),
     isLoading: groupOrdersQuery.isPending || organizationsQuery.isPending,
-    error: (groupOrdersQuery.error || organizationsQuery.error) as Error | null,
+    error: (groupOrdersQuery.error || organizationsQuery.error),
   };
 }

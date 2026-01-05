@@ -15,7 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@tacocrew/ui-kit';
-import { addHours, format, setHours, setMinutes } from 'date-fns';
+import { format, setHours, setMinutes } from 'date-fns';
 import { ArrowRight, Calendar, Package, Tag, Truck } from 'lucide-react';
 import { useEffect } from 'react';
 import { Controller } from 'react-hook-form';
@@ -31,7 +31,7 @@ import { useOrdersListData } from '@/hooks/useOrdersListData';
 import { useZodForm } from '@/hooks/useZodForm';
 import { routes } from '@/lib/routes';
 import { createGroupOrderSchema } from '@/lib/schemas/order.schema';
-import { combineDateAndTime, toDate } from '@/lib/utils/date';
+import { combineDateAndTime } from '@/lib/utils/date';
 import {
   calculateQuickDeadline,
   getDefaultEndTime,
@@ -43,7 +43,6 @@ import { getRandomOrderName } from '@/lib/utils/order-name';
 type ActionData = {
   errorKey?: string;
   errorMessage?: string;
-  requiresOrganization?: boolean;
 };
 
 export function ordersLoader(_: LoaderFunctionArgs) {
@@ -98,8 +97,7 @@ function OrdersContent() {
     upcomingOrders,
     activeCount,
     hasNoOrganizations,
-    showOrganizationSelector,
-  } = useOrdersListData(actionData?.requiresOrganization);
+  } = useOrdersListData();
 
   // Get current date/time for smart defaults
   const now = new Date();
@@ -111,14 +109,20 @@ function OrdersContent() {
   const form = useZodForm({
     schema: createGroupOrderSchema,
     defaultValues: {
-      name: '',
       startDate: combineDateAndTime(today, defaultStartTime),
       endDate: defaultEnd,
-      organizationId: activeOrganizations[0]?.id ?? '',
     },
   });
 
   const isSubmitting = form.formState.isSubmitting;
+
+  // Watch activeOrganizations and set organizationId
+  useEffect(() => {
+      const firstOrgId = activeOrganizations[0]?.id;
+      if (firstOrgId && !form.getValues('organizationId')) {
+        form.setValue('organizationId', firstOrgId);
+      }
+  }, [activeOrganizations]);
 
   // Watch form values
   const startDateValue = form.watch('startDate');
@@ -308,24 +312,23 @@ function OrdersContent() {
                   </InputGroup>
                 )}
               </FormField>
-
-              {showOrganizationSelector && (
+              {activeOrganizations[0]?.id}
                 <Controller
                   name="organizationId"
                   control={form.control}
                   render={({ field, fieldState }) => (
-                    <Field data-invalid={fieldState.invalid || actionData?.requiresOrganization}>
+                    <Field data-invalid={fieldState.invalid}>
                       <FieldLabel htmlFor="organizationId" required>
                         {t('orders.list.form.labels.organization')}
                       </FieldLabel>
                       <Select
-                        value={field.value || undefined}
+                        value={field.value}
                         onValueChange={field.onChange}
                         disabled={isSubmitting}
                       >
                         <SelectTrigger
                           id="organizationId"
-                          error={fieldState.invalid || actionData?.requiresOrganization}
+                          error={fieldState.invalid}
                           className="w-full"
                         >
                           <SelectValue
@@ -341,15 +344,9 @@ function OrdersContent() {
                         </SelectContent>
                       </Select>
                       {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-                      {actionData?.requiresOrganization && !fieldState.invalid && (
-                        <p className="text-rose-400 text-xs">
-                          {t('orders.list.form.errors.organizationRequired')}
-                        </p>
-                      )}
                     </Field>
                   )}
                 />
-              )}
 
               <div className="space-y-4 rounded-2xl border border-white/10 bg-slate-950/60 p-4">
                 <div className="flex items-center gap-2">

@@ -32,6 +32,8 @@ import { useOrderForm } from '@/hooks/useOrderForm';
 import { useOrderFormUI } from '@/hooks/useOrderFormUI';
 import { useOrderValidation } from '@/hooks/useOrderValidation';
 import { useProgressSteps } from '@/hooks/useProgressSteps';
+import { getStock } from '@/lib/api/stock';
+import { TacoKind } from '@/lib/api/types';
 import { routes } from '@/lib/routes';
 import { createActionHandler } from '@/lib/utils/action-handler';
 import { requireParam } from '@/lib/utils/param-validators';
@@ -63,9 +65,10 @@ function validateOrderForm(
   if (!hasTaco && !hasOtherItems) {
     throw new Response('Missing selection', { status: 400 });
   }
+  const isMystery = data.kind === TacoKind.MYSTERY;
 
-  if (data.size && tacoSize && !tacoSize.allowGarnitures && data.garnitures.length > 0) {
-    throw new Response('Garnish not available', { status: 400 });
+  if (!isMystery && data.size && tacoSize && !tacoSize.allowGarnitures && data.garnitures.length > 0) {
+    throw new Response('Garnish not available', { status: 400 })
   }
 }
 
@@ -77,7 +80,7 @@ export const orderCreateAction = createActionHandler({
 
       const formDataParsed = parseOrderFormData(formData);
       const stock = await getStock();
-      const tacoSize = stock.tacos.find((t) => t.code === formDataParsed.size);
+      const tacoSize = stock.tacos.find((t: { code: string }) => t.code === formDataParsed.size);
 
       validateOrderForm(formDataParsed, tacoSize);
 
@@ -125,37 +128,17 @@ export function OrderCreateRoute() {
   // Data loading with Result pattern
   const { result, isLoading } = useOrderCreationData(groupOrderId, prefillOrderId);
 
-  // Handle loading state
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
+  // Extract data from result (may be undefined during loading/error)
+  const data = result.ok ? result.value : undefined;
+  const group = data?.group;
+  const stock = data?.stock;
+  const previousOrders = data?.previousOrders;
+  const editingOrder = data?.editingOrder;
 
-  // Handle error state with Result pattern
-  if (!result.ok) {
-    const error = result.error;
-    // Log error for monitoring
-    if (error.originalError) {
-      console.error(`[${error.code}] ${error.message}`, error.context, error.originalError);
-    } else {
-      console.error(`[${error.code}] ${error.message}`, error.context);
-    }
-
-    // Redirect on not found errors
-    if (error.code === 'USER_ORDER_NOT_FOUND' || error.code === 'GROUP_ORDER_NOT_FOUND') {
-      throw new Response(error.message, { status: 404 });
-    }
-
-    // Show generic error for other cases
-    throw new Response('Failed to load order data', { status: 500 });
-  }
-
-  // Destructure data from successful result
-  const { group, stock, previousOrders, editingOrder } = result.value;
-
-  // Form state
+  // Form state - MUST be called unconditionally before any early returns
   const orderForm = useOrderForm({ stock, myOrder: editingOrder });
 
-  // UI state (validation, progress)
+  // UI state (validation, progress) - MUST be called unconditionally
   const _uiState = useOrderFormUI(
     {
       taco: orderForm.selectedTacoSize
@@ -181,11 +164,11 @@ export function OrderCreateRoute() {
         quantity: 1,
       })),
     },
-    stock,
+    stock ?? null,
     orderForm.selectedTacoSize
   );
 
-  // Validation
+  // Validation - MUST be called unconditionally
   const orderValidation = useOrderValidation({
     size: orderForm.size,
     meats: orderForm.meats,
@@ -198,7 +181,7 @@ export function OrderCreateRoute() {
     kind: orderForm.kind,
   });
 
-  // Progress
+  // Progress - MUST be called unconditionally
   const progressSteps = useProgressSteps({
     size: orderForm.size,
     selectedTacoSize: orderForm.selectedTacoSize,
@@ -208,8 +191,32 @@ export function OrderCreateRoute() {
     kind: orderForm.kind,
   });
 
+  // Handle loading state - AFTER all hooks are called
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  // Handle error state with Result pattern - AFTER all hooks are called
+  if (!result.ok) {
+    const error = result.error;
+    // Log error for monitoring
+    if (error.originalError) {
+      console.error(`[${error.code}] ${error.message}`, error.context, error.originalError);
+    } else {
+      console.error(`[${error.code}] ${error.message}`, error.context);
+    }
+
+    // Redirect on not found errors
+    if (error.code === 'USER_ORDER_NOT_FOUND' || error.code === 'GROUP_ORDER_NOT_FOUND') {
+      throw new Response(error.message, { status: 404 });
+    }
+
+    // Show generic error for other cases
+    throw new Response('Failed to load order data', { status: 500 });
+  }
+
   // Redirect if order not accepting new orders
-  if (!group.groupOrder.canAcceptOrders) {
+  if (!group?.groupOrder.canAcceptOrders) {
     throw redirect(routes.root.orderDetail({ orderId: groupOrderId }));
   }
 
@@ -249,7 +256,7 @@ export function OrderCreateRoute() {
           {editOrderId && <input type="hidden" name="editOrderId" value={editOrderId} />}
 
           {/* Previous Orders */}
-          {previousOrders && previousOrders.length > 0 && (
+          {previousOrders && previousOrders.length > 0 && stock && (
             <PreviousTacos
               previousOrders={previousOrders}
               stock={stock}
@@ -269,13 +276,13 @@ export function OrderCreateRoute() {
 
           {/* Size Selector */}
           <TacoSizeSelector
-            sizes={stock.tacos}
+            sizes={stock?.tacos ?? []}
             selected={orderForm.size}
             onSelect={orderForm.setSize}
           />
 
           {/* Taco Builder */}
-          {orderForm.size && (
+          {orderForm.size && stock && (
             <TacoBuilder
               taco={{
                 size: orderForm.size as TacoSize,
@@ -306,21 +313,23 @@ export function OrderCreateRoute() {
           )}
 
           {/* Extras Section */}
-          <ExtrasSection
-            stock={stock}
-            extras={orderForm.extras}
-            drinks={orderForm.drinks}
-            desserts={orderForm.desserts}
-            onToggleExtra={(id) =>
-              orderForm.toggleSelection(id, orderForm.extras, orderForm.setExtras)
-            }
-            onToggleDrink={(id) =>
-              orderForm.toggleSelection(id, orderForm.drinks, orderForm.setDrinks)
-            }
-            onToggleDessert={(id) =>
-              orderForm.toggleSelection(id, orderForm.desserts, orderForm.setDesserts)
-            }
-          />
+          {stock && (
+            <ExtrasSection
+              stock={stock}
+              extras={orderForm.extras}
+              drinks={orderForm.drinks}
+              desserts={orderForm.desserts}
+              onToggleExtra={(id) =>
+                orderForm.toggleSelection(id, orderForm.extras, orderForm.setExtras)
+              }
+              onToggleDrink={(id) =>
+                orderForm.toggleSelection(id, orderForm.drinks, orderForm.setDrinks)
+              }
+              onToggleDessert={(id) =>
+                orderForm.toggleSelection(id, orderForm.desserts, orderForm.setDesserts)
+              }
+            />
+          )}
 
           {/* Error Alert */}
           {actionData?.errorKey && (
@@ -356,7 +365,7 @@ export function OrderCreateRoute() {
             }
             canSubmit={orderValidation.canSubmit}
             validationMessages={orderValidation.validationMessages}
-            stock={stock}
+            stock={stock ?? null}
             progressSteps={progressSteps}
             formId="order-form"
             isSubmitting={isSubmitting}

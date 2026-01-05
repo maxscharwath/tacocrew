@@ -14,3 +14,12 @@ export function useStock(enabled = true) {
     enabled,
   });
 }
+
+/**
+ * Get stock data (server-side only, for use in loaders/actions)
+ * NOTE: This raw API function is exported ONLY for use in loaders/actions.
+ * Components should use the useStock hook instead.
+ */
+export async function getStock(): Promise<StockResponse> {
+  return apiClient.get<StockResponse>('/api/v1/stock', { skipAuth: true });
+}

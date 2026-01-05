@@ -1,5 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api/http';
+import { badgesKeys } from '@/lib/api/badges';
+import { userKeys } from '@/lib/api/user';
 import type {
   CreateGroupOrderBody,
   GroupOrder,
@@ -87,8 +89,14 @@ export function useCreateGroupOrder() {
   return useMutation({
     mutationFn: (body: CreateGroupOrderBody) =>
       apiClient.post<GroupOrder>('/api/v1/orders', { body }),
-    onSuccess: () => {
+    onSuccess: (data) => {
       void queryClient.invalidateQueries({ queryKey: ordersKeys.lists() });
+      // Invalidate the new order detail if we have the ID
+      if (data.id) {
+        void queryClient.invalidateQueries({ queryKey: ordersKeys.detail(data.id) });
+      }
+      // Invalidate user group orders since creating an order affects the user's list
+      void queryClient.invalidateQueries({ queryKey: userKeys.groupOrders() });
     },
   });
 }
@@ -106,6 +114,7 @@ export function useGroupOrderWithOrders(id: string, enabled = true) {
     queryKey: ordersKeys.detail(id),
     queryFn: () => apiClient.get<GroupOrderWithUserOrders>(`/api/v1/orders/${id}/items`),
     enabled: enabled && !!id,
+    refetchOnMount: 'always', // Always refetch when component mounts to see latest data
   });
 }
 
@@ -134,6 +143,8 @@ export function useRevealMysteryTacos(
       void queryClient.invalidateQueries({
         queryKey: ordersKeys.userOrder(groupOrderId, userOrderId),
       });
+      // Revealing mystery tacos affects the order detail view
+      void queryClient.invalidateQueries({ queryKey: ordersKeys.detail(groupOrderId) });
       onSuccess?.(data);
     },
   });
@@ -146,6 +157,13 @@ export function useUpsertUserOrder() {
       apiClient.post<UserOrderResponse>(`/api/v1/orders/${groupOrderId}/items`, { body }),
     onSuccess: (_, variables) => {
       void queryClient.invalidateQueries({ queryKey: ordersKeys.detail(variables.groupOrderId) });
+      // Upserting user orders affects receipts view
+      void queryClient.invalidateQueries({ queryKey: ordersKeys.receipts(variables.groupOrderId) });
+      // Badges can be earned when orders are created/updated
+      void queryClient.invalidateQueries({ queryKey: badgesKeys.userBadges('me') });
+      // User order history may be affected
+      void queryClient.invalidateQueries({ queryKey: userKeys.orderHistory() });
+      void queryClient.invalidateQueries({ queryKey: userKeys.groupOrders() });
     },
   });
 }
@@ -165,6 +183,11 @@ export function useDeleteUserOrder() {
       apiClient.delete<void>(`/api/v1/orders/${groupOrderId}/items/${itemId}`),
     onSuccess: (_, variables) => {
       void queryClient.invalidateQueries({ queryKey: ordersKeys.detail(variables.groupOrderId) });
+      // Deleting user orders affects receipts view
+      void queryClient.invalidateQueries({ queryKey: ordersKeys.receipts(variables.groupOrderId) });
+      // User order history may be affected
+      void queryClient.invalidateQueries({ queryKey: userKeys.orderHistory() });
+      void queryClient.invalidateQueries({ queryKey: userKeys.groupOrders() });
     },
   });
 }
@@ -188,6 +211,8 @@ export function useUpdateUserOrderReimbursementStatus() {
     onSuccess: (_, variables) => {
       void queryClient.invalidateQueries({ queryKey: ordersKeys.receipts(variables.groupOrderId) });
       void queryClient.invalidateQueries({ queryKey: ordersKeys.detail(variables.groupOrderId) });
+      // Badges can be earned when paying for others (reimbursement status change)
+      void queryClient.invalidateQueries({ queryKey: badgesKeys.userBadges('me') });
     },
   });
 }
@@ -210,6 +235,8 @@ export function useUpdateUserOrderParticipantPayment() {
     onSuccess: (_, variables) => {
       void queryClient.invalidateQueries({ queryKey: ordersKeys.receipts(variables.groupOrderId) });
       void queryClient.invalidateQueries({ queryKey: ordersKeys.detail(variables.groupOrderId) });
+      // Payment status changes might affect badge eligibility
+      void queryClient.invalidateQueries({ queryKey: badgesKeys.userBadges('me') });
     },
   });
 }
@@ -218,8 +245,13 @@ export function useDeleteGroupOrder() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (groupOrderId: string) => apiClient.delete<void>(`/api/v1/orders/${groupOrderId}`),
-    onSuccess: () => {
+    onSuccess: (_, groupOrderId) => {
       void queryClient.invalidateQueries({ queryKey: ordersKeys.lists() });
+      // Remove the deleted order detail from cache
+      queryClient.removeQueries({ queryKey: ordersKeys.detail(groupOrderId) });
+      // User group orders list is affected
+      void queryClient.invalidateQueries({ queryKey: userKeys.groupOrders() });
+      void queryClient.invalidateQueries({ queryKey: userKeys.orderHistory() });
     },
   });
 }
@@ -239,6 +271,11 @@ export function useSubmitGroupOrder() {
       }),
     onSuccess: (_, variables) => {
       void queryClient.invalidateQueries({ queryKey: ordersKeys.detail(variables.groupOrderId) });
+      // Submitting an order changes its status, which affects list views
+      void queryClient.invalidateQueries({ queryKey: ordersKeys.lists() });
+      // User group orders list is affected
+      void queryClient.invalidateQueries({ queryKey: userKeys.groupOrders() });
+      void queryClient.invalidateQueries({ queryKey: userKeys.orderHistory() });
     },
   });
 }
@@ -255,6 +292,10 @@ export function useUpdateGroupOrderStatus() {
     }) => apiClient.post<GroupOrder>(`/api/v1/orders/${groupOrderId}/status`, { body: { status } }),
     onSuccess: (_, variables) => {
       void queryClient.invalidateQueries({ queryKey: ordersKeys.detail(variables.groupOrderId) });
+      // Status changes affect list views
+      void queryClient.invalidateQueries({ queryKey: ordersKeys.lists() });
+      // User group orders list is affected
+      void queryClient.invalidateQueries({ queryKey: userKeys.groupOrders() });
     },
   });
 }

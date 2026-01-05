@@ -13,13 +13,3 @@ export function getActiveOrganizations(organizations: Organization[]): Organizat
 export function hasMultipleActiveOrganizations(organizations: Organization[]): boolean {
   return getActiveOrganizations(organizations).length > 1;
 }
-
-/**
- * Determine if organization selector should be shown
- */
-export function shouldShowOrganizationSelector(
-  organizations: Organization[],
-  requiresOrganization?: boolean
-): boolean {
-  return hasMultipleActiveOrganizations(organizations) || requiresOrganization === true;
-}

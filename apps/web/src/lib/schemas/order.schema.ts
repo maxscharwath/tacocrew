@@ -51,7 +51,7 @@ export const createGroupOrderSchema = z
       .optional(),
     startDate: z.string().min(1, validationKeys.startDateRequired),
     endDate: z.string().min(1, validationKeys.endDateRequired),
-    organizationId: z.string().optional(),
+    organizationId: z.string().min(1, validationKeys.orderNameRequired),
   })
   .refine(
     (data) => {

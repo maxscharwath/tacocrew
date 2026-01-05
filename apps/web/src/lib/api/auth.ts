@@ -1,5 +1,6 @@
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api/http';
+import { userKeys } from '@/lib/api/user';
 import type { LoginRequestBody, LoginResponse } from '@/lib/api/types';
 
 /** Internal query key factory */
@@ -9,11 +10,16 @@ const authKeys = {
 };
 
 export function useLogin() {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (body: LoginRequestBody) =>
       apiClient.post<LoginResponse>('/api/auth', {
         body,
         skipAuth: true,
       }),
+    onSuccess: () => {
+      // After login, invalidate all user-related queries to ensure fresh data
+      void queryClient.invalidateQueries({ queryKey: userKeys.all() });
+    },
   });
 }
