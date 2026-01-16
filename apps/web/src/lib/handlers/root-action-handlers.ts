@@ -5,6 +5,7 @@
 
 import { redirect } from 'react-router';
 import { authClient } from '@/lib/auth-client';
+import { queryClient } from '@/lib/query-client';
 import { routes } from '@/lib/routes';
 
 export const ROOT_ACTION_INTENT = {
@@ -18,6 +19,7 @@ export type RootActionIntent = (typeof ROOT_ACTION_INTENT)[keyof typeof ROOT_ACT
  */
 export async function handleLogout(): Promise<never> {
   await authClient.signOut();
+  queryClient.clear();
   throw redirect(routes.signin());
 }
 
