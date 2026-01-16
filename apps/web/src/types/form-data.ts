@@ -11,11 +11,6 @@ export interface MeatSelection {
   quantity: number;
 }
 
-export interface OrderItemSelection {
-  id: string;
-  quantity: number;
-}
-
 export interface TacoSelection {
   size: TacoSize;
   meats: MeatSelection[];
@@ -27,7 +22,7 @@ export interface TacoSelection {
 
 export interface OrderFormData {
   taco: TacoSelection | null;
-  extras: OrderItemSelection[];
-  drinks: OrderItemSelection[];
-  desserts: OrderItemSelection[];
+  extras: string[];
+  drinks: string[];
+  desserts: string[];
 }

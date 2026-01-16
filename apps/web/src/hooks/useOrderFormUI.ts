@@ -24,7 +24,7 @@ export interface OrderFormUIState {
  */
 export function useOrderFormUI(
   formData: OrderFormData | null,
-  stock: StockResponse | null,
+  _stock: StockResponse | null,
   selectedTacoSize: TacoSizeItem | null
 ) {
   const [isSubmitting, setIsSubmitting] = useState(false);

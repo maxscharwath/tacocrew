@@ -4,7 +4,6 @@
  */
 
 import { useEffect, useState } from 'react';
-import type { StockResponse } from '@/lib/api';
 import type { StockSectionKey } from './useStockSections';
 
 interface UseStockTabsState {

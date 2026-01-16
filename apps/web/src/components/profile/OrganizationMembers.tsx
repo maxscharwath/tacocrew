@@ -29,7 +29,7 @@ import {
   useRequestToJoinOrganization,
   useUpdateUserRole,
 } from '@/lib/api/organization';
-import type { OrganizationMember, OrganizationRole, PendingRequest } from '@/lib/api/types';
+import type { OrganizationRole } from '@/lib/api/types';
 
 type OrganizationMembersProps = Readonly<{
   organizationId: string;

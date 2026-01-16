@@ -49,7 +49,7 @@ export function calculateUserOrgStatus(
 
   return {
     role: role as OrgUserRole,
-    status: status as OrgUserStatus,
+    status: status as OrgUserStatusType,
     isAdmin: role === 'ADMIN' && status === 'ACTIVE',
     isPending: status === 'PENDING',
   };

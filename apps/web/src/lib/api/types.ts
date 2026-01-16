@@ -292,6 +292,7 @@ export interface MysteryTacoOrder extends MenuItem {
   garnitures: MenuItem[];
   note?: string;
   quantity: number;
+  tacoID?: string; // Mystery tacos may not have a tacoID
   kind: TacoKind.MYSTERY;
 }
 

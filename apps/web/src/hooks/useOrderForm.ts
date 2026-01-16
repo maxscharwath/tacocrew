@@ -8,12 +8,7 @@ import { useEffect, useState } from 'react';
 import type { StockResponse } from '@/lib/api';
 import type { UserOrderDetail } from '@/lib/api/orders';
 import { TacoKind } from '@/lib/api/types';
-import type {
-  MeatSelection,
-  OrderFormData,
-  OrderItemSelection,
-  TacoSelection,
-} from '@/types/form-data';
+import type { MeatSelection, OrderFormData, TacoSelection } from '@/types/form-data';
 import type { TacoSizeItem } from '@/types/orders';
 import { calculateOrderTotalPrice, generatePriceBreakdown } from '@/utils/priceCalculations';
 
@@ -56,9 +51,9 @@ function initializeFormData(myOrder?: UserOrderDetail): OrderFormData {
           note: taco.note ?? '',
         }
       : null,
-    extras: myOrder.items.extras.map((extra) => ({ id: extra.id, quantity: 1 })),
-    drinks: myOrder.items.drinks.map((drink) => ({ id: drink.id, quantity: 1 })),
-    desserts: myOrder.items.desserts.map((dessert) => ({ id: dessert.id, quantity: 1 })),
+    extras: myOrder.items.extras.map((extra) => extra.id),
+    drinks: myOrder.items.drinks.map((drink) => drink.id),
+    desserts: myOrder.items.desserts.map((dessert) => dessert.id),
   };
 }
 
@@ -100,9 +95,9 @@ export function useOrderForm({ stock, myOrder }: UseOrderFormProps) {
   const [meats, setMeats] = useState<MeatSelection[]>(initialData.taco?.meats ?? []);
   const [sauces, setSauces] = useState<string[]>(initialData.taco?.sauces ?? []);
   const [garnitures, setGarnitures] = useState<string[]>(initialData.taco?.garnitures ?? []);
-  const [extras, setExtras] = useState<OrderItemSelection[]>(initialData.extras);
-  const [drinks, setDrinks] = useState<OrderItemSelection[]>(initialData.drinks);
-  const [desserts, setDesserts] = useState<OrderItemSelection[]>(initialData.desserts);
+  const [extras, setExtras] = useState<string[]>(initialData.extras);
+  const [drinks, setDrinks] = useState<string[]>(initialData.drinks);
+  const [desserts, setDesserts] = useState<string[]>(initialData.desserts);
   const [note, setNote] = useState(initialData.taco?.note ?? '');
   const [kind, setKind] = useState<TacoKind>(initialData.taco?.kind ?? TacoKind.REGULAR);
 

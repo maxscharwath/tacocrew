@@ -3,7 +3,7 @@
  * Computes metrics from order data
  */
 
-import type { GroupOrder } from '@tacocrew/gigatacos-client';
+import type { UserGroupOrder } from '@/lib/api/types';
 import { toDate } from '@/lib/utils/date';
 
 export interface DashboardMetrics {
@@ -15,7 +15,7 @@ export interface DashboardMetrics {
 /**
  * Filter orders that are still accepting submissions
  */
-export function filterActiveOrders(orders: readonly GroupOrder[]): GroupOrder[] {
+export function filterActiveOrders(orders: readonly UserGroupOrder[]): UserGroupOrder[] {
   const now = new Date();
   return orders.filter((order) => toDate(order.endDate) > now);
 }
@@ -23,7 +23,7 @@ export function filterActiveOrders(orders: readonly GroupOrder[]): GroupOrder[] 
 /**
  * Filter orders awaiting submission
  */
-export function filterPendingOrders(orders: readonly GroupOrder[]): GroupOrder[] {
+export function filterPendingOrders(orders: readonly UserGroupOrder[]): UserGroupOrder[] {
   return orders.filter((order) => order.canAcceptOrders);
 }
 
@@ -31,7 +31,7 @@ export function filterPendingOrders(orders: readonly GroupOrder[]): GroupOrder[]
  * Calculate dashboard metrics from order data
  */
 export function calculateDashboardMetrics(
-  groupOrders: readonly GroupOrder[],
+  groupOrders: readonly UserGroupOrder[],
   orderHistoryCount: number
 ): DashboardMetrics {
   const activeOrders = filterActiveOrders(groupOrders);
@@ -48,8 +48,8 @@ export function calculateDashboardMetrics(
  * Get recent group orders (limited to top N)
  */
 export function getRecentGroupOrders(
-  orders: readonly GroupOrder[],
+  orders: readonly UserGroupOrder[],
   limit: number = 5
-): GroupOrder[] {
+): UserGroupOrder[] {
   return orders.slice(0, limit);
 }

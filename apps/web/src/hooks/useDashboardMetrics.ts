@@ -3,15 +3,15 @@
  * Calculates and memoizes dashboard metrics from order data
  */
 
-import type { GroupOrder } from '@tacocrew/gigatacos-client';
 import { useMemo } from 'react';
+import type { UserGroupOrder } from '@/lib/api/types';
 import { calculateDashboardMetrics, type DashboardMetrics } from '@/lib/utils/dashboard-metrics';
 
 /**
  * Calculate dashboard metrics with memoization
  */
 export function useDashboardMetrics(
-  groupOrders: readonly GroupOrder[] | undefined,
+  groupOrders: readonly UserGroupOrder[] | undefined,
   orderHistoryCount: number
 ): DashboardMetrics {
   return useMemo(() => {

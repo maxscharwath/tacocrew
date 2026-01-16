@@ -6,18 +6,6 @@
 import { NIL, v5 } from 'uuid';
 
 /**
- * Stock category values matching backend StockCategory enum
- */
-const _StockCategory = {
-  Meats: 'meats',
-  Sauces: 'sauces',
-  Garnishes: 'garnishes',
-  Extras: 'extras',
-  Drinks: 'drinks',
-  Desserts: 'desserts',
-} as const;
-
-/**
  * Resolve namespace for UUID generation (matches backend logic)
  */
 function resolveNamespace(namespace?: string): string {

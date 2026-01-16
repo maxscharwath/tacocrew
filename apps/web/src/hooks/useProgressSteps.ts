@@ -1,4 +1,4 @@
-import { CheckCircle2, Dices, Droplets, Ham, Leaf, Ruler } from 'lucide-react';
+import { Dices, Droplets, Ham, Leaf, Ruler } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { TacoKind } from '@/lib/api/types';
 import type { TacoSizeItem } from '@/types/orders';

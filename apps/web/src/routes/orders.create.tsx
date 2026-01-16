@@ -142,10 +142,10 @@ export function OrderCreateRoute() {
   const editingOrder = data?.editingOrder;
 
   // Form state - MUST be called unconditionally before any early returns
-  const orderForm = useOrderForm({ stock, myOrder: editingOrder });
+  const orderForm = useOrderForm({ stock, myOrder: editingOrder ?? undefined });
 
   // UI state (validation, progress) - MUST be called unconditionally
-  const _uiState = useOrderFormUI(
+  useOrderFormUI(
     {
       taco: orderForm.selectedTacoSize
         ? {
@@ -157,18 +157,9 @@ export function OrderCreateRoute() {
             note: orderForm.note,
           }
         : null,
-      extras: orderForm.extras.map((e) => ({
-        id: e,
-        quantity: 1,
-      })),
-      drinks: orderForm.drinks.map((d) => ({
-        id: d,
-        quantity: 1,
-      })),
-      desserts: orderForm.desserts.map((d) => ({
-        id: d,
-        quantity: 1,
-      })),
+      extras: orderForm.extras,
+      drinks: orderForm.drinks,
+      desserts: orderForm.desserts,
     },
     stock ?? null,
     orderForm.selectedTacoSize
@@ -269,9 +260,15 @@ export function OrderCreateRoute() {
               onSelectTaco={(taco) => {
                 orderForm.prefillTaco({
                   size: taco.size,
-                  meats: taco.meats?.map((m) => ({ id: m.id, quantity: m.quantity ?? 1 })) ?? [],
-                  sauces: taco.sauces?.map((s) => ({ id: s.id })) ?? [],
-                  garnitures: taco.garnitures?.map((g) => ({ id: g.id })) ?? [],
+                  meats:
+                    taco.meats
+                      ?.filter((m) => {
+                        const stockItem = stock.meats.find((sm) => sm.id === m.id);
+                        return stockItem?.in_stock ?? false;
+                      })
+                      .map((m) => ({ id: m.id, quantity: m.quantity ?? 1 })) ?? [],
+                  sauces: taco.sauces?.map((s) => s.id) ?? [],
+                  garnitures: taco.garnitures?.map((g) => g.id) ?? [],
                   note: taco.note,
                   kind: taco.kind,
                 });

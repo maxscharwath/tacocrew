@@ -38,7 +38,7 @@ type OrderSummaryProps = Readonly<{
   hasOtherItems: boolean;
   canSubmit: boolean;
   validationMessages: string[];
-  stock: StockResponse;
+  stock: StockResponse | null;
   progressSteps: ProgressStep[];
   formId: string;
   isSubmitting: boolean;
@@ -152,7 +152,7 @@ export function OrderSummary({
                       {!isMystery && meats.length > 0 && (
                         <div className="mt-2 space-y-1">
                           {meats.map((meat) => {
-                            const meatItem = stock.meats.find((m) => m.id === meat.id);
+                            const meatItem = stock?.meats.find((m) => m.id === meat.id);
                             return (
                               <div key={meat.id} className="text-slate-400 text-xs">
                                 {meat.quantity}x {meatItem?.name ?? meat.id}

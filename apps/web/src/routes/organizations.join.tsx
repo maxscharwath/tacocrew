@@ -61,11 +61,11 @@ export function OrganizationJoinRoute() {
       toast.success(t('organizations.join.success'));
     } catch (error) {
       // Check if it's a conflict error (already member or pending)
-      if (error instanceof ApiError && error.status === 409) {
-        // Extract message from error body
-        const errorBody = error.body as { error?: { message?: string } };
+      if (error instanceof ApiError && error.statusCode === 409) {
+        // Extract message from error details
+        const errorDetails = error.details as { message?: string };
         const errorMessage =
-          errorBody?.error?.message || error.message || t('organizations.join.error');
+          errorDetails?.message || error.message || t('organizations.join.error');
         toast.error(errorMessage);
         // If already a member or pending, show as joined
         if (
@@ -75,9 +75,9 @@ export function OrganizationJoinRoute() {
           setJoined(true);
         }
       } else if (error instanceof ApiError) {
-        const errorBody = error.body as { error?: { message?: string } };
+        const errorDetails = error.details as { message?: string };
         const errorMessage =
-          errorBody?.error?.message || error.message || t('organizations.join.error');
+          errorDetails?.message || error.message || t('organizations.join.error');
         toast.error(errorMessage);
       } else if (error instanceof Error) {
         toast.error(error.message);

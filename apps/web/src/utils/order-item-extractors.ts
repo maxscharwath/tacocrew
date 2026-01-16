@@ -6,7 +6,7 @@ import { TacoKind } from '@/lib/api/types';
  */
 export function extractOrderItems(order: UserOrderSummary) {
   const taco = order.items.tacos?.[0];
-  const isMystery = taco?.kind === TacoKind.Mystery;
+  const isMystery = taco?.kind === TacoKind.MYSTERY;
 
   return {
     meats:

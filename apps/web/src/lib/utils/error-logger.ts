@@ -85,7 +85,7 @@ class ErrorLogger {
    * Note: Console methods used intentionally for development logging only
    */
   private logToConsole(
-    prefix: string,
+    _prefix: string,
     error: OrderError | FormError | unknown,
     context?: Record<string, unknown>
   ): void {
@@ -113,9 +113,9 @@ class ErrorLogger {
    * Implement based on your analytics provider (Sentry, LogRocket, etc.)
    */
   private sendToAnalytics(
-    eventName: string,
-    error: OrderError | FormError | Record<string, unknown>,
-    additionalContext?: Record<string, unknown>
+    _eventName: string,
+    _error: OrderError | FormError | Record<string, unknown>,
+    _additionalContext?: Record<string, unknown>
   ): void {
     // Example: Send to Sentry
     // Sentry.captureException(error, { tags: { event: eventName }, extra: additionalContext });
@@ -124,9 +124,7 @@ class ErrorLogger {
     // analytics.trackError(eventName, error, additionalContext);
 
     // For now, just track in memory
-    if (typeof window !== 'undefined' && window.addEventListener) {
-      // Could implement custom event dispatch here
-    }
+    // Could implement custom event dispatch here when needed
   }
 
   /**

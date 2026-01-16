@@ -15,7 +15,7 @@ export async function withAuthErrorHandling<T>(
   try {
     return await apiCall();
   } catch (error) {
-    if (error instanceof ApiError && error.status === 401) {
+    if (error instanceof ApiError && error.statusCode === 401) {
       throw redirect(getRedirectUrl(request));
     }
     throw error;

@@ -4,10 +4,11 @@
  */
 
 import { useGroupOrders, useOrderHistory } from '@/lib/api/user';
+import type { UserGroupOrder, UserOrderHistoryEntry } from '@/lib/api/types';
 
 export interface DashboardData {
-  groupOrders: ReturnType<typeof useGroupOrders>['data'];
-  orderHistory: ReturnType<typeof useOrderHistory>['data'];
+  groupOrders: UserGroupOrder[];
+  orderHistory: UserOrderHistoryEntry[];
   isLoading: boolean;
 }
 

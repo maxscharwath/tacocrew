@@ -204,11 +204,6 @@ export function GroupOrderReceipts({
           const isNotOrderOwner = currentUserId !== group.userId;
           const isNotLeaderReceipt = !isLeaderReceipt;
 
-          // Check if current user is the one who paid for this order
-          const currentUserPaidForThis = group.orders.some(
-            (order) => order.participantPayment.paidBy?.id === currentUserId
-          );
-
           // Show button if: not owner, not leader receipt, and not confirmed by leader yet
           const canShowPayForOther =
             hasCurrentUser && isNotOrderOwner && isNotLeaderReceipt && !reimbursementComplete;

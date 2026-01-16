@@ -30,7 +30,7 @@ export function OrganizationError() {
   // Check both RouteErrorResponse and ApiError
   const is404 =
     (isRouteErrorResponse(error) && error.status === 404) ||
-    (error instanceof ApiError && error.status === 404);
+    (error instanceof ApiError && error.statusCode === 404);
 
   if (is404) {
     return (
@@ -77,7 +77,7 @@ export function OrganizationError() {
   // Handle 403 - Forbidden (user doesn't have access)
   const is403 =
     (isRouteErrorResponse(error) && error.status === 403) ||
-    (error instanceof ApiError && error.status === 403);
+    (error instanceof ApiError && error.statusCode === 403);
 
   if (is403) {
     return (
@@ -124,7 +124,7 @@ export function OrganizationError() {
   // Handle 400 - Bad Request (e.g., missing organization ID)
   const is400 =
     (isRouteErrorResponse(error) && error.status === 400) ||
-    (error instanceof ApiError && error.status === 400);
+    (error instanceof ApiError && error.statusCode === 400);
 
   if (is400) {
     return (

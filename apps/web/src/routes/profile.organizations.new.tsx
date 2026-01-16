@@ -12,7 +12,7 @@ export function ProfileOrganizationsNewRoute() {
   const revalidator = useRevalidator();
   const createMutation = useCreateOrganization();
 
-  const handleSubmit = (
+  const handleSubmit = async (
     data: OrganizationPayload,
     avatarFile: File | null,
     backgroundColor: string | null

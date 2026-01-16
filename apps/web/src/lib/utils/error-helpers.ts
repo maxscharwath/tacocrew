@@ -7,7 +7,7 @@ export function isMultipleOrganizationsError(error: unknown): boolean {
   if (!(error instanceof ApiError)) {
     return false;
   }
-  if (error.errorCode !== 'VALIDATION_ERROR') {
+  if (error.code !== 'VALIDATION_ERROR') {
     return false;
   }
   if (!error.details || Array.isArray(error.details)) {

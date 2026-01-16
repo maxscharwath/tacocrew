@@ -240,7 +240,7 @@ function extractApiErrorMessage(body: unknown, defaultMessage: string): string {
  */
 function handleApiError(error: ApiError, form: string): Response {
   // Try to parse ZodError first
-  const zodError = parseZodError(error.body);
+  const zodError = parseZodError(error.details);
   if (zodError) {
     return Response.json(
       {
@@ -249,12 +249,12 @@ function handleApiError(error: ApiError, form: string): Response {
         errorMessage: zodError.message,
         fieldErrors: zodError.fieldErrors,
       },
-      { status: error.status }
+      { status: error.statusCode }
     );
   }
 
   // Fall back to standard error message
-  const errorMessage = extractApiErrorMessage(error.body, error.message);
+  const errorMessage = extractApiErrorMessage(error.details, error.message);
   return Response.json(
     {
       form,
@@ -262,7 +262,7 @@ function handleApiError(error: ApiError, form: string): Response {
       errorMessage,
       errorDetails: error.details,
     },
-    { status: error.status }
+    { status: error.statusCode }
   );
 }
 

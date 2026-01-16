@@ -48,7 +48,7 @@ export function SectionWrapper<TData>({
     onError?.(query.error);
 
     // Handle 404 errors by throwing (React Router will catch)
-    if (query.error instanceof ApiError && query.error.status === 404) {
+    if (query.error instanceof ApiError && query.error.statusCode === 404) {
       throw new Response('Not found', { status: 404 });
     }
 

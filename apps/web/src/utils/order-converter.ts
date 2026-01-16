@@ -9,7 +9,7 @@ export function convertOrderToUpsertBody(order: UserOrderSummary): UpsertUserOrd
   return {
     items: {
       tacos: order.items.tacos.map((taco) => {
-        const isMystery = taco.kind === TacoKind.Mystery;
+        const isMystery = taco.kind === TacoKind.MYSTERY;
         return {
           size: taco.size,
           meats: isMystery

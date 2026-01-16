@@ -21,7 +21,11 @@ export function calculateStockStats(
 ): StockStats {
   const items = stock[activeCategory] ?? [];
 
-  const inStockCount = items.filter((item) => item.in_stock).length;
+  // Tacos don't have in_stock property, so count all as in stock
+  const inStockCount =
+    activeCategory === 'tacos'
+      ? items.length
+      : items.filter((item) => 'in_stock' in item && item.in_stock).length;
   const totalCategories = Object.values(stock).filter((category) => category.length > 0).length;
   const totalItems = Object.values(stock).reduce((acc, category) => acc + category.length, 0);
   const lowStockCount = Object.values(stock).reduce(

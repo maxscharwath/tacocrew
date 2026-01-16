@@ -55,7 +55,7 @@ export async function authenticationLoader({ request }: LoaderFunctionArgs) {
     throw redirect(redirectTo);
   } catch (error) {
     // If API returns 401, session is invalid, stay on auth page
-    if (error instanceof ApiError && error.status === 401) {
+    if (error instanceof ApiError && error.statusCode === 401) {
       return null;
     }
     // Re-throw the redirect Response so React Router can handle it
