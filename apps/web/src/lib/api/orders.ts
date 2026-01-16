@@ -1,7 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { apiClient } from '@/lib/api/http';
 import { badgesKeys } from '@/lib/api/badges';
-import { userKeys } from '@/lib/api/user';
+import { apiClient } from '@/lib/api/http';
 import type {
   CreateGroupOrderBody,
   GroupOrder,
@@ -13,6 +12,7 @@ import type {
   UserOrderItems,
   UserOrderResponse,
 } from '@/lib/api/types';
+import { userKeys } from '@/lib/api/user';
 
 /** Internal query key factory for orders */
 const ordersKeys = {
@@ -59,6 +59,10 @@ export interface OrderCookiesResponse {
  * Raw API functions for server-side handlers and services
  * These should only be used outside React components where hooks cannot be used
  */
+export function getGroupOrderWithOrders(groupOrderId: string) {
+  return apiClient.get<GroupOrderWithUserOrders>(`/api/v1/orders/${groupOrderId}/items`);
+}
+
 export function createGroupOrder(body: CreateGroupOrderBody) {
   return apiClient.post<GroupOrder>('/api/v1/orders', { body });
 }

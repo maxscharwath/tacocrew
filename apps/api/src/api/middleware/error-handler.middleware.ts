@@ -3,10 +3,14 @@
  * @module hono/middleware/error-handler
  */
 
-import { CsrfError, NetworkError, RateLimitError } from '@tacocrew/gigatacos-client';
+import {
+  CsrfError as ClientCsrfError,
+  NetworkError as ClientNetworkError,
+  RateLimitError as ClientRateLimitError,
+} from '@tacocrew/gigatacos-client';
 import { Context, ErrorHandler } from 'hono';
 import { ErrorCodes } from '@/shared/types/types';
-import { ApiError, CsrfError as AppCsrfError } from '@/shared/utils/errors.utils';
+import { ApiError, CsrfError, NetworkError, RateLimitError } from '@/shared/utils/errors.utils';
 import { logger } from '@/shared/utils/logger.utils';
 
 /**
@@ -43,18 +47,18 @@ export const errorHandler: ErrorHandler = (err: Error, c: Context) => {
     statusCode: 400 | 401 | 403 | 404 | 409 | 429 | 500 | 502;
   }> = [
     {
-      check: (error) => error instanceof CsrfError,
-      create: () => new AppCsrfError(),
+      check: (error) => error instanceof ClientCsrfError,
+      create: () => new CsrfError(),
       statusCode: 403,
     },
     {
-      check: (error) => error instanceof RateLimitError,
-      create: () => new ApiError({ errorCode: ErrorCodes.RATE_LIMIT, statusCode: 429 }),
+      check: (error) => error instanceof ClientRateLimitError,
+      create: () => new RateLimitError(),
       statusCode: 429,
     },
     {
-      check: (error) => error instanceof NetworkError,
-      create: () => new ApiError({ errorCode: ErrorCodes.NETWORK_ERROR, statusCode: 502 }),
+      check: (error) => error instanceof ClientNetworkError,
+      create: () => new NetworkError(),
       statusCode: 502,
     },
   ];
@@ -77,15 +81,14 @@ export const errorHandler: ErrorHandler = (err: Error, c: Context) => {
   }
 
   // Handle unknown errors
-  const unknownError = new ApiError({
-    errorCode: ErrorCodes.UNKNOWN_ERROR,
-  });
+  const unknownError = new ApiError(ErrorCodes.UNKNOWN_ERROR, 500);
   return c.json(
     {
       error: {
         id: unknownError.id,
         code: unknownError.code,
         key: unknownError.key,
+        details: unknownError.details,
       },
     },
     500

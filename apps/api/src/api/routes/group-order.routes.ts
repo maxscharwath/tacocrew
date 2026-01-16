@@ -29,7 +29,7 @@ import { SessionService } from '@/services/session/session.service';
 import { UserService } from '@/services/user/user.service';
 import { RevealMysteryTacosService } from '@/services/user-order/reveal-mystery-tacos.service';
 import { Currency, GroupOrderStatus } from '@/shared/types/types';
-import { ForbiddenError, NotFoundError } from '@/shared/utils/errors.utils';
+import { NotFoundError, OrganizationAccessError } from '@/shared/utils/errors.utils';
 import { buildAvatarUrl } from '@/shared/utils/image.utils';
 import { inject } from '@/shared/utils/inject.utils';
 import { calculateUserOrderPrice } from '@/shared/utils/order-price.utils';
@@ -120,7 +120,7 @@ function sanitizeGroupUserOrderItems(items: UserOrder['items']) {
 
 /**
  * Check if user has access to a group order
- * Throws ForbiddenError if user is not an active member of the organization
+ * Throws OrganizationAccessError if user is not an active member of the organization
  */
 async function requireGroupOrderAccess(groupOrderId: string, userId: string): Promise<void> {
   const groupOrderRepository = inject(GroupOrderRepository);
@@ -146,7 +146,7 @@ async function requireGroupOrderAccess(groupOrderId: string, userId: string): Pr
     parsedOrganizationId
   );
   if (!isActiveMember) {
-    throw new ForbiddenError();
+    throw new OrganizationAccessError(groupOrder.organizationId);
   }
 }
 
