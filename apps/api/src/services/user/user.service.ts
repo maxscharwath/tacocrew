@@ -13,6 +13,7 @@ import {
   canAcceptOrders,
   createGroupOrderFromDb,
   type GroupOrderId,
+  getEffectiveStatus,
 } from '@/schemas/group-order.schema';
 import type { OrderId } from '@/schemas/order.schema';
 import type { User, UserId } from '@/schemas/user.schema';
@@ -283,7 +284,7 @@ export class UserService {
       return {
         id: go.id as GroupOrderId,
         name: go.name,
-        status: go.status,
+        status: getEffectiveStatus(groupOrder),
         canAcceptOrders: canAcceptOrders(groupOrder),
         startDate: go.startDate,
         endDate: go.endDate,
