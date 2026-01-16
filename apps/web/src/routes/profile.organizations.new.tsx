@@ -20,7 +20,11 @@ export function ProfileOrganizationsNewRoute() {
     const loadingToastId = toast.loading(t('organizations.messages.creating'));
 
     createMutation.mutate(
-      { body: data, avatarFile: avatarFile ?? undefined, backgroundColor: backgroundColor ?? undefined },
+      {
+        body: data,
+        avatarFile: avatarFile ?? undefined,
+        backgroundColor: backgroundColor ?? undefined,
+      },
       {
         onSuccess: (newOrg) => {
           toast.success(t('organizations.messages.createdWithName', { name: newOrg.name }), {

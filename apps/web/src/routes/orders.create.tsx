@@ -67,8 +67,14 @@ function validateOrderForm(
   }
   const isMystery = data.kind === TacoKind.MYSTERY;
 
-  if (!isMystery && data.size && tacoSize && !tacoSize.allowGarnitures && data.garnitures.length > 0) {
-    throw new Response('Garnish not available', { status: 400 })
+  if (
+    !isMystery &&
+    data.size &&
+    tacoSize &&
+    !tacoSize.allowGarnitures &&
+    data.garnitures.length > 0
+  ) {
+    throw new Response('Garnish not available', { status: 400 });
   }
 }
 

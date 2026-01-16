@@ -60,11 +60,11 @@ export function OrganizationDetails({
 }: OrganizationDetailsProps) {
   const { t } = useTranslation();
   const { isCopied, copyToClipboard } = useCopyFeedback();
-  
+
   // Subscribe to organization detail query to get updates from mutations
   const organizationQuery = useOrganization(organization.id);
   const displayOrganization = organizationQuery.data ?? organization;
-  
+
   const [isEditing, setIsEditing] = useState(false);
   const [form, setForm] = useState<OrganizationPayload>({ name: displayOrganization.name });
   const [feedback, setFeedback] = useState<{ tone: 'success' | 'error'; text: string } | null>(
@@ -275,11 +275,14 @@ export function OrganizationDetails({
                   </div>
                   <CardDescription className="mt-1">
                     {t('organizations.details.created', {
-                      date: new Date(displayOrganization.createdAt ?? '').toLocaleDateString(undefined, {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric',
-                      }),
+                      date: new Date(displayOrganization.createdAt ?? '').toLocaleDateString(
+                        undefined,
+                        {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric',
+                        }
+                      ),
                     })}
                   </CardDescription>
                   {isAdmin && (

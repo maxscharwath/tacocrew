@@ -1,3 +1,4 @@
+import { NotFoundError, OrganizationAccessError } from '@tacocrew/errors';
 import { Button } from '@tacocrew/ui-kit';
 import { Terminal } from 'lucide-react';
 import { useState } from 'react';
@@ -16,13 +17,9 @@ import {
   OrdersList,
   ShareButton,
 } from '@/components/orders';
-import { GroupOrderReceiptsSkeleton } from '@/components/orders/GroupOrderReceiptsSkeleton';
-import { OrderHeroSkeleton } from '@/components/orders/OrderHeroSkeleton';
-import { OrdersListSkeleton } from '@/components/orders/OrdersListSkeleton';
-import { SectionWrapper } from '@/components/sections';
 import { useDeveloperMode } from '@/hooks/useDeveloperMode';
-import { useGroupOrderWithOrders } from '@/lib/api';
-import { type Amount, Currency } from '@/lib/api/types';
+import { getGroupOrderWithOrders, useGroupOrderWithOrders } from '@/lib/api';
+import { type Amount, Currency, type GroupOrderWithUserOrders } from '@/lib/api/types';
 import { useSession } from '@/lib/auth-client';
 import {
   getFormHandlerName,
@@ -35,9 +32,22 @@ import { routes } from '@/lib/routes';
 import { createActionHandler } from '@/lib/utils/action-handler';
 import { getGroupOrderIdFromParams, getGroupOrderIdFromUrl } from '@/lib/utils/order-id-extractors';
 
-export function orderDetailLoader({ params }: LoaderFunctionArgs) {
+export async function orderDetailLoader({ params }: LoaderFunctionArgs) {
   const groupOrderId = getGroupOrderIdFromParams(params);
-  return { groupOrderId };
+
+  try {
+    const data = await getGroupOrderWithOrders(groupOrderId);
+    return { groupOrderId, data };
+  } catch (error) {
+    // Errors are automatically typed by apiClient
+    if (error instanceof OrganizationAccessError) {
+      throw redirect(routes.organizationJoin({ id: error.organizationId }));
+    }
+    if (error instanceof NotFoundError) {
+      throw new Response('Order not found', { status: 404 });
+    }
+    throw error;
+  }
 }
 
 export const orderDetailAction = createActionHandler({
@@ -76,10 +86,19 @@ export const orderDetailAction = createActionHandler({
   },
 });
 
-function OrderDetailContent({ groupOrderId }: Readonly<{ groupOrderId: string }>) {
+interface OrderDetailContentProps {
+  readonly groupOrderId: string;
+  readonly initialData: GroupOrderWithUserOrders;
+}
+
+function OrderDetailContent({ groupOrderId, initialData }: OrderDetailContentProps) {
   const { t } = useTranslation();
 
-  const groupOrderQuery = useGroupOrderWithOrders(groupOrderId);
+  // Use hook for revalidation on user actions, fallback to initial data from loader
+  const groupOrderQuery = useGroupOrderWithOrders(groupOrderId, true);
+  const data = groupOrderQuery.data ?? initialData;
+  const { groupOrder, userOrders } = data;
+
   const { data: session } = useSession();
   const navigation = useNavigation();
   const isSubmitting = navigation.state === 'submitting';
@@ -87,112 +106,72 @@ function OrderDetailContent({ groupOrderId }: Readonly<{ groupOrderId: string }>
   const [isCookieModalOpen, setIsCookieModalOpen] = useState(false);
 
   const currentUserId = session?.user?.id;
+  const isLeader = currentUserId ? groupOrder.leader.id === currentUserId : false;
+  const canSubmit = isLeader && groupOrder.canSubmitGroupOrder;
+  const isSubmitted = groupOrder.status === 'submitted' || groupOrder.status === 'completed';
+  const isClosedManually = groupOrder.status === 'closed';
+  const totalPrice: Amount = userOrders.reduce<Amount>(
+    (acc, order) => ({
+      value: acc.value + order.totalPrice.value,
+      currency: order.totalPrice.currency,
+    }),
+    { value: 0, currency: Currency.CHF }
+  );
 
   return (
     <div className="space-y-8">
-      {/* Hero section with independent skeleton */}
-      <SectionWrapper query={groupOrderQuery} skeleton={<OrderHeroSkeleton />}>
-        {(data) => {
-          const { groupOrder, userOrders } = data;
-          const isLeader = currentUserId ? groupOrder.leader.id === currentUserId : false;
-          const canSubmit = isLeader && groupOrder.canSubmitGroupOrder;
-          const isSubmitted =
-            groupOrder.status === 'submitted' || groupOrder.status === 'completed';
-          const isClosedManually = groupOrder.status === 'closed';
-          const totalPrice: Amount = userOrders.reduce<Amount>(
-            (acc, order) => ({
-              value: acc.value + order.totalPrice.value,
-              currency: order.totalPrice.currency,
-            }),
-            { value: 0, currency: Currency.CHF }
-          );
-
-          return (
-            <OrderHero
-              groupOrder={groupOrder}
-              userOrders={userOrders}
-              totalPrice={totalPrice}
-              canAddOrders={groupOrder.canAcceptOrders}
-              canSubmit={canSubmit}
-              orderId={groupOrderId}
-              isClosedManually={isClosedManually}
-              isSubmitting={isSubmitting}
-              isLeader={isLeader}
-              isDeveloperMode={isDeveloperMode}
-              isSubmitted={isSubmitted}
-            />
-          );
-        }}
-      </SectionWrapper>
+      {/* Hero section */}
+      <OrderHero
+        groupOrder={groupOrder}
+        userOrders={userOrders}
+        totalPrice={totalPrice}
+        canAddOrders={groupOrder.canAcceptOrders}
+        canSubmit={canSubmit}
+        orderId={groupOrderId}
+        isClosedManually={isClosedManually}
+        isSubmitting={isSubmitting}
+        isLeader={isLeader}
+        isDeveloperMode={isDeveloperMode}
+        isSubmitted={isSubmitted}
+      />
 
       {/* Orders list and sidebar */}
       <div className="grid gap-4 sm:gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,400px)]">
-        {/* Orders list section with independent skeleton */}
-        <SectionWrapper query={groupOrderQuery} skeleton={<OrdersListSkeleton />}>
-          {(data) => {
-            const { groupOrder, userOrders } = data;
-            const isLeader = currentUserId ? groupOrder.leader.id === currentUserId : false;
-
-            return (
-              <OrdersList
-                userOrders={userOrders}
-                groupOrder={groupOrder}
-                currentUserId={currentUserId}
-                isLeader={isLeader}
-                orderId={groupOrderId}
-                isSubmitting={isSubmitting}
-                canAddOrders={groupOrder.canAcceptOrders}
-              />
-            );
-          }}
-        </SectionWrapper>
+        {/* Orders list section */}
+        <OrdersList
+          userOrders={userOrders}
+          groupOrder={groupOrder}
+          currentUserId={currentUserId}
+          isLeader={isLeader}
+          orderId={groupOrderId}
+          isSubmitting={isSubmitting}
+          canAddOrders={groupOrder.canAcceptOrders}
+        />
 
         {/* Sidebar */}
-        <SectionWrapper
-          query={groupOrderQuery}
-          skeleton={<div className="h-32 rounded-lg bg-slate-900/50" />}
-        >
-          {(data) => {
-            const { groupOrder } = data;
-            const isSubmitted =
-              groupOrder.status === 'submitted' || groupOrder.status === 'completed';
-
-            return (
-              <div className="space-y-3 lg:sticky lg:top-8 lg:h-fit">
-                <ShareButton groupOrderId={groupOrder.id} />
-                {isDeveloperMode && isSubmitted && (
-                  <Button
-                    variant="outline"
-                    fullWidth
-                    onClick={() => setIsCookieModalOpen(true)}
-                    className="gap-2"
-                  >
-                    <Terminal size={16} />
-                    Cookie Injection
-                  </Button>
-                )}
-              </div>
-            );
-          }}
-        </SectionWrapper>
+        <div className="space-y-3 lg:sticky lg:top-8 lg:h-fit">
+          <ShareButton groupOrderId={groupOrder.id} />
+          {isDeveloperMode && isSubmitted && (
+            <Button
+              variant="outline"
+              fullWidth
+              onClick={() => setIsCookieModalOpen(true)}
+              className="gap-2"
+            >
+              <Terminal size={16} />
+              Cookie Injection
+            </Button>
+          )}
+        </div>
       </div>
 
-      {/* Receipts section with independent skeleton */}
-      <SectionWrapper query={groupOrderQuery} skeleton={<GroupOrderReceiptsSkeleton />}>
-        {(data) => {
-          const { groupOrder, userOrders } = data;
-          const isLeader = currentUserId ? groupOrder.leader.id === currentUserId : false;
-
-          return (
-            <GroupOrderReceipts
-              groupOrder={groupOrder}
-              userOrders={userOrders}
-              isLeader={isLeader}
-              currentUserId={currentUserId}
-            />
-          );
-        }}
-      </SectionWrapper>
+      {/* Receipts section */}
+      <GroupOrderReceipts
+        groupOrder={groupOrder}
+        userOrders={userOrders}
+        isLeader={isLeader}
+        currentUserId={currentUserId}
+      />
 
       {/* Modal and footer */}
       <CookieInjectionModal
@@ -217,6 +196,9 @@ function OrderDetailContent({ groupOrderId }: Readonly<{ groupOrderId: string }>
 }
 
 export function OrderDetailRoute() {
-  const { groupOrderId } = useLoaderData<{ groupOrderId: string }>();
-  return <OrderDetailContent groupOrderId={groupOrderId} />;
+  const { groupOrderId, data } = useLoaderData<{
+    groupOrderId: string;
+    data: GroupOrderWithUserOrders;
+  }>();
+  return <OrderDetailContent groupOrderId={groupOrderId} initialData={data} />;
 }

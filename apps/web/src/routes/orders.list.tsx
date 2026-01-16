@@ -118,10 +118,10 @@ function OrdersContent() {
 
   // Watch activeOrganizations and set organizationId
   useEffect(() => {
-      const firstOrgId = activeOrganizations[0]?.id;
-      if (firstOrgId && !form.getValues('organizationId')) {
-        form.setValue('organizationId', firstOrgId);
-      }
+    const firstOrgId = activeOrganizations[0]?.id;
+    if (firstOrgId && !form.getValues('organizationId')) {
+      form.setValue('organizationId', firstOrgId);
+    }
   }, [activeOrganizations]);
 
   // Watch form values
@@ -313,40 +313,40 @@ function OrdersContent() {
                 )}
               </FormField>
               {activeOrganizations[0]?.id}
-                <Controller
-                  name="organizationId"
-                  control={form.control}
-                  render={({ field, fieldState }) => (
-                    <Field data-invalid={fieldState.invalid}>
-                      <FieldLabel htmlFor="organizationId" required>
-                        {t('orders.list.form.labels.organization')}
-                      </FieldLabel>
-                      <Select
-                        value={field.value}
-                        onValueChange={field.onChange}
-                        disabled={isSubmitting}
+              <Controller
+                name="organizationId"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="organizationId" required>
+                      {t('orders.list.form.labels.organization')}
+                    </FieldLabel>
+                    <Select
+                      value={field.value}
+                      onValueChange={field.onChange}
+                      disabled={isSubmitting}
+                    >
+                      <SelectTrigger
+                        id="organizationId"
+                        error={fieldState.invalid}
+                        className="w-full"
                       >
-                        <SelectTrigger
-                          id="organizationId"
-                          error={fieldState.invalid}
-                          className="w-full"
-                        >
-                          <SelectValue
-                            placeholder={t('orders.list.form.placeholders.selectOrganization')}
-                          />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {activeOrganizations.map((org) => (
-                            <SelectItem key={org.id} value={org.id}>
-                              <OrganizationSelectItem organization={org} size="sm" />
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-                    </Field>
-                  )}
-                />
+                        <SelectValue
+                          placeholder={t('orders.list.form.placeholders.selectOrganization')}
+                        />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {activeOrganizations.map((org) => (
+                          <SelectItem key={org.id} value={org.id}>
+                            <OrganizationSelectItem organization={org} size="sm" />
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  </Field>
+                )}
+              />
 
               <div className="space-y-4 rounded-2xl border border-white/10 bg-slate-950/60 p-4">
                 <div className="flex items-center gap-2">

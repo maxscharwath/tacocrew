@@ -1,4 +1,4 @@
-// Export hooks only (not raw API functions)
+// API hooks and utilities
 export * from '@/lib/api/auth';
 export * from '@/lib/api/badges';
 export * from '@/lib/api/image-utils';

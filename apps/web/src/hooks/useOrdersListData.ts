@@ -7,9 +7,7 @@ import { useMyOrganizations } from '@/lib/api/organization';
 import type { Organization, UserGroupOrder } from '@/lib/api/types';
 import { useGroupOrders } from '@/lib/api/user';
 import { toDate } from '@/lib/utils/date';
-import {
-  getActiveOrganizations,
-} from '@/lib/utils/organization-helpers';
+import { getActiveOrganizations } from '@/lib/utils/organization-helpers';
 
 export interface OrdersListData {
   groupOrders: UserGroupOrder[];
@@ -54,6 +52,6 @@ export function useOrdersListData(): OrdersListData {
     activeCount,
     hasNoOrganizations,
     isLoading: groupOrdersQuery.isPending || organizationsQuery.isPending,
-    error: (groupOrdersQuery.error || organizationsQuery.error),
+    error: groupOrdersQuery.error || organizationsQuery.error,
   };
 }

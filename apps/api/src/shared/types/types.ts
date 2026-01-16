@@ -257,46 +257,6 @@ export interface GroupOrder {
 }
 
 /**
- * Error code definitions with both code and translation key
+ * Re-export error codes from shared package
  */
-export const ErrorCodes = {
-  CSRF_INVALID: { code: 'CSRF_INVALID', key: 'errors.csrf.invalid' },
-  RATE_LIMIT: { code: 'RATE_LIMIT', key: 'errors.rateLimit.exceeded' },
-  DUPLICATE_ORDER: { code: 'DUPLICATE_ORDER', key: 'errors.order.duplicate' },
-  VALIDATION_ERROR: { code: 'VALIDATION_ERROR', key: 'errors.validation.failed' },
-  OUT_OF_STOCK: { code: 'OUT_OF_STOCK', key: 'errors.stock.outOfStock' },
-  NOT_FOUND: { code: 'NOT_FOUND', key: 'errors.notFound.generic' },
-  NETWORK_ERROR: { code: 'NETWORK_ERROR', key: 'errors.network.failed' },
-  SESSION_NOT_FOUND: { code: 'SESSION_NOT_FOUND', key: 'errors.session.notFound' },
-  SESSION_EXPIRED: { code: 'SESSION_EXPIRED', key: 'errors.session.expired' },
-  UNKNOWN_ERROR: { code: 'UNKNOWN_ERROR', key: 'errors.unknown.generic' },
-  FORBIDDEN: { code: 'FORBIDDEN', key: 'errors.forbidden.generic' },
-  UNAUTHORIZED: { code: 'UNAUTHORIZED', key: 'errors.unauthorized.generic' },
-  // Better Auth passkey errors
-  PASSKEY_NOT_FOUND: { code: 'PASSKEY_NOT_FOUND', key: 'errors.auth.passkey.notFound' },
-  CHALLENGE_NOT_FOUND: {
-    code: 'CHALLENGE_NOT_FOUND',
-    key: 'errors.auth.passkey.challengeNotFound',
-  },
-  PASSKEY_REGISTRATION_NOT_ALLOWED: {
-    code: 'YOU_ARE_NOT_ALLOWED_TO_REGISTER_THIS_PASSKEY',
-    key: 'errors.auth.passkey.registrationNotAllowed',
-  },
-  PASSKEY_VERIFICATION_FAILED: {
-    code: 'FAILED_TO_VERIFY_REGISTRATION',
-    key: 'errors.auth.passkey.verificationFailed',
-  },
-  // Better Auth general errors
-  INVALID_EMAIL_OR_PASSWORD: {
-    code: 'INVALID_EMAIL_OR_PASSWORD',
-    key: 'errors.auth.invalidCredentials',
-  },
-  USER_NOT_FOUND: { code: 'USER_NOT_FOUND', key: 'errors.auth.userNotFound' },
-  EMAIL_ALREADY_IN_USE: { code: 'EMAIL_ALREADY_IN_USE', key: 'errors.auth.emailInUse' },
-  INVALID_TOKEN: { code: 'INVALID_TOKEN', key: 'errors.auth.invalidToken' },
-} as const;
-
-/**
- * Error code type (string literal union of all error codes)
- */
-export type ErrorCode = (typeof ErrorCodes)[keyof typeof ErrorCodes]['code'];
+export { type ErrorCode, ErrorCodes } from '@tacocrew/errors';

@@ -23,7 +23,12 @@ export function OrganizationAvatarWithTooltip({
     <Tooltip>
       <TooltipTrigger asChild>
         <div className={className}>
-          <OrganizationAvatar organizationId={organizationId} name={name} size={size} imageUrl={imageUrl} />
+          <OrganizationAvatar
+            organizationId={organizationId}
+            name={name}
+            size={size}
+            imageUrl={imageUrl}
+          />
         </div>
       </TooltipTrigger>
       <TooltipContent>

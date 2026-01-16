@@ -1,0 +1,23 @@
+{
+  "name": "@tacocrew/errors",
+  "version": "0.2501.0",
+  "description": "Shared error types and classes for TacoCrew",
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": {
+      "development": "./src/index.ts",
+      "types": "./src/index.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "check": "tsc --noEmit",
+    "dev": "tsc --watch"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3"
+  }
+}
