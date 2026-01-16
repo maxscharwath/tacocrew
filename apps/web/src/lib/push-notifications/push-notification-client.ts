@@ -82,6 +82,15 @@ export class PushNotificationClient {
     }
 
     const permission = await Notification.requestPermission();
+
+    if (permission === 'default') {
+      // Permission prompt was dismissed or blocked by the browser
+      throw new PushNotificationError(
+        'Notification permission was dismissed. Please try again and click "Allow" when prompted, or enable notifications in your browser settings.',
+        'PERMISSION_DISMISSED'
+      );
+    }
+
     if (permission !== 'granted') {
       throw new PushNotificationError('Notification permission was denied', 'PERMISSION_DENIED');
     }
@@ -267,12 +276,16 @@ export class PushNotificationClient {
 
   /**
    * Convert base64url to Uint8Array
+   * Adds proper padding for browsers that require it (e.g., Brave)
    */
   private urlBase64ToUint8Array(base64url: string): Uint8Array<ArrayBuffer> {
-    const binary = atob(base64url.replaceAll('-', '+').replaceAll('_', '/'));
+    // Add padding if necessary (some browsers like Brave require proper padding)
+    const padding = '='.repeat((4 - (base64url.length % 4)) % 4);
+    const base64 = (base64url + padding).replaceAll('-', '+').replaceAll('_', '/');
+    const binary = atob(base64);
     const buffer = new ArrayBuffer(binary.length);
     const bytes = new Uint8Array(buffer);
-    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.codePointAt(i) ?? 0;
     return bytes;
   }
 
