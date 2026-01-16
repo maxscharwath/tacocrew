@@ -402,8 +402,8 @@
     "status": {
       "active": "Aktiv",
       "closed": "Geschlossen",
-      "completed": "Abgeschlossen",
       "draft": "Entwurf",
+      "expired": "Abgelaufen",
       "open": "Offen",
       "pending": "Ausstehend",
       "submitted": "Abgesendet"
@@ -892,7 +892,6 @@
           "closeOrder": "Bestellung schließen",
           "closedReasons": {
             "closed": "Bestellung geschlossen",
-            "completed": "Bestellung abgeschlossen",
             "expired": "Bestellzeitraum abgelaufen",
             "notStarted": "Bestellzeitraum noch nicht gestartet",
             "open": "Bestellzeitraum abgelaufen",

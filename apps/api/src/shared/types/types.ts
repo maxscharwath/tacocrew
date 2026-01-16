@@ -207,7 +207,7 @@ export enum GroupOrderStatus {
   OPEN = 'open',
   CLOSED = 'closed',
   SUBMITTED = 'submitted',
-  COMPLETED = 'completed',
+  EXPIRED = 'expired',
 }
 
 /**

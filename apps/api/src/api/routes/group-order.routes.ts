@@ -13,6 +13,7 @@ import {
   canSubmitGroupOrder,
   type GroupOrder,
   GroupOrderId,
+  getEffectiveStatus,
 } from '@/schemas/group-order.schema';
 import { OrganizationId } from '@/schemas/organization.schema';
 import { UserId } from '@/schemas/user.schema';
@@ -60,7 +61,7 @@ async function serializeGroupOrderResponse(groupOrder: GroupOrder) {
     name: groupOrder.name ?? null,
     startDate: groupOrder.startDate.toISOString(),
     endDate: groupOrder.endDate.toISOString(),
-    status: groupOrder.status,
+    status: getEffectiveStatus(groupOrder),
     canAcceptOrders: canAcceptOrders(groupOrder),
     canSubmitGroupOrder: canSubmitGroupOrder(groupOrder),
     fee: groupOrder.fee ?? null,

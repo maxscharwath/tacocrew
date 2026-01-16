@@ -2,7 +2,7 @@
  * Group order domain schema (Zod)
  * @module schemas/group-order
  */
-import { isWithinInterval } from 'date-fns';
+import { isAfter, isWithinInterval } from 'date-fns';
 import { z } from 'zod';
 import { UserId } from '@/schemas/user.schema';
 import { GroupOrderStatus } from '@/shared/types/types';
@@ -174,4 +174,21 @@ export function canAcceptOrders(order: GroupOrder, referenceDate = new Date()): 
  */
 export function canSubmitGroupOrder(order: GroupOrder): boolean {
   return order.status === GroupOrderStatus.OPEN;
+}
+
+/**
+ * Get the effective display status for a group order.
+ * Returns EXPIRED when status is OPEN but current time > endDate.
+ */
+export function getEffectiveStatus(
+  order: GroupOrder,
+  referenceDate = new Date()
+): GroupOrderStatus {
+  if (order.status !== GroupOrderStatus.OPEN) {
+    return order.status;
+  }
+  if (isAfter(referenceDate, order.endDate)) {
+    return GroupOrderStatus.EXPIRED;
+  }
+  return order.status;
 }

@@ -365,12 +365,12 @@ async function migrateUserBadges() {
       select: { id: true },
     });
 
-    // Get group orders led (submitted or completed)
-    // Note: This counts orders where the user was the leader and submitted/completed them
+    // Get group orders led (submitted)
+    // Note: This counts orders where the user was the leader and submitted them
     const groupOrdersLed = await prisma.groupOrder.count({
       where: {
         leaderId: user.id,
-        status: { in: ['submitted', 'completed'] },
+        status: 'submitted',
       },
     });
 
