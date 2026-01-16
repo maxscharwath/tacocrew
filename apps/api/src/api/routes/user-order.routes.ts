@@ -542,8 +542,8 @@ app.openapi(
       throw new NotFoundError({ resource: 'GroupOrder', id: groupOrderId });
     }
 
-    // Check permissions: leader can always reveal, or anyone if order is submitted/completed
-    const isSubmitted = groupOrder.status === 'submitted' || groupOrder.status === 'completed';
+    // Check permissions: leader can always reveal, or anyone if order is submitted
+    const isSubmitted = groupOrder.status === 'submitted';
     const isLeader = groupOrder.leaderId === requesterId;
 
     if (!isLeader && !isSubmitted) {

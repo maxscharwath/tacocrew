@@ -7,12 +7,12 @@ type StatusToneOverrides = Partial<Record<string, BadgeTone>>;
 
 const DEFAULT_STATUS_TONES: Record<string, BadgeTone> = {
   submitted: 'success',
-  completed: 'success',
   pending: 'warning',
   open: 'warning',
   active: 'brand',
   draft: 'neutral',
   closed: 'neutral',
+  expired: 'neutral',
 };
 
 type StatusBadgeProps = Omit<ComponentPropsWithoutRef<typeof Badge>, 'tone' | 'pill'> & {

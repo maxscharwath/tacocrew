@@ -402,8 +402,8 @@
     "status": {
       "active": "Active",
       "closed": "Fermée",
-      "completed": "Terminée",
       "draft": "Brouillon",
+      "expired": "Expirée",
       "open": "Ouverte",
       "pending": "En attente",
       "submitted": "Transmise"
@@ -892,7 +892,6 @@
           "closeOrder": "Fermer la commande",
           "closedReasons": {
             "closed": "Commande clôturée",
-            "completed": "Commande terminée",
             "expired": "Créneau expiré",
             "notStarted": "Créneau pas encore commencé",
             "open": "Créneau expiré",

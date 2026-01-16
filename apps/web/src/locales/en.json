@@ -402,8 +402,8 @@
     "status": {
       "active": "Active",
       "closed": "Closed",
-      "completed": "Completed",
       "draft": "Draft",
+      "expired": "Expired",
       "open": "Open",
       "pending": "Pending",
       "submitted": "Submitted"
@@ -892,7 +892,6 @@
           "closeOrder": "Close order",
           "closedReasons": {
             "closed": "Order closed",
-            "completed": "Order completed",
             "expired": "Order period expired",
             "notStarted": "Order period not started yet",
             "open": "Order period expired",
