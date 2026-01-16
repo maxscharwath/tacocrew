@@ -136,6 +136,14 @@
       "unsubscribeFailed": "Échec de la désactivation des notifications push",
       "unsubscribeSuccess": "Notifications push désactivées avec succès"
     },
+    "developerSettings": {
+      "title": "Paramètres développeur",
+      "description": "Options avancées pour le débogage et le développement",
+      "queryCache": {
+        "label": "Activer le cache des requêtes",
+        "description": "Lorsqu'activé, les réponses API sont mises en cache pendant 5 minutes. Désactivez pour des données fraîches à chaque requête."
+      }
+    },
     "save": "Enregistrer",
     "saving": "Enregistrement...",
     "subtitle": "Gérez votre compte et vos passkeys",

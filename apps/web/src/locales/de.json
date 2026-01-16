@@ -136,6 +136,14 @@
       "unsubscribeFailed": "Push-Benachrichtigungen konnten nicht deaktiviert werden",
       "unsubscribeSuccess": "Push-Benachrichtigungen erfolgreich deaktiviert"
     },
+    "developerSettings": {
+      "title": "Entwicklereinstellungen",
+      "description": "Erweiterte Optionen für Debugging und Entwicklung",
+      "queryCache": {
+        "label": "Abfrage-Cache aktivieren",
+        "description": "Wenn aktiviert, werden API-Antworten für 5 Minuten zwischengespeichert. Deaktivieren für frische Daten bei jeder Anfrage."
+      }
+    },
     "save": "Speichern",
     "saving": "Wird gespeichert...",
     "subtitle": "Verwalte dein Konto und Passkeys",

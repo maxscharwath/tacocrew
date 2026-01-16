@@ -136,6 +136,14 @@
       "unsubscribeFailed": "Failed to disable push notifications",
       "unsubscribeSuccess": "Push notifications disabled successfully"
     },
+    "developerSettings": {
+      "title": "Developer Settings",
+      "description": "Advanced options for debugging and development",
+      "queryCache": {
+        "label": "Enable Query Cache",
+        "description": "When enabled, API responses are cached for 5 minutes. Disable for fresh data on every request."
+      }
+    },
     "save": "Save",
     "saving": "Saving...",
     "subtitle": "Manage your account and passkeys",

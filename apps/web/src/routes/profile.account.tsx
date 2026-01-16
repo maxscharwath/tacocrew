@@ -19,9 +19,10 @@ import {
   EmptyState,
   Input,
   PhoneInput,
+  Switch,
   toast,
 } from '@tacocrew/ui-kit';
-import { Edit, Globe, Key, Laptop, Lock, Mail, Phone, User } from 'lucide-react';
+import { Database, Edit, Globe, Key, Laptop, Lock, Mail, Phone, User } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { LanguageSwitcher } from '@/components/language-switcher';
@@ -32,6 +33,7 @@ import { usePasskeys } from '@/hooks/usePasskeys';
 import { useProfile, useUpdateUserPhone } from '@/lib/api/user';
 import { authClient, useSession } from '@/lib/auth-client';
 import { ENV } from '@/lib/env';
+import { getQueryCacheEnabled, setQueryCacheEnabled } from '@/lib/query-client';
 import { formatPhoneNumber } from '@/utils/phone-formatter';
 
 // Reusable hook for editable field logic
@@ -293,6 +295,45 @@ function PasskeyNameEditor({
         <Edit className="h-3.5 w-3.5" />
       </Button>
     </div>
+  );
+}
+
+function DeveloperSettingsSection() {
+  const { t } = useTranslation();
+  const [isCacheEnabled, setIsCacheEnabled] = useState(getQueryCacheEnabled);
+
+  const handleToggle = (enabled: boolean) => {
+    setIsCacheEnabled(enabled);
+    setQueryCacheEnabled(enabled);
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>{t('account.developerSettings.title')}</CardTitle>
+        <CardDescription>{t('account.developerSettings.description')}</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Avatar color="violet" size="sm">
+                <Database />
+              </Avatar>
+              <div>
+                <p className="font-medium text-slate-200 text-sm">
+                  {t('account.developerSettings.queryCache.label')}
+                </p>
+                <p className="text-slate-400 text-xs">
+                  {t('account.developerSettings.queryCache.description')}
+                </p>
+              </div>
+            </div>
+            <Switch checked={isCacheEnabled} onCheckedChange={handleToggle} color="violet" />
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -626,6 +667,9 @@ export function AccountRoute() {
 
       {/* Push Notifications */}
       <PushNotificationManager />
+
+      {/* Developer Settings */}
+      <DeveloperSettingsSection />
 
       {/* Delete Passkey Confirmation Dialog */}
       <AlertDialog
