@@ -18,7 +18,7 @@ import {
   ShareButton,
 } from '@/components/orders';
 import { useDeveloperMode } from '@/hooks/useDeveloperMode';
-import { getGroupOrderWithOrders, useGroupOrderWithOrders } from '@/lib/api';
+import { getGroupOrderWithOrders } from '@/lib/api';
 import { type Amount, Currency, type GroupOrderWithUserOrders } from '@/lib/api/types';
 import { useSession } from '@/lib/auth-client';
 import {
@@ -94,9 +94,9 @@ interface OrderDetailContentProps {
 function OrderDetailContent({ groupOrderId, initialData }: OrderDetailContentProps) {
   const { t } = useTranslation();
 
-  // Use hook for revalidation on user actions, fallback to initial data from loader
-  const groupOrderQuery = useGroupOrderWithOrders(groupOrderId, true);
-  const data = groupOrderQuery.data ?? initialData;
+  // Always use loader data - it's guaranteed fresh after actions/navigation
+  // React Router automatically revalidates loaders after actions
+  const data = initialData;
   const { groupOrder, userOrders } = data;
 
   const { data: session } = useSession();
