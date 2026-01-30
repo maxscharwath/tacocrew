@@ -14,8 +14,8 @@ import type {
 } from '@/lib/api/types';
 import { userKeys } from '@/lib/api/user';
 
-/** Internal query key factory for orders */
-const ordersKeys = {
+/** Query key factory for orders */
+export const ordersKeys = {
   all: () => ['orders'] as const,
   lists: () => [...ordersKeys.all(), 'list'] as const,
   list: () => [...ordersKeys.lists()] as const,

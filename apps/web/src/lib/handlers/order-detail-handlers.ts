@@ -6,6 +6,7 @@
 import type { UpsertUserOrderBody } from '@/lib/api';
 import {
   deleteUserOrder,
+  ordersKeys,
   submitGroupOrder,
   updateGroupOrderStatus,
   upsertUserOrder,
@@ -61,6 +62,7 @@ export async function handleSubmitGroupOrder(
     paymentMethod: data.paymentMethod,
   });
   // Invalidate caches that depend on order data
+  void queryClient.invalidateQueries({ queryKey: ordersKeys.detail(groupOrderId) });
   void queryClient.invalidateQueries({ queryKey: userKeys.groupOrders() });
   void queryClient.invalidateQueries({ queryKey: userKeys.orderHistory() });
 }
@@ -95,6 +97,7 @@ export async function handleUpsertUserOrder(groupOrderId: string, request: Reque
     },
   });
   // Invalidate caches that depend on order data
+  void queryClient.invalidateQueries({ queryKey: ordersKeys.detail(groupOrderId) });
   void queryClient.invalidateQueries({ queryKey: userKeys.groupOrders() });
   void queryClient.invalidateQueries({ queryKey: userKeys.orderHistory() });
 }
@@ -106,6 +109,7 @@ export async function handleDeleteUserOrder(groupOrderId: string, request: Reque
   const data = await parseFormData<DeleteUserOrderFormData>(request);
   await deleteUserOrder(groupOrderId, data.itemId);
   // Invalidate caches that depend on order data
+  void queryClient.invalidateQueries({ queryKey: ordersKeys.detail(groupOrderId) });
   void queryClient.invalidateQueries({ queryKey: userKeys.groupOrders() });
   void queryClient.invalidateQueries({ queryKey: userKeys.orderHistory() });
 }
@@ -120,6 +124,7 @@ export async function handleUpdateOrderStatus(
   const data = await parseFormData<ManageOrderStatusFormData>(request);
   await updateGroupOrderStatus(groupOrderId, data.status);
   // Invalidate caches that depend on order status
+  void queryClient.invalidateQueries({ queryKey: ordersKeys.detail(groupOrderId) });
   void queryClient.invalidateQueries({ queryKey: userKeys.groupOrders() });
 }
 
