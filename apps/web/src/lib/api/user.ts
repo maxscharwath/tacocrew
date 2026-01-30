@@ -60,6 +60,7 @@ export function useGroupOrders(enabled = true) {
     queryKey: userKeys.groupOrders(),
     queryFn: () => apiClient.get<UserGroupOrder[]>('/api/v1/users/me/group-orders'),
     enabled,
+    refetchOnMount: 'always', // Always refetch when navigating to orders list
   });
 }
 
