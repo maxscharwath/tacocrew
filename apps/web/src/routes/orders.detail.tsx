@@ -91,10 +91,14 @@ interface OrderDetailContentProps {
 function OrderDetailContent({ groupOrderId, initialData }: OrderDetailContentProps) {
   const { t } = useTranslation();
 
-  // Use React Query hook with initialData to seed the cache
+  // Use React Query as the single source of truth
   const { data: queryData } = useGroupOrderWithOrders(groupOrderId, true);
+  // Use queryData when available, otherwise fall back to initialData during initial load
   const data = queryData ?? initialData;
   const { groupOrder, userOrders } = data;
+
+  // Debug: log when data changes
+  console.log('[OrderDetail] userOrders count:', userOrders.length, 'queryData:', !!queryData);
 
   const { data: session } = useSession();
   const navigation = useNavigation();

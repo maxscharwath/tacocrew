@@ -62,7 +62,7 @@ export async function handleSubmitGroupOrder(
     paymentMethod: data.paymentMethod,
   });
   // Invalidate and reset caches that depend on order data
-  queryClient.removeQueries({ queryKey: ordersKeys.detail(groupOrderId) });
+  await queryClient.refetchQueries({ queryKey: ordersKeys.detail(groupOrderId) });
   await queryClient.invalidateQueries({ queryKey: userKeys.groupOrders() });
   await queryClient.invalidateQueries({ queryKey: userKeys.orderHistory() });
 }
@@ -97,7 +97,7 @@ export async function handleUpsertUserOrder(groupOrderId: string, request: Reque
     },
   });
   // Invalidate and reset caches that depend on order data
-  queryClient.removeQueries({ queryKey: ordersKeys.detail(groupOrderId) });
+  await queryClient.refetchQueries({ queryKey: ordersKeys.detail(groupOrderId) });
   await queryClient.invalidateQueries({ queryKey: userKeys.groupOrders() });
   await queryClient.invalidateQueries({ queryKey: userKeys.orderHistory() });
 }
@@ -109,7 +109,7 @@ export async function handleDeleteUserOrder(groupOrderId: string, request: Reque
   const data = await parseFormData<DeleteUserOrderFormData>(request);
   await deleteUserOrder(groupOrderId, data.itemId);
   // Invalidate and reset caches that depend on order data
-  queryClient.removeQueries({ queryKey: ordersKeys.detail(groupOrderId) });
+  await queryClient.refetchQueries({ queryKey: ordersKeys.detail(groupOrderId) });
   await queryClient.invalidateQueries({ queryKey: userKeys.groupOrders() });
   await queryClient.invalidateQueries({ queryKey: userKeys.orderHistory() });
 }
@@ -124,7 +124,7 @@ export async function handleUpdateOrderStatus(
   const data = await parseFormData<ManageOrderStatusFormData>(request);
   await updateGroupOrderStatus(groupOrderId, data.status);
   // Invalidate and reset caches that depend on order status
-  queryClient.removeQueries({ queryKey: ordersKeys.detail(groupOrderId) });
+  await queryClient.refetchQueries({ queryKey: ordersKeys.detail(groupOrderId) });
   await queryClient.invalidateQueries({ queryKey: userKeys.groupOrders() });
 }
 

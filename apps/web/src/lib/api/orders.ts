@@ -118,7 +118,10 @@ export function useGroupOrderWithOrders(id: string, enabled = true) {
     queryKey: ordersKeys.detail(id),
     queryFn: () => apiClient.get<GroupOrderWithUserOrders>(`/api/v1/orders/${id}/items`),
     enabled: enabled && !!id,
-    refetchOnMount: 'always', // Always refetch when component mounts to see latest data
+    staleTime: 0, // Always consider data stale
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: true,
+    structuralSharing: false, // Always return new reference to trigger re-renders
   });
 }
 
