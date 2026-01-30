@@ -1,7 +1,7 @@
 import { NotFoundError, OrganizationAccessError } from '@tacocrew/errors';
 import { Button } from '@tacocrew/ui-kit';
 import { Terminal } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Link,
@@ -90,9 +90,22 @@ interface OrderDetailContentProps {
 
 function OrderDetailContent({ groupOrderId, initialData }: OrderDetailContentProps) {
   const { t } = useTranslation();
+  const navigation = useNavigation();
+  const isSubmitting = navigation.state === 'submitting';
+  const wasSubmitting = useRef(false);
 
   // Use React Query as the single source of truth
-  const { data: queryData } = useGroupOrderWithOrders(groupOrderId, true);
+  const { data: queryData, refetch } = useGroupOrderWithOrders(groupOrderId, true);
+
+  // Refetch when action completes (navigation goes from submitting to idle)
+  useEffect(() => {
+    if (wasSubmitting.current && navigation.state === 'idle') {
+      console.log('[OrderDetail] Action completed, refetching...');
+      refetch();
+    }
+    wasSubmitting.current = navigation.state === 'submitting';
+  }, [navigation.state, refetch]);
+
   // Use queryData when available, otherwise fall back to initialData during initial load
   const data = queryData ?? initialData;
   const { groupOrder, userOrders } = data;
@@ -101,8 +114,6 @@ function OrderDetailContent({ groupOrderId, initialData }: OrderDetailContentPro
   console.log('[OrderDetail] userOrders count:', userOrders.length, 'queryData:', !!queryData);
 
   const { data: session } = useSession();
-  const navigation = useNavigation();
-  const isSubmitting = navigation.state === 'submitting';
   const { isEnabled: isDeveloperMode } = useDeveloperMode();
   const [isCookieModalOpen, setIsCookieModalOpen] = useState(false);
 
