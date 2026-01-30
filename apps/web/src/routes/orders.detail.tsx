@@ -18,7 +18,7 @@ import {
   ShareButton,
 } from '@/components/orders';
 import { useDeveloperMode } from '@/hooks/useDeveloperMode';
-import { getGroupOrderWithOrders } from '@/lib/api';
+import { getGroupOrderWithOrders, useGroupOrderWithOrders } from '@/lib/api';
 import { type Amount, Currency, type GroupOrderWithUserOrders } from '@/lib/api/types';
 import { useSession } from '@/lib/auth-client';
 import {
@@ -80,10 +80,7 @@ export const orderDetailAction = createActionHandler({
     if (method === 'PATCH') return 'status';
     return 'unknown';
   },
-  onSuccess: (_request, params) => {
-    const groupOrderId = getGroupOrderIdFromParams(params);
-    return redirect(routes.root.orderDetail({ orderId: groupOrderId }));
-  },
+  // No redirect needed - React Router automatically revalidates loaders after actions
 });
 
 interface OrderDetailContentProps {
@@ -94,9 +91,9 @@ interface OrderDetailContentProps {
 function OrderDetailContent({ groupOrderId, initialData }: OrderDetailContentProps) {
   const { t } = useTranslation();
 
-  // Always use loader data - it's guaranteed fresh after actions/navigation
-  // React Router automatically revalidates loaders after actions
-  const data = initialData;
+  // Use React Query hook with initialData to seed the cache
+  const { data: queryData } = useGroupOrderWithOrders(groupOrderId, true);
+  const data = queryData ?? initialData;
   const { groupOrder, userOrders } = data;
 
   const { data: session } = useSession();
