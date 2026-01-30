@@ -8,7 +8,6 @@ import { Avatar, AvatarFallback, Button, Card, CardContent, CardHeader } from '@
 import { Dices, Eye } from 'lucide-react';
 import { useState, useTransition } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useFetcher } from 'react-router';
 import {
   CARD_BASE_CLASSES,
   CARD_STYLES,
@@ -19,7 +18,7 @@ import {
 import { OrderCardActions } from '@/components/orders/OrderCardActions';
 import { OrderTags } from '@/components/orders/OrderTags';
 import { UserBadge } from '@/components/orders/UserBadge';
-import { useRevealMysteryTacos, useUpsertUserOrder } from '@/lib/api/orders';
+import { useDeleteUserOrder, useRevealMysteryTacos, useUpsertUserOrder } from '@/lib/api/orders';
 import { TacoKind, type UserOrderItems, type UserOrderSummary } from '@/lib/api/types';
 import { formatTacoSizeName, TACO_SIZE_CONFIG } from '@/lib/taco-config';
 import { cn } from '@/lib/utils';
@@ -223,8 +222,8 @@ export function OrderCard({
   onOrderChange,
 }: OrderCardProps) {
   const { t } = useTranslation();
-  const fetcher = useFetcher();
   const upsertOrder = useUpsertUserOrder();
+  const deleteOrder = useDeleteUserOrder();
   const [revealedItems, setRevealedItems] = useState<UserOrderItems | null>(null);
   const revealMutation = useRevealMysteryTacos(orderId, order.id, (revealed) => {
     setRevealedItems(revealed);
@@ -266,6 +265,18 @@ export function OrderCard({
     }
   };
 
+  const handleDelete = async () => {
+    try {
+      await deleteOrder.mutateAsync({
+        groupOrderId: orderId,
+        itemId: order.id,
+      });
+      onOrderChange?.();
+    } catch {
+      // Silently fail
+    }
+  };
+
   // Determine which items to display
   const displayOrder = hasRevealedItems ? { ...order, items: revealedItems! } : order;
   const {
@@ -292,8 +303,9 @@ export function OrderCard({
         itemId={order.id}
         canEdit={canEdit}
         canDelete={canDelete}
-        isSubmitting={isSubmitting || fetcher.state === 'submitting'}
+        isSubmitting={isSubmitting || deleteOrder.isPending}
         onDuplicate={handleDuplicate}
+        onDelete={handleDelete}
       />
 
       <CardHeader className="pr-20">
