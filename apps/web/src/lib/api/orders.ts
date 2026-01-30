@@ -311,6 +311,8 @@ export function useUpdateGroupOrder() {
       apiClient.patch<GroupOrder>(`/api/v1/orders/${groupOrderId}`, { body }),
     onSuccess: (_, variables) => {
       void queryClient.invalidateQueries({ queryKey: ordersKeys.detail(variables.groupOrderId) });
+      // Updates to group order (name, dates) affect the orders list
+      void queryClient.invalidateQueries({ queryKey: userKeys.groupOrders() });
     },
   });
 }
