@@ -46,6 +46,24 @@
         }
       }
     },
+    "slack": {
+      "groupOrderCreated": {
+        "title": "🌯 {{orderName}}",
+        "body": "{{leaderName}} a ouvert une commande de groupe !",
+        "deadline": "Commandes ouvertes jusqu'au {{endDate}}",
+        "cta": "Commander vos tacos"
+      },
+      "groupOrderSubmitted": {
+        "title": "🌯 {{orderName}} — Commandé !",
+        "body": "{{leaderName}} a commandé ! Vous pouvez regarder sur l'app combien vous devez.",
+        "twint": "Numéro pour Twint : {{phone}}",
+        "cta": "Voir la commande"
+      },
+      "test": {
+        "title": "🌯 Message de test",
+        "body": "L'intégration Slack fonctionne pour {{organizationName}} !"
+      }
+    },
     "organizations": {
       "roles": {
         "admin": "Administrateur",

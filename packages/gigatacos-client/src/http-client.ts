@@ -3,9 +3,7 @@
  * @module gigatacos-client/http-client
  */
 
-import axios, { AxiosError, AxiosInstance, type AxiosRequestConfig, AxiosResponse } from 'axios';
-import { wrapper } from 'axios-cookiejar-support';
-import { CookieJar } from 'tough-cookie';
+import axios, { AxiosError, AxiosInstance, AxiosResponse } from 'axios';
 import { getAjaxHeaders, getRealisticBrowserHeaders } from './browser-headers';
 import { CsrfError, isCsrfError, isRateLimitError, NetworkError, RateLimitError } from './errors';
 import type { HttpClientConfig, Logger, ProxyConfig } from './types';
@@ -29,30 +27,28 @@ export class HttpClient {
   private readonly baseUrl: string; // Original backend URL
   private readonly logger: Logger;
   private readonly proxyConfig?: ProxyConfig;
-  private readonly cookieJar: CookieJar;
+  /**
+   * The canonical origin after following redirects (e.g. gt-lausanne.ch → www.gt-lausanne.ch).
+   * Used for Origin/Referer headers and updated axios baseURL to avoid cross-origin redirects.
+   */
+  private resolvedOrigin: string | null = null;
 
   constructor(config: HttpClientConfig) {
     // Normalize baseUrl to remove trailing slash
     this.baseUrl = config.baseUrl.endsWith('/') ? config.baseUrl.slice(0, -1) : config.baseUrl;
     this.logger = config.logger ?? noopLogger;
     this.proxyConfig = config.proxy;
-    this.cookieJar = new CookieJar();
 
-    // Create axios instance with cookie jar support
-    // jar property is added by axios-cookiejar-support
-    const instance = axios.create({
+    this.axiosInstance = axios.create({
       baseURL: this.getAxiosBaseUrl(),
       headers: {
         ...getRealisticBrowserHeaders(),
         ...this.buildProxyHeaders(),
       },
-      jar: this.cookieJar,
-      withCredentials: true,
       timeout: 30000, // 30 second timeout
       maxRedirects: 5,
-    } as AxiosRequestConfig & { jar: CookieJar });
+    });
 
-    this.axiosInstance = wrapper(instance);
     this.setupErrorInterceptor();
   }
 
@@ -85,6 +81,48 @@ export class HttpClient {
     return headers;
   }
 
+
+  /**
+   * Detect the canonical origin after a redirect (e.g. gt-lausanne.ch → www.gt-lausanne.ch).
+   * Updates the resolved origin for correct Origin/Referer headers and the axios baseURL
+   * to avoid future cross-origin redirects that strip cookies.
+   */
+  private detectResolvedOrigin(response: AxiosResponse): void {
+    if (this.resolvedOrigin) return; // Already resolved
+
+    // Node.js http response exposes the final URL after redirects
+    const responseUrl = (response.request as Record<string, unknown>)?.res;
+    const finalUrl = (responseUrl as Record<string, unknown>)?.responseUrl as string | undefined;
+    if (!finalUrl) return;
+
+    try {
+      const resolved = new URL(finalUrl);
+      const resolvedOrigin = resolved.origin;
+
+      if (resolvedOrigin !== this.baseUrl) {
+        this.resolvedOrigin = resolvedOrigin;
+        this.logger.info('Detected redirect to canonical URL', {
+          from: this.baseUrl,
+          to: resolvedOrigin,
+        });
+
+        // Update axios baseURL to go directly to canonical URL, avoiding
+        // future cross-origin redirects that strip Cookie headers
+        if (!this.proxyConfig) {
+          this.axiosInstance.defaults.baseURL = resolvedOrigin;
+        }
+      }
+    } catch {
+      // URL parsing failed, ignore
+    }
+  }
+
+  /**
+   * Get the effective origin for headers (resolved canonical URL or original baseUrl)
+   */
+  private getEffectiveOrigin(): string {
+    return this.resolvedOrigin ?? this.baseUrl;
+  }
 
   /**
    * Setup error handling interceptor
@@ -167,11 +205,10 @@ export class HttpClient {
    * Build request headers with CSRF token and cookies
    */
   private buildHeaders(config: RequestConfig, additionalHeaders?: Record<string, string>): Record<string, string> {
-    // Normalize baseUrl to remove trailing slash for Origin
-    const normalizedBaseUrl = this.baseUrl.endsWith('/') ? this.baseUrl.slice(0, -1) : this.baseUrl;
+    const origin = this.getEffectiveOrigin();
 
     // Get AJAX headers for form submissions (includes realistic browser headers)
-    const ajaxHeaders = getAjaxHeaders(`${normalizedBaseUrl}/index.php?content=livraison`);
+    const ajaxHeaders = getAjaxHeaders(`${origin}/index.php?content=livraison`);
 
     const headers: Record<string, string> = {
       ...ajaxHeaders,
@@ -261,8 +298,7 @@ export class HttpClient {
   async get<T>(path: string, config: RequestConfig): Promise<{ data: T; cookies: Record<string, string> }> {
     this.logRequest('GET', path, config);
 
-    // For GET requests with cookies (subsequent navigation), update Sec-Fetch-Site
-    const normalizedBaseUrl = this.baseUrl.endsWith('/') ? this.baseUrl.slice(0, -1) : this.baseUrl;
+    const origin = this.getEffectiveOrigin();
     const hasCookies = config.cookies && Object.keys(config.cookies).length > 0;
 
     const headers: Record<string, string> = {
@@ -272,7 +308,7 @@ export class HttpClient {
 
     // If we have cookies, this is a same-origin navigation, not initial load
     if (hasCookies && config.cookies) {
-      headers['Referer'] = `${normalizedBaseUrl}/`;
+      headers['Referer'] = `${origin}/`;
       headers['Sec-Fetch-Site'] = 'same-origin';
       headers['Cookie'] = Object.entries(config.cookies)
         .map(([key, value]) => `${key}=${value}`)
@@ -280,6 +316,11 @@ export class HttpClient {
     }
 
     const response = await this.axiosInstance.get<T>(path, { headers });
+
+    // Detect canonical URL after redirects (e.g. gt-lausanne.ch → www.gt-lausanne.ch)
+    // so future requests go directly to the correct domain
+    this.detectResolvedOrigin(response);
+
     return this.extractResponse(response);
   }
 

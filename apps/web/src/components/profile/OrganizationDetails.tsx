@@ -1,3 +1,4 @@
+import { SiSlack } from '@icons-pack/react-simple-icons';
 import {
   Alert,
   AlertDialog,
@@ -19,7 +20,7 @@ import {
   Label,
   toast,
 } from '@tacocrew/ui-kit';
-import { Copy, Pencil, Save, Trash2, Upload, X } from 'lucide-react';
+import { Check, Copy, ExternalLink, Pencil, Save, Send, Trash2, Upload, X } from 'lucide-react';
 import { type ChangeEvent, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { OrganizationMembers } from '@/components/profile/OrganizationMembers';
@@ -28,7 +29,10 @@ import { useCopyFeedback } from '@/hooks/useCopyFeedback';
 import {
   useDeleteOrganization,
   useDeleteOrganizationAvatar,
+  useDeleteSlackWebhook,
   useOrganization,
+  useSetSlackWebhook,
+  useTestSlackWebhook,
   useUpdateOrganization,
   useUploadOrganizationAvatar,
 } from '@/lib/api/organization';
@@ -385,6 +389,9 @@ export function OrganizationDetails({
         </CardContent>
       </Card>
 
+      {/* Slack Integration (Admin Only) */}
+      {isAdmin && <SlackIntegrationCard organization={displayOrganization} disabled={disabled} />}
+
       {/* Members Management - Only show for ACTIVE members */}
       {currentUserId && userStatus === 'ACTIVE' && (
         <OrganizationMembers
@@ -425,6 +432,194 @@ export function OrganizationDetails({
             <AlertDialogCancel disabled={busy}>{t('common.cancel')}</AlertDialogCancel>
             <AlertDialogAction onClick={handleDelete} disabled={busy} variant="destructive">
               {t('common.delete')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
+  );
+}
+
+type SlackIntegrationCardProps = Readonly<{
+  organization: Organization;
+  disabled?: boolean;
+}>;
+
+function SlackIntegrationCard({ organization, disabled = false }: SlackIntegrationCardProps) {
+  const { t } = useTranslation();
+  const [webhookUrl, setWebhookUrl] = useState('');
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+
+  const setMutation = useSetSlackWebhook();
+  const deleteMutation = useDeleteSlackWebhook();
+  const testMutation = useTestSlackWebhook();
+
+  const busy = setMutation.isPending || deleteMutation.isPending || testMutation.isPending;
+  const isConnected = Boolean(organization.hasSlackWebhook);
+
+  const handleSave = () => {
+    if (!webhookUrl.trim() || !webhookUrl.startsWith('https://hooks.slack.com/')) {
+      toast.error(t('organizations.details.slack.saveFailed'));
+      return;
+    }
+    const loadingToastId = toast.loading(t('organizations.details.slack.save'));
+    setMutation.mutate(
+      { organizationId: organization.id, url: webhookUrl.trim() },
+      {
+        onSuccess: () => {
+          toast.success(t('organizations.details.slack.saved'), { id: loadingToastId });
+          setWebhookUrl('');
+        },
+        onError: () => {
+          toast.error(t('organizations.details.slack.saveFailed'), { id: loadingToastId });
+        },
+      }
+    );
+  };
+
+  const handleTest = () => {
+    const loadingToastId = toast.loading(t('organizations.details.slack.test'));
+    testMutation.mutate(organization.id, {
+      onSuccess: () => {
+        toast.success(t('organizations.details.slack.testSuccess'), { id: loadingToastId });
+      },
+      onError: () => {
+        toast.error(t('organizations.details.slack.testFailed'), { id: loadingToastId });
+      },
+    });
+  };
+
+  const handleRemove = () => {
+    setShowDeleteDialog(false);
+    const loadingToastId = toast.loading(t('organizations.details.slack.remove'));
+    deleteMutation.mutate(organization.id, {
+      onSuccess: () => {
+        toast.success(t('organizations.details.slack.removed'), { id: loadingToastId });
+      },
+      onError: () => {
+        toast.error(t('organizations.details.slack.removeFailed'), { id: loadingToastId });
+      },
+    });
+  };
+
+  const placeholder =
+    isConnected && organization.slackWebhookUrl
+      ? organization.slackWebhookUrl
+      : t('organizations.details.slack.placeholder');
+
+  // Build Slack services link from webhook URL: extract the B segment
+  // https://hooks.slack.com/services/TEAM/BOT_ID/SECRET → https://slack.com/services/BOT_ID
+  const slackServicesUrl = (() => {
+    const url = organization.slackWebhookUrl;
+    if (!url) return 'https://api.slack.com/apps';
+    const parts = url.replace('https://hooks.slack.com/services/', '').split('/');
+    const botId = parts[1];
+    return botId ? `https://slack.com/services/${botId}` : 'https://api.slack.com/apps';
+  })();
+
+  return (
+    <>
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <SiSlack className="size-6 shrink-0" />
+              <div>
+                <CardTitle className="text-lg">{t('organizations.details.slack.title')}</CardTitle>
+                <CardDescription>{t('organizations.details.slack.description')}</CardDescription>
+              </div>
+            </div>
+            {isConnected ? (
+              <span className="flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-3 py-1 text-emerald-400 text-sm">
+                <Check size={14} />
+                {t('organizations.details.slack.connected')}
+              </span>
+            ) : (
+              <span className="text-slate-500 text-sm">
+                {t('organizations.details.slack.notConnected')}
+              </span>
+            )}
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* Webhook URL input + save */}
+          <ButtonGroup className="w-full">
+            <Input
+              value={webhookUrl}
+              onChange={(e) => setWebhookUrl(e.target.value)}
+              placeholder={placeholder}
+              disabled={busy || disabled}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSave();
+                }
+              }}
+            />
+            <Button
+              variant="default"
+              onClick={handleSave}
+              disabled={busy || disabled || !webhookUrl.trim()}
+              loading={setMutation.isPending}
+            >
+              <Save size={16} />
+            </Button>
+          </ButtonGroup>
+
+          {/* Actions */}
+          <div className="flex flex-wrap items-center gap-2">
+            {isConnected && (
+              <>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleTest}
+                  disabled={busy || disabled}
+                  loading={testMutation.isPending}
+                  className="gap-2"
+                >
+                  <Send size={16} />
+                  {t('organizations.details.slack.test')}
+                </Button>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => setShowDeleteDialog(true)}
+                  disabled={busy || disabled}
+                  className="gap-2"
+                >
+                  <Trash2 size={16} />
+                  {t('organizations.details.slack.remove')}
+                </Button>
+              </>
+            )}
+            <a
+              href={slackServicesUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="ml-auto"
+            >
+              <Button variant="ghost" size="sm" className="gap-2 text-slate-400">
+                <ExternalLink size={14} />
+                {t('organizations.details.slack.setupGuide')}
+              </Button>
+            </a>
+          </div>
+        </CardContent>
+      </Card>
+
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('organizations.details.slack.removeTitle')}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('organizations.details.slack.removeDescription')}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={busy}>{t('common.cancel')}</AlertDialogCancel>
+            <AlertDialogAction onClick={handleRemove} disabled={busy} variant="destructive">
+              {t('organizations.details.slack.remove')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

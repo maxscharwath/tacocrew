@@ -40,8 +40,8 @@ export function BadgeStats({ stats, className }: BadgeStatsProps) {
       )}
     >
       {/* Decorative background elements */}
-      <div className="pointer-events-none absolute -top-20 -right-20 h-64 w-64 rounded-full bg-brand-500/10 blur-3xl" />
-      <div className="pointer-events-none absolute -bottom-20 -left-20 h-48 w-48 rounded-full bg-purple-500/10 blur-3xl" />
+      <div className="-top-20 -right-20 pointer-events-none absolute h-64 w-64 rounded-full bg-brand-500/10 blur-3xl" />
+      <div className="-bottom-20 -left-20 pointer-events-none absolute h-48 w-48 rounded-full bg-purple-500/10 blur-3xl" />
 
       <div className="relative">
         {/* Header with level */}

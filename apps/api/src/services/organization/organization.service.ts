@@ -413,7 +413,7 @@ export class OrganizationService {
 
   async updateOrganization(
     organizationId: OrganizationId,
-    data: { name: string },
+    data: { name: string; slackWebhookUrl?: string | null },
     adminUserId: UserId
   ): Promise<Organization> {
     // Verify admin has permission

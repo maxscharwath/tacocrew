@@ -466,12 +466,16 @@ export class OrganizationRepository {
 
   async update(
     organizationId: OrganizationId,
-    data: { name: string }
+    data: { name: string; slackWebhookUrl?: string | null }
   ): Promise<Organization | null> {
     try {
+      const updateData: Record<string, unknown> = { name: data.name };
+      if (data.slackWebhookUrl !== undefined) {
+        updateData['slackWebhookUrl'] = data.slackWebhookUrl || null;
+      }
       const dbOrganization = await this.prisma.client.organization.update({
         where: { id: organizationId },
-        data: { name: data.name },
+        data: updateData,
       });
       logger.debug('Organization updated', { id: organizationId });
       return createOrganizationFromDb(dbOrganization);
@@ -481,6 +485,32 @@ export class OrganizationRepository {
       }
       logger.error('Failed to update organization', { organizationId, error });
       return null;
+    }
+  }
+
+  async getSlackWebhookUrl(organizationId: OrganizationId): Promise<string | null> {
+    try {
+      const result = await this.prisma.client.organization.findUnique({
+        where: { id: organizationId },
+        select: { slackWebhookUrl: true },
+      });
+      return result?.slackWebhookUrl ?? null;
+    } catch (error) {
+      logger.error('Failed to get slack webhook URL', { organizationId, error });
+      return null;
+    }
+  }
+
+  async setSlackWebhookUrl(organizationId: OrganizationId, url: string | null): Promise<void> {
+    try {
+      await this.prisma.client.organization.update({
+        where: { id: organizationId },
+        data: { slackWebhookUrl: url },
+      });
+      logger.debug('Slack webhook URL updated', { organizationId, hasUrl: Boolean(url) });
+    } catch (error) {
+      logger.error('Failed to set slack webhook URL', { organizationId, error });
+      throw error;
     }
   }
 

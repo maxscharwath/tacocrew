@@ -5,7 +5,7 @@
  */
 
 import { EMPTY_GARNITURE_CODE, EMPTY_MEAT_CODE, EMPTY_SAUCE_CODE } from './config/empty-items.config';
-import { CsrfError } from './errors';
+import { CsrfError, isStoreClosedResponse, StoreClosedError } from './errors';
 import { HttpClient } from './http-client';
 import {extractCsrfTokenFromHtml, 
   type OrderSummary,
@@ -285,7 +285,12 @@ export class GigatacosClient {
   ): Promise<{ data: OrderSubmissionResponse; cookies: Record<string, string> }> {
     const config = this.buildRequestConfig(session);
     const result = await this.httpClient.postFormData<OrderSubmissionResponse>('/ajax/RocknRoll.php', orderData, config);
-    
+
+    // Detect store-closed redirect in submission response
+    if (isStoreClosedResponse(result.data)) {
+      throw new StoreClosedError();
+    }
+
     return { data: result.data, cookies: result.cookies };
   }
 
@@ -302,6 +307,8 @@ export class GigatacosClient {
   async createNewSession(): Promise<SessionContext> {
     try {
       // First, visit homepage to initialize PHP session properly
+      // This also detects redirects (e.g. gt-lausanne.ch → www.gt-lausanne.ch)
+      // and updates the HTTP client to use the canonical URL directly
       this.logger.debug('Initializing session by visiting homepage', { baseUrl: this.baseUrl });
       const homeResult = await this.httpClient.get<string>('/', {
         csrfToken: '', // Not needed for homepage
@@ -349,7 +356,7 @@ export class GigatacosClient {
         error,
         baseUrl: this.baseUrl,
       });
-      if (error instanceof CsrfError) {
+      if (error instanceof CsrfError || error instanceof StoreClosedError) {
         throw error;
       }
       throw new CsrfError();
@@ -435,7 +442,7 @@ export class GigatacosClient {
         error,
         baseUrl: this.baseUrl,
       });
-      if (error instanceof CsrfError) {
+      if (error instanceof CsrfError || error instanceof StoreClosedError) {
         throw error;
       }
       throw new CsrfError();

@@ -8,9 +8,11 @@ import { z } from 'zod';
 import { jsonContent, OrganizationSchemas } from '@/api/schemas/organization.schemas';
 import { authSecurity, createAuthenticatedRouteApp } from '@/api/utils/route.utils';
 import { OrganizationMemberStatus, OrganizationRole } from '@/generated/client';
+import { OrganizationRepository } from '@/infrastructure/repositories/organization.repository';
 import { UserRepository } from '@/infrastructure/repositories/user.repository';
 import { OrganizationId } from '@/schemas/organization.schema';
 import { UserId } from '@/schemas/user.schema';
+import { SlackNotificationService } from '@/services/notification/slack-notification.service';
 import { OrganizationService } from '@/services/organization/organization.service';
 import {
   buildOrganizationAvatarUrl,
@@ -30,6 +32,7 @@ function serializeOrganizationResponse(organization: {
   id: string;
   name: string;
   image?: string | null;
+  slackWebhookUrl?: string | null;
   createdAt?: Date;
   updatedAt?: Date;
 }) {
@@ -42,6 +45,8 @@ function serializeOrganizationResponse(organization: {
       hasImage,
       updatedAt: organization.updatedAt,
     }),
+    hasSlackWebhook: Boolean(organization.slackWebhookUrl),
+    slackWebhookUrl: organization.slackWebhookUrl ?? null,
     createdAt: organization.createdAt?.toISOString(),
     updatedAt: organization.updatedAt?.toISOString(),
   };
@@ -1120,6 +1125,172 @@ app.openapi(
       });
       return c.json(buildErrorResponse('ORG_AVATAR_NOT_FOUND', 'Avatar not found'), 404);
     }
+  }
+);
+
+// PUT /organizations/{id}/slack-webhook - Set Slack webhook URL (admin)
+app.openapi(
+  createRoute({
+    method: 'put',
+    path: '/organizations/{id}/slack-webhook',
+    tags: ['Organization'],
+    security: authSecurity,
+    request: {
+      params: z.object({
+        id: z.uuid(),
+      }),
+      body: {
+        content: jsonContent(OrganizationSchemas.SetSlackWebhookRequestSchema),
+      },
+    },
+    responses: {
+      200: {
+        description: 'Slack webhook URL set',
+        content: jsonContent(z.object({ success: z.boolean() })),
+      },
+      400: {
+        description: 'Invalid request',
+        content: jsonContent(OrganizationSchemas.ErrorResponseSchema),
+      },
+      401: {
+        description: 'Unauthorized',
+        content: jsonContent(OrganizationSchemas.ErrorResponseSchema),
+      },
+      403: {
+        description: 'Forbidden',
+        content: jsonContent(OrganizationSchemas.ErrorResponseSchema),
+      },
+    },
+  }),
+  async (c) => {
+    const userId = c.var.user.id;
+    const { id } = c.req.valid('param');
+    const { url } = c.req.valid('json');
+    const organizationId = OrganizationId.parse(id);
+    const organizationService = inject(OrganizationService);
+    const isAdmin = await organizationService.isUserAdmin(userId, organizationId);
+    if (!isAdmin) {
+      return c.json(
+        buildErrorResponse('FORBIDDEN', 'You must be an admin of this organization'),
+        403
+      );
+    }
+    const organizationRepository = inject(OrganizationRepository);
+    await organizationRepository.setSlackWebhookUrl(organizationId, url);
+    return c.json({ success: true }, 200);
+  }
+);
+
+// DELETE /organizations/{id}/slack-webhook - Remove Slack webhook URL (admin)
+app.openapi(
+  createRoute({
+    method: 'delete',
+    path: '/organizations/{id}/slack-webhook',
+    tags: ['Organization'],
+    security: authSecurity,
+    request: {
+      params: z.object({
+        id: z.uuid(),
+      }),
+    },
+    responses: {
+      200: {
+        description: 'Slack webhook URL removed',
+        content: jsonContent(z.object({ success: z.boolean() })),
+      },
+      401: {
+        description: 'Unauthorized',
+        content: jsonContent(OrganizationSchemas.ErrorResponseSchema),
+      },
+      403: {
+        description: 'Forbidden',
+        content: jsonContent(OrganizationSchemas.ErrorResponseSchema),
+      },
+    },
+  }),
+  async (c) => {
+    const userId = c.var.user.id;
+    const { id } = c.req.valid('param');
+    const organizationId = OrganizationId.parse(id);
+    const organizationService = inject(OrganizationService);
+    const isAdmin = await organizationService.isUserAdmin(userId, organizationId);
+    if (!isAdmin) {
+      return c.json(
+        buildErrorResponse('FORBIDDEN', 'You must be an admin of this organization'),
+        403
+      );
+    }
+    const organizationRepository = inject(OrganizationRepository);
+    await organizationRepository.setSlackWebhookUrl(organizationId, null);
+    return c.json({ success: true }, 200);
+  }
+);
+
+// POST /organizations/{id}/slack-webhook/test - Send a test Slack message (admin)
+app.openapi(
+  createRoute({
+    method: 'post',
+    path: '/organizations/{id}/slack-webhook/test',
+    tags: ['Organization'],
+    security: authSecurity,
+    request: {
+      params: z.object({
+        id: z.uuid(),
+      }),
+    },
+    responses: {
+      200: {
+        description: 'Test message sent',
+        content: jsonContent(z.object({ success: z.boolean() })),
+      },
+      400: {
+        description: 'No webhook configured',
+        content: jsonContent(OrganizationSchemas.ErrorResponseSchema),
+      },
+      401: {
+        description: 'Unauthorized',
+        content: jsonContent(OrganizationSchemas.ErrorResponseSchema),
+      },
+      403: {
+        description: 'Forbidden',
+        content: jsonContent(OrganizationSchemas.ErrorResponseSchema),
+      },
+    },
+  }),
+  async (c) => {
+    const userId = c.var.user.id;
+    const { id } = c.req.valid('param');
+    const organizationId = OrganizationId.parse(id);
+    const organizationService = inject(OrganizationService);
+    const isAdmin = await organizationService.isUserAdmin(userId, organizationId);
+    if (!isAdmin) {
+      return c.json(
+        buildErrorResponse('FORBIDDEN', 'You must be an admin of this organization'),
+        403
+      );
+    }
+    const organizationRepository = inject(OrganizationRepository);
+    const webhookUrl = await organizationRepository.getSlackWebhookUrl(organizationId);
+    if (!webhookUrl) {
+      return c.json(
+        buildErrorResponse('NO_WEBHOOK', 'No Slack webhook URL configured for this organization'),
+        400
+      );
+    }
+    const organization = await organizationService.getOrganizationById(organizationId);
+    const slackService = inject(SlackNotificationService);
+    try {
+      await slackService.sendTestMessage(webhookUrl, organization?.name || 'Unknown', userId);
+    } catch {
+      return c.json(
+        buildErrorResponse(
+          'SLACK_ERROR',
+          'Failed to send test message to Slack. Check that the webhook URL is valid and the channel exists.'
+        ),
+        400
+      );
+    }
+    return c.json({ success: true }, 200);
   }
 );
 

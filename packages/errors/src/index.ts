@@ -28,6 +28,7 @@ export const ErrorCodes = {
   USER_NOT_FOUND: { code: 'USER_NOT_FOUND', key: 'errors.auth.userNotFound' },
   EMAIL_ALREADY_IN_USE: { code: 'EMAIL_ALREADY_IN_USE', key: 'errors.auth.emailInUse' },
   INVALID_TOKEN: { code: 'INVALID_TOKEN', key: 'errors.auth.invalidToken' },
+  STORE_CLOSED: { code: 'STORE_CLOSED', key: 'errors.store.closed' },
 } as const;
 
 export type ErrorCodeEntry = (typeof ErrorCodes)[keyof typeof ErrorCodes];
@@ -140,6 +141,13 @@ export class CsrfError extends ApiError {
   }
 }
 
+export class StoreClosedError extends ApiError {
+  constructor() {
+    super(ErrorCodes.STORE_CLOSED, 503);
+    this.name = 'StoreClosedError';
+  }
+}
+
 // ============================================================================
 // Client-side Error Parsing
 // ============================================================================
@@ -173,6 +181,8 @@ export function parseApiError(status: number, body: unknown): ApiError {
       return new OutOfStockError(details);
     case ErrorCodes.NETWORK_ERROR.code:
       return new NetworkError(details);
+    case ErrorCodes.STORE_CLOSED.code:
+      return new StoreClosedError();
   }
 
   // Fallback by status code

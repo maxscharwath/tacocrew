@@ -3,22 +3,27 @@
  * @module services/group-order
  */
 
-import { PaymentMethod } from '@tacocrew/gigatacos-client';
+import {
+  StoreClosedError as ClientStoreClosedError,
+  PaymentMethod,
+} from '@tacocrew/gigatacos-client';
 import { injectable } from 'tsyringe';
 import { GroupOrderRepository } from '@/infrastructure/repositories/group-order.repository';
 import { UserOrderRepository } from '@/infrastructure/repositories/user-order.repository';
 import { t } from '@/lib/i18n';
 import { canSubmitGroupOrder, type GroupOrderId } from '@/schemas/group-order.schema';
+import { OrganizationId } from '@/schemas/organization.schema';
 import type { UserId } from '@/schemas/user.schema';
 import { isUserOrderEmpty, type UserOrder } from '@/schemas/user-order.schema';
 import { BadgeEvaluationService } from '@/services/badge/badge-evaluation.service';
 import { StatsTrackingService } from '@/services/badge/stats-tracking.service';
 import { NotificationService } from '@/services/notification/notification.service';
+import { SlackNotificationService } from '@/services/notification/slack-notification.service';
 import { BackendOrderSubmissionService } from '@/services/order/backend-order-submission.service';
 import { ResourceService } from '@/services/resource/resource.service';
 import type { Customer, DeliveryInfo, StockAvailability } from '@/shared/types/types';
 import { GroupOrderStatus } from '@/shared/types/types';
-import { NotFoundError, ValidationError } from '@/shared/utils/errors.utils';
+import { NotFoundError, StoreClosedError, ValidationError } from '@/shared/utils/errors.utils';
 import { inject } from '@/shared/utils/inject.utils';
 import { logger } from '@/shared/utils/logger.utils';
 import { calculateTotalPriceFromUserOrders } from '@/shared/utils/order-price.utils';
@@ -48,6 +53,7 @@ export class SubmitGroupOrderUseCase {
   private readonly resourceService = inject(ResourceService);
   private readonly backendOrderSubmissionService = inject(BackendOrderSubmissionService);
   private readonly notificationService = inject(NotificationService);
+  private readonly slackNotificationService = inject(SlackNotificationService);
   private readonly statsTrackingService = inject(StatsTrackingService);
   private readonly badgeEvaluationService = inject(BadgeEvaluationService);
 
@@ -138,6 +144,16 @@ export class SubmitGroupOrderUseCase {
       });
     }
 
+    // Send Slack notification (non-blocking)
+    if (groupOrder.organizationId) {
+      const orgId = OrganizationId.parse(groupOrder.organizationId);
+      this.slackNotificationService
+        .sendGroupOrderSubmitted(groupOrderId, orderName, groupOrder.leaderId, orgId)
+        .catch((error) => {
+          logger.debug('Failed to send Slack notification for group order submission', { error });
+        });
+    }
+
     return {
       groupOrderId,
       submittedCount: userOrders.length,
@@ -215,6 +231,10 @@ export class SubmitGroupOrderUseCase {
         dryRun
       );
     } catch (error) {
+      // Let StoreClosedError propagate — it's handled by the error middleware
+      if (error instanceof ClientStoreClosedError || error instanceof StoreClosedError) {
+        throw error;
+      }
       logger.error('Failed to submit group order to backend', {
         groupOrderId,
         userOrderCount: userOrders.length,

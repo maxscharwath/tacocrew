@@ -24,6 +24,7 @@ export const OrganizationSchema = z.object({
   id: OrganizationId,
   name: z.string(),
   image: z.string().nullable().optional(),
+  slackWebhookUrl: z.string().nullable().optional(),
   createdAt: z.coerce.date().optional(),
   updatedAt: z.coerce.date().optional(),
 });
@@ -37,6 +38,7 @@ export const OrganizationFromDbSchema = z.object({
   id: z.string(), // UUID from DB as string
   name: z.string(),
   image: z.string().nullable().optional(),
+  slackWebhookUrl: z.string().nullable().optional(),
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
 });
@@ -51,6 +53,7 @@ export function createOrganizationFromDb(
     id: OrganizationId.parse(db.id),
     name: db.name,
     image: db.image ?? null,
+    slackWebhookUrl: db.slackWebhookUrl ?? null,
     createdAt: db.createdAt,
     updatedAt: db.updatedAt,
   };

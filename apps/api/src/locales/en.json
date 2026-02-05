@@ -46,6 +46,24 @@
         }
       }
     },
+    "slack": {
+      "groupOrderCreated": {
+        "title": "🌯 {{orderName}}",
+        "body": "{{leaderName}} opened a group order!",
+        "deadline": "Orders close at {{endDate}}",
+        "cta": "Order your tacos"
+      },
+      "groupOrderSubmitted": {
+        "title": "🌯 {{orderName}} — Order placed!",
+        "body": "{{leaderName}} placed the order! Check the app to see how much you owe.",
+        "twint": "Twint number: {{phone}}",
+        "cta": "View order"
+      },
+      "test": {
+        "title": "🌯 Test message",
+        "body": "Slack integration is working for {{organizationName}}!"
+      }
+    },
     "organizations": {
       "roles": {
         "admin": "Admin",

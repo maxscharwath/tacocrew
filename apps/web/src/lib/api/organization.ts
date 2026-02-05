@@ -289,3 +289,44 @@ export function useUpdateUserRole() {
     },
   });
 }
+
+export function useSetSlackWebhook() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ organizationId, url }: { organizationId: string; url: string }) =>
+      apiClient.put<{ success: boolean }>(`/api/v1/organizations/${organizationId}/slack-webhook`, {
+        body: { url },
+      }),
+    onSuccess: (_, variables) => {
+      void queryClient.invalidateQueries({
+        queryKey: organizationKeys.detail(variables.organizationId),
+      });
+      void queryClient.invalidateQueries({ queryKey: organizationKeys.myOrganizations() });
+    },
+  });
+}
+
+export function useDeleteSlackWebhook() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (organizationId: string) =>
+      apiClient.delete<{ success: boolean }>(
+        `/api/v1/organizations/${organizationId}/slack-webhook`
+      ),
+    onSuccess: (_, organizationId) => {
+      void queryClient.invalidateQueries({
+        queryKey: organizationKeys.detail(organizationId),
+      });
+      void queryClient.invalidateQueries({ queryKey: organizationKeys.myOrganizations() });
+    },
+  });
+}
+
+export function useTestSlackWebhook() {
+  return useMutation({
+    mutationFn: (organizationId: string) =>
+      apiClient.post<{ success: boolean }>(
+        `/api/v1/organizations/${organizationId}/slack-webhook/test`
+      ),
+  });
+}

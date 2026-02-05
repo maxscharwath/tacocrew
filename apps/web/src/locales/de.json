@@ -554,6 +554,9 @@
     "stock": {
       "outOfStock": "Ein oder mehrere Artikel sind nicht vorrätig. Bitte aktualisieren Sie Ihre Bestellung."
     },
+    "store": {
+      "closed": "Das Geschäft ist derzeit geschlossen. Bitte versuchen Sie es später erneut."
+    },
     "unauthorized": {
       "generic": "Sie müssen angemeldet sein, um diese Aktion auszuführen."
     },
@@ -1221,7 +1224,29 @@
       "delete": "Organisation löschen",
       "deleteDescription": "Sind Sie sicher, dass Sie \"{{name}}\" löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden und entfernt alle Mitglieder und Daten, die mit dieser Organisation verbunden sind.",
       "deleteTitle": "Organisation löschen",
-      "rename": "Organisation umbenennen"
+      "rename": "Organisation umbenennen",
+      "slack": {
+        "title": "Slack-Integration",
+        "description": "Sende Benachrichtigungen an einen Slack-Kanal, wenn Gruppenbestellungen erstellt oder bestellt werden.",
+        "webhookUrl": "Webhook-URL",
+        "placeholder": "https://hooks.slack.com/services/...",
+        "save": "Speichern",
+        "test": "Testen",
+        "remove": "Entfernen",
+        "connected": "Verbunden",
+        "notConnected": "Nicht verbunden",
+        "saved": "Slack-Webhook gespeichert",
+        "removed": "Slack-Webhook entfernt",
+        "testSuccess": "Testnachricht an Slack gesendet!",
+        "testFailed": "Testnachricht konnte nicht gesendet werden",
+        "currentWebhook": "Aktueller Webhook",
+        "updateWebhook": "Webhook-URL ändern",
+        "saveFailed": "Webhook konnte nicht gespeichert werden",
+        "removeFailed": "Webhook konnte nicht entfernt werden",
+        "setupGuide": "Slack-App-Portal",
+        "removeTitle": "Slack-Integration entfernen",
+        "removeDescription": "Möchtest du den Slack-Webhook wirklich entfernen? Bestellbenachrichtigungen werden nicht mehr an Slack gesendet."
+      }
     },
     "empty": {
       "createButton": "Organisation erstellen",

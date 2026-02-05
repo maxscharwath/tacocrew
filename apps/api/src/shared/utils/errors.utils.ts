@@ -12,6 +12,7 @@ export {
   OrganizationAccessError,
   OutOfStockError,
   RateLimitError,
+  StoreClosedError,
   UnauthorizedError,
   ValidationError,
 } from '@tacocrew/errors';

@@ -46,6 +46,24 @@
         }
       }
     },
+    "slack": {
+      "groupOrderCreated": {
+        "title": "🌯 {{orderName}}",
+        "body": "{{leaderName}} hat eine Gruppenbestellung eröffnet!",
+        "deadline": "Bestellungen schliessen um {{endDate}}",
+        "cta": "Tacos bestellen"
+      },
+      "groupOrderSubmitted": {
+        "title": "🌯 {{orderName}} — Bestellt!",
+        "body": "{{leaderName}} hat bestellt! Schau in der App nach, wie viel du schuldest.",
+        "twint": "Twint-Nummer: {{phone}}",
+        "cta": "Bestellung ansehen"
+      },
+      "test": {
+        "title": "🌯 Testnachricht",
+        "body": "Die Slack-Integration funktioniert für {{organizationName}}!"
+      }
+    },
     "organizations": {
       "roles": {
         "admin": "Administrator",

@@ -43,6 +43,29 @@ export class NetworkError extends Error {
 }
 
 /**
+ * Store closed error - thrown when the backend returns a redirect page
+ * indicating the store is not currently accepting orders
+ */
+export class StoreClosedError extends Error {
+  public readonly statusCode: number = 503;
+
+  constructor(message = 'The store is currently closed and not accepting orders') {
+    super(message);
+    this.name = 'StoreClosedError';
+    Error.captureStackTrace(this, this.constructor);
+  }
+}
+
+/**
+ * Check if an HTTP response contains a store-closed redirect
+ * The PHP backend returns HTML with `window.location.href = "./"` when the store is closed
+ */
+export function isStoreClosedResponse(data: unknown): boolean {
+  if (typeof data !== 'string') return false;
+  return data.includes('window.location.href = "./"');
+}
+
+/**
  * Check if an error is a CSRF error
  */
 export function isCsrfError(error: unknown): boolean {

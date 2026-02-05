@@ -3,8 +3,8 @@
  * Consolidates data loading from API queries
  */
 
-import { useGroupOrders, useOrderHistory } from '@/lib/api/user';
 import type { UserGroupOrder, UserOrderHistoryEntry } from '@/lib/api/types';
+import { useGroupOrders, useOrderHistory } from '@/lib/api/user';
 
 export interface DashboardData {
   groupOrders: UserGroupOrder[];

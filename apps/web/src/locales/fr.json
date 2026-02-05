@@ -554,6 +554,9 @@
     "stock": {
       "outOfStock": "Un ou plusieurs articles sont en rupture de stock. Veuillez mettre à jour votre commande."
     },
+    "store": {
+      "closed": "Le magasin est actuellement fermé. Veuillez réessayer plus tard."
+    },
     "unauthorized": {
       "generic": "Vous devez être connecté pour effectuer cette action."
     },
@@ -1221,7 +1224,29 @@
       "delete": "Supprimer l'organisation",
       "deleteDescription": "Êtes-vous sûr de vouloir supprimer \"{{name}}\" ? Cette action est irréversible et supprimera tous les membres et données associés à cette organisation.",
       "deleteTitle": "Supprimer l'organisation",
-      "rename": "Renommer l'organisation"
+      "rename": "Renommer l'organisation",
+      "slack": {
+        "title": "Intégration Slack",
+        "description": "Envoyer des notifications Slack quand une commande de groupe est créée ou passée.",
+        "webhookUrl": "URL du webhook",
+        "placeholder": "https://hooks.slack.com/services/...",
+        "save": "Enregistrer",
+        "test": "Tester",
+        "remove": "Supprimer",
+        "connected": "Connecté",
+        "notConnected": "Non connecté",
+        "saved": "Webhook Slack enregistré",
+        "removed": "Webhook Slack supprimé",
+        "testSuccess": "Message de test envoyé sur Slack !",
+        "testFailed": "Échec de l'envoi du message de test",
+        "currentWebhook": "Webhook actuel",
+        "updateWebhook": "Modifier l'URL du webhook",
+        "saveFailed": "Échec de l'enregistrement du webhook",
+        "removeFailed": "Échec de la suppression du webhook",
+        "setupGuide": "Portail Slack App",
+        "removeTitle": "Supprimer l'intégration Slack",
+        "removeDescription": "Êtes-vous sûr de vouloir supprimer le webhook Slack ? Les notifications de commande ne seront plus envoyées sur Slack."
+      }
     },
     "empty": {
       "createButton": "Créer une organisation",

@@ -12,6 +12,7 @@ import type { OrganizationId } from '@/schemas/organization.schema';
 import type { UserId } from '@/schemas/user.schema';
 import { BadgeEvaluationService } from '@/services/badge/badge-evaluation.service';
 import { StatsTrackingService } from '@/services/badge/stats-tracking.service';
+import { SlackNotificationService } from '@/services/notification/slack-notification.service';
 import { ValidationError } from '@/shared/utils/errors.utils';
 import { inject } from '@/shared/utils/inject.utils';
 import { logger } from '@/shared/utils/logger.utils';
@@ -35,6 +36,7 @@ export class CreateGroupOrderUseCase {
   private readonly organizationRepository = inject(OrganizationRepository);
   private readonly statsTrackingService = inject(StatsTrackingService);
   private readonly badgeEvaluationService = inject(BadgeEvaluationService);
+  private readonly slackNotificationService = inject(SlackNotificationService);
 
   async execute(leaderId: UserId, request: CreateGroupOrderRequest): Promise<GroupOrder> {
     this.validateDates(request.startDate, request.endDate);
@@ -60,6 +62,19 @@ export class CreateGroupOrderUseCase {
     this.trackGroupOrderCreation(leaderId, groupOrder.id).catch((error) => {
       logger.error('Failed to track group order creation for badges', { leaderId, error });
     });
+
+    // Send Slack notification (non-blocking)
+    this.slackNotificationService
+      .sendGroupOrderCreated(
+        groupOrder.id,
+        request.name,
+        leaderId,
+        request.organizationId,
+        request.endDate
+      )
+      .catch((error) => {
+        logger.debug('Failed to send Slack notification for group order creation', { error });
+      });
 
     return groupOrder;
   }

@@ -119,10 +119,8 @@ class ErrorLogger {
   ): void {
     // Example: Send to Sentry
     // Sentry.captureException(error, { tags: { event: eventName }, extra: additionalContext });
-
     // Example: Send to custom analytics
     // analytics.trackError(eventName, error, additionalContext);
-
     // For now, just track in memory
     // Could implement custom event dispatch here when needed
   }

@@ -554,6 +554,9 @@
     "stock": {
       "outOfStock": "One or more items are out of stock. Please update your order."
     },
+    "store": {
+      "closed": "The store is currently closed. Please try again later."
+    },
     "unauthorized": {
       "generic": "You must be signed in to perform this action."
     },
@@ -1221,7 +1224,29 @@
       "delete": "Delete Organization",
       "deleteDescription": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone and will remove all members and data associated with this organization.",
       "deleteTitle": "Delete Organization",
-      "rename": "Rename Organization"
+      "rename": "Rename Organization",
+      "slack": {
+        "title": "Slack Integration",
+        "description": "Send order notifications to a Slack channel when group orders are created or submitted.",
+        "webhookUrl": "Webhook URL",
+        "placeholder": "https://hooks.slack.com/services/...",
+        "save": "Save",
+        "test": "Test",
+        "remove": "Remove",
+        "connected": "Connected",
+        "notConnected": "Not connected",
+        "saved": "Slack webhook saved",
+        "removed": "Slack webhook removed",
+        "testSuccess": "Test message sent to Slack!",
+        "testFailed": "Failed to send test message",
+        "currentWebhook": "Current webhook",
+        "updateWebhook": "Update webhook URL",
+        "saveFailed": "Failed to save webhook",
+        "removeFailed": "Failed to remove webhook",
+        "setupGuide": "Slack App Portal",
+        "removeTitle": "Remove Slack Integration",
+        "removeDescription": "Are you sure you want to remove the Slack webhook? Order notifications will no longer be sent to Slack."
+      }
     },
     "empty": {
       "createButton": "Create Organization",

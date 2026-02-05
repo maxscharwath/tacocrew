@@ -313,11 +313,12 @@ model Notification {
 }
 
 model Organization {
-  id        String   @id @default(uuid())
-  name      String
-  image     String? // Base64-encoded avatar image
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now()) @updatedAt
+  id              String   @id @default(uuid())
+  name            String
+  image           String? // Base64-encoded avatar image
+  slackWebhookUrl String? // Slack incoming webhook URL for notifications
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @default(now()) @updatedAt
 
   // Relations
   users       UserOrganization[]

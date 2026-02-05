@@ -132,6 +132,11 @@ export class BackendOrderSubmissionService {
           transaction_id: transactionId,
           payment_method: paymentMethod,
         });
+
+        logger.debug('RocknRoll.php full response', {
+          sessionId,
+          response: orderResult,
+        });
       }
 
       // Session is kept alive for order tracking - cookies are stored in session
@@ -212,32 +217,35 @@ export class BackendOrderSubmissionService {
   }
 
   /**
-   * Add all items to cart
+   * Add all items to cart sequentially
+   * PHP backend uses file-based session locking — concurrent requests to the same
+   * session cause CSRF token rotation conflicts. Sequential execution avoids this.
    */
   private async addItemsToCart(sessionId: SessionId, items: UserOrder['items']): Promise<void> {
-    // Add all items in parallel for better performance
-    // Note: Desserts may fail with 404 if endpoint doesn't exist - handle gracefully
-    await Promise.all([
-      ...items.tacos.map((taco) => this.addTacoToCart(sessionId, taco)),
-      ...items.extras.map((extra) => this.addExtraToCart(sessionId, extra)),
-      ...items.drinks.map((drink) => this.addDrinkToCart(sessionId, drink)),
-      ...items.desserts.map((dessert) =>
-        this.addDessertToCart(sessionId, dessert).catch((error) => {
-          // If dessert endpoint returns 404, log warning but don't fail the entire order
-          // The HttpClient re-throws AxiosError, so check for 404 status
-          if (axios.isAxiosError(error) && error.response?.status === 404) {
-            logger.warn('Dessert endpoint not available, skipping dessert', {
-              sessionId,
-              dessertId: dessert.code,
-              dessertName: dessert.name,
-            });
-            return;
-          }
-          // Re-throw other errors
-          throw error;
-        })
-      ),
-    ]);
+    for (const taco of items.tacos) {
+      await this.addTacoToCart(sessionId, taco);
+    }
+    for (const extra of items.extras) {
+      await this.addExtraToCart(sessionId, extra);
+    }
+    for (const drink of items.drinks) {
+      await this.addDrinkToCart(sessionId, drink);
+    }
+    for (const dessert of items.desserts) {
+      try {
+        await this.addDessertToCart(sessionId, dessert);
+      } catch (error) {
+        if (axios.isAxiosError(error) && error.response?.status === 404) {
+          logger.warn('Dessert endpoint not available, skipping dessert', {
+            sessionId,
+            dessertId: dessert.code,
+            dessertName: dessert.name,
+          });
+          continue;
+        }
+        throw error;
+      }
+    }
   }
 
   /**

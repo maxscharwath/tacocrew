@@ -7,10 +7,17 @@ import {
   CsrfError as ClientCsrfError,
   NetworkError as ClientNetworkError,
   RateLimitError as ClientRateLimitError,
+  StoreClosedError as ClientStoreClosedError,
 } from '@tacocrew/gigatacos-client';
 import { Context, ErrorHandler } from 'hono';
 import { ErrorCodes } from '@/shared/types/types';
-import { ApiError, CsrfError, NetworkError, RateLimitError } from '@/shared/utils/errors.utils';
+import {
+  ApiError,
+  CsrfError,
+  NetworkError,
+  RateLimitError,
+  StoreClosedError,
+} from '@/shared/utils/errors.utils';
 import { logger } from '@/shared/utils/logger.utils';
 
 /**
@@ -44,8 +51,13 @@ export const errorHandler: ErrorHandler = (err: Error, c: Context) => {
   const clientErrorHandlers: Array<{
     check: (error: Error) => boolean;
     create: () => ApiError;
-    statusCode: 400 | 401 | 403 | 404 | 409 | 429 | 500 | 502;
+    statusCode: 400 | 401 | 403 | 404 | 409 | 429 | 500 | 502 | 503;
   }> = [
+    {
+      check: (error) => error instanceof ClientStoreClosedError,
+      create: () => new StoreClosedError(),
+      statusCode: 503,
+    },
     {
       check: (error) => error instanceof ClientCsrfError,
       create: () => new CsrfError(),

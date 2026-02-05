@@ -14,6 +14,8 @@ const OrganizationResponseSchema = z.object({
   id: z.string(),
   name: z.string(),
   image: z.string().nullable().optional(),
+  hasSlackWebhook: z.boolean().optional(),
+  slackWebhookUrl: z.string().nullable().optional(),
   createdAt: z.coerce.date().optional(),
   updatedAt: z.coerce.date().optional(),
 });
@@ -57,6 +59,17 @@ const UpdateUserRoleRequestSchema = z.object({
 
 const UpdateOrganizationRequestSchema = z.object({
   name: z.string().min(1).max(200),
+  slackWebhookUrl: z
+    .url()
+    .refine((val) => val.startsWith('https://hooks.slack.com/'), 'Must be a Slack webhook URL')
+    .optional()
+    .or(z.literal('')),
+});
+
+const SetSlackWebhookRequestSchema = z.object({
+  url: z
+    .url()
+    .refine((val) => val.startsWith('https://hooks.slack.com/'), 'Must be a Slack webhook URL'),
 });
 
 export const OrganizationSchemas = {
@@ -69,6 +82,7 @@ export const OrganizationSchemas = {
   OrganizationMemberResponseSchema,
   UpdateUserRoleRequestSchema,
   UpdateOrganizationRequestSchema,
+  SetSlackWebhookRequestSchema,
   ErrorResponseSchema,
 };
 

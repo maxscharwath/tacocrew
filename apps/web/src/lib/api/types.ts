@@ -74,6 +74,8 @@ export interface Organization {
   id: string;
   name: string;
   image?: string | null;
+  hasSlackWebhook?: boolean;
+  slackWebhookUrl?: string | null;
   createdAt?: string;
   updatedAt?: string;
   role?: OrganizationRole;
