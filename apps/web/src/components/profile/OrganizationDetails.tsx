@@ -22,7 +22,18 @@ import {
   Textarea,
   toast,
 } from '@tacocrew/ui-kit';
-import { Check, Copy, ExternalLink, MessageSquare, Pencil, Save, Send, Trash2, Upload, X } from 'lucide-react';
+import {
+  Check,
+  Copy,
+  ExternalLink,
+  MessageSquare,
+  Pencil,
+  Save,
+  Send,
+  Trash2,
+  Upload,
+  X,
+} from 'lucide-react';
 import { type ChangeEvent, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { OrganizationMembers } from '@/components/profile/OrganizationMembers';
@@ -461,7 +472,10 @@ function SlackIntegrationCard({ organization, disabled = false }: SlackIntegrati
   const sendMutation = useSendSlackMessage();
 
   const busy =
-    setMutation.isPending || deleteMutation.isPending || testMutation.isPending || sendMutation.isPending;
+    setMutation.isPending ||
+    deleteMutation.isPending ||
+    testMutation.isPending ||
+    sendMutation.isPending;
   const isConnected = Boolean(organization.hasSlackWebhook);
 
   const handleSave = () => {

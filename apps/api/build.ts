@@ -8,9 +8,7 @@ import { readFileSync } from 'node:fs';
 
 // Read logo at build time so it can be inlined into the bundle via `define`.
 // This avoids runtime filesystem access which fails on Vercel serverless.
-const logoPngBase64 = readFileSync(
-  './src/templates/assets/logo.png',
-).toString('base64');
+const logoPngBase64 = readFileSync('./src/templates/assets/logo.png').toString('base64');
 
 const result = await Bun.build({
   entrypoints: ['./src/index.ts'],

@@ -7,8 +7,8 @@ export function OrderCreateHero() {
 
   return (
     <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-linear-to-br from-brand-500/15 via-slate-900/80 to-slate-950/90 p-4 shadow-[0_40px_120px_rgba(8,47,73,0.35)] sm:rounded-3xl sm:p-8">
-      <div className="-top-24 pointer-events-none absolute right-0 h-72 w-72 rounded-full bg-brand-400/30 blur-3xl" />
-      <div className="-bottom-16 pointer-events-none absolute left-12 h-60 w-60 rounded-full bg-purple-500/25 blur-3xl" />
+      <div className="pointer-events-none absolute -top-24 right-0 h-72 w-72 rounded-full bg-brand-400/30 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-16 left-12 h-60 w-60 rounded-full bg-purple-500/25 blur-3xl" />
       <div className="relative space-y-4 sm:space-y-6">
         <div className="flex items-center gap-2 sm:gap-3">
           <Avatar color="brandHero" size="lg" variant="elevated" className="sm:size-xl">

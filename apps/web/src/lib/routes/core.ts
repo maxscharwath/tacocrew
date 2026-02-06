@@ -54,39 +54,42 @@ export type AnyRouteDef = RouteDef<
   Record<string, AnyRouteDef> | undefined
 >;
 
-type ParamsOf<R extends AnyRouteDef> = R extends RouteDef<
-  infer P extends ZodLike | undefined,
-  infer _S extends ZodLike | undefined,
-  infer _C
->
-  ? P extends ZodLike
-    ? z.infer<P>
-    : Record<string, never>
-  : Record<string, never>;
+type ParamsOf<R extends AnyRouteDef> =
+  R extends RouteDef<
+    infer P extends ZodLike | undefined,
+    infer _S extends ZodLike | undefined,
+    infer _C
+  >
+    ? P extends ZodLike
+      ? z.infer<P>
+      : Record<string, never>
+    : Record<string, never>;
 
-type SearchOf<R extends AnyRouteDef> = R extends RouteDef<
-  infer _P extends ZodLike | undefined,
-  infer S extends ZodLike | undefined,
-  infer _C
->
-  ? S extends ZodLike
-    ? z.infer<S>
-    : never
-  : never;
-
-type ArgsOf<R extends AnyRouteDef> = R extends RouteDef<
-  infer P extends ZodLike | undefined,
-  infer S extends ZodLike | undefined,
-  infer _C
->
-  ? P extends ZodLike
+type SearchOf<R extends AnyRouteDef> =
+  R extends RouteDef<
+    infer _P extends ZodLike | undefined,
+    infer S extends ZodLike | undefined,
+    infer _C
+  >
     ? S extends ZodLike
-      ? ParamsOf<R> & { search?: SearchOf<R> }
-      : ParamsOf<R>
-    : S extends ZodLike
-      ? { search?: SearchOf<R> }
-      : void
-  : void;
+      ? z.infer<S>
+      : never
+    : never;
+
+type ArgsOf<R extends AnyRouteDef> =
+  R extends RouteDef<
+    infer P extends ZodLike | undefined,
+    infer S extends ZodLike | undefined,
+    infer _C
+  >
+    ? P extends ZodLike
+      ? S extends ZodLike
+        ? ParamsOf<R> & { search?: SearchOf<R> }
+        : ParamsOf<R>
+      : S extends ZodLike
+        ? { search?: SearchOf<R> }
+        : void
+    : void;
 
 type RequiredKeys<T> = {
   [K in keyof T]-?: Record<string, never> extends Pick<T, K> ? never : K;
@@ -112,9 +115,10 @@ type RedirectFn<R extends AnyRouteDef> = [ArgsOf<R>] extends [void]
 
 type ChildRouteDefs<R extends AnyRouteDef> = Extract<R['children'], Record<string, AnyRouteDef>>;
 
-type BuilderChildren<R extends AnyRouteDef> = ChildRouteDefs<R> extends Record<string, AnyRouteDef>
-  ? { [K in keyof ChildRouteDefs<R>]: BuilderNode<ChildRouteDefs<R>[K]> }
-  : Record<string, never>;
+type BuilderChildren<R extends AnyRouteDef> =
+  ChildRouteDefs<R> extends Record<string, AnyRouteDef>
+    ? { [K in keyof ChildRouteDefs<R>]: BuilderNode<ChildRouteDefs<R>[K]> }
+    : Record<string, never>;
 
 type FullUrlFn<R extends AnyRouteDef> = [ArgsOf<R>] extends [void]
   ? () => string

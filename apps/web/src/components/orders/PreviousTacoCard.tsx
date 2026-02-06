@@ -27,7 +27,7 @@ export function PreviousTacoCard({ order, stock, disabled, onSelect }: PreviousT
       onClick={() => onSelect(taco)}
       disabled={isDisabled}
       className={cn(
-        'group hover:-translate-y-0.5 relative flex flex-col rounded-xl border p-3 transition-all duration-300 sm:rounded-2xl sm:p-5',
+        'group relative flex flex-col rounded-xl border p-3 transition-all duration-300 hover:-translate-y-0.5 sm:rounded-2xl sm:p-5',
         'border-brand-400/60 bg-linear-to-br from-brand-500/20 via-slate-900/80 to-slate-950/90',
         'shadow-[0_8px_24px_rgba(99,102,241,0.35)] hover:border-brand-400/80 hover:shadow-2xl hover:shadow-brand-500/40',
         isDisabled && 'cursor-not-allowed opacity-50'

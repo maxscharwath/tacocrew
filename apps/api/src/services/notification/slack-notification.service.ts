@@ -176,7 +176,11 @@ export class SlackNotificationService {
   /**
    * Send a test Slack message to verify webhook configuration
    */
-  async sendTestMessage(webhookUrl: string, organizationName: string, userId: UserId): Promise<void> {
+  async sendTestMessage(
+    webhookUrl: string,
+    organizationName: string,
+    userId: UserId
+  ): Promise<void> {
     const user = await this.userRepository.findById(userId);
     const lng = user?.language || 'en';
     const title = t('slack.test.title', { lng }) as string;

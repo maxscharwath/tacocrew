@@ -76,7 +76,7 @@ export function PreferencesSection({ form, disabled = false }: PreferencesSectio
               <div className="relative">
                 <Clock
                   size={18}
-                  className="-translate-y-1/2 pointer-events-none absolute top-1/2 left-3 z-10 text-slate-500"
+                  className="pointer-events-none absolute top-1/2 left-3 z-10 -translate-y-1/2 text-slate-500"
                 />
                 <Select
                   value={selectValue}
@@ -144,7 +144,7 @@ export function PreferencesSection({ form, disabled = false }: PreferencesSectio
                       {isSelected && (
                         <CheckCircle2
                           size={14}
-                          className="-top-1 -right-1 absolute h-6 w-6 rounded-full border-2 border-slate-900 bg-brand-500 text-white"
+                          className="absolute -top-1 -right-1 h-6 w-6 rounded-full border-2 border-slate-900 bg-brand-500 text-white"
                         />
                       )}
                     </div>
