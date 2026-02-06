@@ -73,7 +73,10 @@ export class GroupOrderRepository {
   async update(
     id: GroupOrderId,
     updates: Partial<
-      Pick<GroupOrder, 'name' | 'status' | 'startDate' | 'endDate' | 'sessionId' | 'fee'>
+      Pick<
+        GroupOrder,
+        'name' | 'status' | 'startDate' | 'endDate' | 'sessionId' | 'fee' | 'leaderId'
+      >
     >
   ): Promise<GroupOrder> {
     try {
@@ -86,6 +89,7 @@ export class GroupOrderRepository {
           ...(updates.endDate !== undefined && { endDate: updates.endDate }),
           ...(updates.sessionId !== undefined && { sessionId: updates.sessionId }),
           ...(updates.fee !== undefined && { fee: updates.fee }),
+          ...(updates.leaderId !== undefined && { leaderId: updates.leaderId }),
           updatedAt: new Date(),
         },
       });

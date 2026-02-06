@@ -924,6 +924,17 @@
         },
         "title": "Edit group order"
       },
+      "transferLeader": {
+        "title": "Transfer Leadership",
+        "description": "Select a member to become the new group leader.",
+        "searchPlaceholder": "Search members...",
+        "noMembers": "No other active members found.",
+        "noResults": "No members match your search.",
+        "confirm": "Transfer",
+        "success": "Leadership transferred to {{memberName}}.",
+        "error": "Failed to transfer leadership. Please try again.",
+        "transferring": "Transferring..."
+      },
       "errors": {
         "missingCustomerDetails": "All customer, delivery type, address, and requested time fields are required.",
         "missingIdentifier": "Missing order identifier.",
@@ -947,7 +958,8 @@
           "editOrder": "Edit order",
           "moreOptions": "More options",
           "reopenOrder": "Reopen order",
-          "submit": "Place Order"
+          "submit": "Place Order",
+          "transferLeader": "Transfer leadership"
         },
         "badge": "Group Order",
         "leaderInfo": {

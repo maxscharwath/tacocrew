@@ -317,6 +317,22 @@ export function useUpdateGroupOrder() {
   });
 }
 
+export function useTransferGroupOrderLeader() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ groupOrderId, newLeaderId }: { groupOrderId: string; newLeaderId: string }) =>
+      apiClient.patch<GroupOrder>(`/api/v1/orders/${groupOrderId}/leader`, {
+        body: { newLeaderId },
+      }),
+    onSuccess: (_, variables) => {
+      void queryClient.invalidateQueries({ queryKey: ordersKeys.detail(variables.groupOrderId) });
+      void queryClient.invalidateQueries({ queryKey: ordersKeys.lists() });
+      void queryClient.invalidateQueries({ queryKey: ordersKeys.receipts(variables.groupOrderId) });
+      void queryClient.invalidateQueries({ queryKey: userKeys.groupOrders() });
+    },
+  });
+}
+
 export function useOrderCookies(groupOrderId: string, enabled = true) {
   return useQuery<OrderCookiesResponse>({
     queryKey: ordersKeys.cookies(groupOrderId),

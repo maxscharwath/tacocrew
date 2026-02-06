@@ -22,6 +22,7 @@ import { CreateGroupOrderUseCase } from '@/services/group-order/create-group-ord
 import { DeleteGroupOrderUseCase } from '@/services/group-order/delete-group-order.service';
 import { GetGroupOrderUseCase } from '@/services/group-order/get-group-order.service';
 import { GetGroupOrderWithUserOrdersUseCase } from '@/services/group-order/get-group-order-with-user-orders.service';
+import { TransferGroupOrderLeaderUseCase } from '@/services/group-order/transfer-group-order-leader.service';
 import { UpdateGroupOrderUseCase } from '@/services/group-order/update-group-order.service';
 import { UpdateGroupOrderStatusUseCase } from '@/services/group-order/update-group-order-status.service';
 import { OrganizationService } from '@/services/organization/organization.service';
@@ -46,6 +47,10 @@ const UpdateGroupOrderRequestSchema = z.object({
   endDate: z.coerce.date().optional(),
 });
 
+const TransferLeaderRequestSchema = z.object({
+  newLeaderId: z.string().min(1),
+});
+
 async function serializeGroupOrderResponse(groupOrder: GroupOrder) {
   const userService = inject(UserService);
   const leader = await userService.getUserById(groupOrder.leaderId);
@@ -65,6 +70,7 @@ async function serializeGroupOrderResponse(groupOrder: GroupOrder) {
     canAcceptOrders: canAcceptOrders(groupOrder),
     canSubmitGroupOrder: canSubmitGroupOrder(groupOrder),
     fee: groupOrder.fee ?? null,
+    organizationId: groupOrder.organizationId ?? null,
     createdAt: groupOrder.createdAt?.toISOString(),
     updatedAt: groupOrder.updatedAt?.toISOString(),
   };
@@ -303,6 +309,53 @@ app.openapi(
       startDate: body.startDate ? new Date(body.startDate) : undefined,
       endDate: body.endDate ? new Date(body.endDate) : undefined,
     });
+
+    return c.json(await serializeGroupOrderResponse(groupOrder), 200);
+  }
+);
+
+app.openapi(
+  createRoute({
+    method: 'patch',
+    path: '/orders/{id}/leader',
+    tags: ['Orders'],
+    security: authSecurity,
+    request: {
+      params: z.object({
+        id: GroupOrderId,
+      }),
+      body: {
+        content: jsonContent(TransferLeaderRequestSchema),
+      },
+    },
+    responses: {
+      200: {
+        description: 'Group order leader transferred',
+        content: jsonContent(GroupOrderSchemas.GroupOrderResponseSchema),
+      },
+      403: {
+        description: 'Forbidden - Only the current leader can transfer leadership',
+        content: jsonContent(GroupOrderSchemas.ErrorResponseSchema),
+      },
+      404: {
+        description: 'Group order not found',
+        content: jsonContent(GroupOrderSchemas.ErrorResponseSchema),
+      },
+    },
+  }),
+  async (c) => {
+    const { id } = c.req.valid('param');
+    const body = c.req.valid('json');
+    const userId = c.var.user.id;
+
+    await requireGroupOrderAccess(id, userId);
+
+    const transferLeaderUseCase = inject(TransferGroupOrderLeaderUseCase);
+    const groupOrder = await transferLeaderUseCase.execute(
+      id,
+      UserId.parse(userId),
+      UserId.parse(body.newLeaderId)
+    );
 
     return c.json(await serializeGroupOrderResponse(groupOrder), 200);
   }

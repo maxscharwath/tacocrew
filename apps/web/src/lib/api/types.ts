@@ -227,6 +227,7 @@ export interface GroupOrder {
   canAcceptOrders: boolean;
   canSubmitGroupOrder: boolean;
   fee?: number | null;
+  organizationId?: string | null;
   createdAt?: string;
   updatedAt?: string;
 }

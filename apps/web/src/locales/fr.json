@@ -924,6 +924,17 @@
         },
         "title": "Modifier la commande de groupe"
       },
+      "transferLeader": {
+        "title": "Transférer le leadership",
+        "description": "Sélectionnez un membre pour devenir le nouveau chef de groupe.",
+        "searchPlaceholder": "Rechercher un membre...",
+        "noMembers": "Aucun autre membre actif trouvé.",
+        "noResults": "Aucun membre ne correspond à votre recherche.",
+        "confirm": "Transférer",
+        "success": "Leadership transféré à {{memberName}}.",
+        "error": "Échec du transfert de leadership. Veuillez réessayer.",
+        "transferring": "Transfert en cours..."
+      },
       "errors": {
         "missingCustomerDetails": "Renseigne les informations client, le mode de livraison, l'adresse et l'heure souhaitée.",
         "missingIdentifier": "Identifiant de commande manquant.",
@@ -947,7 +958,8 @@
           "editOrder": "Modifier la commande",
           "moreOptions": "Plus d'options",
           "reopenOrder": "Rouvrir la commande",
-          "submit": "Passer la commande"
+          "submit": "Passer la commande",
+          "transferLeader": "Transférer le leadership"
         },
         "badge": "Commande de groupe",
         "leaderInfo": {

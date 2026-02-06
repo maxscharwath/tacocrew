@@ -20,11 +20,21 @@ import {
   DropdownMenuTrigger,
   StatusBadge,
 } from '@tacocrew/ui-kit';
-import { Edit, Lock, LockOpen, MoreVertical, Plus, Send, Trash2 } from 'lucide-react';
+import {
+  ArrowRightLeft,
+  Edit,
+  Lock,
+  LockOpen,
+  MoreVertical,
+  Plus,
+  Send,
+  Trash2,
+} from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate, useRevalidator } from 'react-router';
 import { EditGroupOrderDialog } from '@/components/orders/EditGroupOrderDialog';
+import { TransferLeaderDialog } from '@/components/orders/TransferLeaderDialog';
 import { useDateFormat } from '@/hooks/useDateFormat';
 import type { GroupOrder, UserOrderSummary } from '@/lib/api';
 import { resolveImageUrl } from '@/lib/api/image-utils';
@@ -74,6 +84,7 @@ export function OrderHero({
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showErrorDialog, setShowErrorDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
+  const [showTransferDialog, setShowTransferDialog] = useState(false);
   const { status, name, startDate, endDate, leader } = groupOrder;
 
   // Determine which actions are available
@@ -151,8 +162,8 @@ export function OrderHero({
 
   return (
     <Card className="relative overflow-hidden border-brand-400/30 bg-linear-to-br from-brand-500/20 via-slate-900/80 to-slate-950/90 p-6 lg:p-8">
-      <div className="-top-24 pointer-events-none absolute right-0 h-60 w-60 rounded-full bg-brand-400/30 blur-3xl" />
-      <div className="-bottom-16 pointer-events-none absolute left-10 h-56 w-56 rounded-full bg-purple-500/25 blur-3xl" />
+      <div className="pointer-events-none absolute -top-24 right-0 h-60 w-60 rounded-full bg-brand-400/30 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-16 left-10 h-56 w-56 rounded-full bg-purple-500/25 blur-3xl" />
       <CardContent className="relative space-y-4 p-0">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="flex flex-wrap items-center gap-3">
@@ -206,6 +217,12 @@ export function OrderHero({
                     <DropdownMenuItem onClick={() => setShowEditDialog(true)}>
                       <Edit size={16} />
                       {t('orders.detail.hero.actions.editOrder')}
+                    </DropdownMenuItem>
+                  )}
+                  {canEdit && groupOrder.organizationId && (
+                    <DropdownMenuItem onClick={() => setShowTransferDialog(true)}>
+                      <ArrowRightLeft size={16} />
+                      {t('orders.detail.hero.actions.transferLeader')}
                     </DropdownMenuItem>
                   )}
                   {canReopen && (
@@ -331,6 +348,17 @@ export function OrderHero({
         onClose={() => setShowEditDialog(false)}
         onSuccess={handleEditSuccess}
       />
+
+      {/* Transfer Leader Dialog */}
+      {groupOrder.organizationId && (
+        <TransferLeaderDialog
+          groupOrder={groupOrder}
+          organizationId={groupOrder.organizationId}
+          isOpen={showTransferDialog}
+          onClose={() => setShowTransferDialog(false)}
+          onSuccess={handleEditSuccess}
+        />
+      )}
     </Card>
   );
 }

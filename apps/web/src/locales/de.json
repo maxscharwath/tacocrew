@@ -924,6 +924,17 @@
         },
         "title": "Gruppenbestellung bearbeiten"
       },
+      "transferLeader": {
+        "title": "Leitung übertragen",
+        "description": "Wählen Sie ein Mitglied als neuen Gruppenleiter aus.",
+        "searchPlaceholder": "Mitglieder suchen...",
+        "noMembers": "Keine anderen aktiven Mitglieder gefunden.",
+        "noResults": "Keine Mitglieder entsprechen Ihrer Suche.",
+        "confirm": "Übertragen",
+        "success": "Leitung an {{memberName}} übertragen.",
+        "error": "Übertragung der Leitung fehlgeschlagen. Bitte versuchen Sie es erneut.",
+        "transferring": "Wird übertragen..."
+      },
       "errors": {
         "missingCustomerDetails": "Alle Felder für Kunde, Lieferart, Adresse und gewünschte Zeit sind erforderlich.",
         "missingIdentifier": "Bestellungs-ID fehlt.",
@@ -947,7 +958,8 @@
           "editOrder": "Bestellung bearbeiten",
           "moreOptions": "Weitere Optionen",
           "reopenOrder": "Bestellung öffnen",
-          "submit": "Bestellung aufgeben"
+          "submit": "Bestellung aufgeben",
+          "transferLeader": "Leitung übertragen"
         },
         "badge": "Gruppenbestellung",
         "leaderInfo": {
