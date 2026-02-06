@@ -330,3 +330,13 @@ export function useTestSlackWebhook() {
       ),
   });
 }
+
+export function useSendSlackMessage() {
+  return useMutation({
+    mutationFn: ({ organizationId, message }: { organizationId: string; message: string }) =>
+      apiClient.post<{ success: boolean }>(
+        `/api/v1/organizations/${organizationId}/slack-webhook/send`,
+        { body: { message } }
+      ),
+  });
+}

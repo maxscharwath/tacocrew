@@ -1277,7 +1277,10 @@
         "removeFailed": "Failed to remove webhook",
         "setupGuide": "Slack App Portal",
         "removeTitle": "Remove Slack Integration",
-        "removeDescription": "Are you sure you want to remove the Slack webhook? Order notifications will no longer be sent to Slack."
+        "removeDescription": "Are you sure you want to remove the Slack webhook? Order notifications will no longer be sent to Slack.",
+        "sending": "Sending message...",
+        "sent": "Message sent to Slack!",
+        "sendFailed": "Failed to send message to Slack"
       }
     },
     "empty": {

@@ -1277,7 +1277,10 @@
         "removeFailed": "Échec de la suppression du webhook",
         "setupGuide": "Portail Slack App",
         "removeTitle": "Supprimer l'intégration Slack",
-        "removeDescription": "Êtes-vous sûr de vouloir supprimer le webhook Slack ? Les notifications de commande ne seront plus envoyées sur Slack."
+        "removeDescription": "Êtes-vous sûr de vouloir supprimer le webhook Slack ? Les notifications de commande ne seront plus envoyées sur Slack.",
+        "sending": "Envoi du message...",
+        "sent": "Message envoyé sur Slack !",
+        "sendFailed": "Échec de l'envoi du message sur Slack"
       }
     },
     "empty": {

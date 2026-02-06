@@ -150,6 +150,30 @@ export class SlackNotificationService {
   }
 
   /**
+   * Send a custom Slack message via the organization's webhook
+   */
+  async sendCustomMessage(organizationId: OrganizationId, message: string): Promise<void> {
+    const webhookUrl = await this.organizationRepository.getSlackWebhookUrl(organizationId);
+    if (!webhookUrl) {
+      throw new Error('No Slack webhook URL configured for this organization');
+    }
+
+    const payload: SlackPayload = {
+      blocks: [
+        {
+          type: 'section',
+          text: {
+            type: 'mrkdwn',
+            text: message,
+          },
+        },
+      ],
+    };
+
+    await this.sendSlackMessage(webhookUrl, payload);
+  }
+
+  /**
    * Send a test Slack message to verify webhook configuration
    */
   async sendTestMessage(webhookUrl: string, organizationName: string, userId: UserId): Promise<void> {

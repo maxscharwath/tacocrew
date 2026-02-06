@@ -1294,4 +1294,71 @@ app.openapi(
   }
 );
 
+// POST /organizations/{id}/slack-webhook/send - Send a custom Slack message (admin)
+app.openapi(
+  createRoute({
+    method: 'post',
+    path: '/organizations/{id}/slack-webhook/send',
+    tags: ['Organization'],
+    security: authSecurity,
+    request: {
+      params: z.object({
+        id: z.uuid(),
+      }),
+      body: {
+        content: jsonContent(
+          z.object({
+            message: z.string().min(1).max(4000),
+          })
+        ),
+      },
+    },
+    responses: {
+      200: {
+        description: 'Message sent',
+        content: jsonContent(z.object({ success: z.boolean() })),
+      },
+      400: {
+        description: 'No webhook configured or send failed',
+        content: jsonContent(OrganizationSchemas.ErrorResponseSchema),
+      },
+      401: {
+        description: 'Unauthorized',
+        content: jsonContent(OrganizationSchemas.ErrorResponseSchema),
+      },
+      403: {
+        description: 'Forbidden',
+        content: jsonContent(OrganizationSchemas.ErrorResponseSchema),
+      },
+    },
+  }),
+  async (c) => {
+    const userId = c.var.user.id;
+    const { id } = c.req.valid('param');
+    const { message } = c.req.valid('json');
+    const organizationId = OrganizationId.parse(id);
+    const organizationService = inject(OrganizationService);
+    const isAdmin = await organizationService.isUserAdmin(userId, organizationId);
+    if (!isAdmin) {
+      return c.json(
+        buildErrorResponse('FORBIDDEN', 'You must be an admin of this organization'),
+        403
+      );
+    }
+    const slackService = inject(SlackNotificationService);
+    try {
+      await slackService.sendCustomMessage(organizationId, message);
+    } catch {
+      return c.json(
+        buildErrorResponse(
+          'SLACK_ERROR',
+          'Failed to send message to Slack. Check that the webhook URL is valid.'
+        ),
+        400
+      );
+    }
+    return c.json({ success: true }, 200);
+  }
+);
+
 export const organizationRoutes = app;

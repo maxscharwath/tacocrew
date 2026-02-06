@@ -1277,7 +1277,10 @@
         "removeFailed": "Webhook konnte nicht entfernt werden",
         "setupGuide": "Slack-App-Portal",
         "removeTitle": "Slack-Integration entfernen",
-        "removeDescription": "Möchtest du den Slack-Webhook wirklich entfernen? Bestellbenachrichtigungen werden nicht mehr an Slack gesendet."
+        "removeDescription": "Möchtest du den Slack-Webhook wirklich entfernen? Bestellbenachrichtigungen werden nicht mehr an Slack gesendet.",
+        "sending": "Nachricht wird gesendet...",
+        "sent": "Nachricht an Slack gesendet!",
+        "sendFailed": "Nachricht konnte nicht an Slack gesendet werden"
       }
     },
     "empty": {

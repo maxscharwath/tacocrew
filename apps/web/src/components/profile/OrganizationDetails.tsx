@@ -18,9 +18,11 @@ import {
   CardTitle,
   Input,
   Label,
+  Modal,
+  Textarea,
   toast,
 } from '@tacocrew/ui-kit';
-import { Check, Copy, ExternalLink, Pencil, Save, Send, Trash2, Upload, X } from 'lucide-react';
+import { Check, Copy, ExternalLink, MessageSquare, Pencil, Save, Send, Trash2, Upload, X } from 'lucide-react';
 import { type ChangeEvent, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { OrganizationMembers } from '@/components/profile/OrganizationMembers';
@@ -31,6 +33,7 @@ import {
   useDeleteOrganizationAvatar,
   useDeleteSlackWebhook,
   useOrganization,
+  useSendSlackMessage,
   useSetSlackWebhook,
   useTestSlackWebhook,
   useUpdateOrganization,
@@ -449,12 +452,16 @@ function SlackIntegrationCard({ organization, disabled = false }: SlackIntegrati
   const { t } = useTranslation();
   const [webhookUrl, setWebhookUrl] = useState('');
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showSendModal, setShowSendModal] = useState(false);
+  const [slackMessage, setSlackMessage] = useState('');
 
   const setMutation = useSetSlackWebhook();
   const deleteMutation = useDeleteSlackWebhook();
   const testMutation = useTestSlackWebhook();
+  const sendMutation = useSendSlackMessage();
 
-  const busy = setMutation.isPending || deleteMutation.isPending || testMutation.isPending;
+  const busy =
+    setMutation.isPending || deleteMutation.isPending || testMutation.isPending || sendMutation.isPending;
   const isConnected = Boolean(organization.hasSlackWebhook);
 
   const handleSave = () => {
@@ -487,6 +494,23 @@ function SlackIntegrationCard({ organization, disabled = false }: SlackIntegrati
         toast.error(t('organizations.details.slack.testFailed'), { id: loadingToastId });
       },
     });
+  };
+
+  const handleSendMessage = () => {
+    if (!slackMessage.trim()) return;
+    const loadingToastId = toast.loading(t('organizations.details.slack.sending'));
+    sendMutation.mutate(
+      { organizationId: organization.id, message: slackMessage.trim() },
+      {
+        onSuccess: () => {
+          toast.success(t('organizations.details.slack.sent'), { id: loadingToastId });
+          setSlackMessage('');
+        },
+        onError: () => {
+          toast.error(t('organizations.details.slack.sendFailed'), { id: loadingToastId });
+        },
+      }
+    );
   };
 
   const handleRemove = () => {
@@ -582,6 +606,16 @@ function SlackIntegrationCard({ organization, disabled = false }: SlackIntegrati
                   {t('organizations.details.slack.test')}
                 </Button>
                 <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowSendModal(true)}
+                  disabled={busy || disabled}
+                  className="gap-2"
+                >
+                  <MessageSquare size={16} />
+                  Send Message
+                </Button>
+                <Button
                   variant="destructive"
                   size="sm"
                   onClick={() => setShowDeleteDialog(true)}
@@ -624,6 +658,35 @@ function SlackIntegrationCard({ organization, disabled = false }: SlackIntegrati
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <Modal
+        isOpen={showSendModal}
+        onClose={() => setShowSendModal(false)}
+        title="Send Slack Message"
+        description="Send a custom message to your Slack channel"
+        className="max-w-lg"
+      >
+        <div className="space-y-4">
+          <Textarea
+            value={slackMessage}
+            onChange={(e) => setSlackMessage(e.target.value)}
+            placeholder="Type your message here... (supports Slack markdown)"
+            rows={5}
+            disabled={sendMutation.isPending}
+          />
+          <div className="flex justify-end">
+            <Button
+              onClick={handleSendMessage}
+              disabled={!slackMessage.trim() || sendMutation.isPending}
+              loading={sendMutation.isPending}
+              className="gap-2"
+            >
+              <Send size={16} />
+              Send
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </>
   );
 }
