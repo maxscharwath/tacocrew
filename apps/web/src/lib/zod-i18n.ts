@@ -14,6 +14,7 @@ export const validationKeys = {
   password: 'validation.password', // NOSONAR
   passwordMin: 'validation.passwordMin', // NOSONAR
   passwordMax: 'validation.passwordMax', // NOSONAR
+  passwordMismatch: 'validation.passwordMismatch', // NOSONAR
   nameMin: 'validation.nameMin',
   nameMax: 'validation.nameMax',
 

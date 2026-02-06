@@ -18,3 +18,30 @@ export const signupSchema = loginSchema.extend({
 
 export type LoginFormData = z.infer<typeof loginSchema>;
 export type SignupFormData = z.infer<typeof signupSchema>;
+
+/**
+ * Schema for forgot password form
+ */
+export const forgotPasswordSchema = z.object({
+  email: z.email(validationKeys.email).min(1, validationKeys.required),
+});
+
+export type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
+
+/**
+ * Schema for reset password form
+ */
+export const resetPasswordSchema = z
+  .object({
+    password: z.string().min(8, validationKeys.passwordMin).max(100, validationKeys.passwordMax),
+    confirmPassword: z
+      .string()
+      .min(8, validationKeys.passwordMin)
+      .max(100, validationKeys.passwordMax),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: validationKeys.passwordMismatch,
+    path: ['confirmPassword'],
+  });
+
+export type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;

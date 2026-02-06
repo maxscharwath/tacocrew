@@ -22,7 +22,7 @@ import {
   Switch,
   toast,
 } from '@tacocrew/ui-kit';
-import { Database, Edit, Globe, Key, Laptop, Lock, Mail, Phone, User } from 'lucide-react';
+import { Database, Edit, Globe, Key, Laptop, Lock, Mail, Phone, Send, User } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { LanguageSwitcher } from '@/components/language-switcher';
@@ -76,6 +76,44 @@ function useEditableField<T extends string | null | undefined>(
     handleCancel,
     startEditing,
   };
+}
+
+function VerifyEmailButton({ email }: Readonly<{ email: string }>) {
+  const { t } = useTranslation();
+  const [isSending, setIsSending] = useState(false);
+  const [isSent, setIsSent] = useState(false);
+
+  const handleClick = async () => {
+    setIsSending(true);
+    try {
+      const result = await authClient.sendVerificationEmail({
+        email,
+        callbackURL: `${window.location.origin}/profile/account`,
+      });
+      if (result.error) {
+        toast.error(result.error.message || t('account.profile.verificationFailed'));
+        return;
+      }
+      setIsSent(true);
+      toast.success(t('account.profile.verificationSent'));
+    } catch {
+      toast.error(t('account.profile.verificationFailed'));
+    } finally {
+      setIsSending(false);
+    }
+  };
+
+  return (
+    <>
+      <Badge tone="warning" pill>
+        {t('account.profile.unverified')}
+      </Badge>
+      <Button variant="ghost" size="sm" loading={isSending} disabled={isSent} onClick={handleClick}>
+        <Send className="size-3.5" />
+        {isSent ? t('account.profile.verificationSentShort') : t('account.profile.verifyEmail')}
+      </Button>
+    </>
+  );
 }
 
 function PhoneEditor({
@@ -548,9 +586,7 @@ export function AccountRoute() {
                     {t('account.profile.verified')}
                   </Badge>
                 ) : (
-                  <Badge tone="warning" pill>
-                    {t('account.profile.unverified')}
-                  </Badge>
+                  <VerifyEmailButton email={session.user.email} />
                 )}
               </div>
             </div>

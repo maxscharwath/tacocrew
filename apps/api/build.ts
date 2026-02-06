@@ -1,4 +1,6 @@
 #!/usr/bin/env bun
+import { cpSync, mkdirSync } from 'node:fs';
+
 /**
  * Build script for API package
  * Bundles the API for production deployment with external dependencies
@@ -10,6 +12,9 @@ const result = await Bun.build({
   target: 'bun',
   format: 'esm',
   sourcemap: 'external',
+  loader: {
+    '.html': 'text',
+  },
   external: [
     // Framework dependencies
     'hono',
@@ -35,5 +40,9 @@ if (!result.success) {
   }
   process.exit(1);
 }
+
+// Copy static assets (email logo) to dist so readFileSync works at runtime
+mkdirSync('./dist/assets', { recursive: true });
+cpSync('./src/templates/assets', './dist/assets', { recursive: true });
 
 console.log('✓ Build completed successfully');

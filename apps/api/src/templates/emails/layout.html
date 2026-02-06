@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="dark" />
+    <title>{{subject}}</title>
+  </head>
+  <body
+    style="
+      margin: 0;
+      padding: 0;
+      background: #0f172a;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+        sans-serif;
+      -webkit-font-smoothing: antialiased;
+    "
+  >
+    <table
+      role="presentation"
+      width="100%"
+      cellpadding="0"
+      cellspacing="0"
+      style="background: #0f172a"
+    >
+      <tr>
+        <td align="center" style="padding: 48px 20px">
+          <table
+            role="presentation"
+            width="480"
+            cellpadding="0"
+            cellspacing="0"
+            style="max-width: 480px; width: 100%"
+          >
+            <!-- Logo + Brand -->
+            <tr>
+              <td align="center" style="padding-bottom: 28px">
+                <a href="{{frontendUrl}}" style="text-decoration: none">
+                  <img
+                    src="cid:logo"
+                    alt="TacoCrew"
+                    width="48"
+                    height="48"
+                    style="
+                      display: block;
+                      border-radius: 12px;
+                      margin: 0 auto 10px;
+                    "
+                  />
+                  <span
+                    style="
+                      color: #f8fafc;
+                      font-size: 20px;
+                      font-weight: 700;
+                      letter-spacing: -0.3px;
+                    "
+                    >TacoCrew</span
+                  >
+                </a>
+              </td>
+            </tr>
+
+            <!-- Card -->
+            <tr>
+              <td
+                style="
+                  background: #1e293b;
+                  border-radius: 16px;
+                  border: 1px solid rgba(255, 255, 255, 0.08);
+                  overflow: hidden;
+                "
+              >
+                <!-- User greeting bar -->
+                <table
+                  role="presentation"
+                  width="100%"
+                  cellpadding="0"
+                  cellspacing="0"
+                >
+                  <tr>
+                    <td
+                      style="
+                        padding: 24px 32px;
+                        background: linear-gradient(
+                          135deg,
+                          rgba(158, 119, 237, 0.12),
+                          rgba(158, 119, 237, 0.04)
+                        );
+                        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+                      "
+                    >
+                      <table
+                        role="presentation"
+                        cellpadding="0"
+                        cellspacing="0"
+                      >
+                        <tr>
+                          <td
+                            style="
+                              vertical-align: middle;
+                              padding-right: 14px;
+                            "
+                          >
+                            <img
+                              src="cid:avatar"
+                              alt=""
+                              width="40"
+                              height="40"
+                              style="
+                                display: block;
+                                border-radius: 50%;
+                                object-fit: cover;
+                              "
+                            />
+                          </td>
+                          <td style="vertical-align: middle">
+                            <p
+                              style="
+                                color: #e2e8f0;
+                                font-size: 15px;
+                                font-weight: 600;
+                                margin: 0 0 2px;
+                              "
+                            >
+                              Hi {{userName}},
+                            </p>
+                            <p
+                              style="
+                                color: #64748b;
+                                font-size: 12px;
+                                margin: 0;
+                              "
+                            >
+                              {{email}}
+                            </p>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                </table>
+
+                <!-- Content -->
+                <table
+                  role="presentation"
+                  width="100%"
+                  cellpadding="0"
+                  cellspacing="0"
+                >
+                  <tr>
+                    <td style="padding: 32px">
+                      {{content}}
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <!-- Footer -->
+            <tr>
+              <td align="center" style="padding-top: 24px">
+                <p
+                  style="
+                    color: #475569;
+                    font-size: 11px;
+                    margin: 0;
+                    line-height: 1.6;
+                  "
+                >
+                  TacoCrew &mdash; Taco ordering made easy
+                </p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

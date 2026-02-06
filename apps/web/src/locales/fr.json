@@ -89,7 +89,11 @@
       "phonePlaceholder": "+41 XX XXX XX XX",
       "title": "Informations du profil",
       "unverified": "Non vérifié",
-      "verified": "Vérifié"
+      "verified": "Vérifié",
+      "verifyEmail": "Vérifier",
+      "verificationSent": "E-mail de vérification envoyé. Vérifiez votre boîte de réception.",
+      "verificationSentShort": "E-mail envoyé",
+      "verificationFailed": "Échec de l'envoi de l'e-mail de vérification. Veuillez réessayer."
     },
     "pushNotifications": {
       "about": {
@@ -622,7 +626,35 @@
     "title": "TacoCrew",
     "unexpectedError": "Erreur inattendue. Réessaie.",
     "usernamePlaceholder": "chef-del-taco",
-    "usernameRequired": "L'identifiant est requis"
+    "usernameRequired": "L'identifiant est requis",
+    "forgotPassword": "Mot de passe oublié ?"
+  },
+  "forgotPassword": {
+    "title": "Mot de passe oublié ?",
+    "subtitle": "Entrez votre adresse e-mail et nous vous enverrons un lien pour réinitialiser votre mot de passe.",
+    "submit": "Envoyer le lien",
+    "submitting": "Envoi en cours...",
+    "success": "Si un compte avec cette adresse e-mail existe, nous avons envoyé un lien de réinitialisation. Vérifiez votre boîte de réception.",
+    "error": "Une erreur est survenue. Veuillez réessayer.",
+    "backToSignIn": "Retour à la connexion"
+  },
+  "resetPassword": {
+    "title": "Réinitialiser le mot de passe",
+    "subtitle": "Choisissez un nouveau mot de passe pour votre compte.",
+    "password": {
+      "label": "Nouveau mot de passe",
+      "placeholder": "Entrez le nouveau mot de passe"
+    },
+    "confirmPassword": {
+      "label": "Confirmer le mot de passe",
+      "placeholder": "Confirmez le nouveau mot de passe"
+    },
+    "submit": "Réinitialiser le mot de passe",
+    "submitting": "Réinitialisation...",
+    "error": "Échec de la réinitialisation. Le lien a peut-être expiré.",
+    "invalidToken": "Jeton invalide ou manquant. Veuillez demander un nouveau lien de réinitialisation.",
+    "backToSignIn": "Retour à la connexion",
+    "backToForgotPassword": "Demander un nouveau lien"
   },
   "navigation": {
     "about": "À propos",
@@ -1535,6 +1567,7 @@
     "orgNameRequired": "Le nom de l'organisation est requis",
     "password": "Mot de passe requis",
     "passwordMax": "Le mot de passe doit contenir moins de 100 caractères",
+    "passwordMismatch": "Les mots de passe ne correspondent pas",
     "passwordMin": "Le mot de passe doit contenir au moins 8 caractères",
     "phoneInvalid": "Numéro de téléphone invalide",
     "phoneRequired": "Le numéro de téléphone est requis",

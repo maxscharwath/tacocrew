@@ -89,7 +89,11 @@
       "phonePlaceholder": "+41 XX XXX XX XX",
       "title": "Profile Information",
       "unverified": "Unverified",
-      "verified": "Verified"
+      "verified": "Verified",
+      "verifyEmail": "Verify",
+      "verificationSent": "Verification email sent. Please check your inbox.",
+      "verificationSentShort": "Email sent",
+      "verificationFailed": "Failed to send verification email. Please try again."
     },
     "pushNotifications": {
       "about": {
@@ -622,7 +626,35 @@
     "title": "TacoCrew",
     "unexpectedError": "Unexpected error. Please try again.",
     "usernamePlaceholder": "chef-del-taco",
-    "usernameRequired": "Username is required"
+    "usernameRequired": "Username is required",
+    "forgotPassword": "Forgot password?"
+  },
+  "forgotPassword": {
+    "title": "Forgot your password?",
+    "subtitle": "Enter your email address and we'll send you a link to reset your password.",
+    "submit": "Send reset link",
+    "submitting": "Sending...",
+    "success": "If an account with that email exists, we've sent a password reset link. Please check your inbox.",
+    "error": "Something went wrong. Please try again.",
+    "backToSignIn": "Back to sign in"
+  },
+  "resetPassword": {
+    "title": "Reset your password",
+    "subtitle": "Choose a new password for your account.",
+    "password": {
+      "label": "New password",
+      "placeholder": "Enter new password"
+    },
+    "confirmPassword": {
+      "label": "Confirm password",
+      "placeholder": "Confirm new password"
+    },
+    "submit": "Reset password",
+    "submitting": "Resetting...",
+    "error": "Failed to reset password. The link may have expired.",
+    "invalidToken": "Invalid or missing reset token. Please request a new password reset link.",
+    "backToSignIn": "Back to sign in",
+    "backToForgotPassword": "Request a new link"
   },
   "navigation": {
     "about": "About",
@@ -1535,6 +1567,7 @@
     "orgNameRequired": "Organization name is required",
     "password": "Password is required",
     "passwordMax": "Password must be less than 100 characters",
+    "passwordMismatch": "Passwords do not match",
     "passwordMin": "Password must be at least 8 characters",
     "phoneInvalid": "Invalid phone number",
     "phoneRequired": "Phone number is required",

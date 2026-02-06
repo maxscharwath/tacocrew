@@ -12,6 +12,7 @@ import {
 import { defineRoutes } from '@/lib/routes/core';
 import { AboutRoute } from '@/routes/about';
 import { DashboardRoute, dashboardLoader } from '@/routes/dashboard';
+import { ForgotPasswordRoute } from '@/routes/forgot-password';
 import { authenticationLoader, LoginRoute } from '@/routes/login';
 import { orderCreateAction, orderCreateLoader } from '@/routes/orders.create';
 import { orderDetailAction, orderDetailLoader } from '@/routes/orders.detail';
@@ -30,6 +31,7 @@ import {
 } from '@/routes/profile.organizations.index';
 import { ProfileOrganizationsNewRoute } from '@/routes/profile.organizations.new';
 import { releasesLoader } from '@/routes/releases';
+import { ResetPasswordRoute } from '@/routes/reset-password';
 import { RootErrorBoundary, RootLayout } from '@/routes/root';
 import { rootAction, rootLoader } from '@/routes/root.loader';
 import { StockRoute, stockLoader } from '@/routes/stock';
@@ -56,6 +58,20 @@ export const { routes, routerConfig } = defineRoutes({
     search: loginSearch,
     loader: authenticationLoader,
     element: LoginRoute,
+    errorElement: RootErrorBoundary,
+    hydrateFallback: HydrateFallback,
+  },
+  forgotPassword: {
+    path: '/forgot-password',
+    loader: authenticationLoader,
+    element: ForgotPasswordRoute,
+    errorElement: RootErrorBoundary,
+    hydrateFallback: HydrateFallback,
+  },
+  resetPassword: {
+    path: '/reset-password',
+    loader: authenticationLoader,
+    element: ResetPasswordRoute,
     errorElement: RootErrorBoundary,
     hydrateFallback: HydrateFallback,
   },
