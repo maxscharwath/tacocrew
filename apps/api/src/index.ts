@@ -1,3 +1,4 @@
+process.env.TZ = 'Europe/Zurich';
 import 'reflect-metadata';
 import { swaggerUI } from '@hono/swagger-ui';
 import { OpenAPIHono } from '@hono/zod-openapi';
