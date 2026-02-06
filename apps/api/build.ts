@@ -1,10 +1,16 @@
 #!/usr/bin/env bun
-import { cpSync, mkdirSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 
 /**
  * Build script for API package
  * Bundles the API for production deployment with external dependencies
  */
+
+// Read logo at build time so it can be inlined into the bundle via `define`.
+// This avoids runtime filesystem access which fails on Vercel serverless.
+const logoPngBase64 = readFileSync(
+  './src/templates/assets/logo.png',
+).toString('base64');
 
 const result = await Bun.build({
   entrypoints: ['./src/index.ts'],
@@ -14,6 +20,9 @@ const result = await Bun.build({
   sourcemap: 'external',
   loader: {
     '.html': 'text',
+  },
+  define: {
+    LOGO_PNG_BASE64: JSON.stringify(logoPngBase64),
   },
   external: [
     // Framework dependencies
@@ -40,9 +49,5 @@ if (!result.success) {
   }
   process.exit(1);
 }
-
-// Copy static assets (email logo) to dist so readFileSync works at runtime
-mkdirSync('./dist/assets', { recursive: true });
-cpSync('./src/templates/assets', './dist/assets', { recursive: true });
 
 console.log('✓ Build completed successfully');

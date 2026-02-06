@@ -14,8 +14,15 @@ const templates: Record<string, string> = {
   'verify-email': verifyEmailHtml,
 };
 
-// Logo PNG (96x96) loaded once at startup
-const logoPng = readFileSync(join(import.meta.dirname, 'assets', 'logo.png'));
+// Injected by the bundler at build time (see build.ts `define` option).
+// In dev (Bun runtime) it is undefined, so we fall back to reading from disk.
+declare const LOGO_PNG_BASE64: string | undefined;
+
+// biome-ignore lint: typeof is required — LOGO_PNG_BASE64 only exists at bundle time
+const logoPng: Buffer =
+  typeof LOGO_PNG_BASE64 === 'undefined'
+    ? readFileSync(join(import.meta.dirname, 'assets', 'logo.png'))
+    : Buffer.from(LOGO_PNG_BASE64, 'base64');
 
 export interface EmailUser {
   readonly email: string;
