@@ -1,7 +1,8 @@
 {
   "name": "@tacocrew/gigatacos-client",
   "version": "0.2602.0",
-  "description": "Client integration for www.gt-lausanne.ch backend API",
+  "description": "DEPRECATED. Client integration for the retired gt-lausanne.ch PHP backend. Replaced by @tacocrew/commande-client after the restaurant migrated to commande.app.",
+  "deprecated": "Replaced by @tacocrew/commande-client after gt-lausanne.ch migrated to commande.app. Do not add new consumers.",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

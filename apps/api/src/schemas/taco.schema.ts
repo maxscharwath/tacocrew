@@ -3,8 +3,8 @@
  * @module schemas/taco
  */
 
-import { TacoSize } from '@tacocrew/gigatacos-client';
 import { z } from 'zod';
+import { TacoSize } from '@/domain/taco-config';
 import type { Id } from '@/shared/utils/branded-ids.utils';
 import { zId } from '@/shared/utils/branded-ids.utils';
 

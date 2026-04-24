@@ -1,6 +1,6 @@
-import { TacoSize } from '@tacocrew/gigatacos-client';
 import type { DeliveryType } from '@/components/orders';
 import type { SwissCanton } from '@/constants/location.ts';
+import type { TacoSize } from '@/lib/taco-config';
 
 /**
  * Currency namespace with common ISO 4217 currency codes
@@ -188,6 +188,8 @@ export interface StockItem {
   name: string;
   price?: Amount;
   in_stock: boolean;
+  // Absolute product image URL from commande.app (not present for taco sizes).
+  imageUrl?: string | null;
 }
 
 export interface TacoSizeItem {
@@ -417,12 +419,57 @@ export interface OrderSummary {
   items: OrderSummaryItem;
 }
 
+export interface OrderPreviewOption {
+  readonly groupId: string;
+  readonly groupName: string;
+  readonly itemId: string;
+  readonly itemName: string;
+  readonly quantity: number;
+  readonly extraPrice: number;
+}
+
+export interface OrderPreviewItem {
+  readonly productId: string;
+  readonly productName?: string;
+  readonly productImage?: string | null;
+  readonly variantId?: string | null;
+  readonly quantity: number;
+  readonly price: number;
+  readonly options: ReadonlyArray<OrderPreviewOption>;
+  readonly note?: string | null;
+}
+
+export interface OrderPreview {
+  readonly restaurantId: string;
+  readonly serviceType: 'delivery' | 'pickup' | 'dineIn';
+  readonly items: ReadonlyArray<OrderPreviewItem>;
+  readonly total: number;
+  readonly customerName: string;
+  readonly customerPhone: string;
+  readonly guestDeliveryAddress?: string | null;
+  readonly paymentMethod: string;
+  readonly isPreorder: boolean;
+  readonly dineIn: boolean;
+  readonly isOnSite: boolean;
+  readonly deliveryFee: number;
+}
+
+export interface OrderPreflight {
+  readonly ok: boolean;
+  readonly restaurantStatus?: unknown;
+  readonly deliveryZone?: unknown;
+  readonly issues: ReadonlyArray<string>;
+}
+
 export interface GroupOrderSubmissionResponse {
   groupOrderId: string;
   submittedCount: number;
   orderId: string;
   transactionId: string;
   dryRun?: boolean; // Present if order was submitted in dry-run mode
+  // Populated when the backend has an orderPreview from commande.app.
+  orderPreview?: OrderPreview;
+  preflight?: OrderPreflight;
 }
 
 // Badge types have been moved to their respective modules:

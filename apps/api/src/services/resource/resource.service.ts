@@ -3,84 +3,82 @@
  * @module services/resource
  */
 
-import { TACO_SIZE_CONFIG, TacoSize } from '@tacocrew/gigatacos-client';
 import { injectable } from 'tsyringe';
-import { BackendIntegrationClient } from '@/infrastructure/api/backend-integration.client';
-import { Currency, createAmount, StockCategory } from '@/shared/types/types';
+import type { StockAvailability as RawStockAvailability } from '@/domain/taco-config';
+import { TACO_SIZE_CONFIG, TacoSize } from '@/domain/taco-config';
+import { CommandeIntegrationClient } from '@/infrastructure/api/commande-integration.client';
+import { config } from '@/shared/config/app.config';
+import {
+  Currency,
+  createAmount,
+  type StockAvailability,
+  StockCategory,
+  type StockItem,
+  type TacoSizeItem,
+} from '@/shared/types/types';
 import { inject } from '@/shared/utils/inject.utils';
 import { deterministicUUID } from '@/shared/utils/uuid.utils';
 
 /**
- * Resource service
+ * Resource service — reads the commande.app menu and projects it into the
+ * API-facing `StockAvailability` shape consumed by the rest of apps/api.
  */
 @injectable()
 export class ResourceService {
-  private readonly backendClient = inject(BackendIntegrationClient);
+  private readonly commande = inject(CommandeIntegrationClient);
 
-  getStockForProcessing(): Promise<import('@/shared/types/types').StockAvailability> {
+  getStockForProcessing(): Promise<StockAvailability> {
     return this.getStock();
   }
 
-  async getStock() {
-    const sessionContext = await this.backendClient.createNewSession();
-    const { csrfToken, cookies } = sessionContext;
-    const backendStock = await this.backendClient.getStock(csrfToken, cookies);
-    return this.transformStock(backendStock);
+  async getStock(): Promise<StockAvailability> {
+    const { stock, tacoImages } = await this.commande.getMenuSnapshot(config.commande.restaurantId);
+    return this.transformStock(stock, tacoImages);
   }
 
-  private transformStock(backendStock: Awaited<ReturnType<typeof this.backendClient.getStock>>) {
+  private transformStock(
+    raw: RawStockAvailability,
+    tacoImages: Readonly<Record<string, string | null>>
+  ): StockAvailability {
     return {
-      meats: Object.entries(backendStock.viandes || {}).map(([code, info]) => ({
-        id: deterministicUUID(code, StockCategory.Meats),
-        code,
-        name: info.name,
-        price: info.price === undefined ? undefined : createAmount(info.price, Currency.CHF),
-        in_stock: info.in_stock,
-      })),
-      sauces: Object.entries(backendStock.sauces || {}).map(([code, info]) => ({
-        id: deterministicUUID(code, StockCategory.Sauces),
-        code,
-        name: info.name,
-        price: info.price === undefined ? undefined : createAmount(info.price, Currency.CHF),
-        in_stock: info.in_stock,
-      })),
-      garnishes: Object.entries(backendStock.garnitures || {}).map(([code, info]) => ({
-        id: deterministicUUID(code, StockCategory.Garnishes),
-        code,
-        name: info.name,
-        price: info.price === undefined ? undefined : createAmount(info.price, Currency.CHF),
-        in_stock: info.in_stock,
-      })),
-      extras: Object.entries(backendStock.extras || {}).map(([code, info]) => ({
-        id: deterministicUUID(code, StockCategory.Extras),
-        code,
-        name: info.name,
-        price: info.price === undefined ? undefined : createAmount(info.price, Currency.CHF),
-        in_stock: info.in_stock,
-      })),
-      drinks: Object.entries(backendStock.boissons || {}).map(([code, info]) => ({
-        id: deterministicUUID(code, StockCategory.Drinks),
-        code,
-        name: info.name,
-        price: info.price === undefined ? undefined : createAmount(info.price, Currency.CHF),
-        in_stock: info.in_stock,
-      })),
-      desserts: Object.entries(backendStock.desserts || {}).map(([code, info]) => ({
-        id: deterministicUUID(code, StockCategory.Desserts),
-        code,
-        name: info.name,
-        price: info.price === undefined ? undefined : createAmount(info.price, Currency.CHF),
-        in_stock: info.in_stock,
-      })),
-      tacos: Object.entries(TACO_SIZE_CONFIG).map(([code, config]) => ({
-        id: deterministicUUID(code, 'tacos'),
-        code: code as TacoSize,
-        name: config.name,
-        price: createAmount(config.price, Currency.CHF),
-        maxMeats: config.maxMeats,
-        maxSauces: config.maxSauces,
-        allowGarnitures: config.allowGarnitures,
-      })),
+      [StockCategory.Meats]: this.mapBucket(raw.viandes, StockCategory.Meats),
+      [StockCategory.Sauces]: this.mapBucket(raw.sauces, StockCategory.Sauces),
+      [StockCategory.Garnishes]: this.mapBucket(raw.garnitures, StockCategory.Garnishes),
+      [StockCategory.Extras]: this.mapBucket(raw.extras, StockCategory.Extras),
+      [StockCategory.Drinks]: this.mapBucket(raw.boissons, StockCategory.Drinks),
+      [StockCategory.Desserts]: this.mapBucket(raw.desserts, StockCategory.Desserts),
+      tacos: this.buildTacoSizes(tacoImages),
     };
+  }
+
+  private mapBucket(
+    bucket: Record<string, RawStockAvailability['viandes'][string]>,
+    category: StockCategory
+  ): StockItem[] {
+    return Object.entries(bucket).map(([code, info]) => ({
+      id: deterministicUUID(code, category),
+      code,
+      name: info.name,
+      price: info.price === undefined ? undefined : createAmount(info.price, Currency.CHF),
+      in_stock: info.in_stock,
+      ...(info.imageUrl !== undefined && { imageUrl: info.imageUrl }),
+    }));
+  }
+
+  private buildTacoSizes(tacoImages: Readonly<Record<string, string | null>>): TacoSizeItem[] {
+    return Object.values(TacoSize).map((code) => {
+      const meta = TACO_SIZE_CONFIG[code];
+      const imageUrl = tacoImages[code] ?? null;
+      return {
+        id: deterministicUUID(code, 'tacos'),
+        code,
+        name: meta.name,
+        price: createAmount(meta.price, Currency.CHF),
+        maxMeats: meta.maxMeats,
+        maxSauces: meta.maxSauces,
+        allowGarnitures: meta.allowGarnitures,
+        ...(imageUrl !== null && { imageUrl }),
+      };
+    });
   }
 }

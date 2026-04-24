@@ -1,5 +1,11 @@
 # Gigatacos Client Package Coding Guidelines
 
+> **⚠️ DEPRECATED.** This package targets the retired `gt-lausanne.ch` PHP
+> backend. No code in the monorepo imports it. Use
+> [`@tacocrew/commande-client`](../commande-client/) for the current
+> `commande.app` SaaS. Migration notes:
+> [`docs/plans/commande-client-migration.md`](../../docs/plans/commande-client-migration.md).
+
 > **Package**: @tacocrew/gigatacos-client
 > **Purpose**: Type-safe client for external taco ordering API
 > **Framework**: TypeScript + Axios + Cheerio

@@ -7,7 +7,10 @@ import { createRoute } from '@hono/zod-openapi';
 import { z } from 'zod';
 import { GroupOrderSchemas, jsonContent } from '@/api/schemas/group-order.schemas';
 import { authSecurity, createAuthenticatedRouteApp } from '@/api/utils/route.utils';
+import { CommandeIntegrationClient } from '@/infrastructure/api/commande-integration.client';
 import { GroupOrderRepository } from '@/infrastructure/repositories/group-order.repository';
+import { UserOrderRepository } from '@/infrastructure/repositories/user-order.repository';
+import { BackendOrderSubmissionService } from '@/services/order/backend-order-submission.service';
 import {
   canAcceptOrders,
   canSubmitGroupOrder,
@@ -15,6 +18,7 @@ import {
   GroupOrderId,
   getEffectiveStatus,
 } from '@/schemas/group-order.schema';
+import { config } from '@/shared/config/app.config';
 import { OrganizationId } from '@/schemas/organization.schema';
 import { UserId } from '@/schemas/user.schema';
 import type { UserOrder } from '@/schemas/user-order.schema';
@@ -26,7 +30,6 @@ import { TransferGroupOrderLeaderUseCase } from '@/services/group-order/transfer
 import { UpdateGroupOrderUseCase } from '@/services/group-order/update-group-order.service';
 import { UpdateGroupOrderStatusUseCase } from '@/services/group-order/update-group-order-status.service';
 import { OrganizationService } from '@/services/organization/organization.service';
-import { SessionService } from '@/services/session/session.service';
 import { UserService } from '@/services/user/user.service';
 import { RevealMysteryTacosService } from '@/services/user-order/reveal-mystery-tacos.service';
 import { Currency, GroupOrderStatus } from '@/shared/types/types';
@@ -506,92 +509,6 @@ app.openapi(
   }
 );
 
-// Endpoint to get cookies for order verification
-app.openapi(
-  createRoute({
-    method: 'get',
-    path: '/orders/{id}/cookies',
-    tags: ['Orders'],
-    security: authSecurity,
-    request: {
-      params: z.object({
-        id: GroupOrderId,
-      }),
-    },
-    responses: {
-      200: {
-        description: 'Session cookies for order verification',
-        content: jsonContent(
-          z.object({
-            cookies: z.record(z.string(), z.string()),
-            csrfToken: z.string(),
-            orderId: z.string().optional(),
-            transactionId: z.string().optional(),
-            sessionId: z.string().optional(),
-            cookieString: z
-              .string()
-              .describe('Formatted cookie string ready for browser injection'),
-            instructions: z.string().describe('Instructions for injecting cookies into browser'),
-          })
-        ),
-      },
-      404: {
-        description: 'Order or session not found',
-      },
-    },
-  }),
-  async (c) => {
-    const { id: groupOrderId } = c.req.valid('param');
-    const userId = c.var.user.id;
-
-    await requireGroupOrderAccess(groupOrderId, userId);
-
-    const groupOrderRepository = inject(GroupOrderRepository);
-    const sessionService = inject(SessionService);
-
-    // Get group order to find session ID
-    const groupOrder = await groupOrderRepository.findById(groupOrderId);
-    if (!groupOrder) {
-      throw new NotFoundError({ resource: 'GroupOrder', id: groupOrderId });
-    }
-
-    // Check if session ID exists
-    if (!groupOrder.sessionId) {
-      throw new NotFoundError({
-        resource: 'SessionCookies',
-        identifier: groupOrderId,
-        context: 'id',
-        reason: 'No session found for this order',
-      });
-    }
-
-    // Get session data
-    const session = await sessionService.getSession(groupOrder.sessionId);
-    if (!session) {
-      throw new NotFoundError({
-        resource: 'SessionCookies',
-        identifier: groupOrderId,
-        context: 'id',
-        reason: 'Session not found',
-      });
-    }
-
-    // Format cookies as string for browser injection
-    const cookieString = Object.entries(session.cookies)
-      .map(([key, value]) => `${key}=${value}`)
-      .join('; ');
-
-    return c.json({
-      cookies: session.cookies,
-      csrfToken: session.csrfToken,
-      sessionId: session.sessionId,
-      cookieString,
-      instructions:
-        'Copy the cookieString and paste it into your browser console. Note: HttpOnly cookies cannot be set via JavaScript and must be set manually via DevTools.',
-    });
-  }
-);
-
 // Endpoint to delete a group order
 app.openapi(
   createRoute({
@@ -627,6 +544,160 @@ app.openapi(
     await deleteGroupOrderUseCase.execute(id, userId);
 
     return c.body(null, 204);
+  }
+);
+
+const OrderStatusResponseSchema = z.object({
+  groupOrderId: z.string(),
+  commandeOrderId: z.string().nullable(),
+  status: z
+    .enum(['pending', 'confirmed', 'preparing', 'ready', 'out_for_delivery', 'delivered', 'cancelled'])
+    .nullable(),
+  source: z.enum(['activePreorders', 'confirmation', 'none']),
+  updatedAt: z.string().nullable(),
+});
+
+app.openapi(
+  createRoute({
+    method: 'get',
+    path: '/orders/{id}/status',
+    tags: ['Orders'],
+    security: authSecurity,
+    request: {
+      params: z.object({
+        id: GroupOrderId,
+      }),
+    },
+    responses: {
+      200: {
+        description: 'Current commande.app status for a submitted group order',
+        content: jsonContent(OrderStatusResponseSchema),
+      },
+      404: {
+        description: 'Group order not found',
+      },
+    },
+  }),
+  async (c) => {
+    const { id: groupOrderId } = c.req.valid('param');
+    const groupOrderRepository = inject(GroupOrderRepository);
+    const commande = inject(CommandeIntegrationClient);
+
+    const groupOrder = await groupOrderRepository.findById(groupOrderId);
+    if (!groupOrder) {
+      throw new NotFoundError({ resource: 'GroupOrder', id: groupOrderId });
+    }
+
+    const commandeOrderId = groupOrder.commandeOrderId ?? null;
+
+    if (!commandeOrderId) {
+      return c.json(
+        {
+          groupOrderId,
+          commandeOrderId: null,
+          status: null,
+          source: 'none' as const,
+          updatedAt: null,
+        },
+        200
+      );
+    }
+
+    // Prefer `getActivePreorders` — cheaper, returns live kitchen state.
+    // Fall back to `getOrderConfirmation` for orders no longer active.
+    const preorders = await commande.getActivePreorders(config.commande.restaurantId);
+    const match = preorders.find((p) => p.orderId === commandeOrderId);
+    if (match) {
+      return c.json(
+        {
+          groupOrderId,
+          commandeOrderId,
+          status: match.status,
+          source: 'activePreorders' as const,
+          updatedAt: match.updatedAt ?? null,
+        },
+        200
+      );
+    }
+
+    const confirmation = await commande.getOrderConfirmation(commandeOrderId);
+    return c.json(
+      {
+        groupOrderId,
+        commandeOrderId,
+        status: confirmation.status ?? null,
+        source: 'confirmation' as const,
+        updatedAt: confirmation.updatedAt ?? null,
+      },
+      200
+    );
+  }
+);
+
+const InjectionOptionSchema = z.object({
+  groupId: z.string(),
+  groupName: z.string(),
+  itemId: z.string(),
+  itemName: z.string(),
+  quantity: z.number(),
+  extraPrice: z.number(),
+});
+
+const InjectionItemSchema = z.object({
+  productId: z.string(),
+  productName: z.string().optional(),
+  productImage: z.string().nullish(),
+  variantId: z.string().nullish(),
+  quantity: z.number(),
+  price: z.number(),
+  options: z.array(InjectionOptionSchema),
+  note: z.string().nullish(),
+});
+
+const InjectionPreviewResponseSchema = z.object({
+  groupOrderId: z.string(),
+  restaurantId: z.string(),
+  items: z.array(InjectionItemSchema),
+});
+
+app.openapi(
+  createRoute({
+    method: 'get',
+    path: '/orders/{id}/injection-preview',
+    tags: ['Orders'],
+    security: authSecurity,
+    request: {
+      params: z.object({
+        id: GroupOrderId,
+      }),
+    },
+    responses: {
+      200: {
+        description: 'commande.app-shaped items for a group order (used by the cart-injection UI)',
+        content: jsonContent(InjectionPreviewResponseSchema),
+      },
+      404: {
+        description: 'Group order not found',
+      },
+    },
+  }),
+  async (c) => {
+    const { id: groupOrderId } = c.req.valid('param');
+    const groupOrderRepository = inject(GroupOrderRepository);
+    const userOrderRepository = inject(UserOrderRepository);
+    const backendSubmissionService = inject(BackendOrderSubmissionService);
+
+    const groupOrder = await groupOrderRepository.findById(groupOrderId);
+    if (!groupOrder) {
+      throw new NotFoundError({ resource: 'GroupOrder', id: groupOrderId });
+    }
+
+    const userOrders = await userOrderRepository.findByGroup(groupOrderId);
+    const { restaurantId, items } = await backendSubmissionService.buildInjectionPreview({
+      userOrders,
+    });
+
+    return c.json({ groupOrderId, restaurantId, items }, 200);
   }
 );
 

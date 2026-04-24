@@ -30,6 +30,7 @@ export const GroupOrderSchema = z.object({
   status: z.enum(GroupOrderStatus),
   name: z.string().nullish(),
   sessionId: z.string().nullish(), // Session ID for order verification
+  commandeOrderId: z.string().nullish(), // commande.app order id — used for status polling
   fee: z.number().nullish(), // Difference between backend total price and computed price
   organizationId: z.string().nullish(), // Organization ID for filtering
   createdAt: z.coerce.date().optional(),
@@ -49,6 +50,7 @@ export const GroupOrderFromDbSchema = z.object({
   status: z.string(),
   name: z.string().nullish(),
   sessionId: z.string().nullish(), // Session ID for order verification
+  commandeOrderId: z.string().nullish(), // commande.app order id — used for status polling
   fee: z.number().nullish(), // Difference between backend total price and computed price
   organizationId: z.string().nullish(), // Organization ID for filtering
   createdAt: z.coerce.date(),
@@ -112,6 +114,7 @@ export function createGroupOrderFromDb(data: z.infer<typeof GroupOrderFromDbSche
     status: validated.status as GroupOrderStatus,
     name: validated.name ?? undefined,
     sessionId: validated.sessionId ?? undefined,
+    commandeOrderId: validated.commandeOrderId ?? undefined,
     fee: validated.fee ?? undefined,
     organizationId: validated.organizationId ?? undefined,
     createdAt: validated.createdAt,

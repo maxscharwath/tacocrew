@@ -687,18 +687,6 @@
   },
   "orders": {
     "common": {
-      "cookies": {
-        "cookies": "Cookies",
-        "csrfToken": "Jeton CSRF",
-        "description": "Cookies de session et détails pour la vérification de commande",
-        "error": "Échec du chargement des cookies. Assurez-vous que la commande a été soumise.",
-        "loading": "Chargement des cookies...",
-        "orderId": "ID de commande",
-        "orderInfo": "Informations de commande",
-        "sessionId": "ID de session",
-        "title": "Cookies de session",
-        "transaction": "Transaction"
-      },
       "errors": {
         "api": "La requête n'a pas abouti ({{message}})."
       },
@@ -959,6 +947,8 @@
           "moreOptions": "Plus d'options",
           "reopenOrder": "Rouvrir la commande",
           "submit": "Passer la commande",
+          "trackButton": "Suivre la commande",
+          "injectionButton": "Injection commande.app",
           "transferLeader": "Transférer le leadership"
         },
         "badge": "Commande de groupe",
@@ -1142,6 +1132,20 @@
         "unknownLeader": "Leader inconnu"
       }
     },
+    "injection": {
+      "title": "Tester sur commande.app",
+      "explainer": "Copiez le snippet ci-dessous, ouvrez commande.app dans un nouvel onglet, ouvrez la console (F12 → Console), collez et exécutez. Le site affichera votre panier.",
+      "copyButton": "Copier le snippet",
+      "copiedFeedback": "Copié",
+      "openButton": "Ouvrir commande.app",
+      "footnote": "Nécessaire car commande.app garde le panier côté navigateur (localStorage) — il n'y a pas d'état de panier serveur à partager par cookies comme sur l'ancien site.",
+      "modal": {
+        "title": "Injection commande.app",
+        "description": "Générez un snippet pour reconstruire ce panier dans le vrai site.",
+        "loading": "Préparation du snippet…",
+        "error": "Impossible de construire le snippet."
+      }
+    },
     "submit": {
       "confirmation": {
         "closeButton": "Voir les détails de la commande",
@@ -1246,6 +1250,38 @@
         "title": "Adresses enregistrées",
         "unnamedProfile": "Sans nom"
       }
+    },
+    "progression": {
+      "title": "Suivi de la commande",
+      "subtitle": "Suivez l'état de votre commande en temps réel.",
+      "lastUpdated": "Dernière mise à jour {{relative}}",
+      "lastUpdatedNever": "En attente d'une mise à jour",
+      "notSubmitted": {
+        "title": "Pas encore soumis",
+        "description": "Cette commande de groupe n'a pas encore été envoyée au restaurant."
+      },
+      "cancelled": {
+        "title": "Commande annulée",
+        "description": "Cette commande a été annulée par le restaurant."
+      },
+      "items": {
+        "title": "Contenu de la commande",
+        "empty": "Aucun article dans cette commande.",
+        "tacos": "Tacos",
+        "extras": "Extras",
+        "drinks": "Boissons",
+        "desserts": "Desserts"
+      },
+      "status": {
+        "pending": "En attente",
+        "confirmed": "Confirmée",
+        "preparing": "En préparation",
+        "ready": "Prête",
+        "out_for_delivery": "En livraison",
+        "delivered": "Livrée",
+        "cancelled": "Annulée"
+      },
+      "back": "Retour aux détails"
     }
   },
   "organizations": {

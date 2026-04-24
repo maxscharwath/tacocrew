@@ -687,18 +687,6 @@
   },
   "orders": {
     "common": {
-      "cookies": {
-        "cookies": "Cookies",
-        "csrfToken": "CSRF-Token",
-        "description": "Session-Cookies und Details zur Bestellverifizierung",
-        "error": "Cookies konnten nicht abgerufen werden. Stelle sicher, dass die Bestellung abgesendet wurde.",
-        "loading": "Cookies werden geladen...",
-        "orderId": "Bestell-ID",
-        "orderInfo": "Bestellinformationen",
-        "sessionId": "Session-ID",
-        "title": "Session-Cookies",
-        "transaction": "Transaktion"
-      },
       "errors": {
         "api": "Die Anfrage konnte nicht abgeschlossen werden ({{message}})."
       },
@@ -959,6 +947,8 @@
           "moreOptions": "Weitere Optionen",
           "reopenOrder": "Bestellung öffnen",
           "submit": "Bestellung aufgeben",
+          "trackButton": "Bestellung verfolgen",
+          "injectionButton": "commande.app-Injektion",
           "transferLeader": "Leitung übertragen"
         },
         "badge": "Gruppenbestellung",
@@ -1142,6 +1132,20 @@
         "unknownLeader": "Unbekannter Leiter"
       }
     },
+    "injection": {
+      "title": "Auf commande.app testen",
+      "explainer": "Kopiere das Snippet unten, öffne commande.app in einem neuen Tab, öffne die Konsole (F12 → Konsole), füge es ein und führe es aus. Die Seite zeigt deinen Warenkorb.",
+      "copyButton": "Snippet kopieren",
+      "copiedFeedback": "Kopiert",
+      "openButton": "commande.app öffnen",
+      "footnote": "Nötig, weil commande.app den Warenkorb clientseitig (localStorage) speichert — es gibt keinen Server-Warenkorbzustand, der wie auf der alten Seite per Cookies geteilt werden könnte.",
+      "modal": {
+        "title": "commande.app-Injektion",
+        "description": "Generiere ein Snippet, um diesen Warenkorb auf der echten Seite zu rekonstruieren.",
+        "loading": "Snippet wird vorbereitet…",
+        "error": "Snippet konnte nicht erstellt werden."
+      }
+    },
     "submit": {
       "confirmation": {
         "closeButton": "Bestelldetails anzeigen",
@@ -1246,6 +1250,38 @@
         "title": "Gespeicherte Adressen",
         "unnamedProfile": "Ohne Namen"
       }
+    },
+    "progression": {
+      "title": "Bestellverfolgung",
+      "subtitle": "Verfolgen Sie den Status Ihrer Bestellung in Echtzeit.",
+      "lastUpdated": "Zuletzt aktualisiert {{relative}}",
+      "lastUpdatedNever": "Warten auf Aktualisierung",
+      "notSubmitted": {
+        "title": "Noch nicht gesendet",
+        "description": "Diese Gruppenbestellung wurde noch nicht an das Restaurant gesendet."
+      },
+      "cancelled": {
+        "title": "Bestellung storniert",
+        "description": "Diese Bestellung wurde vom Restaurant storniert."
+      },
+      "items": {
+        "title": "Bestellinhalt",
+        "empty": "Keine Artikel in dieser Bestellung.",
+        "tacos": "Tacos",
+        "extras": "Extras",
+        "drinks": "Getränke",
+        "desserts": "Desserts"
+      },
+      "status": {
+        "pending": "Ausstehend",
+        "confirmed": "Bestätigt",
+        "preparing": "In Vorbereitung",
+        "ready": "Bereit",
+        "out_for_delivery": "In Zustellung",
+        "delivered": "Geliefert",
+        "cancelled": "Storniert"
+      },
+      "back": "Zurück zu den Details"
     }
   },
   "organizations": {

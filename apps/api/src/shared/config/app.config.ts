@@ -14,7 +14,11 @@ const envSchema = z.object({
 
   // Optional with defaults
   BACKEND_TIMEOUT: z.coerce.number().int().positive().default(30_000),
-  CSRF_REFRESH_INTERVAL: z.coerce.number().int().positive().default(1_800_000),
+
+  // commande.app integration (giga-tacos).
+  COMMANDE_BASE_URL: z.url().default('https://commande.app'),
+  COMMANDE_RESTAURANT_ID: z.string().min(1).default('cmmcc6j8a00056h175p38kx6l'),
+  COMMANDE_RESTAURANT_SLUG: z.string().min(1).default('giga-tacos-pontaise-lausanne'),
 
   // Proxy configuration (optional) - for Swiss IP restriction
   PROXY_URL: z.url().optional(),
@@ -51,7 +55,11 @@ const configSchema = envSchema.transform(
       backend: {
         baseUrl: env.BACKEND_BASE_URL,
         timeout: env.BACKEND_TIMEOUT,
-        csrfRefreshInterval: env.CSRF_REFRESH_INTERVAL,
+      },
+      commande: {
+        baseUrl: env.COMMANDE_BASE_URL,
+        restaurantId: env.COMMANDE_RESTAURANT_ID,
+        restaurantSlug: env.COMMANDE_RESTAURANT_SLUG,
       },
       proxy: {
         url: env.PROXY_URL,

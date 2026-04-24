@@ -1,0 +1,36 @@
+{
+  "orderId": "cmoconp6801uucm6h16mbqwlh",
+  "restaurantId": "cmmcc6j8a00056h175p38kx6l",
+  "status": "confirmed",
+  "serviceType": "delivery",
+  "createdAt": "2026-04-24T09:45:00.000Z",
+  "updatedAt": "2026-04-24T09:46:00.000Z",
+  "items": [
+    {
+      "productId": "cmmcc6js300dp6h17fh1nq23p",
+      "quantity": 1,
+      "price": 14,
+      "options": [
+        {
+          "groupId": "grp_viande",
+          "groupName": "Viande",
+          "itemId": "opt_kebab",
+          "itemName": "Kebab agneau",
+          "quantity": 1,
+          "extraPrice": 0
+        }
+      ],
+      "variantId": "var_m",
+      "note": null
+    }
+  ],
+  "totalAmount": 16,
+  "deliveryFee": 2,
+  "customerName": "Test Customer",
+  "customerPhone": "+41 21 000 00 00",
+  "guestDeliveryAddress": "Rue Test 1, 1000 Lausanne",
+  "paymentMethod": "twint",
+  "pickupTime": "2026-04-24T09:50:00.000Z",
+  "pickupEndTime": "2026-04-24T10:00:00.000Z",
+  "eta": "2026-04-24T10:15:00.000Z"
+}

@@ -22,7 +22,7 @@ const ordersKeys = {
   details: () => [...ordersKeys.all(), 'detail'] as const,
   detail: (id: string) => [...ordersKeys.details(), id] as const,
   receipts: (id: string) => [...ordersKeys.all(), 'receipts', id] as const,
-  cookies: (id: string) => [...ordersKeys.all(), 'cookies', id] as const,
+  injectionPreview: (id: string) => [...ordersKeys.all(), 'injectionPreview', id] as const,
   userOrders: () => [...ordersKeys.all(), 'userOrders'] as const,
   userOrder: (groupOrderId: string, itemId: string) =>
     [...ordersKeys.userOrders(), groupOrderId, itemId] as const,
@@ -45,14 +45,26 @@ export interface UpdateGroupOrderBody {
   endDate?: string;
 }
 
-export interface OrderCookiesResponse {
-  cookies: Record<string, string>;
-  csrfToken: string;
-  orderId?: string;
-  transactionId?: string;
-  sessionId?: string;
-  cookieString: string;
-  instructions: string;
+export interface InjectionPreviewResponse {
+  groupOrderId: string;
+  restaurantId: string;
+  items: ReadonlyArray<{
+    productId: string;
+    productName?: string;
+    productImage?: string | null;
+    variantId?: string | null;
+    quantity: number;
+    price: number;
+    options: ReadonlyArray<{
+      groupId: string;
+      groupName: string;
+      itemId: string;
+      itemName: string;
+      quantity: number;
+      extraPrice: number;
+    }>;
+    note?: string | null;
+  }>;
 }
 
 /**
@@ -333,10 +345,11 @@ export function useTransferGroupOrderLeader() {
   });
 }
 
-export function useOrderCookies(groupOrderId: string, enabled = true) {
-  return useQuery<OrderCookiesResponse>({
-    queryKey: ordersKeys.cookies(groupOrderId),
-    queryFn: () => apiClient.get<OrderCookiesResponse>(`/api/v1/orders/${groupOrderId}/cookies`),
+export function useOrderInjectionPreview(groupOrderId: string, enabled = true) {
+  return useQuery<InjectionPreviewResponse>({
+    queryKey: ordersKeys.injectionPreview(groupOrderId),
+    queryFn: () =>
+      apiClient.get<InjectionPreviewResponse>(`/api/v1/orders/${groupOrderId}/injection-preview`),
     enabled: enabled && !!groupOrderId,
   });
 }

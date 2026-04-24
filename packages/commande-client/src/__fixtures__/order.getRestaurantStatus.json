@@ -1,0 +1,12 @@
+{
+  "id": "cmmcc6j8a00056h175p38kx6l",
+  "name": "Giga Tacos Pontaise (Lausanne)",
+  "acceptingOrders": true,
+  "prepTimeMinutes": 15,
+  "prepTimeDelivery": 45,
+  "minPreorderMinutes": 15,
+  "serviceType": "full",
+  "isDemo": false,
+  "address": "Rue de la Pontaise 42, 1018 Lausanne",
+  "phone": "+41789668844"
+}

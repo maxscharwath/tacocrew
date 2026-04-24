@@ -1,0 +1,21 @@
+[
+  {
+    "orderId": "cmoconp6801uucm6h16mbqwlh",
+    "restaurantId": "cmmcc6j8a00056h175p38kx6l",
+    "status": "delivered",
+    "serviceType": "delivery",
+    "createdAt": "2026-04-24T09:45:00.000Z",
+    "updatedAt": "2026-04-24T10:20:00.000Z",
+    "items": [
+      {
+        "productId": "cmmcc6js300dp6h17fh1nq23p",
+        "quantity": 1,
+        "price": 14,
+        "options": []
+      }
+    ],
+    "totalAmount": 16,
+    "deliveryFee": 2,
+    "paymentMethod": "twint"
+  }
+]

@@ -3,8 +3,8 @@
  * @module schemas/order
  */
 
-import { OrderStatus, OrderType } from '@tacocrew/gigatacos-client';
 import { z } from 'zod';
+import { OrderType } from '@/domain/taco-config';
 import { CartId } from '@/schemas/cart.schema';
 import { UserId } from '@/schemas/user.schema';
 import type { Id } from '@/shared/utils/branded-ids.utils';
@@ -30,7 +30,15 @@ export const OrderSchema = z.object({
   customerPhone: z.string(),
   orderType: z.enum(OrderType),
   requestedFor: z.string(),
-  status: z.enum(OrderStatus),
+  status: z.enum([
+    'pending',
+    'confirmed',
+    'preparing',
+    'ready',
+    'out_for_delivery',
+    'delivered',
+    'cancelled',
+  ]),
   price: z.number().optional(),
   address: z.string().optional(),
   userId: UserId.optional(),
@@ -44,7 +52,7 @@ export type Order = z.infer<typeof OrderSchema>;
  * Check if order is pending
  */
 export function isOrderPending(order: Order): boolean {
-  return order.status === OrderStatus.PENDING;
+  return order.status === 'pending';
 }
 
 /**

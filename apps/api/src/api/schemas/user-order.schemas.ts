@@ -4,8 +4,8 @@
  */
 
 import { z } from '@hono/zod-openapi';
-import { TacoSize } from '@tacocrew/gigatacos-client';
 import { AmountSchema } from '@/api/schemas/shared.schemas';
+import { TacoSize } from '@/domain/taco-config';
 import { DessertId } from '@/schemas/dessert.schema';
 import { DrinkId } from '@/schemas/drink.schema';
 import { ExtraId, FreeSauceId } from '@/schemas/extra.schema';

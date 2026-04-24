@@ -1,4 +1,5 @@
-export { CookieInjectionModal } from './CookieInjectionModal';
+export { CommandeInjectionCard } from './CommandeInjectionCard';
+export { CommandeInjectionModal } from './CommandeInjectionModal';
 export type { DeliveryType } from './DeliveryTypeSelector';
 export { DeliveryTypeSelector } from './DeliveryTypeSelector';
 export { ExtrasSection } from './ExtrasSection';
@@ -12,6 +13,7 @@ export { OrderHero } from './OrderHero';
 export { OrderItemChip } from './OrderItemChip';
 export { OrderListItem } from './OrderListItem';
 export { OrderSection } from './OrderSection';
+export { OrderStatusStepper } from './OrderStatusStepper';
 export { OrderSummary } from './OrderSummary';
 export { OrdersList } from './OrdersList';
 export { PreviousTacoCard } from './PreviousTacoCard';

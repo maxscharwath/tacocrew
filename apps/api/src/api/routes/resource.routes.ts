@@ -4,10 +4,10 @@
  */
 
 import { createRoute } from '@hono/zod-openapi';
-import { TacoSize } from '@tacocrew/gigatacos-client';
 import { z } from 'zod';
 import { AmountSchema, jsonContent } from '@/api/schemas/shared.schemas';
 import { createRouteApp } from '@/api/utils/route.utils';
+import { TacoSize } from '@/domain/taco-config';
 import { ResourceService } from '@/services/resource/resource.service';
 import { inject } from '@/shared/utils/inject.utils';
 
@@ -19,6 +19,7 @@ const StockItemSchema = z.object({
   name: z.string(),
   price: AmountSchema.optional(),
   in_stock: z.boolean(),
+  imageUrl: z.string().nullish(),
 });
 
 const TacoSizeItemSchema = z.object({
@@ -29,6 +30,7 @@ const TacoSizeItemSchema = z.object({
   maxMeats: z.number(),
   maxSauces: z.number(),
   allowGarnitures: z.boolean(),
+  imageUrl: z.string().nullish(),
 });
 
 const StockAvailabilitySchema = z.object({

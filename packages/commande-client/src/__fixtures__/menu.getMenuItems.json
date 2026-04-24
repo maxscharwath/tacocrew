@@ -1,0 +1,98 @@
+[
+  {
+    "id": "cmmcc6jl700996h17yicinwri",
+    "name": "Tacos",
+    "description": "Tortillas grillées, viandes au choix, garnitures et sauces.",
+    "image": "https://commande.app/uploads/categories/1770747085-beee12433a7c8808.jpg",
+    "isActive": true,
+    "timeStart": null,
+    "timeEnd": null,
+    "daysActive": "[\"monday\",\"tuesday\",\"wednesday\",\"thursday\",\"friday\",\"saturday\",\"sunday\"]",
+    "products": [
+      {
+        "id": "cmmcc6js300dp6h17fh1nq23p",
+        "name": "Tacos M",
+        "description": "Tacos taille moyenne",
+        "image": "https://commande.app/uploads/products/1776718615649-fd29d26d37b70e45.jpg",
+        "imageScale": 1.8,
+        "price": "14",
+        "outOfStock": false,
+        "variants": [],
+        "optionTemplate": null,
+        "optionTemplates": [
+          {
+            "id": "merged",
+            "name": "Options",
+            "description": null,
+            "groups": [
+              {
+                "id": "grp_viande",
+                "name": "Viande",
+                "description": "",
+                "minSelection": 1,
+                "maxSelection": 2,
+                "maxItemQuantity": 1,
+                "includedCount": 0,
+                "isActive": true,
+                "items": [
+                  {
+                    "id": "opt_kebab",
+                    "name": "Kebab agneau",
+                    "description": "",
+                    "maxQuantity": 1,
+                    "defaultQuantity": 0,
+                    "extraPrice": null,
+                    "isActive": true,
+                    "outOfStock": false
+                  },
+                  {
+                    "id": "opt_poulet",
+                    "name": "Poulet",
+                    "description": "",
+                    "maxQuantity": 1,
+                    "defaultQuantity": 0,
+                    "extraPrice": null,
+                    "isActive": true,
+                    "outOfStock": false
+                  }
+                ]
+              },
+              {
+                "id": "grp_sauce",
+                "name": "Sauce",
+                "description": "",
+                "minSelection": 1,
+                "maxSelection": 3,
+                "maxItemQuantity": 1,
+                "includedCount": 0,
+                "isActive": true,
+                "items": [
+                  {
+                    "id": "opt_algerienne",
+                    "name": "Algerienne",
+                    "description": "",
+                    "maxQuantity": 1,
+                    "defaultQuantity": 0,
+                    "extraPrice": null,
+                    "isActive": true,
+                    "outOfStock": false
+                  },
+                  {
+                    "id": "opt_samurai",
+                    "name": "Samurai",
+                    "description": "",
+                    "maxQuantity": 1,
+                    "defaultQuantity": 0,
+                    "extraPrice": null,
+                    "isActive": true,
+                    "outOfStock": false
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]

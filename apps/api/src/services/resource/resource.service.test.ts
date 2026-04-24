@@ -2,39 +2,39 @@
  * Tests for ResourceService
  */
 
-// Load test environment variables first
 import '@/test-setup';
 import 'reflect-metadata';
 import { beforeEach, describe, expect, test as it, mock } from 'bun:test';
 import { container } from 'tsyringe';
-import { BackendIntegrationClient } from '@/infrastructure/api/backend-integration.client';
+import type { StockAvailability as RawStockAvailability } from '@/domain/taco-config';
+import { CommandeIntegrationClient } from '@/infrastructure/api/commande-integration.client';
 import { ResourceService } from '@/services/resource/resource.service';
 import { Currency } from '@/shared/types/types';
 
 describe('ResourceService', () => {
-  const mockBackendClient = {
-    createNewSession: mock(),
-    getStock: mock(),
+  const mockCommandeClient = {
+    getMenuSnapshot: mock<
+      (
+        restaurantId: string
+      ) => Promise<{
+        stock: RawStockAvailability;
+        tacoImages: Readonly<Record<string, string | null>>;
+      }>
+    >(),
   };
 
   beforeEach(() => {
     container.clearInstances();
-    mockBackendClient.createNewSession.mockReset();
-    mockBackendClient.getStock.mockReset();
+    mockCommandeClient.getMenuSnapshot.mockReset();
 
     container.registerInstance(
-      BackendIntegrationClient,
-      mockBackendClient as unknown as BackendIntegrationClient
+      CommandeIntegrationClient,
+      mockCommandeClient as unknown as CommandeIntegrationClient
     );
   });
 
   it('should transform backend stock to frontend format', async () => {
-    const mockSessionContext = {
-      csrfToken: 'test-token',
-      cookies: { session: 'test-session' },
-    };
-
-    const mockBackendStock = {
+    const mockStock: RawStockAvailability = {
       viandes: {
         viande_hachee: { name: 'Viande Hachée', price: 5, in_stock: true },
       },
@@ -51,8 +51,7 @@ describe('ResourceService', () => {
       desserts: {},
     };
 
-    mockBackendClient.createNewSession.mockResolvedValue(mockSessionContext);
-    mockBackendClient.getStock.mockResolvedValue(mockBackendStock);
+    mockCommandeClient.getMenuSnapshot.mockResolvedValue({ stock: mockStock, tacoImages: {} });
 
     const service = container.resolve(ResourceService);
     const result = await service.getStock();
@@ -79,12 +78,7 @@ describe('ResourceService', () => {
   });
 
   it('should handle empty stock', async () => {
-    const mockSessionContext = {
-      csrfToken: 'test-token',
-      cookies: { session: 'test-session' },
-    };
-
-    const mockBackendStock = {
+    const mockStock: RawStockAvailability = {
       viandes: {},
       sauces: {},
       garnitures: {},
@@ -93,8 +87,7 @@ describe('ResourceService', () => {
       desserts: {},
     };
 
-    mockBackendClient.createNewSession.mockResolvedValue(mockSessionContext);
-    mockBackendClient.getStock.mockResolvedValue(mockBackendStock);
+    mockCommandeClient.getMenuSnapshot.mockResolvedValue({ stock: mockStock, tacoImages: {} });
 
     const service = container.resolve(ResourceService);
     const result = await service.getStock();
@@ -109,12 +102,7 @@ describe('ResourceService', () => {
   });
 
   it('should handle items without price', async () => {
-    const mockSessionContext = {
-      csrfToken: 'test-token',
-      cookies: { session: 'test-session' },
-    };
-
-    const mockBackendStock = {
+    const mockStock: RawStockAvailability = {
       viandes: {
         viande_hachee: { name: 'Viande Hachée', in_stock: true },
       },
@@ -125,8 +113,7 @@ describe('ResourceService', () => {
       desserts: {},
     };
 
-    mockBackendClient.createNewSession.mockResolvedValue(mockSessionContext);
-    mockBackendClient.getStock.mockResolvedValue(mockBackendStock);
+    mockCommandeClient.getMenuSnapshot.mockResolvedValue({ stock: mockStock, tacoImages: {} });
 
     const service = container.resolve(ResourceService);
     const result = await service.getStock();

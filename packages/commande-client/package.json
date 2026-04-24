@@ -1,0 +1,27 @@
+{
+  "name": "@tacocrew/commande-client",
+  "version": "0.2602.0",
+  "description": "Typed tRPC client for the commande.app ordering SaaS",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "check": "tsc --noEmit",
+    "test": "bun test"
+  },
+  "peerDependencies": {
+    "zod": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "typescript": "^5.0.0",
+    "zod": "^4.1.13"
+  }
+}

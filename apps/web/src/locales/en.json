@@ -687,18 +687,6 @@
   },
   "orders": {
     "common": {
-      "cookies": {
-        "cookies": "Cookies",
-        "csrfToken": "CSRF Token",
-        "description": "Session cookies and details for order verification",
-        "error": "Failed to fetch cookies. Make sure the order has been submitted.",
-        "loading": "Loading cookies...",
-        "orderId": "Order ID",
-        "orderInfo": "Order Information",
-        "sessionId": "Session ID",
-        "title": "Session Cookies",
-        "transaction": "Transaction"
-      },
       "errors": {
         "api": "We couldn't complete the request ({{message}})."
       },
@@ -959,6 +947,8 @@
           "moreOptions": "More options",
           "reopenOrder": "Reopen order",
           "submit": "Place Order",
+          "trackButton": "Track order",
+          "injectionButton": "commande.app injection",
           "transferLeader": "Transfer leadership"
         },
         "badge": "Group Order",
@@ -1142,6 +1132,20 @@
         "unknownLeader": "Unknown leader"
       }
     },
+    "injection": {
+      "title": "Test on commande.app",
+      "explainer": "Copy the snippet below, open commande.app in a new tab, open DevTools (F12 → Console), paste and run. The site will load your cart.",
+      "copyButton": "Copy snippet",
+      "copiedFeedback": "Copied",
+      "openButton": "Open commande.app",
+      "footnote": "Needed because commande.app stores the cart client-side (localStorage) — there is no server cart state to share via cookies like on the legacy site.",
+      "modal": {
+        "title": "commande.app injection",
+        "description": "Generate a snippet to rebuild this cart on the real site.",
+        "loading": "Preparing snippet…",
+        "error": "Could not build the snippet."
+      }
+    },
     "submit": {
       "confirmation": {
         "closeButton": "View Order Details",
@@ -1246,6 +1250,38 @@
         "title": "Saved delivery info",
         "unnamedProfile": "Unnamed"
       }
+    },
+    "progression": {
+      "title": "Order tracking",
+      "subtitle": "Follow your order status in real time.",
+      "lastUpdated": "Last updated {{relative}}",
+      "lastUpdatedNever": "Waiting for an update",
+      "notSubmitted": {
+        "title": "Not submitted yet",
+        "description": "This group order has not been sent to the restaurant yet."
+      },
+      "cancelled": {
+        "title": "Order cancelled",
+        "description": "This order has been cancelled by the restaurant."
+      },
+      "items": {
+        "title": "Order contents",
+        "empty": "No items in this order.",
+        "tacos": "Tacos",
+        "extras": "Extras",
+        "drinks": "Drinks",
+        "desserts": "Desserts"
+      },
+      "status": {
+        "pending": "Pending",
+        "confirmed": "Confirmed",
+        "preparing": "Preparing",
+        "ready": "Ready",
+        "out_for_delivery": "Out for delivery",
+        "delivered": "Delivered",
+        "cancelled": "Cancelled"
+      },
+      "back": "Back to details"
     }
   },
   "organizations": {

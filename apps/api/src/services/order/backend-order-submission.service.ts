@@ -1,167 +1,145 @@
 /**
  * Backend order submission service
- * Submits orders to the real backend API
+ *
+ * Owns the translation between apps/api's `UserOrder` vocabulary and the
+ * commande.app `CreateOrderInput` shape, then forwards to the adapter.
  * @module services/order
  */
 
 import { randomBytes } from 'node:crypto';
-import {
-  OrderStatus,
-  type OrderSubmissionResponse,
-  type OrderSummary,
+import type {
+  CreateOrderInput,
+  OrderItem,
+  OrderItemOption,
   PaymentMethod,
-} from '@tacocrew/gigatacos-client';
-import axios from 'axios';
+  ServiceType,
+} from '@tacocrew/commande-client';
 import { injectable } from 'tsyringe';
-import { BackendIntegrationClient } from '@/infrastructure/api/backend-integration.client';
-import type { SessionId } from '@/schemas/session.schema';
+import { OrderType } from '@/domain/taco-config';
+import {
+  CommandeIntegrationClient,
+  type PreflightResult,
+} from '@/infrastructure/api/commande-integration.client';
 import { TacoKind } from '@/schemas/taco.schema';
 import type { UserOrder } from '@/schemas/user-order.schema';
+import { MenuResolver } from '@/services/order/menu-resolver';
 import { ResourceService } from '@/services/resource/resource.service';
 import { SessionService } from '@/services/session/session.service';
+import { config } from '@/shared/config/app.config';
 import type { Customer, DeliveryInfo, StockAvailability } from '@/shared/types/types';
 import { formatAddressForBackend } from '@/shared/utils/address-formatter.utils';
 import { inject } from '@/shared/utils/inject.utils';
 import { logger } from '@/shared/utils/logger.utils';
 import { convertMysteryTacoToRegular } from '@/shared/utils/mystery-taco-converter.utils';
+import { calculateUserOrderPrice } from '@/shared/utils/order-price.utils';
+
+/** Legacy payment-method slugs accepted by the public HTTP API. */
+export const LEGACY_PAYMENT_METHODS = ['especes', 'carte', 'twint'] as const;
+export type LegacyPaymentMethod = (typeof LEGACY_PAYMENT_METHODS)[number];
+
+export type SubmitGroupOrderInput = {
+  readonly userOrders: readonly UserOrder[];
+  readonly customer: Customer;
+  readonly delivery: DeliveryInfo;
+  readonly groupOrderId?: string;
+  readonly paymentMethod?: LegacyPaymentMethod;
+  readonly dryRun?: boolean;
+};
+
+export type SubmitGroupOrderResult = {
+  readonly orderId: string;
+  readonly transactionId: string;
+  readonly sessionId: string;
+  readonly computedTotal: number;
+  readonly backendTotal: number | null;
+  readonly dryRun?: boolean;
+  /** Populated only on dry run — the exact payload that would have been POSTed to commande.app. */
+  readonly orderPreview?: CreateOrderInput;
+  /** Populated only on dry run — server-side preflight result (restaurant status, delivery zone). */
+  readonly preflight?: PreflightResult;
+};
 
 /**
- * Backend order submission service
- * Handles submitting orders to the real backend API
+ * Backend order submission service — translates internal user orders into a
+ * commande.app `CreateOrderInput` and submits it via the integration client.
  */
 @injectable()
 export class BackendOrderSubmissionService {
-  private readonly backendIntegration = inject(BackendIntegrationClient);
+  private readonly commande = inject(CommandeIntegrationClient);
   private readonly sessionService = inject(SessionService);
   private readonly resourceService = inject(ResourceService);
 
   /**
-   * Submit multiple user orders as a single combined order to the backend
-   * Creates a cart, adds all items from all user orders, and submits to RocknRoll.php
-   * @param dryRun If true, skips the actual submission to RocknRoll.php but still creates session and cart
+   * Submit the combined items of every user order in a group as a single
+   * commande.app order.
+   *
+   * In `dryRun` mode we skip the remote call but still allocate a session
+   * row so that downstream audit logic (sessionId persisted on the group
+   * order) can reference a real record.
    */
-  async submitGroupOrder(
-    userOrders: UserOrder[],
-    customer: Customer,
-    delivery: DeliveryInfo,
-    groupOrderId?: string,
-    paymentMethod?: PaymentMethod,
-    dryRun = false
-  ): Promise<{
-    orderId: string;
-    transactionId: string;
-    orderData: OrderSubmissionResponse['OrderData'];
-    sessionId: string;
-    orderSummary: OrderSummary | null;
-    dryRun?: boolean;
-  }> {
-    // Create a new session for this combined order
+  async submitGroupOrder(input: SubmitGroupOrderInput): Promise<SubmitGroupOrderResult> {
     const session = await this.sessionService.createSession();
     const sessionId = session.sessionId;
 
     try {
-      // Get stock for generating mystery taco ingredients
-      const stock = await this.resourceService.getStockForProcessing();
+      const [stock, menu] = await Promise.all([
+        this.resourceService.getStockForProcessing(),
+        this.commande.getMenu(config.commande.restaurantId),
+      ]);
 
-      // Combine all items from all user orders (converting mystery tacos to regular tacos)
-      const combinedItems = this.combineUserOrderItems(userOrders, stock);
-
-      // Add all combined items to cart
-      await this.addItemsToCart(sessionId, combinedItems);
-
-      // Get order summary with totals and delivery fees from backend
-      const orderSummary = await this.backendIntegration.getOrderSummary(sessionId);
-      if (orderSummary) {
-        logger.info('Order summary retrieved', {
-          sessionId,
-          cartTotal: orderSummary.cartTotal,
-          deliveryFee: orderSummary.deliveryFee,
-          totalAmount: orderSummary.totalAmount,
-        });
-      }
-
-      // Generate transaction ID (format: timestamp_random)
-      const transactionId = `${Date.now()}_${randomBytes(8).toString('hex')}`;
-
-      let orderResult;
-
-      if (dryRun) {
-        logger.info('Dry run mode: Skipping RocknRoll.php submission', {
-          sessionId,
-          groupOrderId,
-          transactionId,
-        });
-
-        // Create mock response matching the backend API structure
-        // Note: Structure matches OrderSubmissionResponse from @tacocrew/gigatacos-client
-        // where OrderData.price is string, not number
-        orderResult = {
-          success: true,
-          orderId: `dry-run-${transactionId}`,
-          tacos: [],
-          extras: [],
-          boissons: [],
-          desserts: [],
-          DeliveryData: {
-            minOrderAmount: 0,
-            postalcode: delivery.address.postcode,
-            ville: delivery.address.city,
-          },
-          OrderData: {
-            price: '0.00',
-            time: 'NOW',
-            totalPrice: 0,
-            name: customer.name,
-            phone: customer.phone,
-            address: formatAddressForBackend(delivery.address),
-            status: OrderStatus.PENDING,
-            date: new Date().toISOString(),
-            type: delivery.type,
-            requestedFor: String(delivery.requestedFor),
-          },
-        };
-      } else {
-        const addressString = formatAddressForBackend(delivery.address);
-        orderResult = await this.backendIntegration.submitOrder(sessionId, {
-          name: customer.name,
-          phone: customer.phone,
-          confirmPhone: customer.phone,
-          address: addressString,
-          type: delivery.type,
-          requestedFor: delivery.requestedFor,
-          transaction_id: transactionId,
-          payment_method: paymentMethod,
-        });
-
-        logger.debug('RocknRoll.php full response', {
-          sessionId,
-          response: orderResult,
-        });
-      }
-
-      // Session is kept alive for order tracking - cookies are stored in session
-
-      // Keep session alive for order tracking - don't delete it
-      logger.info(
-        dryRun
-          ? 'Dry run completed, session kept for verification'
-          : 'Order submitted, session kept for tracking',
-        {
-          sessionId,
-          orderId: orderResult.orderId,
-          transactionId,
-          groupOrderId,
-          dryRun,
-        }
+      const resolver = new MenuResolver(menu.products);
+      const combinedItems = this.combineUserOrderItems(input.userOrders, stock);
+      const computedTotal = input.userOrders.reduce(
+        (sum, order) => sum + calculateUserOrderPrice(order.items),
+        0
       );
 
-      return {
-        orderId: orderResult.orderId,
-        transactionId,
-        orderData: orderResult.OrderData,
+      const transactionId = `${Date.now()}_${randomBytes(8).toString('hex')}`;
+
+      const createOrderInput = this.buildCreateOrderInput(
+        combinedItems,
+        computedTotal,
+        input.customer,
+        input.delivery,
+        input.paymentMethod,
+        resolver
+      );
+
+      if (input.dryRun) {
+        logger.info('Dry run mode: skipping commande.app submission', {
+          sessionId,
+          groupOrderId: input.groupOrderId,
+          transactionId,
+          itemCount: createOrderInput.items.length,
+        });
+        const preflight = await this.runPreflight(input, sessionId);
+        return {
+          orderId: `dry-run-${transactionId}`,
+          transactionId,
+          sessionId,
+          computedTotal,
+          backendTotal: null,
+          dryRun: true,
+          orderPreview: createOrderInput,
+          ...(preflight !== undefined && { preflight }),
+        };
+      }
+
+      const response = await this.commande.submitOrder(createOrderInput);
+
+      logger.info('Order submitted to commande.app', {
         sessionId,
-        orderSummary,
-        ...(dryRun && { dryRun: true }),
+        orderId: response.orderId,
+        transactionId,
+        groupOrderId: input.groupOrderId,
+      });
+
+      return {
+        orderId: response.orderId,
+        transactionId: response.transactionId ?? transactionId,
+        sessionId,
+        computedTotal,
+        backendTotal: response.total ?? null,
       };
     } catch (error) {
       logger.error('Failed to submit order', {
@@ -173,11 +151,41 @@ export class BackendOrderSubmissionService {
   }
 
   /**
-   * Combine items from all user orders into a single order
-   * Converts mystery tacos to regular tacos with ingredients generated deterministically from taco ID
+   * Build a commande.app-ready items list for an existing group order without
+   * submitting. Used by the injection-preview endpoint so the UI can render a
+   * localStorage snippet that materialises the same cart on commande.app.
    */
+  async buildInjectionPreview(input: {
+    readonly userOrders: readonly UserOrder[];
+  }): Promise<{
+    readonly restaurantId: string;
+    readonly items: ReadonlyArray<OrderItem & { readonly productImage: string | null }>;
+  }> {
+    const [stock, menu] = await Promise.all([
+      this.resourceService.getStockForProcessing(),
+      this.commande.getMenu(config.commande.restaurantId),
+    ]);
+    const resolver = new MenuResolver(menu.products);
+    const imagesByProductId = new Map<string, string | null>();
+    for (const product of menu.products) {
+      imagesByProductId.set(product.id, product.imageUrl ?? null);
+    }
+    const combined = this.combineUserOrderItems(input.userOrders, stock);
+    const rawItems: OrderItem[] = [
+      ...combined.tacos.map((taco) => this.tacoToOrderItem(taco, resolver)),
+      ...combined.extras.map((extra) => this.extraToOrderItem(extra, resolver)),
+      ...combined.drinks.map((drink) => this.simpleToOrderItem(drink, 'drink', resolver)),
+      ...combined.desserts.map((dessert) => this.simpleToOrderItem(dessert, 'dessert', resolver)),
+    ];
+    const items = rawItems.map((item) => ({
+      ...item,
+      productImage: imagesByProductId.get(item.productId) ?? null,
+    }));
+    return { restaurantId: config.commande.restaurantId, items };
+  }
+
   private combineUserOrderItems(
-    userOrders: UserOrder[],
+    userOrders: readonly UserOrder[],
     stock: StockAvailability
   ): UserOrder['items'] {
     const combined: UserOrder['items'] = {
@@ -188,15 +196,9 @@ export class BackendOrderSubmissionService {
     };
 
     for (const userOrder of userOrders) {
-      // Convert mystery tacos to regular tacos with ingredients (generated deterministically from ID)
-      const convertedTacos = userOrder.items.tacos.map((taco) => {
-        if (taco.kind === TacoKind.MYSTERY) {
-          // Generate ingredients deterministically using taco ID as seed
-          return this.convertMysteryTacoToRegular(taco, stock);
-        }
-        return taco;
-      });
-
+      const convertedTacos = userOrder.items.tacos.map((taco) =>
+        taco.kind === TacoKind.MYSTERY ? convertMysteryTacoToRegular(taco, stock) : taco
+      );
       combined.tacos.push(...convertedTacos);
       combined.extras.push(...userOrder.items.extras);
       combined.drinks.push(...userOrder.items.drinks);
@@ -206,143 +208,169 @@ export class BackendOrderSubmissionService {
     return combined;
   }
 
-  /**
-   * Convert a mystery taco to a regular taco with ingredients generated deterministically from taco ID
-   */
-  private convertMysteryTacoToRegular(
-    mysteryTaco: UserOrder['items']['tacos'][number],
-    stock: StockAvailability
-  ): UserOrder['items']['tacos'][number] {
-    return convertMysteryTacoToRegular(mysteryTaco, stock);
+  private buildCreateOrderInput(
+    items: UserOrder['items'],
+    computedTotal: number,
+    customer: Customer,
+    delivery: DeliveryInfo,
+    paymentMethod: LegacyPaymentMethod | undefined,
+    resolver: MenuResolver
+  ): CreateOrderInput {
+    const orderItems: OrderItem[] = [
+      ...items.tacos.map((taco) => this.tacoToOrderItem(taco, resolver)),
+      ...items.extras.map((extra) => this.extraToOrderItem(extra, resolver)),
+      ...items.drinks.map((drink) => this.simpleToOrderItem(drink, 'drink', resolver)),
+      ...items.desserts.map((dessert) => this.simpleToOrderItem(dessert, 'dessert', resolver)),
+    ];
+
+    const serviceType = this.toServiceType(delivery.type);
+    const isDelivery = serviceType === 'delivery';
+
+    return {
+      restaurantId: config.commande.restaurantId,
+      serviceType,
+      items: orderItems,
+      total: computedTotal,
+      isPreorder: true,
+      dineIn: false,
+      isOnSite: false,
+      deliveryFee: 0,
+      customerName: customer.name,
+      customerPhone: customer.phone,
+      guestDeliveryAddress: isDelivery ? formatAddressForBackend(delivery.address) : null,
+      paymentMethod: this.toCommandePaymentMethod(paymentMethod),
+    };
   }
 
-  /**
-   * Add all items to cart sequentially
-   * PHP backend uses file-based session locking — concurrent requests to the same
-   * session cause CSRF token rotation conflicts. Sequential execution avoids this.
-   */
-  private async addItemsToCart(sessionId: SessionId, items: UserOrder['items']): Promise<void> {
-    for (const taco of items.tacos) {
-      await this.addTacoToCart(sessionId, taco);
-    }
-    for (const extra of items.extras) {
-      await this.addExtraToCart(sessionId, extra);
-    }
-    for (const drink of items.drinks) {
-      await this.addDrinkToCart(sessionId, drink);
-    }
-    for (const dessert of items.desserts) {
-      try {
-        await this.addDessertToCart(sessionId, dessert);
-      } catch (error) {
-        if (axios.isAxiosError(error) && error.response?.status === 404) {
-          logger.warn('Dessert endpoint not available, skipping dessert', {
-            sessionId,
-            dessertId: dessert.code,
-            dessertName: dessert.name,
-          });
-          continue;
-        }
-        throw error;
-      }
-    }
-  }
-
-  /**
-   * Add a taco to cart using URL-encoded form data matching bundle.js format
-   */
-  private async addTacoToCart(
-    sessionId: SessionId,
-    taco: UserOrder['items']['tacos'][number]
-  ): Promise<void> {
-    // All mystery tacos should have been converted to regular tacos in combineUserOrderItems
+  private tacoToOrderItem(
+    taco: UserOrder['items']['tacos'][number],
+    resolver: MenuResolver
+  ): OrderItem {
     if (taco.kind === 'mystery') {
       throw new Error(
         `Cannot submit mystery taco without ingredients. Taco ID: ${taco.id}. ` +
-          'Mystery tacos should have been converted to regular tacos with deterministically generated ingredients.'
+          'Mystery tacos should be converted before submission.'
       );
     }
 
-    // At this point, TypeScript knows taco is RegularTaco
-    const meats = taco.meats;
-    const sauces = taco.sauces;
-    const garnitures = taco.garnitures;
+    const product = resolver.resolveTacoProduct(taco.size);
+    const productId = product.id;
+    const options: OrderItemOption[] = [];
 
-    const formData = {
-      taille: taco.size, // Use 'taille' instead of 'selectProduct'
-      tacosNote: taco.note ?? '',
-      'viande[]': meats.map((meat) => meat.code),
-      'sauce[]': sauces.map((sauce) => sauce.code),
-      'garniture[]': garnitures.map((garniture) => garniture.code),
-    } as {
-      taille: string;
-      tacosNote: string;
-      'viande[]': string[];
-      'sauce[]': string[];
-      'garniture[]': string[];
-      [key: `meat_quantity[${string}]`]: number;
-      [key: string]: string | string[] | number | undefined;
-    };
-
-    // Add meat quantities (meat_quantity[{slug}])
-    for (const meat of meats) {
-      (formData as Record<string, number>)[`meat_quantity[${meat.code}]`] = meat.quantity;
-    }
-
-    const parsedTaco = await this.backendIntegration.addTacoToCart(sessionId, formData, taco.id);
-
-    if (!parsedTaco) {
-      logger.warn('Failed to parse taco card after adding to cart', {
-        sessionId,
-        tacoId: taco.id,
+    for (const meat of taco.meats) {
+      const resolved = resolver.resolveTacoOption(productId, 'meat', meat.code);
+      options.push({
+        groupId: resolved.groupId,
+        groupName: resolved.groupName,
+        itemId: resolved.optionId,
+        itemName: meat.name,
+        quantity: meat.quantity,
+        extraPrice: 0,
       });
     }
+    for (const sauce of taco.sauces) {
+      const resolved = resolver.resolveTacoOption(productId, 'sauce', sauce.code);
+      options.push({
+        groupId: resolved.groupId,
+        groupName: resolved.groupName,
+        itemId: resolved.optionId,
+        itemName: sauce.name,
+        quantity: 1,
+        extraPrice: 0,
+      });
+    }
+    for (const garniture of taco.garnitures) {
+      const resolved = resolver.resolveTacoOption(productId, 'garniture', garniture.code);
+      options.push({
+        groupId: resolved.groupId,
+        groupName: resolved.groupName,
+        itemId: resolved.optionId,
+        itemName: garniture.name,
+        quantity: 1,
+        extraPrice: 0,
+      });
+    }
+
+    return {
+      productId,
+      productName: product.name,
+      quantity: 1,
+      price: taco.price,
+      options,
+      note: taco.note ?? null,
+    };
   }
 
-  /**
-   * Add an extra to cart
-   */
-  private async addExtraToCart(
-    sessionId: SessionId,
-    extra: UserOrder['items']['extras'][number]
-  ): Promise<void> {
-    await this.backendIntegration.addExtraToCart(sessionId, {
-      id: extra.code,
-      name: extra.name,
-      price: extra.price,
+  private extraToOrderItem(
+    extra: UserOrder['items']['extras'][number],
+    resolver: MenuResolver
+  ): OrderItem {
+    const productId = resolver.resolveCategoryProductId('extra', extra.code);
+    // Free-sauce options: we can't resolve these through the menu (they live on
+    // the extra's own option groups, which we don't model yet). Passed through
+    // best-effort — commande.app ignores unknown option groups.
+    const options: OrderItemOption[] = (extra.free_sauces ?? []).map((sauce) => ({
+      groupId: 'free-sauce',
+      groupName: 'Sauce offerte',
+      itemId: sauce.code,
+      itemName: sauce.name,
+      quantity: 1,
+      extraPrice: 0,
+    }));
+    return {
+      productId,
+      productName: extra.name,
       quantity: extra.quantity,
-      free_sauces: extra.free_sauces?.map((sauce) => sauce.code) ?? [],
-    });
+      price: extra.price,
+      options,
+    };
   }
 
-  /**
-   * Add a drink to cart
-   */
-  private async addDrinkToCart(
-    sessionId: SessionId,
-    drink: UserOrder['items']['drinks'][number]
-  ): Promise<void> {
-    await this.backendIntegration.addDrinkToCart(sessionId, {
-      id: drink.code,
-      name: drink.name,
-      price: drink.price,
-      quantity: drink.quantity,
-    });
+  private simpleToOrderItem(
+    item: UserOrder['items']['drinks'][number] | UserOrder['items']['desserts'][number],
+    category: 'drink' | 'dessert',
+    resolver: MenuResolver
+  ): OrderItem {
+    return {
+      productId: resolver.resolveCategoryProductId(category, item.code),
+      productName: item.name,
+      quantity: item.quantity,
+      price: item.price,
+      options: [],
+    };
   }
 
-  /**
-   * Add a dessert to cart
-   * Note: usd.php endpoint may return 404 if it doesn't exist
-   */
-  private async addDessertToCart(
-    sessionId: SessionId,
-    dessert: UserOrder['items']['desserts'][number]
-  ): Promise<void> {
-    await this.backendIntegration.addDessertToCart(sessionId, {
-      id: dessert.code,
-      name: dessert.name,
-      price: dessert.price,
-      quantity: dessert.quantity,
-    });
+  private async runPreflight(
+    input: SubmitGroupOrderInput,
+    sessionId: string
+  ): Promise<PreflightResult | undefined> {
+    try {
+      const serviceType = this.toServiceType(input.delivery.type);
+      return await this.commande.preflightOrder({
+        restaurantId: config.commande.restaurantId,
+        serviceType,
+        ...(input.delivery.address.postcode !== undefined && {
+          postalCode: input.delivery.address.postcode,
+        }),
+        sessionId,
+      });
+    } catch (error) {
+      logger.warn('Preflight checks failed; continuing dry-run without them', {
+        error: error instanceof Error ? error.message : String(error),
+      });
+      return undefined;
+    }
+  }
+
+  // OrderType.TAKEAWAY is named "emporter" on our side; commande.app calls it "pickup".
+  private toServiceType(orderType: OrderType): ServiceType {
+    if (orderType === OrderType.DELIVERY) return 'delivery';
+    return 'pickup';
+  }
+
+  private toCommandePaymentMethod(legacy?: LegacyPaymentMethod): PaymentMethod {
+    if (legacy === 'carte') return 'card';
+    if (legacy === 'especes') return 'cash';
+    return 'twint';
   }
 }

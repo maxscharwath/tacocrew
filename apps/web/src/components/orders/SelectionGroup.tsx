@@ -8,7 +8,13 @@ import { cn } from '@/lib/utils';
  * @component
  */
 type SelectionGroupProps = Readonly<{
-  items: Array<{ id: string; name: string; price?: Amount; in_stock: boolean }>;
+  items: Array<{
+    id: string;
+    name: string;
+    price?: Amount;
+    in_stock: boolean;
+    imageUrl?: string | null;
+  }>;
   selected: string[];
   onToggle: (id: string) => void;
   disabled?: boolean;
@@ -52,6 +58,14 @@ export function SelectionGroup({
               disabled={isDisabled}
               className="shrink-0"
             />
+            {item.imageUrl ? (
+              <img
+                src={item.imageUrl}
+                alt=""
+                loading="lazy"
+                className="h-8 w-8 shrink-0 rounded-md border border-white/10 bg-slate-900/60 object-cover"
+              />
+            ) : null}
             <div className="min-w-0 flex-1">
               <span
                 className={cn(

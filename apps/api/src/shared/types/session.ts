@@ -6,39 +6,27 @@
 import type { SessionId } from '@/schemas/session.schema';
 
 /**
- * Session data containing authentication and state
+ * Per-cart session metadata persisted alongside the draft order.
+ *
+ * The legacy PHP backend required a CSRF token and cookie jar per cart;
+ * commande.app does not, so the session row now only carries identity and
+ * timestamps.
  */
 export interface SessionData {
-  /** Unique session identifier */
-  sessionId: SessionId;
-
-  /** CSRF token for this session */
-  csrfToken: string;
-
-  /** HTTP cookies for this session */
-  cookies: Record<string, string>;
-
-  /** Session creation timestamp */
-  createdAt: Date;
-
-  /** Last activity timestamp */
-  lastActivityAt: Date;
+  readonly sessionId: SessionId;
+  readonly createdAt: Date;
+  readonly lastActivityAt: Date;
+  readonly metadata?: Record<string, unknown> | null;
 }
 
-/**
- * Session creation options
- */
 export interface CreateSessionOptions {
-  /** Optional custom session ID */
-  sessionId?: SessionId;
+  readonly sessionId?: SessionId;
+  readonly metadata?: Record<string, unknown> | null;
 }
 
-/**
- * Session statistics
- */
 export interface SessionStats {
-  totalSessions: number;
-  activeSessions: number;
-  oldestSession: Date | null;
-  newestSession: Date | null;
+  readonly totalSessions: number;
+  readonly activeSessions: number;
+  readonly oldestSession: Date | null;
+  readonly newestSession: Date | null;
 }

@@ -21,6 +21,7 @@ import { Lock, Send, Truck } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { type LoaderFunctionArgs, useLoaderData, useNavigate, useParams } from 'react-router';
+import { CommandeInjectionCard } from '@/components/orders/CommandeInjectionCard';
 import { DeliveryFormFields } from '@/components/orders/DeliveryFormFields';
 import { OrderConfirmationModal } from '@/components/orders/OrderConfirmationModal';
 import { PreferencesSection } from '@/components/orders/PreferencesSection';
@@ -29,6 +30,7 @@ import { BackButton } from '@/components/shared';
 import { useDeliveryForm } from '@/hooks/useDeliveryForm';
 import { useDeveloperMode } from '@/hooks/useDeveloperMode';
 import { useDeliveryProfiles, useGroupOrderWithOrders, useSubmitGroupOrder } from '@/lib/api';
+import type { OrderPreview } from '@/lib/api/types';
 import { routes } from '@/lib/routes';
 import { requireParam } from '@/lib/utils/param-validators';
 
@@ -46,6 +48,7 @@ export function OrderSubmitRoute() {
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [submitError, setSubmitError] = useState<{ message: string } | null>(null);
   const [dryRun, setDryRun] = useState(false);
+  const [dryRunPreview, setDryRunPreview] = useState<OrderPreview | null>(null);
   const { isEnabled: isDeveloperMode } = useDeveloperMode();
   const [showDeleteProfileDialog, setShowDeleteProfileDialog] = useState(false);
   const submitMutation = useSubmitGroupOrder();
@@ -99,7 +102,7 @@ export function OrderSubmitRoute() {
     form.form.handleSubmit(async (data) => {
       setSubmitError(null);
       try {
-        await submitMutation.mutateAsync({
+        const response = await submitMutation.mutateAsync({
           groupOrderId,
           body: {
             customer: {
@@ -122,7 +125,15 @@ export function OrderSubmitRoute() {
             dryRun,
           },
         });
-        setShowConfirmation(true);
+        // Real submissions have a trackable commande.app order id — jump straight
+        // to the progression view. Dry runs keep the legacy confirmation modal
+        // because there is no order to track.
+        if (response.dryRun) {
+          setDryRunPreview(response.orderPreview ?? null);
+          setShowConfirmation(true);
+        } else {
+          navigate(routes.root.orderProgression({ orderId: groupOrderId }));
+        }
       } catch (error) {
         setSubmitError({
           message: error instanceof Error ? error.message : 'Failed to submit order',
@@ -139,8 +150,8 @@ export function OrderSubmitRoute() {
       />
 
       <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-linear-to-br from-amber-500/10 via-slate-900/80 to-slate-950/90 p-8">
-        <div className="pointer-events-none absolute -top-24 right-0 h-72 w-72 rounded-full bg-amber-400/20 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-16 left-12 h-60 w-60 rounded-full bg-rose-500/20 blur-3xl" />
+        <div className="-top-24 pointer-events-none absolute right-0 h-72 w-72 rounded-full bg-amber-400/20 blur-3xl" />
+        <div className="-bottom-16 pointer-events-none absolute left-12 h-60 w-60 rounded-full bg-rose-500/20 blur-3xl" />
         <div className="relative space-y-4">
           <div className="flex items-center gap-3">
             <div className="grid h-12 w-12 place-items-center rounded-xl bg-linear-to-br from-amber-400 via-amber-500 to-rose-500">
@@ -228,8 +239,8 @@ export function OrderSubmitRoute() {
                         Dry Run Mode (Developer)
                       </Label>
                       <p className="text-amber-100/80 text-xs">
-                        Skip actual submission to external backend. Creates session and cart for
-                        testing cookie injection.
+                        Skip actual submission to commande.app. Returns an order preview and a
+                        cart-injection snippet you can paste into commande.app's DevTools.
                       </p>
                     </div>
                   </div>
@@ -259,7 +270,9 @@ export function OrderSubmitRoute() {
         </CardContent>
       </Card>
 
-      <OrderConfirmationModal isOpen={showConfirmation} onClose={handleCloseConfirmation} />
+      <OrderConfirmationModal isOpen={showConfirmation} onClose={handleCloseConfirmation}>
+        {dryRun && dryRunPreview ? <CommandeInjectionCard orderPreview={dryRunPreview} /> : null}
+      </OrderConfirmationModal>
 
       {/* Delete Profile Confirmation Dialog */}
       <AlertDialog open={showDeleteProfileDialog} onOpenChange={setShowDeleteProfileDialog}>

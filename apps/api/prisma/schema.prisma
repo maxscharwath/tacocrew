@@ -12,8 +12,6 @@ datasource db {
 
 model Cart {
   id             String   @id @default(uuid())
-  csrfToken      String
-  cookies        String // JSON string
   createdAt      DateTime @default(now())
   lastActivityAt DateTime @default(now()) @updatedAt
   metadata       String? // JSON string for optional metadata
@@ -131,15 +129,16 @@ model Order {
 }
 
 model GroupOrder {
-  id             String   @id @default(uuid())
-  name           String?
-  leaderId       String // User ID of the group leader
-  organizationId String? // Organization ID for filtering
-  startDate      DateTime
-  endDate        DateTime
-  status         String   @default("open") // open, closed, submitted, completed
-  sessionId      String? // Session ID for order verification (links to Cart)
-  fee            Float? // Difference between backend total price and computed price (for reimbursement calculation)
+  id               String   @id @default(uuid())
+  name             String?
+  leaderId         String // User ID of the group leader
+  organizationId   String? // Organization ID for filtering
+  startDate        DateTime
+  endDate          DateTime
+  status           String   @default("open") // open, closed, submitted, completed
+  sessionId        String? // Session ID for order verification (links to Cart)
+  commandeOrderId  String? // commande.app order id returned from order.create — used for status tracking
+  fee              Float? // Difference between backend total price and computed price (for reimbursement calculation)
   createdAt      DateTime @default(now())
   updatedAt      DateTime @default(now()) @updatedAt
 

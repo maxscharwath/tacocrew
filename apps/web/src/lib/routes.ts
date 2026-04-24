@@ -17,6 +17,7 @@ import { authenticationLoader, LoginRoute } from '@/routes/login';
 import { orderCreateAction, orderCreateLoader } from '@/routes/orders.create';
 import { orderDetailAction, orderDetailLoader } from '@/routes/orders.detail';
 import { OrdersRoute, ordersAction, ordersLoader } from '@/routes/orders.list';
+import { orderProgressionLoader } from '@/routes/orders.progression';
 import { orderSubmitLoader } from '@/routes/orders.submit';
 import { organizationJoinLoader } from '@/routes/organizations.join';
 import { profileLoader } from '@/routes/profile';
@@ -152,6 +153,20 @@ export const { routes, routerConfig } = defineRoutes({
           fallback: OrderDetailSkeleton,
         },
         loader: orderSubmitLoader,
+        hydrateFallback: OrderDetailSkeleton,
+      },
+      orderProgression: {
+        path: 'orders/:orderId/progress',
+        params: orderParams,
+        element: {
+          importFn: () =>
+            import('@/routes/orders.progression').then((module) => ({
+              default: module.OrderProgressionRoute,
+            })),
+          fallback: OrderDetailSkeleton,
+        },
+        loader: orderProgressionLoader,
+        errorElement: RootErrorBoundary,
         hydrateFallback: OrderDetailSkeleton,
       },
       stock: {

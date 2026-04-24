@@ -75,7 +75,14 @@ export class GroupOrderRepository {
     updates: Partial<
       Pick<
         GroupOrder,
-        'name' | 'status' | 'startDate' | 'endDate' | 'sessionId' | 'fee' | 'leaderId'
+        | 'name'
+        | 'status'
+        | 'startDate'
+        | 'endDate'
+        | 'sessionId'
+        | 'commandeOrderId'
+        | 'fee'
+        | 'leaderId'
       >
     >
   ): Promise<GroupOrder> {
@@ -88,6 +95,9 @@ export class GroupOrderRepository {
           ...(updates.startDate !== undefined && { startDate: updates.startDate }),
           ...(updates.endDate !== undefined && { endDate: updates.endDate }),
           ...(updates.sessionId !== undefined && { sessionId: updates.sessionId }),
+          ...(updates.commandeOrderId !== undefined && {
+            commandeOrderId: updates.commandeOrderId,
+          }),
           ...(updates.fee !== undefined && { fee: updates.fee }),
           ...(updates.leaderId !== undefined && { leaderId: updates.leaderId }),
           updatedAt: new Date(),

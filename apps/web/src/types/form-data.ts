@@ -3,8 +3,8 @@
  * Represents the structure of what user selects
  */
 
-import type { TacoSize } from '@tacocrew/gigatacos-client';
 import { TacoKind } from '@/lib/api/types';
+import type { TacoSize } from '@/lib/taco-config';
 
 export interface MeatSelection {
   id: string;

@@ -1,0 +1,11 @@
+[
+  {
+    "id": "combo_menu_1",
+    "name": "Menu Tacos M + Boisson",
+    "price": 18,
+    "slots": [
+      { "id": "slot_main", "name": "Tacos", "productIds": ["cmmcc6js300dp6h17fh1nq23p"] },
+      { "id": "slot_drink", "name": "Boisson", "productIds": ["prod_drink_cola"] }
+    ]
+  }
+]

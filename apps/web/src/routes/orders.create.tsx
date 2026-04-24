@@ -3,7 +3,6 @@
  * Professional architecture: Clean separation of concerns, minimal component logic
  */
 
-import { TacoSize } from '@tacocrew/gigatacos-client';
 import { Alert } from '@tacocrew/ui-kit';
 import { ArrowLeft } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -35,6 +34,7 @@ import { useProgressSteps } from '@/hooks/useProgressSteps';
 import { getStock } from '@/lib/api/stock';
 import { TacoKind } from '@/lib/api/types';
 import { routes } from '@/lib/routes';
+import type { TacoSize } from '@/lib/taco-config';
 import { createActionHandler } from '@/lib/utils/action-handler';
 import { requireParam } from '@/lib/utils/param-validators';
 import { upsertUserOrder } from '@/services/order.service';

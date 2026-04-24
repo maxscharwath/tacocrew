@@ -1,6 +1,6 @@
-import type { TacoSize } from '@tacocrew/gigatacos-client';
 import type { ComponentType } from 'react';
 import type { StockResponse } from '@/lib/api';
+import type { TacoSize } from '@/lib/taco-config';
 /**
  * Shared types for order-related components and hooks
  */

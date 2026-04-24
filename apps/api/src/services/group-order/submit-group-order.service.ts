@@ -3,10 +3,7 @@
  * @module services/group-order
  */
 
-import {
-  StoreClosedError as ClientStoreClosedError,
-  PaymentMethod,
-} from '@tacocrew/gigatacos-client';
+import { RestaurantClosedError as ClientRestaurantClosedError } from '@tacocrew/commande-client';
 import { injectable } from 'tsyringe';
 import { GroupOrderRepository } from '@/infrastructure/repositories/group-order.repository';
 import { UserOrderRepository } from '@/infrastructure/repositories/user-order.repository';
@@ -19,7 +16,11 @@ import { BadgeEvaluationService } from '@/services/badge/badge-evaluation.servic
 import { StatsTrackingService } from '@/services/badge/stats-tracking.service';
 import { NotificationService } from '@/services/notification/notification.service';
 import { SlackNotificationService } from '@/services/notification/slack-notification.service';
-import { BackendOrderSubmissionService } from '@/services/order/backend-order-submission.service';
+import {
+  BackendOrderSubmissionService,
+  type LegacyPaymentMethod,
+  type SubmitGroupOrderResult,
+} from '@/services/order/backend-order-submission.service';
 import { ResourceService } from '@/services/resource/resource.service';
 import type { Customer, DeliveryInfo, StockAvailability } from '@/shared/types/types';
 import { GroupOrderStatus } from '@/shared/types/types';
@@ -29,21 +30,13 @@ import { logger } from '@/shared/utils/logger.utils';
 import { calculateTotalPriceFromUserOrders } from '@/shared/utils/order-price.utils';
 import { validateItemAvailability } from '@/shared/utils/order-validation.utils';
 
-type SubmissionResult = {
-  orderId: string;
-  transactionId: string;
-  orderData: unknown;
-  sessionId: string;
-  orderSummary: import('@tacocrew/gigatacos-client').OrderSummary | null;
-  dryRun?: boolean;
-};
-
 type ExecuteResult = {
   groupOrderId: GroupOrderId;
   submittedCount: number;
   orderId: string;
   transactionId: string;
   dryRun?: boolean;
+  orderPreview?: SubmitGroupOrderResult['orderPreview'];
 };
 
 @injectable()
@@ -61,7 +54,7 @@ export class SubmitGroupOrderUseCase {
     groupOrderId: GroupOrderId,
     customer: Customer,
     delivery: DeliveryInfo,
-    paymentMethod?: PaymentMethod,
+    paymentMethod?: LegacyPaymentMethod,
     dryRun = false
   ): Promise<ExecuteResult> {
     const groupOrder = await this.validateGroupOrder(groupOrderId);
@@ -79,16 +72,15 @@ export class SubmitGroupOrderUseCase {
       dryRun
     );
 
-    // Calculate fee: difference between backend total price and computed price
     const computedPrice = calculateTotalPriceFromUserOrders(userOrders);
-    const backendTotalPrice = result.orderSummary?.totalAmount ?? computedPrice;
-    const backendDeliveryFee = result.orderSummary?.deliveryFee;
-    const fee = backendDeliveryFee ?? Math.max(backendTotalPrice - computedPrice, 0);
+    const backendTotalPrice = result.backendTotal ?? computedPrice;
+    const fee = Math.max(backendTotalPrice - computedPrice, 0);
 
     await this.groupOrderRepository.update(groupOrderId, {
       sessionId: result.sessionId,
       status: GroupOrderStatus.SUBMITTED,
       fee,
+      ...(dryRun ? {} : { commandeOrderId: result.orderId }),
     });
 
     logger.info('Fee calculated and stored', {
@@ -160,6 +152,7 @@ export class SubmitGroupOrderUseCase {
       orderId: result.orderId,
       transactionId: result.transactionId,
       ...(dryRun && { dryRun: true }),
+      ...(result.orderPreview !== undefined && { orderPreview: result.orderPreview }),
     };
   }
 
@@ -218,21 +211,20 @@ export class SubmitGroupOrderUseCase {
     customer: Customer,
     delivery: DeliveryInfo,
     groupOrderId: GroupOrderId,
-    paymentMethod?: PaymentMethod,
+    paymentMethod?: LegacyPaymentMethod,
     dryRun = false
-  ): Promise<SubmissionResult> {
+  ): Promise<SubmitGroupOrderResult> {
     try {
-      return await this.backendOrderSubmissionService.submitGroupOrder(
+      return await this.backendOrderSubmissionService.submitGroupOrder({
         userOrders,
         customer,
         delivery,
         groupOrderId,
         paymentMethod,
-        dryRun
-      );
+        dryRun,
+      });
     } catch (error) {
-      // Let StoreClosedError propagate — it's handled by the error middleware
-      if (error instanceof ClientStoreClosedError || error instanceof StoreClosedError) {
+      if (error instanceof ClientRestaurantClosedError || error instanceof StoreClosedError) {
         throw error;
       }
       logger.error('Failed to submit group order to backend', {

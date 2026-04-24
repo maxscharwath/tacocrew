@@ -4,7 +4,6 @@
  */
 
 import { createRoute } from '@hono/zod-openapi';
-import { OrderType } from '@tacocrew/gigatacos-client';
 import { z } from 'zod';
 import { AmountSchema, ErrorResponseSchema, jsonContent } from '@/api/schemas/shared.schemas';
 import {
@@ -12,6 +11,7 @@ import {
   UserOrderItemsSchema,
 } from '@/api/schemas/user-order.schemas';
 import { authSecurity, createAuthenticatedRouteApp } from '@/api/utils/route.utils';
+import { OrderType } from '@/domain/taco-config';
 import { GroupOrderRepository } from '@/infrastructure/repositories/group-order.repository';
 import { GroupOrderId } from '@/schemas/group-order.schema';
 import { OrganizationId } from '@/schemas/organization.schema';
@@ -441,6 +441,7 @@ app.openapi(
             orderId: z.string(),
             transactionId: z.string(),
             dryRun: z.boolean().optional(),
+            orderPreview: z.unknown().optional(),
           })
         ),
       },
@@ -497,6 +498,7 @@ app.openapi(
         orderId: result.orderId,
         transactionId: result.transactionId,
         ...(result.dryRun && { dryRun: true }),
+        ...(result.orderPreview !== undefined && { orderPreview: result.orderPreview }),
       },
       200
     );

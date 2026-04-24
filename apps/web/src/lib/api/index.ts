@@ -3,6 +3,7 @@ export * from '@/lib/api/auth';
 export * from '@/lib/api/badges';
 export * from '@/lib/api/image-utils';
 export * from '@/lib/api/notifications';
+export * from '@/lib/api/order-status';
 export * from '@/lib/api/orders';
 export * from '@/lib/api/organization';
 export * from '@/lib/api/stock';

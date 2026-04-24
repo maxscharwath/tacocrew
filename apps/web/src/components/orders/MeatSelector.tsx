@@ -91,6 +91,14 @@ export function MeatSelector({
                     <div className="pointer-events-none absolute inset-0 z-10 rounded-2xl border-2 border-slate-600/30 border-dashed bg-slate-900/40" />
                   )}
                   <div className="relative z-0 mb-4 flex items-start gap-3">
+                    {item.imageUrl ? (
+                      <img
+                        src={item.imageUrl}
+                        alt=""
+                        loading="lazy"
+                        className="h-10 w-10 shrink-0 rounded-lg border border-white/10 bg-slate-900/60 object-cover"
+                      />
+                    ) : null}
                     <div className="min-w-0 flex-1">
                       <span
                         className={cn(

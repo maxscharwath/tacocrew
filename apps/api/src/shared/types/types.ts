@@ -3,7 +3,7 @@
  * @module types
  */
 
-import { OrderType, TacoSize } from '@tacocrew/gigatacos-client';
+import { OrderType, TacoSize } from '@/domain/taco-config';
 import { CartId } from '@/schemas/cart.schema';
 import { Dessert } from '@/schemas/dessert.schema';
 import { Drink } from '@/schemas/drink.schema';
@@ -131,6 +131,8 @@ export interface StockItem {
   name: string;
   price?: Amount;
   in_stock: boolean;
+  /** Optional image URL served by commande.app (/uploads/products/…). */
+  imageUrl?: string | null;
 }
 
 /**
@@ -156,6 +158,7 @@ export interface TacoSizeItem {
   maxMeats: number;
   maxSauces: number;
   allowGarnitures: boolean;
+  imageUrl?: string | null;
 }
 
 /**

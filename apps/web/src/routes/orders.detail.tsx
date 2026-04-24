@@ -1,6 +1,6 @@
 import { NotFoundError, OrganizationAccessError } from '@tacocrew/errors';
 import { Button } from '@tacocrew/ui-kit';
-import { Terminal } from 'lucide-react';
+import { Activity, Terminal } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -11,7 +11,7 @@ import {
   useNavigation,
 } from 'react-router';
 import {
-  CookieInjectionModal,
+  CommandeInjectionModal,
   GroupOrderReceipts,
   OrderHero,
   OrdersList,
@@ -103,7 +103,7 @@ function OrderDetailContent({ groupOrderId, initialData }: OrderDetailContentPro
   const navigation = useNavigation();
   const isSubmitting = navigation.state === 'submitting';
   const { isEnabled: isDeveloperMode } = useDeveloperMode();
-  const [isCookieModalOpen, setIsCookieModalOpen] = useState(false);
+  const [isInjectionModalOpen, setIsInjectionModalOpen] = useState(false);
 
   const currentUserId = session?.user?.id;
   const isLeader = currentUserId ? groupOrder.leader.id === currentUserId : false;
@@ -151,15 +151,21 @@ function OrderDetailContent({ groupOrderId, initialData }: OrderDetailContentPro
         {/* Sidebar */}
         <div className="space-y-3 lg:sticky lg:top-8 lg:h-fit">
           <ShareButton groupOrderId={groupOrder.id} />
-          {isDeveloperMode && isSubmitted && (
+          <Link to={routes.root.orderProgression({ orderId: groupOrderId })} className="block">
+            <Button variant="outline" fullWidth className="gap-2">
+              <Activity size={16} />
+              {t('orders.detail.hero.actions.trackButton')}
+            </Button>
+          </Link>
+          {isDeveloperMode && (
             <Button
               variant="outline"
               fullWidth
-              onClick={() => setIsCookieModalOpen(true)}
+              onClick={() => setIsInjectionModalOpen(true)}
               className="gap-2"
             >
               <Terminal size={16} />
-              Cookie Injection
+              {t('orders.detail.hero.actions.injectionButton')}
             </Button>
           )}
         </div>
@@ -174,9 +180,9 @@ function OrderDetailContent({ groupOrderId, initialData }: OrderDetailContentPro
       />
 
       {/* Modal and footer */}
-      <CookieInjectionModal
-        isOpen={isCookieModalOpen}
-        onClose={() => setIsCookieModalOpen(false)}
+      <CommandeInjectionModal
+        isOpen={isInjectionModalOpen}
+        onClose={() => setIsInjectionModalOpen(false)}
         groupOrderId={groupOrderId}
       />
 

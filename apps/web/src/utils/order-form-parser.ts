@@ -3,8 +3,8 @@
  * @module utils/order-form-parser
  */
 
-import { TacoSize } from '@tacocrew/gigatacos-client';
 import { TacoKind } from '@/lib/api/types';
+import { TacoSize } from '@/lib/taco-config';
 
 export type ParsedOrderFormData = {
   size: TacoSize | undefined;
