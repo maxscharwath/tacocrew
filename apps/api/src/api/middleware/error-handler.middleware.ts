@@ -27,12 +27,15 @@ import { logger } from '@/shared/utils/logger.utils';
  * Global error handler for Hono
  */
 export const errorHandler: ErrorHandler = (err: Error, c: Context) => {
-  // Log the error
+  // Log the error. For commande-client errors, include the truncated raw
+  // response body so production schema mismatches are debuggable from logs.
+  const bodyExcerpt = err instanceof ClientCommandeError ? err.bodyExcerpt : undefined;
   logger.error('Request error', {
     method: c.req.method,
     url: c.req.url,
     error: err instanceof ApiError ? err.code : err.message,
     stack: err.stack,
+    ...(bodyExcerpt !== undefined && { bodyExcerpt }),
   });
 
   // Handle ApiError

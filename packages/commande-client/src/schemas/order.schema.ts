@@ -42,11 +42,51 @@ export const createOrderInputSchema = z.object({
   stripePaymentIntentId: z.string().nullish(),
 });
 
-export const createOrderResponseSchema = z.object({
-  orderId: z.string(),
-  transactionId: z.string().nullish(),
-  total: z.number().optional(),
-  paymentMethod: paymentMethodSchema.optional(),
+// commande.app returns `order.create` with shape variants observed in
+// production: `orderId` may be named `id`, and `total` arrives as a
+// Prisma Decimal serialized to string. Normalize both before consumers
+// see them so the public type stays stable.
+const rawCreateOrderResponseSchema = z
+  .object({
+    orderId: z.string().optional(),
+    id: z.string().optional(),
+    transactionId: z.string().nullish(),
+    total: z
+      .union([
+        z.number(),
+        z.string().transform((s, ctx) => {
+          const n = Number(s);
+          if (!Number.isFinite(n)) {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              message: `Expected numeric string for total, got "${s}"`,
+            });
+            return z.NEVER;
+          }
+          return n;
+        }),
+      ])
+      .optional(),
+    paymentMethod: paymentMethodSchema.optional(),
+  })
+  .passthrough();
+
+export const createOrderResponseSchema = rawCreateOrderResponseSchema.transform((raw, ctx) => {
+  const orderId = raw.orderId ?? raw.id;
+  if (!orderId) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['orderId'],
+      message: 'order.create response is missing both `orderId` and `id`',
+    });
+    return z.NEVER;
+  }
+  return {
+    orderId,
+    transactionId: raw.transactionId ?? null,
+    total: raw.total,
+    paymentMethod: raw.paymentMethod,
+  };
 });
 
 export const orderSchema = z.object({

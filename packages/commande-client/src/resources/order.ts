@@ -21,6 +21,18 @@ export type CallOpts = {
   readonly signal?: AbortSignal;
 };
 
+const RAW_EXCERPT_MAX = 1024;
+
+function excerpt(raw: unknown): string {
+  try {
+    const json = JSON.stringify(raw);
+    if (json === undefined) return String(raw);
+    return json.length > RAW_EXCERPT_MAX ? `${json.slice(0, RAW_EXCERPT_MAX)}…[truncated]` : json;
+  } catch {
+    return '<unserializable>';
+  }
+}
+
 function parseOrThrow<T>(
   schema: { safeParse(v: unknown): { success: true; data: T } | { success: false; error: Error } },
   raw: unknown,
@@ -30,6 +42,7 @@ function parseOrThrow<T>(
   if (!result.success) {
     throw new ValidationError(`${label} parse failed: ${result.error.message}`, {
       cause: result.error,
+      bodyExcerpt: excerpt(raw),
     });
   }
   return result.data;
