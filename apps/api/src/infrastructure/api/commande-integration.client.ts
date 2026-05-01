@@ -209,6 +209,9 @@ export class CommandeIntegrationClient {
   }): Promise<PreflightResult> {
     const { restaurantId, serviceType, postalCode, sessionId, signal } = input;
     const needsDelivery = serviceType === 'delivery';
+    const startedAt = Date.now();
+
+    logger.debug('order.preflight.start', { restaurantId, serviceType, postalCode });
 
     const statusP = this.client.order.getRestaurantStatus(
       { restaurantId, serviceType },
@@ -236,8 +239,17 @@ export class CommandeIntegrationClient {
     if (restaurantStatus.acceptingOrders === false) issues.push('restaurant_closed');
     if (needsDelivery && deliveryZone?.available === false) issues.push('delivery_unavailable');
 
+    const ok = issues.length === 0;
+    logger.info('order.preflight.result', {
+      restaurantId,
+      serviceType,
+      ok,
+      issues,
+      durationMs: Date.now() - startedAt,
+    });
+
     return {
-      ok: issues.length === 0,
+      ok,
       restaurantStatus,
       ...(deliveryZone !== undefined && { deliveryZone }),
       ...(potentialOrderAck !== undefined && { potentialOrderAck }),

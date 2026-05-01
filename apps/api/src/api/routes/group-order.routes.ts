@@ -10,7 +10,6 @@ import { authSecurity, createAuthenticatedRouteApp } from '@/api/utils/route.uti
 import { CommandeIntegrationClient } from '@/infrastructure/api/commande-integration.client';
 import { GroupOrderRepository } from '@/infrastructure/repositories/group-order.repository';
 import { UserOrderRepository } from '@/infrastructure/repositories/user-order.repository';
-import { BackendOrderSubmissionService } from '@/services/order/backend-order-submission.service';
 import {
   canAcceptOrders,
   canSubmitGroupOrder,
@@ -18,7 +17,6 @@ import {
   GroupOrderId,
   getEffectiveStatus,
 } from '@/schemas/group-order.schema';
-import { config } from '@/shared/config/app.config';
 import { OrganizationId } from '@/schemas/organization.schema';
 import { UserId } from '@/schemas/user.schema';
 import type { UserOrder } from '@/schemas/user-order.schema';
@@ -29,13 +27,17 @@ import { GetGroupOrderWithUserOrdersUseCase } from '@/services/group-order/get-g
 import { TransferGroupOrderLeaderUseCase } from '@/services/group-order/transfer-group-order-leader.service';
 import { UpdateGroupOrderUseCase } from '@/services/group-order/update-group-order.service';
 import { UpdateGroupOrderStatusUseCase } from '@/services/group-order/update-group-order-status.service';
+import { BackendOrderSubmissionService } from '@/services/order/backend-order-submission.service';
+import { CommandeOrderEventService } from '@/services/order/commande-order-event.service';
 import { OrganizationService } from '@/services/organization/organization.service';
 import { UserService } from '@/services/user/user.service';
 import { RevealMysteryTacosService } from '@/services/user-order/reveal-mystery-tacos.service';
+import { config } from '@/shared/config/app.config';
 import { Currency, GroupOrderStatus } from '@/shared/types/types';
 import { NotFoundError, OrganizationAccessError } from '@/shared/utils/errors.utils';
 import { buildAvatarUrl } from '@/shared/utils/image.utils';
 import { inject } from '@/shared/utils/inject.utils';
+import { logger } from '@/shared/utils/logger.utils';
 import { calculateUserOrderPrice } from '@/shared/utils/order-price.utils';
 
 const app = createAuthenticatedRouteApp();
@@ -551,7 +553,15 @@ const OrderStatusResponseSchema = z.object({
   groupOrderId: z.string(),
   commandeOrderId: z.string().nullable(),
   status: z
-    .enum(['pending', 'confirmed', 'preparing', 'ready', 'out_for_delivery', 'delivered', 'cancelled'])
+    .enum([
+      'pending',
+      'confirmed',
+      'preparing',
+      'ready',
+      'out_for_delivery',
+      'delivered',
+      'cancelled',
+    ])
     .nullable(),
   source: z.enum(['activePreorders', 'confirmation', 'none']),
   updatedAt: z.string().nullable(),
@@ -582,6 +592,9 @@ app.openapi(
     const { id: groupOrderId } = c.req.valid('param');
     const groupOrderRepository = inject(GroupOrderRepository);
     const commande = inject(CommandeIntegrationClient);
+    const eventService = inject(CommandeOrderEventService);
+
+    logger.debug('order.status.poll', { groupOrderId });
 
     const groupOrder = await groupOrderRepository.findById(groupOrderId);
     if (!groupOrder) {
@@ -608,6 +621,29 @@ app.openapi(
     const preorders = await commande.getActivePreorders(config.commande.restaurantId);
     const match = preorders.find((p) => p.orderId === commandeOrderId);
     if (match) {
+      logger.debug('order.status.resolved', {
+        groupOrderId,
+        commandeOrderId,
+        status: match.status,
+        source: 'activePreorders',
+      });
+      // Recording must never break the read path — observability failures
+      // are logged inside the service and swallowed here.
+      try {
+        await eventService.recordIfChanged({
+          commandeOrderId,
+          groupOrderId,
+          status: match.status,
+          source: 'activePreorders',
+          payload: match,
+        });
+      } catch (error) {
+        logger.warn('order.status.record_failed', {
+          commandeOrderId,
+          groupOrderId,
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }
       return c.json(
         {
           groupOrderId,
@@ -621,6 +657,29 @@ app.openapi(
     }
 
     const confirmation = await commande.getOrderConfirmation(commandeOrderId);
+    logger.debug('order.status.resolved', {
+      groupOrderId,
+      commandeOrderId,
+      status: confirmation.status ?? null,
+      source: 'confirmation',
+    });
+    if (confirmation.status) {
+      try {
+        await eventService.recordIfChanged({
+          commandeOrderId,
+          groupOrderId,
+          status: confirmation.status,
+          source: 'confirmation',
+          payload: confirmation,
+        });
+      } catch (error) {
+        logger.warn('order.status.record_failed', {
+          commandeOrderId,
+          groupOrderId,
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }
+    }
     return c.json(
       {
         groupOrderId,

@@ -143,10 +143,11 @@ model GroupOrder {
   updatedAt      DateTime @default(now()) @updatedAt
 
   // Relations
-  leader       User          @relation("GroupOrderLeader", fields: [leaderId], references: [id], onDelete: Cascade)
-  organization Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+  leader       User                 @relation("GroupOrderLeader", fields: [leaderId], references: [id], onDelete: Cascade)
+  organization Organization?        @relation(fields: [organizationId], references: [id], onDelete: SetNull)
   userOrders   UserOrder[]
-  session      Cart?         @relation("GroupOrderSession", fields: [sessionId], references: [id], onDelete: SetNull)
+  session      Cart?                @relation("GroupOrderSession", fields: [sessionId], references: [id], onDelete: SetNull)
+  events       CommandeOrderEvent[]
 
   @@index([leaderId])
   @@index([organizationId])
@@ -154,6 +155,27 @@ model GroupOrder {
   @@index([status])
   @@index([sessionId])
   @@map("group_orders")
+}
+
+// Audit log of every status transition observed for a commande.app order.
+// One row per observed change; idempotency is enforced at the application layer
+// (CommandeOrderEventService.recordIfChanged) — we only insert when the latest
+// stored status for `commandeOrderId` differs from the freshly observed one.
+model CommandeOrderEvent {
+  id              String   @id @default(uuid())
+  commandeOrderId String // commande.app order id (dedup key)
+  groupOrderId    String? // optional FK back to our GroupOrder for joins
+  status          String // pending|confirmed|preparing|ready|out_for_delivery|delivered|cancelled
+  source          String // 'activePreorders' | 'confirmation'
+  observedAt      DateTime @default(now())
+  payload         Json? // full status snapshot returned by commande.app
+  createdAt       DateTime @default(now())
+
+  groupOrder GroupOrder? @relation(fields: [groupOrderId], references: [id], onDelete: SetNull)
+
+  @@index([commandeOrderId, observedAt])
+  @@index([groupOrderId])
+  @@map("commande_order_events")
 }
 
 model UserOrder {

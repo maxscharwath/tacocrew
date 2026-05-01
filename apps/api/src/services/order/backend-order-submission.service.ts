@@ -80,12 +80,26 @@ export class BackendOrderSubmissionService {
   async submitGroupOrder(input: SubmitGroupOrderInput): Promise<SubmitGroupOrderResult> {
     const session = await this.sessionService.createSession();
     const sessionId = session.sessionId;
+    const startedAt = Date.now();
+
+    logger.debug('order.submit.start', {
+      sessionId,
+      groupOrderId: input.groupOrderId,
+      userOrderCount: input.userOrders.length,
+      dryRun: input.dryRun ?? false,
+    });
 
     try {
+      const fetchStart = Date.now();
       const [stock, menu] = await Promise.all([
         this.resourceService.getStockForProcessing(),
         this.commande.getMenu(config.commande.restaurantId),
       ]);
+      logger.debug('order.submit.dependencies_loaded', {
+        sessionId,
+        groupOrderId: input.groupOrderId,
+        durationMs: Date.now() - fetchStart,
+      });
 
       const resolver = new MenuResolver(menu.products);
       const combinedItems = this.combineUserOrderItems(input.userOrders, stock);
@@ -104,6 +118,15 @@ export class BackendOrderSubmissionService {
         input.paymentMethod,
         resolver
       );
+
+      logger.debug('order.submit.payload_built', {
+        sessionId,
+        groupOrderId: input.groupOrderId,
+        transactionId,
+        itemCount: createOrderInput.items.length,
+        serviceType: createOrderInput.serviceType,
+        computedTotal,
+      });
 
       if (input.dryRun) {
         logger.info('Dry run mode: skipping commande.app submission', {
@@ -125,6 +148,7 @@ export class BackendOrderSubmissionService {
         };
       }
 
+      const remoteStart = Date.now();
       const response = await this.commande.submitOrder(createOrderInput);
 
       logger.info('Order submitted to commande.app', {
@@ -132,6 +156,8 @@ export class BackendOrderSubmissionService {
         orderId: response.orderId,
         transactionId,
         groupOrderId: input.groupOrderId,
+        remoteDurationMs: Date.now() - remoteStart,
+        totalDurationMs: Date.now() - startedAt,
       });
 
       return {
@@ -144,6 +170,8 @@ export class BackendOrderSubmissionService {
     } catch (error) {
       logger.error('Failed to submit order', {
         sessionId,
+        groupOrderId: input.groupOrderId,
+        durationMs: Date.now() - startedAt,
         error: error instanceof Error ? error.message : String(error),
       });
       throw error;
@@ -155,9 +183,7 @@ export class BackendOrderSubmissionService {
    * submitting. Used by the injection-preview endpoint so the UI can render a
    * localStorage snippet that materialises the same cart on commande.app.
    */
-  async buildInjectionPreview(input: {
-    readonly userOrders: readonly UserOrder[];
-  }): Promise<{
+  async buildInjectionPreview(input: { readonly userOrders: readonly UserOrder[] }): Promise<{
     readonly restaurantId: string;
     readonly items: ReadonlyArray<OrderItem & { readonly productImage: string | null }>;
   }> {
