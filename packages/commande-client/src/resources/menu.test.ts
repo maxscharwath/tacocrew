@@ -47,7 +47,8 @@ describe('MenuResource', () => {
     expect(result).toHaveLength(1);
     const first = result[0];
     if (!first) throw new Error('missing combo');
-    expect(first.slots).toHaveLength(2);
+    expect(first.items).toHaveLength(2);
+    expect(first.items[0]?.isMainProduct).toBe(true);
   });
 
   it('throws ValidationError when required fields are missing', async () => {

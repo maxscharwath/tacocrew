@@ -33,6 +33,26 @@ const TacoSizeItemSchema = z.object({
   imageUrl: z.string().nullish(),
 });
 
+const PromoTriggerSchema = z.object({
+  quantity: z.number().int().positive(),
+  tacoSizes: z.array(z.enum(TacoSize)).optional(),
+});
+
+const PromoRewardSchema = z.object({
+  quantity: z.number().int().positive(),
+  category: z.enum(['drinks', 'desserts', 'extras']),
+  excludedCodes: z.array(z.string()),
+});
+
+const PromoSchema = z.object({
+  kind: z.literal('free-item'),
+  id: z.string(),
+  name: z.string(),
+  serviceTypes: z.array(z.string()),
+  trigger: PromoTriggerSchema,
+  reward: PromoRewardSchema,
+});
+
 const StockAvailabilitySchema = z.object({
   meats: z.array(StockItemSchema),
   sauces: z.array(StockItemSchema),
@@ -41,6 +61,7 @@ const StockAvailabilitySchema = z.object({
   drinks: z.array(StockItemSchema),
   desserts: z.array(StockItemSchema),
   tacos: z.array(TacoSizeItemSchema),
+  promos: z.array(PromoSchema),
 });
 
 app.openapi(

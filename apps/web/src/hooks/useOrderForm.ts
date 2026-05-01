@@ -8,6 +8,12 @@ import { useEffect, useState } from 'react';
 import type { StockResponse } from '@/lib/api';
 import type { UserOrderDetail } from '@/lib/api/orders';
 import { TacoKind } from '@/lib/api/types';
+import {
+  buildCartLines,
+  collectFreeLineIds,
+  findApplicablePromos,
+  sumPromoSavings,
+} from '@/lib/promos';
 import type { MeatSelection, OrderFormData, TacoSelection } from '@/types/form-data';
 import type { TacoSizeItem } from '@/types/orders';
 import { calculateOrderTotalPrice, generatePriceBreakdown } from '@/utils/priceCalculations';
@@ -126,6 +132,7 @@ export function useOrderForm({ stock, myOrder }: UseOrderFormProps) {
     extras: [],
     drinks: [],
     desserts: [],
+    promos: [],
   };
 
   const totalPrice = calculateOrderTotalPrice(
@@ -144,6 +151,12 @@ export function useOrderForm({ stock, myOrder }: UseOrderFormProps) {
     desserts,
     stock || fallbackStock
   );
+
+  const cartLines = buildCartLines(drinks, desserts, extras, stock || fallbackStock);
+  const appliedPromos = findApplicablePromos(size, cartLines, (stock || fallbackStock).promos);
+  const freeLineIds = collectFreeLineIds(appliedPromos);
+  const promoSavings = sumPromoSavings(appliedPromos);
+  const totalPriceAfterPromos = Math.max(totalPrice - promoSavings, 0);
 
   // Toggle selection helper - handles multiple selection types
   const toggleSelection = (
@@ -299,6 +312,10 @@ export function useOrderForm({ stock, myOrder }: UseOrderFormProps) {
     selectedTacoSize,
     totalPrice,
     priceBreakdown,
+    appliedPromos,
+    freeLineIds,
+    promoSavings,
+    totalPriceAfterPromos,
 
     // Actions
     toggleSelection,

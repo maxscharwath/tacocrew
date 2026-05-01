@@ -23,6 +23,10 @@ import {
 } from '@/infrastructure/api/commande-integration.client';
 import { TacoKind } from '@/schemas/taco.schema';
 import type { UserOrder } from '@/schemas/user-order.schema';
+import {
+  type AppliedCombo,
+  applyCombinations,
+} from '@/services/order/combinations';
 import { MenuResolver } from '@/services/order/menu-resolver';
 import { ResourceService } from '@/services/resource/resource.service';
 import { SessionService } from '@/services/session/session.service';
@@ -188,16 +192,24 @@ export class BackendOrderSubmissionService {
    */
   async buildInjectionPreview(input: { readonly userOrders: readonly UserOrder[] }): Promise<{
     readonly restaurantId: string;
-    readonly items: ReadonlyArray<OrderItem & { readonly productImage: string | null }>;
+    readonly items: ReadonlyArray<
+      OrderItem & {
+        readonly productImage: string | null;
+        readonly combo?: AppliedCombo;
+      }
+    >;
   }> {
-    const [stock, menu] = await Promise.all([
+    const [stock, menu, combinations] = await Promise.all([
       this.resourceService.getStockForProcessing(),
       this.commande.getMenu(config.commande.restaurantId),
+      this.commande.getCombinations(config.commande.restaurantId).catch(() => []),
     ]);
     const resolver = new MenuResolver(menu.products);
     const imagesByProductId = new Map<string, string | null>();
+    const categoryByProductId = new Map<string, string | null>();
     for (const product of menu.products) {
       imagesByProductId.set(product.id, product.imageUrl ?? null);
+      categoryByProductId.set(product.id, product.categoryId ?? null);
     }
     const combined = this.combineUserOrderItems(input.userOrders, stock);
     const rawItems: OrderItem[] = [
@@ -206,9 +218,16 @@ export class BackendOrderSubmissionService {
       ...combined.drinks.map((drink) => this.simpleToOrderItem(drink, 'drink', resolver)),
       ...combined.desserts.map((dessert) => this.simpleToOrderItem(dessert, 'dessert', resolver)),
     ];
-    const items = rawItems.map((item) => ({
+    // Force combos to apply in delivery mode too — Giga Tacos doesn't expose
+    // free drinks for delivery server-side, but we emit the metadata anyway so
+    // the injected cart matches the takeaway/dine_in experience.
+    const combos = applyCombinations(rawItems, combinations, categoryByProductId, {
+      extraServiceTypes: ['delivery'],
+    });
+    const items = rawItems.map((item, idx) => ({
       ...item,
       productImage: imagesByProductId.get(item.productId) ?? null,
+      ...(combos[idx] !== undefined && { combo: combos[idx] }),
     }));
     return { restaurantId: config.commande.restaurantId, items };
   }

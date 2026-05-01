@@ -757,6 +757,17 @@
         "save": "Meine Bestellung speichern",
         "update": "Bestellung aktualisieren"
       },
+      "promo": {
+        "title_one": "🎁 1 Gratis-Artikel: {{name}}",
+        "title_other": "🎁 {{count}} Gratis-Artikel: {{name}}",
+        "cta": "Wähle unten einen passenden Artikel für den Bonus.",
+        "bundled": "Gratis: {{names}}",
+        "pickMore_one": "Noch 1 auswählen.",
+        "pickMore_other": "Noch {{count}} auswählen.",
+        "freeLabel": "Gratis",
+        "savings": "Du sparst {{amount}} CHF mit diesem Bonus.",
+        "savingsTotal": "Du sparst {{amount}} {{currency}} dank Promos."
+      },
       "customizeSection": {
         "meatTypesSelected_one": "{{count}} Sorte",
         "meatTypesSelected_other": "{{count}} Sorten",
@@ -975,7 +986,8 @@
         },
         "total": {
           "caption": "Alle Bestellungen",
-          "label": "Gesamtpreis"
+          "label": "Gesamtpreis",
+          "savings": "Du sparst {{amount}} {{currency}} dank Promos"
         }
       },
       "list": {
@@ -1002,6 +1014,7 @@
         },
         "itemCount_one": "{{count}} Position",
         "itemCount_other": "{{count}} Positionen",
+        "promoBadge": "-{{amount}} {{currency}}",
         "myOrderBadge": "MEINE BESTELLUNG",
         "reimbursement": {
           "error": "Rückerstattung konnte nicht aktualisiert werden. Bitte versuche es erneut.",
@@ -1056,6 +1069,8 @@
         },
         "subtitle": "Hier siehst du Zahlungs- und Erstattungsstatus.",
         "subtotal": "Zwischensumme",
+        "promo": "Promos",
+        "freeLabel": "Gratis",
         "summaryBadge": "Gruppenübersicht",
         "summaryFee": "Lieferkosten",
         "summaryFood": "Summe Essen",
@@ -1144,6 +1159,10 @@
         "description": "Generiere ein Snippet, um diesen Warenkorb auf der echten Seite zu rekonstruieren.",
         "loading": "Snippet wird vorbereitet…",
         "error": "Snippet konnte nicht erstellt werden."
+      },
+      "combos": {
+        "title": "Inkludierte Boni",
+        "freeItem": "Gratis-Getränk"
       }
     },
     "submit": {

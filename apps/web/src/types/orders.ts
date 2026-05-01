@@ -13,6 +13,9 @@ export type MeatSelection = {
 export type PriceBreakdownItem = {
   label: string;
   price: number;
+  /** Stock-item id when the line corresponds to a real cart item — used to
+   *  match against free-line ids from applied promos. `null` for the taco. */
+  lineId?: string | null;
 };
 
 export type ProgressStep = {

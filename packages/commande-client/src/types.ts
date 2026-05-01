@@ -47,17 +47,26 @@ export type Product = {
   readonly variants: readonly Variant[];
 };
 
-export type CombinationSlot = {
+export type CombinationItem = {
   readonly id: string;
-  readonly name: string;
-  readonly productIds: readonly string[];
+  readonly combinationId: string;
+  readonly productId: string | null;
+  readonly categoryId: string | null;
+  readonly quantity: number;
+  readonly isMainProduct: boolean;
+  readonly excludedProductIds: readonly string[];
 };
 
 export type Combination = {
   readonly id: string;
   readonly name: string;
+  readonly description?: string | null;
   readonly price: number;
-  readonly slots: readonly CombinationSlot[];
+  readonly image?: string | null;
+  readonly isActive: boolean;
+  readonly displayOrder?: number | null;
+  readonly serviceTypes: readonly string[];
+  readonly items: readonly CombinationItem[];
 };
 
 export type Restaurant = {

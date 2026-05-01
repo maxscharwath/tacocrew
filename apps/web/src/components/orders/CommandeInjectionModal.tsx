@@ -21,9 +21,6 @@ export function CommandeInjectionModal({
 
   const orderPreview = useMemo<OrderPreview | null>(() => {
     if (!data) return null;
-    // The injection endpoint returns only { restaurantId, items }. The card's
-    // helper reads `items` + `restaurantId` — other OrderPreview fields are
-    // unused by the snippet builder, so we fill them with safe defaults.
     const items: OrderPreviewItem[] = data.items.map((item) => ({
       productId: item.productId,
       ...(item.productName !== undefined && { productName: item.productName }),
@@ -33,6 +30,7 @@ export function CommandeInjectionModal({
       price: item.price,
       options: item.options,
       note: item.note ?? null,
+      ...(item.combo !== undefined && { combo: item.combo }),
     }));
     return {
       restaurantId: data.restaurantId,
@@ -57,7 +55,9 @@ export function CommandeInjectionModal({
       title={t('orders.injection.modal.title')}
       description={t('orders.injection.modal.description')}
     >
-      {isLoading && <p className="text-slate-400 text-sm">{t('orders.injection.modal.loading')}</p>}
+      {isLoading && (
+        <p className="text-slate-400 text-sm">{t('orders.injection.modal.loading')}</p>
+      )}
       {error && (
         <p className="text-red-400 text-sm">
           {error instanceof Error ? error.message : t('orders.injection.modal.error')}

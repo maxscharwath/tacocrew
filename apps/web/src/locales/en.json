@@ -757,6 +757,17 @@
         "save": "Save my order",
         "update": "Update order"
       },
+      "promo": {
+        "title_one": "🎁 1 free item: {{name}}",
+        "title_other": "🎁 {{count}} free items: {{name}}",
+        "cta": "Add an eligible item below to claim the bonus.",
+        "bundled": "Free: {{names}}",
+        "pickMore_one": "1 more to pick.",
+        "pickMore_other": "{{count}} more to pick.",
+        "freeLabel": "Free",
+        "savings": "You save {{amount}} CHF on this bonus.",
+        "savingsTotal": "You save {{amount}} {{currency}} thanks to promos."
+      },
       "customizeSection": {
         "meatTypesSelected_one": "{{count}} type",
         "meatTypesSelected_other": "{{count}} types",
@@ -975,7 +986,8 @@
         },
         "total": {
           "caption": "All orders",
-          "label": "Total price"
+          "label": "Total price",
+          "savings": "You save {{amount}} {{currency}} thanks to promos"
         }
       },
       "list": {
@@ -1002,6 +1014,7 @@
         },
         "itemCount_one": "{{count}} item",
         "itemCount_other": "{{count}} items",
+        "promoBadge": "-{{amount}} {{currency}}",
         "myOrderBadge": "MY ORDER",
         "reimbursement": {
           "error": "Unable to update reimbursement. Please try again.",
@@ -1056,6 +1069,8 @@
         },
         "subtitle": "Track payments and reimbursements here.",
         "subtotal": "Subtotal",
+        "promo": "Promos",
+        "freeLabel": "Free",
         "summaryBadge": "Group summary",
         "summaryFee": "Delivery fees",
         "summaryFood": "Food total",
@@ -1144,6 +1159,10 @@
         "description": "Generate a snippet to rebuild this cart on the real site.",
         "loading": "Preparing snippet…",
         "error": "Could not build the snippet."
+      },
+      "combos": {
+        "title": "Included bonuses",
+        "freeItem": "Free drink"
       }
     },
     "submit": {

@@ -55,7 +55,7 @@ describe('buildCommandeCartPayload', () => {
     const payload = buildCommandeCartPayload(previewWithTaco(), META);
 
     expect(payload.version).toBe(0);
-    expect(payload.state.isOpen).toBe(false);
+    expect(payload.state.isOpen).toBe(true);
     expect(payload.state.items).toHaveLength(1);
   });
 
@@ -143,8 +143,7 @@ describe('buildCommandeInjectionSnippet', () => {
     expect(snippet).toContain(
       `localStorage.setItem(${JSON.stringify(cartStorageKey(META.restaurantSlug))},`
     );
-    expect(snippet).toContain(`https://commande.app/${META.restaurantSlug}`);
-    expect(snippet).not.toContain('/checkout'); // now lands on restaurant page
+    expect(snippet).toContain(`https://commande.app/${META.restaurantSlug}/checkout/`);
   });
 
   test('cart blob round-trips through JSON.parse', () => {

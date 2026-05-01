@@ -13,8 +13,10 @@ export interface CommandeCartSelectedOption {
 
 /**
  * commande.app cart item shape, reverse-engineered from a real production
- * localStorage dump. Mandatory fields only — the SPA treats combination*,
- * variantId etc. as optional and hydrates defaults.
+ * localStorage dump. Combination* fields appear when an item is part of a
+ * "Boisson offerte" / "N boissons offertes" bundle. Side items (drinks
+ * bundled with a main taco) carry `basePrice: 0`, while the main keeps its
+ * own basePrice — `combinationPrice` carries the bundle price.
  */
 export interface CommandeCartItem {
   readonly id: string;
@@ -30,6 +32,12 @@ export interface CommandeCartItem {
   readonly restaurantId: string;
   readonly restaurantName: string;
   readonly restaurantSlug: string;
+  readonly combinationId?: string;
+  readonly combinationInstanceId?: string;
+  readonly combinationName?: string;
+  readonly combinationPrice?: number;
+  readonly isMainInCombination?: boolean;
+  readonly combinationServiceTypes?: ReadonlyArray<string>;
 }
 
 /** Cart-side serviceType values (note `takeaway`, `dine_in`, differ from order.create). */
@@ -38,7 +46,8 @@ export type CommandeCartServiceType = 'takeaway' | 'delivery' | 'dine_in';
 export interface CommandeCartStorage {
   readonly state: {
     readonly items: ReadonlyArray<CommandeCartItem>;
-    readonly isOpen: false;
+    /** `true` so commande.app opens the cart drawer immediately on landing. */
+    readonly isOpen: true;
   };
   readonly version: 0;
 }
@@ -115,20 +124,34 @@ function mapItem(item: OrderPreviewItem, ctx: MapItemContext): CommandeCartItem 
     }
     return mapOption(option, groupOrder, idx);
   });
+
+  const combo = item.combo;
+  const isBundledSide = combo?.isMainInCombination === false;
+  const basePrice = isBundledSide ? 0 : item.price;
+  const totalPrice = isBundledSide ? 0 : computeTotalPrice(item);
+
   return {
     id: randomCartItemId(),
     productId: item.productId,
     productName: item.productName ?? 'Article',
     productImage,
     selectedOptions,
-    basePrice: item.price,
-    totalPrice: computeTotalPrice(item),
+    basePrice,
+    totalPrice,
     quantity: item.quantity,
     note: item.note ?? '',
     serviceType: ctx.serviceType,
     restaurantId: ctx.meta.restaurantId,
     restaurantName: ctx.meta.restaurantName,
     restaurantSlug: ctx.meta.restaurantSlug,
+    ...(combo !== undefined && {
+      combinationId: combo.combinationId,
+      combinationInstanceId: combo.combinationInstanceId,
+      combinationName: combo.combinationName,
+      combinationPrice: combo.combinationPrice,
+      isMainInCombination: combo.isMainInCombination,
+      combinationServiceTypes: combo.combinationServiceTypes,
+    }),
   };
 }
 
@@ -147,7 +170,7 @@ export function buildCommandeCartPayload(
     mapItem(item, { meta, serviceType, productImages: opts.productImages ?? {} })
   );
   return {
-    state: { items, isOpen: false },
+    state: { items, isOpen: true },
     version: 0,
   };
 }
@@ -179,7 +202,8 @@ export function buildRestaurantStorePayload(meta: CommandeRestaurantMeta): {
   };
 }
 
-/** `platfo-step-storage` value — resets the checkout wizard to the service step. */
+/** `platfo-step-storage` value — lands the user on the menu step with the
+ *  service type pre-selected, so they can immediately see + edit the cart. */
 export function buildStepStoragePayload(
   meta: CommandeRestaurantMeta,
   serviceType: CommandeCartServiceType
@@ -187,7 +211,7 @@ export function buildStepStoragePayload(
   readonly state: {
     readonly selectedRestaurantId: string;
     readonly selectedRestaurantSlug: string;
-    readonly step: 'service';
+    readonly step: 'menu';
     readonly isMultiRestaurantMode: false;
     readonly selectedServiceType: CommandeCartServiceType;
     readonly deliveryAddress: null;
@@ -201,7 +225,7 @@ export function buildStepStoragePayload(
     state: {
       selectedRestaurantId: meta.restaurantId,
       selectedRestaurantSlug: meta.restaurantSlug,
-      step: 'service',
+      step: 'menu',
       isMultiRestaurantMode: false,
       selectedServiceType: serviceType,
       deliveryAddress: null,
@@ -213,6 +237,18 @@ export function buildStepStoragePayload(
   };
 }
 
+/** Generate a v4-style UUID without depending on `crypto.randomUUID()` so the
+ *  helper stays usable in non-secure-context test environments. */
+function uuidV4(): string {
+  const hex = '0123456789abcdef';
+  const bytes = new Array(16).fill(0).map(() => Math.floor(Math.random() * 16));
+  // RFC 4122: version 4 in nibble 13, variant 10xx in nibble 17.
+  bytes[6] = (bytes[6] & 0x3) | 0x4;
+  bytes[8] = (bytes[8] & 0x3) | 0x8;
+  const s = bytes.map((b) => hex[b]).join('');
+  return `${s.slice(0, 8)}-${s.slice(8, 12)}-${s.slice(12, 16)}-${s.slice(16, 20)}-${s.slice(20, 32)}`;
+}
+
 export function buildCommandeInjectionSnippet(
   cart: CommandeCartStorage,
   meta: CommandeRestaurantMeta,
@@ -221,6 +257,9 @@ export function buildCommandeInjectionSnippet(
   const cartKey = cartStorageKey(meta.restaurantSlug);
   const restaurantStore = buildRestaurantStorePayload(meta);
   const stepStorage = buildStepStoragePayload(meta, serviceType);
+  // commande.app expects a session id alongside the cart so its analytics +
+  // potentialOrder calls don't bail out. Generated fresh per snippet.
+  const potentialOrderSessionId = uuidV4();
 
   // Double-stringify so the inner JSON becomes a valid JS string literal inside
   // the snippet; otherwise unescaped quotes would break the pasted statement.
@@ -231,6 +270,7 @@ export function buildCommandeInjectionSnippet(
 
   return [
     '// tacocrew cart injection — paste in commande.app DevTools console',
+    `localStorage.setItem("potentialOrderSessionId", ${JSON.stringify(potentialOrderSessionId)});`,
     `localStorage.setItem("restaurant-store", ${restaurantSerialized});`,
     `localStorage.setItem("platfo-step-storage", ${stepSerialized});`,
     `localStorage.setItem(${cartKeyLiteral}, ${cartSerialized});`,

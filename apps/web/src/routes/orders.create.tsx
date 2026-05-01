@@ -23,6 +23,7 @@ import {
   OrderCreateHero,
   OrderSummary,
   PreviousTacos,
+  PromoBanner,
   TacoBuilder,
   TacoSizeSelector,
 } from '@/components/orders';
@@ -315,6 +316,20 @@ export function OrderCreateRoute() {
             />
           )}
 
+          {/* Promo banner — shown when the cart triggers a free-item promo */}
+          {stock && orderForm.appliedPromos.length > 0 && (
+            <PromoBanner
+              appliedPromos={orderForm.appliedPromos}
+              itemNamesById={
+                new Map([
+                  ...stock.drinks.map((d) => [d.id, d.name] as const),
+                  ...stock.desserts.map((d) => [d.id, d.name] as const),
+                  ...stock.extras.map((d) => [d.id, d.name] as const),
+                ])
+              }
+            />
+          )}
+
           {/* Extras Section */}
           {stock && (
             <ExtrasSection
@@ -358,6 +373,8 @@ export function OrderCreateRoute() {
             note={orderForm.note}
             priceBreakdown={orderForm.priceBreakdown}
             totalPrice={orderForm.totalPrice}
+            freeLineIds={orderForm.freeLineIds}
+            promoSavings={orderForm.promoSavings}
             currency={currency}
             summaryBreakdown={summaryBreakdown}
             hasTaco={!!orderForm.selectedTacoSize}

@@ -702,6 +702,15 @@ const InjectionOptionSchema = z.object({
   extraPrice: z.number(),
 });
 
+const InjectionComboSchema = z.object({
+  combinationId: z.string(),
+  combinationName: z.string(),
+  combinationPrice: z.number(),
+  combinationInstanceId: z.string(),
+  combinationServiceTypes: z.array(z.string()),
+  isMainInCombination: z.boolean(),
+});
+
 const InjectionItemSchema = z.object({
   productId: z.string(),
   productName: z.string().optional(),
@@ -711,6 +720,7 @@ const InjectionItemSchema = z.object({
   price: z.number(),
   options: z.array(InjectionOptionSchema),
   note: z.string().nullish(),
+  combo: InjectionComboSchema.optional(),
 });
 
 const InjectionPreviewResponseSchema = z.object({

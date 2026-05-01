@@ -116,17 +116,29 @@ export const menuItemsSchema = z.object({
   products: z.array(productSchema),
 });
 
-export const combinationSlotSchema = z.object({
+// Combination shape — reverse-engineered from the real
+// `menuCombination.getPublicByRestaurant` response. Unknown fields
+// (createdAt/restaurantId/embedded product/...) are dropped silently.
+export const combinationItemSchema = z.object({
   id: z.string(),
-  name: z.string(),
-  productIds: z.array(z.string()),
+  combinationId: z.string(),
+  productId: z.string().nullable(),
+  categoryId: z.string().nullable(),
+  quantity: z.number().int().positive(),
+  isMainProduct: z.boolean(),
+  excludedProductIds: z.array(z.string()).default([]),
 });
 
 export const combinationSchema = z.object({
   id: z.string(),
   name: z.string(),
-  price: z.number(),
-  slots: z.array(combinationSlotSchema),
+  description: z.string().nullish(),
+  price: z.union([z.number(), z.string()]).transform((v) => (typeof v === 'string' ? toNumber(v) : v)),
+  image: z.string().nullish(),
+  isActive: z.boolean(),
+  displayOrder: z.number().int().nonnegative().nullish(),
+  serviceTypes: z.array(z.string()),
+  items: z.array(combinationItemSchema),
 });
 
 export const combinationListSchema = z.array(combinationSchema);

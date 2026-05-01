@@ -4,6 +4,7 @@
  */
 
 import { injectable } from 'tsyringe';
+import type { Promo } from '@/domain/promos';
 import type { StockAvailability as RawStockAvailability } from '@/domain/taco-config';
 import { TACO_SIZE_CONFIG, TacoSize } from '@/domain/taco-config';
 import { CommandeIntegrationClient } from '@/infrastructure/api/commande-integration.client';
@@ -32,13 +33,17 @@ export class ResourceService {
   }
 
   async getStock(): Promise<StockAvailability> {
-    const { stock, tacoImages } = await this.commande.getMenuSnapshot(config.commande.restaurantId);
-    return this.transformStock(stock, tacoImages);
+    const [{ stock, tacoImages }, promos] = await Promise.all([
+      this.commande.getMenuSnapshot(config.commande.restaurantId),
+      this.commande.getPromos(config.commande.restaurantId).catch(() => []),
+    ]);
+    return this.transformStock(stock, tacoImages, promos);
   }
 
   private transformStock(
     raw: RawStockAvailability,
-    tacoImages: Readonly<Record<string, string | null>>
+    tacoImages: Readonly<Record<string, string | null>>,
+    promos: ReadonlyArray<Promo>
   ): StockAvailability {
     return {
       [StockCategory.Meats]: this.mapBucket(raw.viandes, StockCategory.Meats),
@@ -48,6 +53,21 @@ export class ResourceService {
       [StockCategory.Drinks]: this.mapBucket(raw.boissons, StockCategory.Drinks),
       [StockCategory.Desserts]: this.mapBucket(raw.desserts, StockCategory.Desserts),
       tacos: this.buildTacoSizes(tacoImages),
+      promos: promos.map((p) => ({
+        kind: p.kind,
+        id: p.id,
+        name: p.name,
+        serviceTypes: [...p.serviceTypes],
+        trigger: {
+          quantity: p.trigger.quantity,
+          ...(p.trigger.tacoSizes !== undefined && { tacoSizes: [...p.trigger.tacoSizes] }),
+        },
+        reward: {
+          quantity: p.reward.quantity,
+          category: p.reward.category,
+          excludedCodes: [...p.reward.excludedCodes],
+        },
+      })),
     };
   }
 

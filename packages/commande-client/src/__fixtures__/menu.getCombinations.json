@@ -1,11 +1,32 @@
 [
   {
-    "id": "combo_menu_1",
-    "name": "Menu Tacos M + Boisson",
-    "price": 18,
-    "slots": [
-      { "id": "slot_main", "name": "Tacos", "productIds": ["cmmcc6js300dp6h17fh1nq23p"] },
-      { "id": "slot_drink", "name": "Boisson", "productIds": ["prod_drink_cola"] }
+    "id": "cmn674hfkea81ab68f879",
+    "name": "Boisson offerte",
+    "description": "",
+    "price": "12",
+    "image": "",
+    "isActive": true,
+    "displayOrder": 3,
+    "serviceTypes": ["takeaway", "dine_in"],
+    "items": [
+      {
+        "id": "slot-main",
+        "combinationId": "cmn674hfkea81ab68f879",
+        "productId": "cmmcc6jug00fb6h172s76v0ap",
+        "categoryId": null,
+        "quantity": 1,
+        "isMainProduct": true,
+        "excludedProductIds": []
+      },
+      {
+        "id": "slot-drink",
+        "combinationId": "cmn674hfkea81ab68f879",
+        "productId": null,
+        "categoryId": "cmmcc6jky00936h17cvz4dp91",
+        "quantity": 1,
+        "isMainProduct": false,
+        "excludedProductIds": []
+      }
     ]
   }
 ]

@@ -22,6 +22,7 @@ export interface StockInfo {
   readonly imageUrl?: string | null;
 }
 
+
 /**
  * Stock availability for all product categories (raw/backend format).
  *

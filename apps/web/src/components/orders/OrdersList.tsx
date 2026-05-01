@@ -12,7 +12,13 @@ import {
 import { Plus, ShoppingBag } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link, useRevalidator } from 'react-router';
+import { useStock } from '@/lib/api/stock';
 import type { GroupOrder, UserOrderSummary } from '@/lib/api/types';
+import {
+  buildCartLinesFromUserOrder,
+  findApplicablePromosForCart,
+  sumPromoSavings,
+} from '@/lib/promos';
 import { routes } from '@/lib/routes';
 import { getOrderPermissions, useEmptyStateDescription } from '@/utils/order-helpers';
 import { OrderCard } from './OrderCard';
@@ -39,6 +45,8 @@ export function OrdersList({
   const { t } = useTranslation();
   const revalidator = useRevalidator();
   const emptyStateDescription = useEmptyStateDescription(canAddOrders, groupOrder);
+  const { data: stock } = useStock();
+  const promos = stock?.promos ?? [];
 
   return (
     <Card className="border-white/10 bg-slate-900/50">
@@ -71,6 +79,13 @@ export function OrdersList({
               const isSubmitted =
                 groupOrder.status === 'submitted' || groupOrder.status === 'completed';
 
+              const tacoSizes = order.items.tacos.flatMap((t) =>
+                Array<string>(t.quantity ?? 1).fill(t.size)
+              );
+              const cartLines = buildCartLinesFromUserOrder(order);
+              const appliedPromos = findApplicablePromosForCart(tacoSizes, cartLines, promos);
+              const promoSavings = sumPromoSavings(appliedPromos);
+
               return (
                 <OrderCard
                   key={order.id}
@@ -82,6 +97,7 @@ export function OrdersList({
                   isSubmitting={isSubmitting}
                   isLeader={isLeader}
                   isSubmitted={isSubmitted}
+                  promoSavings={promoSavings}
                   onDuplicate={() => {
                     revalidator.revalidate();
                   }}

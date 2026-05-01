@@ -64,6 +64,14 @@ export interface InjectionPreviewResponse {
       extraPrice: number;
     }>;
     note?: string | null;
+    combo?: {
+      combinationId: string;
+      combinationName: string;
+      combinationPrice: number;
+      combinationInstanceId: string;
+      combinationServiceTypes: ReadonlyArray<string>;
+      isMainInCombination: boolean;
+    };
   }>;
 }
 

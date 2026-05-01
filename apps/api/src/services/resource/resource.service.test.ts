@@ -21,11 +21,14 @@ describe('ResourceService', () => {
         tacoImages: Readonly<Record<string, string | null>>;
       }>
     >(),
+    getPromos: mock<(restaurantId: string) => Promise<unknown[]>>(),
   };
 
   beforeEach(() => {
     container.clearInstances();
     mockCommandeClient.getMenuSnapshot.mockReset();
+    mockCommandeClient.getPromos.mockReset();
+    mockCommandeClient.getPromos.mockResolvedValue([]);
 
     container.registerInstance(
       CommandeIntegrationClient,

@@ -3,6 +3,7 @@ export { CommandeInjectionModal } from './CommandeInjectionModal';
 export type { DeliveryType } from './DeliveryTypeSelector';
 export { DeliveryTypeSelector } from './DeliveryTypeSelector';
 export { ExtrasSection } from './ExtrasSection';
+export { PromoBanner } from './PromoBanner';
 export { GroupOrderReceipts } from './GroupOrderReceipts';
 export { MeatSelector } from './MeatSelector';
 export { MysteryTacoCard } from './MysteryTacoCard';

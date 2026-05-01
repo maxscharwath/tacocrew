@@ -202,6 +202,35 @@ export interface TacoSizeItem {
   allowGarnitures: boolean;
 }
 
+export type PromoCategory = 'drinks' | 'desserts' | 'extras';
+
+export interface PromoTrigger {
+  readonly quantity: number;
+  readonly tacoSizes?: ReadonlyArray<TacoSize>;
+}
+
+export interface PromoReward {
+  readonly quantity: number;
+  readonly category: PromoCategory;
+  readonly excludedCodes: ReadonlyArray<string>;
+}
+
+/**
+ * Generic promotion descriptor. Today only `kind: 'free-item'` exists. Future
+ * variants (percent / fixed-amount discount) extend the union by adding more
+ * `kind` literals.
+ */
+export interface FreeItemPromo {
+  readonly kind: 'free-item';
+  readonly id: string;
+  readonly name: string;
+  readonly serviceTypes: ReadonlyArray<string>;
+  readonly trigger: PromoTrigger;
+  readonly reward: PromoReward;
+}
+
+export type Promo = FreeItemPromo;
+
 export interface StockResponse {
   meats: StockItem[];
   sauces: StockItem[];
@@ -210,6 +239,7 @@ export interface StockResponse {
   drinks: StockItem[];
   desserts: StockItem[];
   tacos: TacoSizeItem[];
+  promos: Promo[];
 }
 
 export interface GroupLeader {
@@ -428,6 +458,15 @@ export interface OrderPreviewOption {
   readonly extraPrice: number;
 }
 
+export interface OrderPreviewCombo {
+  readonly combinationId: string;
+  readonly combinationName: string;
+  readonly combinationPrice: number;
+  readonly combinationInstanceId: string;
+  readonly combinationServiceTypes: ReadonlyArray<string>;
+  readonly isMainInCombination: boolean;
+}
+
 export interface OrderPreviewItem {
   readonly productId: string;
   readonly productName?: string;
@@ -437,6 +476,7 @@ export interface OrderPreviewItem {
   readonly price: number;
   readonly options: ReadonlyArray<OrderPreviewOption>;
   readonly note?: string | null;
+  readonly combo?: OrderPreviewCombo;
 }
 
 export interface OrderPreview {

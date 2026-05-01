@@ -19,7 +19,7 @@ export type {
   ActivePreorder,
   BusyLevel,
   Combination,
-  CombinationSlot,
+  CombinationItem,
   CreateOrderInput,
   CreateOrderResponse,
   DeliveryZone,
