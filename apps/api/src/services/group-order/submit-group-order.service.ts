@@ -3,7 +3,10 @@
  * @module services/group-order
  */
 
-import { RestaurantClosedError as ClientRestaurantClosedError } from '@tacocrew/commande-client';
+import {
+  CommandeError as ClientCommandeError,
+  RestaurantClosedError as ClientRestaurantClosedError,
+} from '@tacocrew/commande-client';
 import { injectable } from 'tsyringe';
 import { GroupOrderRepository } from '@/infrastructure/repositories/group-order.repository';
 import { UserOrderRepository } from '@/infrastructure/repositories/user-order.repository';
@@ -227,11 +230,21 @@ export class SubmitGroupOrderUseCase {
       if (error instanceof ClientRestaurantClosedError || error instanceof StoreClosedError) {
         throw error;
       }
+      // Preserve the raw commande.app response excerpt when available — it's
+      // the only signal we have for diagnosing schema mismatches in prod.
+      const bodyExcerpt = error instanceof ClientCommandeError ? error.bodyExcerpt : undefined;
       logger.error('Failed to submit group order to backend', {
         groupOrderId,
         userOrderCount: userOrders.length,
         error: error instanceof Error ? error.message : String(error),
+        ...(bodyExcerpt !== undefined && { bodyExcerpt }),
       });
+      // Pass commande-client errors through unchanged so the global error
+      // handler can map them to proper HTTP status codes (400/404/429/502)
+      // and surface bodyExcerpt in its own log line.
+      if (error instanceof ClientCommandeError) {
+        throw error;
+      }
       throw new ValidationError({
         error: error instanceof Error ? error.message : String(error),
       });

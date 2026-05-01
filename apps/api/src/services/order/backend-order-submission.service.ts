@@ -7,12 +7,13 @@
  */
 
 import { randomBytes } from 'node:crypto';
-import type {
-  CreateOrderInput,
-  OrderItem,
-  OrderItemOption,
-  PaymentMethod,
-  ServiceType,
+import {
+  CommandeError as ClientCommandeError,
+  type CreateOrderInput,
+  type OrderItem,
+  type OrderItemOption,
+  type PaymentMethod,
+  type ServiceType,
 } from '@tacocrew/commande-client';
 import { injectable } from 'tsyringe';
 import { OrderType } from '@/domain/taco-config';
@@ -168,11 +169,13 @@ export class BackendOrderSubmissionService {
         backendTotal: response.total ?? null,
       };
     } catch (error) {
+      const bodyExcerpt = error instanceof ClientCommandeError ? error.bodyExcerpt : undefined;
       logger.error('Failed to submit order', {
         sessionId,
         groupOrderId: input.groupOrderId,
         durationMs: Date.now() - startedAt,
         error: error instanceof Error ? error.message : String(error),
+        ...(bodyExcerpt !== undefined && { bodyExcerpt }),
       });
       throw error;
     }
