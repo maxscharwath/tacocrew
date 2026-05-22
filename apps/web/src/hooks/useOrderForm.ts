@@ -4,7 +4,7 @@
  * Uses TanStack Query for async data, simple useState for form inputs
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { StockResponse } from '@/lib/api';
 import type { UserOrderDetail } from '@/lib/api/orders';
 import { TacoKind } from '@/lib/api/types';
@@ -107,8 +107,16 @@ export function useOrderForm({ stock, myOrder }: UseOrderFormProps) {
   const [note, setNote] = useState(initialData.taco?.note ?? '');
   const [kind, setKind] = useState<TacoKind>(initialData.taco?.kind ?? TacoKind.REGULAR);
 
-  // Refill form when myOrder changes (e.g., after async fetch)
+  // Refill the form when the *identity* of the order being edited changes —
+  // e.g. async fetch resolves the initial load, or the user navigates to a
+  // different order. We deliberately skip refetches of the same order: a
+  // window-focus refetch would otherwise produce a new `myOrder` reference
+  // and silently wipe the user's in-progress edits.
+  const lastSyncedOrderIdRef = useRef<string | null>(null);
   useEffect(() => {
+    const orderId = myOrder?.id ?? null;
+    if (lastSyncedOrderIdRef.current === orderId) return;
+    lastSyncedOrderIdRef.current = orderId;
     const data = initializeFormData(myOrder);
     setSize(data.taco?.size ?? '');
     setMeats(data.taco?.meats ?? []);

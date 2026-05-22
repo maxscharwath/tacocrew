@@ -4,24 +4,27 @@
  */
 
 import type { UpsertUserOrderBody } from '@/lib/api/orders';
-import { deleteUserOrder, upsertUserOrder as upsertUserOrderApi } from '@/lib/api/orders';
+import {
+  updateUserOrder as updateUserOrderApi,
+  upsertUserOrder as upsertUserOrderApi,
+} from '@/lib/api/orders';
 
 /**
- * Create or update a user order
+ * Create a new user order, or replace items on an existing one.
+ *
+ * When `editOrderId` is provided we PUT to the in-place update endpoint so the
+ * backend preserves the original `userId` — important when a group leader
+ * edits another participant's order, otherwise the row would be re-owned.
+ * Without `editOrderId` we POST as a fresh create.
  */
 export async function upsertUserOrder(
   groupOrderId: string,
   body: UpsertUserOrderBody,
   editOrderId?: string
 ): Promise<void> {
-  // Delete existing order if editing
   if (editOrderId) {
-    try {
-      await deleteUserOrder(groupOrderId, editOrderId);
-    } catch {
-      // If delete fails, continue to create
-    }
+    await updateUserOrderApi(groupOrderId, editOrderId, body);
+    return;
   }
-
   await upsertUserOrderApi(groupOrderId, body);
 }

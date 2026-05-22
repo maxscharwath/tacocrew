@@ -25,6 +25,7 @@ import { CreateUserOrderUseCase } from '@/services/user-order/create-user-order.
 import { DeleteUserOrderUseCase } from '@/services/user-order/delete-user-order.service';
 import { GetUserOrderUseCase } from '@/services/user-order/get-user-order.service';
 import { RevealMysteryTacosService } from '@/services/user-order/reveal-mystery-tacos.service';
+import { UpdateUserOrderUseCase } from '@/services/user-order/update-user-order.service';
 import { UpdateUserOrderReimbursementStatusUseCase } from '@/services/user-order/update-user-order-reimbursement.service';
 import { UpdateUserOrderUserPaymentStatusUseCase } from '@/services/user-order/update-user-order-user-payment.service';
 import { TimeSlotSchema } from '@/shared/types/time-slot';
@@ -249,6 +250,48 @@ app.openapi(
     const { itemId: orderId } = c.req.valid('param');
     const getUserOrderUseCase = inject(GetUserOrderUseCase);
     const userOrder = await getUserOrderUseCase.execute(orderId);
+
+    return c.json(serializeUserOrderResponse(userOrder), 200);
+  }
+);
+
+app.openapi(
+  createRoute({
+    method: 'put',
+    path: '/orders/{id}/items/{itemId}',
+    tags: ['Orders'],
+    security: authSecurity,
+    request: {
+      params: z.object({
+        id: GroupOrderId,
+        itemId: z.string(),
+      }),
+      body: {
+        content: jsonContent(CreateUserOrderRequestSchema),
+      },
+    },
+    responses: {
+      200: {
+        description: 'User order updated in place (userId preserved)',
+        content: jsonContent(UserOrderResponseSchema),
+      },
+      403: {
+        description: 'Forbidden — requester is neither the owner nor the group leader',
+        content: jsonContent(ErrorResponseSchema),
+      },
+      404: {
+        description: 'User order or group order not found',
+        content: jsonContent(ErrorResponseSchema),
+      },
+    },
+  }),
+  async (c) => {
+    const requesterId = UserId.parse(c.var.user.id);
+    const { itemId: orderId } = c.req.valid('param');
+    const body = c.req.valid('json');
+
+    const updateUserOrderUseCase = inject(UpdateUserOrderUseCase);
+    const userOrder = await updateUserOrderUseCase.execute(orderId, requesterId, body);
 
     return c.json(serializeUserOrderResponse(userOrder), 200);
   }

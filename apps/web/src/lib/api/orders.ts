@@ -97,6 +97,14 @@ export function upsertUserOrder(groupOrderId: string, body: UpsertUserOrderBody)
   return apiClient.post<UserOrderResponse>(`/api/v1/orders/${groupOrderId}/items`, { body });
 }
 
+// Update in place. Backend preserves the original `userId`, so leaders editing
+// another participant's order don't accidentally re-own it.
+export function updateUserOrder(groupOrderId: string, itemId: string, body: UpsertUserOrderBody) {
+  return apiClient.put<UserOrderResponse>(`/api/v1/orders/${groupOrderId}/items/${itemId}`, {
+    body,
+  });
+}
+
 export function deleteUserOrder(groupOrderId: string, itemId: string) {
   return apiClient.delete<void>(`/api/v1/orders/${groupOrderId}/items/${itemId}`);
 }
