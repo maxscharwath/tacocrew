@@ -17,18 +17,11 @@ import type { UserOrder } from '@/schemas/user-order.schema';
 import { BadgeEvaluationService } from '@/services/badge/badge-evaluation.service';
 import { StatsTrackingService } from '@/services/badge/stats-tracking.service';
 import { ResourceService } from '@/services/resource/resource.service';
-import type { StockAvailability, UserOrderItems } from '@/shared/types/types';
 import { ForbiddenError, NotFoundError, ValidationError } from '@/shared/utils/errors.utils';
 import { inject } from '@/shared/utils/inject.utils';
 import { logger } from '@/shared/utils/logger.utils';
-import {
-  sortUserOrderIngredients,
-  validateItemAvailability,
-} from '@/shared/utils/order-validation.utils';
 import { BadgeTracker } from './badge-tracker';
-import { IdAssigner } from './processors/id-assigner';
-import { ItemEnricher } from './processors/item-enricher';
-import { TacoIdHexGenerator } from './processors/taco-id-hex-generator';
+import { processUserOrderItems } from './processors/process-user-order-items';
 
 @injectable()
 export class UpdateUserOrderUseCase {
@@ -69,8 +62,7 @@ export class UpdateUserOrderUseCase {
     }
 
     const stock = await this.resourceService.getStockForProcessing();
-    const processedItems = this.processItems(request.items, stock);
-    const { originallyMysteryTacoIds, ...items } = processedItems;
+    const { originallyMysteryTacoIds, ...items } = processUserOrderItems(request.items, stock);
 
     const updated = await this.userOrderRepository.update(orderId, { items });
 
@@ -94,18 +86,5 @@ export class UpdateUserOrderUseCase {
     });
 
     return updated;
-  }
-
-  private processItems(
-    simpleItems: CreateUserOrderRequestDto['items'],
-    stock: StockAvailability
-  ): UserOrderItems & { originallyMysteryTacoIds: Set<string> } {
-    const enriched = ItemEnricher.enrich(simpleItems, stock);
-    const { originallyMysteryTacoIds, ...items } = enriched;
-    const withIds = IdAssigner.assign(items);
-    const sorted = sortUserOrderIngredients(withIds);
-    validateItemAvailability(sorted, stock);
-    const finalItems = TacoIdHexGenerator.generate(sorted);
-    return { ...finalItems, originallyMysteryTacoIds };
   }
 }

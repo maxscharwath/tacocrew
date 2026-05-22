@@ -14,19 +14,13 @@ import { BadgeEvaluationService } from '@/services/badge/badge-evaluation.servic
 import { StatsTrackingService } from '@/services/badge/stats-tracking.service';
 import { ResourceService } from '@/services/resource/resource.service';
 import { UserService } from '@/services/user/user.service';
-import type { StockAvailability, UserOrderItems } from '@/shared/types/types';
+import type { UserOrderItems } from '@/shared/types/types';
 import { NotFoundError, ValidationError } from '@/shared/utils/errors.utils';
 import { inject } from '@/shared/utils/inject.utils';
 import { logger } from '@/shared/utils/logger.utils';
 import { extractTacoIdsHex } from '@/shared/utils/order-taco-id.utils';
-import {
-  sortUserOrderIngredients,
-  validateItemAvailability,
-} from '@/shared/utils/order-validation.utils';
 import { BadgeTracker } from './badge-tracker';
-import { IdAssigner } from './processors/id-assigner';
-import { ItemEnricher } from './processors/item-enricher';
-import { TacoIdHexGenerator } from './processors/taco-id-hex-generator';
+import { processUserOrderItems } from './processors/process-user-order-items';
 
 /**
  * Create or update user order use case
@@ -51,8 +45,7 @@ export class CreateUserOrderUseCase {
     await this.validateGroupOrder(groupOrderId);
     const stock = await this.resourceService.getStockForProcessing();
 
-    const processedItems = this.processItems(request.items, stock);
-    const { originallyMysteryTacoIds, ...items } = processedItems;
+    const { originallyMysteryTacoIds, ...items } = processUserOrderItems(request.items, stock);
     const tacoIdsHex = extractTacoIdsHex(items);
 
     const userOrder = await this.userOrderRepository.create({
@@ -94,19 +87,6 @@ export class CreateUserOrderUseCase {
         message: `Cannot modify user order. Group order status: ${groupOrder.status}`,
       });
     }
-  }
-
-  private processItems(
-    simpleItems: CreateUserOrderRequestDto['items'],
-    stock: StockAvailability
-  ): UserOrderItems & { originallyMysteryTacoIds: Set<string> } {
-    const enriched = ItemEnricher.enrich(simpleItems, stock);
-    const { originallyMysteryTacoIds, ...items } = enriched;
-    const withIds = IdAssigner.assign(items);
-    const sorted = sortUserOrderIngredients(withIds);
-    validateItemAvailability(sorted, stock);
-    const finalItems = TacoIdHexGenerator.generate(sorted);
-    return { ...finalItems, originallyMysteryTacoIds };
   }
 
   private logOrderCreated(groupOrderId: GroupOrderId, userId: UserId, items: UserOrderItems): void {
