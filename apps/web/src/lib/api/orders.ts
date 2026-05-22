@@ -119,8 +119,7 @@ export function updateGroupOrderStatus(
 export function useCreateGroupOrder() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (body: CreateGroupOrderBody) =>
-      apiClient.post<GroupOrder>('/api/v1/orders', { body }),
+    mutationFn: (body: CreateGroupOrderBody) => createGroupOrder(body),
     onSuccess: (data) => {
       void queryClient.invalidateQueries({ queryKey: ordersKeys.lists() });
       // Invalidate the new order detail if we have the ID
@@ -186,7 +185,7 @@ export function useUpsertUserOrder() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ groupOrderId, body }: { groupOrderId: string; body: UpsertUserOrderBody }) =>
-      apiClient.post<UserOrderResponse>(`/api/v1/orders/${groupOrderId}/items`, { body }),
+      upsertUserOrder(groupOrderId, body),
     onSuccess: (_, variables) => {
       void queryClient.invalidateQueries({ queryKey: ordersKeys.detail(variables.groupOrderId) });
       // Upserting user orders affects receipts view
@@ -212,7 +211,7 @@ export function useDeleteUserOrder() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ groupOrderId, itemId }: { groupOrderId: string; itemId: string }) =>
-      apiClient.delete<void>(`/api/v1/orders/${groupOrderId}/items/${itemId}`),
+      deleteUserOrder(groupOrderId, itemId),
     onSuccess: (_, variables) => {
       void queryClient.invalidateQueries({ queryKey: ordersKeys.detail(variables.groupOrderId) });
       // Deleting user orders affects receipts view
@@ -297,10 +296,7 @@ export function useSubmitGroupOrder() {
     }: {
       groupOrderId: string;
       body: GroupOrderSubmissionBody;
-    }) =>
-      apiClient.post<GroupOrderSubmissionResponse>(`/api/v1/orders/${groupOrderId}/submit`, {
-        body,
-      }),
+    }) => submitGroupOrder(groupOrderId, body),
     onSuccess: (_, variables) => {
       void queryClient.invalidateQueries({ queryKey: ordersKeys.detail(variables.groupOrderId) });
       // Submitting an order changes its status, which affects list views
@@ -321,7 +317,7 @@ export function useUpdateGroupOrderStatus() {
     }: {
       groupOrderId: string;
       status: 'open' | 'closed' | 'submitted';
-    }) => apiClient.post<GroupOrder>(`/api/v1/orders/${groupOrderId}/status`, { body: { status } }),
+    }) => updateGroupOrderStatus(groupOrderId, status),
     onSuccess: (_, variables) => {
       void queryClient.invalidateQueries({ queryKey: ordersKeys.detail(variables.groupOrderId) });
       // Status changes affect list views

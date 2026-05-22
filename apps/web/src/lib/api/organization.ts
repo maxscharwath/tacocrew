@@ -203,8 +203,7 @@ export function useDeleteOrganizationAvatar() {
 export function useRequestToJoinOrganization() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (organizationId: string) =>
-      apiClient.post<{ success: boolean }>(`/api/v1/organizations/${organizationId}/join`),
+    mutationFn: (organizationId: string) => requestToJoinOrganization(organizationId),
     onSuccess: (_, organizationId) => {
       queryClient.invalidateQueries({ queryKey: organizationKeys.pendingRequests(organizationId) });
     },
