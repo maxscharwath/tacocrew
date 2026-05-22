@@ -13,7 +13,7 @@ import type { GroupOrderId } from '@/schemas/group-order.schema';
 import type { UserId } from '@/schemas/user.schema';
 import type { UserOrder, UserOrderId } from '@/schemas/user-order.schema';
 import { NotificationService } from '@/services/notification/notification.service';
-import { NotFoundError } from '@/shared/utils/errors.utils';
+import { NotFoundError, ValidationError } from '@/shared/utils/errors.utils';
 import { inject } from '@/shared/utils/inject.utils';
 
 @injectable()
@@ -40,6 +40,20 @@ export class UpdateUserOrderUserPaymentStatusUseCase {
 
     if (userOrder?.groupOrderId !== groupOrderId) {
       throw new NotFoundError({ resource: 'UserOrder', id: userOrderId });
+    }
+
+    // Authorization: a payment record belongs to whoever actually paid. If the
+    // order is already marked paid by someone else, only that payer (or the
+    // order owner) can mutate the flag — preventing both "pay over" and
+    // "unpay" by random third parties.
+    const existingPayer = userOrder.participantPayment.paidBy?.id ?? null;
+    const isOwner = userOrder.userId === requesterId;
+    const isExistingPayer = existingPayer !== null && existingPayer === requesterId;
+    if (existingPayer !== null && !isOwner && !isExistingPayer) {
+      throw new ValidationError(
+        { paidByUserId: existingPayer, requesterId },
+        paid ? 'errors.payment.alreadyPaid' : 'errors.payment.notYourPayment'
+      );
     }
 
     const paidAt = paid ? new Date() : null;

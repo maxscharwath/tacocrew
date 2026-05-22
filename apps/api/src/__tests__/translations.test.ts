@@ -68,16 +68,16 @@ function keyExists(obj: unknown, key: string): boolean {
 
 describe('Backend Translation Keys', () => {
   test('should have all translation keys present in all locale files', async () => {
-    const cwd = process.cwd();
-    const apiSrc = `${cwd}/apps/api/src`;
-    const localeDir = `${cwd}/apps/api/src/locales`;
+    // Resolve from the test file's location so the test works whether bun is
+    // invoked from the repo root or from apps/api.
+    const apiSrc = `${import.meta.dir}/..`;
+    const localeDir = `${apiSrc}/locales`;
 
-    // Find all TypeScript files using Bun's glob
-    const globPattern = `${apiSrc}/**/*.ts`;
+    // Find all TypeScript files using Bun's glob (scan rooted at apiSrc).
     const codeFiles: string[] = [];
-    const glob = new Bun.Glob(globPattern);
-    for await (const file of glob.scan('.')) {
-      const fullPath = `${cwd}/${file}`;
+    const glob = new Bun.Glob('**/*.ts');
+    for await (const file of glob.scan(apiSrc)) {
+      const fullPath = `${apiSrc}/${file}`;
       if (
         !fullPath.includes('.test.') &&
         !fullPath.includes('__tests__') &&
@@ -122,11 +122,10 @@ describe('Backend Translation Keys', () => {
       }
       if (missingIn.length > 0) {
         const firstUsage = usageList[0]!;
-        const relPath = firstUsage.file.replace(process.cwd() + '/', '');
         missingKeys.push({
           key,
           missingIn,
-          usedIn: `${relPath}:${firstUsage.line}`,
+          usedIn: `${firstUsage.file}:${firstUsage.line}`,
         });
       }
     }

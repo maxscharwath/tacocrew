@@ -17,9 +17,7 @@ import {
 describe('Error Classes', () => {
   describe('ApiError', () => {
     it('should create ApiError with default values', () => {
-      const error = new ApiError({
-        errorCode: ErrorCodes.UNKNOWN_ERROR,
-      });
+      const error = new ApiError(ErrorCodes.UNKNOWN_ERROR, 500);
       expect(error.message).toBe(ErrorCodes.UNKNOWN_ERROR.code);
       expect(error.code).toBe(ErrorCodes.UNKNOWN_ERROR.code);
       expect(error.statusCode).toBe(500);
@@ -29,11 +27,7 @@ describe('Error Classes', () => {
 
     it('should create ApiError with custom status and details', () => {
       const details = { field: 'value' };
-      const error = new ApiError({
-        errorCode: ErrorCodes.UNKNOWN_ERROR,
-        statusCode: 400,
-        details,
-      });
+      const error = new ApiError(ErrorCodes.UNKNOWN_ERROR, 400, details);
       expect(error.statusCode).toBe(400);
       expect(error.details).toEqual(details);
     });
