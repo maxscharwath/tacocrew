@@ -8,6 +8,29 @@ describe('envelope', () => {
       const wrapped = encodeInput({ restaurantId: 'abc' });
       expect(wrapped).toEqual({ 0: { json: { restaurantId: 'abc' } } });
     });
+
+    it('emits superjson Date meta for Date instances', () => {
+      const pickupTime = new Date('2026-04-24T09:50:00.000Z');
+      const wrapped = encodeInput({ restaurantId: 'abc', pickupTime });
+      expect(wrapped).toEqual({
+        0: {
+          json: { restaurantId: 'abc', pickupTime: '2026-04-24T09:50:00.000Z' },
+          meta: { values: { pickupTime: ['Date'] } },
+        },
+      });
+    });
+
+    it('records nested Date paths with dot notation', () => {
+      const wrapped = encodeInput({
+        items: [{ when: new Date('2026-04-24T09:50:00.000Z') }],
+      });
+      expect(wrapped).toEqual({
+        0: {
+          json: { items: [{ when: '2026-04-24T09:50:00.000Z' }] },
+          meta: { values: { 'items.0.when': ['Date'] } },
+        },
+      });
+    });
   });
 
   describe('encodeInputParam', () => {

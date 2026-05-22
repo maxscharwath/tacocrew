@@ -46,8 +46,8 @@ export type SubmitGroupOrderInput = {
   readonly groupOrderId?: string;
   readonly paymentMethod?: LegacyPaymentMethod;
   readonly dryRun?: boolean;
-  /** ISO timestamp for the announced pickup/delivery time. Required by commande.app when isPreorder is true. */
-  readonly pickupTime?: string;
+  /** Announced pickup/delivery time. Required by commande.app when isPreorder is true. */
+  readonly pickupTime?: Date;
 };
 
 export type SubmitGroupOrderResult = {
@@ -131,6 +131,8 @@ export class BackendOrderSubmissionService {
         itemCount: createOrderInput.items.length,
         serviceType: createOrderInput.serviceType,
         computedTotal,
+        isPreorder: createOrderInput.isPreorder,
+        pickupTime: createOrderInput.pickupTime?.toISOString() ?? null,
       });
 
       if (input.dryRun) {
@@ -263,7 +265,7 @@ export class BackendOrderSubmissionService {
     delivery: DeliveryInfo,
     paymentMethod: LegacyPaymentMethod | undefined,
     resolver: MenuResolver,
-    pickupTime: string | undefined
+    pickupTime: Date | undefined
   ): CreateOrderInput {
     const orderItems: OrderItem[] = [
       ...items.tacos.map((taco) => this.tacoToOrderItem(taco, resolver)),

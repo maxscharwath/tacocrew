@@ -129,8 +129,9 @@ export type CreateOrderInput = {
   readonly items: readonly OrderItem[];
   readonly total: number;
   readonly isPreorder: boolean;
-  readonly pickupTime?: string;
-  readonly pickupEndTime?: string;
+  /** Pass a Date — the envelope encoder forwards it as a superjson Date so commande.app's `z.date()` accepts it. */
+  readonly pickupTime?: Date;
+  readonly pickupEndTime?: Date;
   readonly dineIn: boolean;
   readonly isOnSite: boolean;
   readonly deliveryFee: number;

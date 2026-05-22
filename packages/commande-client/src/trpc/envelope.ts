@@ -1,9 +1,52 @@
 import { ValidationError } from '../errors';
 
-export type TrpcRequestBody<T> = Readonly<Record<'0', { readonly json: T }>>;
+type SuperJsonMeta = {
+  readonly values: Readonly<Record<string, readonly [string]>>;
+};
+
+type SuperJsonEnvelope<T> = {
+  readonly json: T;
+  readonly meta?: SuperJsonMeta;
+};
+
+export type TrpcRequestBody<T> = Readonly<Record<'0', SuperJsonEnvelope<T>>>;
+
+// commande.app's tRPC server is configured with the superjson transformer, so
+// non-JSON-native values (Date, undefined, …) must travel as plain JSON in
+// `json` paired with a `meta.values` map describing how to revive them. We
+// only implement the Date case — that's the only special type the request
+// surface uses today (pickupTime, pickupEndTime). Inputs without any special
+// values keep the legacy `{ json }` shape so unchanged calls stay byte-identical.
+function encodeSuperJson<T>(input: T): SuperJsonEnvelope<T> {
+  const values: Record<string, [string]> = {};
+
+  function walk(value: unknown, path: string): unknown {
+    if (value instanceof Date) {
+      values[path] = ['Date'];
+      return value.toISOString();
+    }
+    if (Array.isArray(value)) {
+      return value.map((item, i) => walk(item, path === '' ? String(i) : `${path}.${i}`));
+    }
+    if (value !== null && typeof value === 'object') {
+      const result: Record<string, unknown> = {};
+      for (const [k, v] of Object.entries(value)) {
+        result[k] = walk(v, path === '' ? k : `${path}.${k}`);
+      }
+      return result;
+    }
+    return value;
+  }
+
+  const json = walk(input, '') as T;
+  if (Object.keys(values).length === 0) {
+    return { json };
+  }
+  return { json, meta: { values } };
+}
 
 export function encodeInput<T>(input: T): TrpcRequestBody<T> {
-  return { 0: { json: input } };
+  return { 0: encodeSuperJson(input) };
 }
 
 export function encodeInputParam<T>(input: T): string {

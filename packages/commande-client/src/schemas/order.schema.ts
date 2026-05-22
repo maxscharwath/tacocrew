@@ -30,8 +30,11 @@ export const createOrderInputSchema = z.object({
   items: z.array(orderItemSchema).min(1),
   total: z.number().nonnegative(),
   isPreorder: z.boolean(),
-  pickupTime: z.string().optional(),
-  pickupEndTime: z.string().optional(),
+  // commande.app's tRPC procedure expects `Date` (z.date()), and our envelope
+  // encoder ships Date instances as superjson Date entries on the wire. Accept
+  // ISO strings too so JSON-loaded fixtures and legacy callers keep working.
+  pickupTime: z.coerce.date().optional(),
+  pickupEndTime: z.coerce.date().optional(),
   dineIn: z.boolean(),
   isOnSite: z.boolean(),
   deliveryFee: z.number().nonnegative(),

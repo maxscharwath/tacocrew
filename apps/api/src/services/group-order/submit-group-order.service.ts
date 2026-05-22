@@ -34,23 +34,22 @@ import { calculateTotalPriceFromUserOrders } from '@/shared/utils/order-price.ut
 import { validateItemAvailability } from '@/shared/utils/order-validation.utils';
 
 /**
- * Build the `pickupTime` ISO string that commande.app requires when
- * `isPreorder: true`. Combines the group order's `endDate` (calendar day, in
- * server-local Europe/Zurich) with the leader's requested HH:MM slot. Falls
- * back to `endDate` as-is when no slot is provided.
+ * Build the `pickupTime` Date that commande.app requires when `isPreorder: true`.
+ * Combines the group order's `endDate` (calendar day, in server-local
+ * Europe/Zurich) with the leader's requested HH:MM slot. Falls back to
+ * `endDate` as-is when no slot is provided.
  *
  * Server timezone is forced to Europe/Zurich at boot ([apps/api/src/index.ts]),
- * so `setHours` here operates in local time and `toISOString()` outputs the
- * matching UTC instant.
+ * so `setHours` here operates in local time.
  */
-function resolvePickupTime(endDate: Date, requestedFor: string | undefined): string {
+function resolvePickupTime(endDate: Date, requestedFor: string | undefined): Date {
   if (!requestedFor || !/^\d{2}:\d{2}$/.test(requestedFor)) {
-    return endDate.toISOString();
+    return new Date(endDate);
   }
   const [hh, mm] = requestedFor.split(':').map(Number) as [number, number];
   const pickup = new Date(endDate);
   pickup.setHours(hh, mm, 0, 0);
-  return pickup.toISOString();
+  return pickup;
 }
 
 type ExecuteResult = {
@@ -87,6 +86,12 @@ export class SubmitGroupOrderUseCase {
     this.validateUserOrders(userOrders, stock);
 
     const pickupTime = resolvePickupTime(groupOrder.endDate, delivery.requestedFor);
+    logger.debug('order.submit.pickup_resolved', {
+      groupOrderId,
+      endDate: groupOrder.endDate.toISOString(),
+      requestedFor: delivery.requestedFor || null,
+      pickupTime: pickupTime.toISOString(),
+    });
 
     const result = await this.submitToBackend(
       userOrders,
@@ -239,7 +244,7 @@ export class SubmitGroupOrderUseCase {
     groupOrderId: GroupOrderId,
     paymentMethod: LegacyPaymentMethod | undefined,
     dryRun: boolean,
-    pickupTime: string | undefined
+    pickupTime: Date | undefined
   ): Promise<SubmitGroupOrderResult> {
     try {
       return await this.backendOrderSubmissionService.submitGroupOrder({
