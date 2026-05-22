@@ -1,5 +1,5 @@
-import { Prisma } from '@prisma/client';
-import { CursorPaginationMeta } from 'prisma-extension-pagination';
+import type { CursorPaginationMeta } from 'prisma-extension-pagination';
+import { Prisma } from '@/generated/client';
 
 /**
  * Paginated result container inspired by Spring Boot's Page<T>.

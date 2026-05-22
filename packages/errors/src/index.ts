@@ -48,13 +48,14 @@ export class ApiError extends Error {
   constructor(
     errorCode: ErrorCodeEntry,
     statusCode: number,
-    details: Record<string, unknown> = {}
+    details: Record<string, unknown> = {},
+    keyOverride?: string
   ) {
     super(errorCode.code);
     this.name = 'ApiError';
     this.id = crypto.randomUUID();
     this.code = errorCode.code;
-    this.key = errorCode.key;
+    this.key = keyOverride ?? errorCode.key;
     this.statusCode = statusCode;
     this.details = details;
     Error.captureStackTrace?.(this, this.constructor);
@@ -87,7 +88,7 @@ export class OrganizationAccessError extends ApiError {
   }
 
   get organizationId(): string {
-    return this.details.organizationId as string;
+    return this.details['organizationId'] as string;
   }
 }
 
@@ -100,8 +101,8 @@ export class UnauthorizedError extends ApiError {
 }
 
 export class ValidationError extends ApiError {
-  constructor(details: Record<string, unknown> = {}) {
-    super(ErrorCodes.VALIDATION_ERROR, 400, details);
+  constructor(details: Record<string, unknown> = {}, i18nKey?: string) {
+    super(ErrorCodes.VALIDATION_ERROR, 400, details, i18nKey);
     this.name = 'ValidationError';
   }
 }
@@ -163,8 +164,8 @@ export function parseApiError(status: number, body: unknown): ApiError {
   // Match by error code first
   switch (code) {
     case ErrorCodes.ORGANIZATION_ACCESS_DENIED.code:
-      if (typeof details.organizationId === 'string') {
-        return new OrganizationAccessError(details.organizationId);
+      if (typeof details['organizationId'] === 'string') {
+        return new OrganizationAccessError(details['organizationId']);
       }
       break;
     case ErrorCodes.NOT_FOUND.code:
@@ -199,14 +200,15 @@ function extractErrorInfo(body: unknown): { code?: string; key?: string; details
   if (!body || typeof body !== 'object') return null;
 
   const obj = body as Record<string, unknown>;
-  const error = obj.error as Record<string, unknown> | undefined;
+  const error = obj['error'] as Record<string, unknown> | undefined;
   if (!error || typeof error !== 'object') return null;
 
   return {
-    code: typeof error.code === 'string' ? error.code : undefined,
-    key: typeof error.key === 'string' ? error.key : undefined,
-    details: error.details && typeof error.details === 'object' && !Array.isArray(error.details)
-      ? error.details as Record<string, unknown>
-      : undefined,
+    code: typeof error['code'] === 'string' ? error['code'] : undefined,
+    key: typeof error['key'] === 'string' ? error['key'] : undefined,
+    details:
+      error['details'] && typeof error['details'] === 'object' && !Array.isArray(error['details'])
+        ? (error['details'] as Record<string, unknown>)
+        : undefined,
   };
 }

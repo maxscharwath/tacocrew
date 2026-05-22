@@ -52,7 +52,10 @@ class SeededRandom {
     const shuffled = [...array];
     for (let i = shuffled.length - 1; i > 0; i--) {
       const j = this.nextInt(0, i + 1);
-      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      // Both indices are in-bounds by construction (i > 0, j in [0, i]).
+      const tmp = shuffled[i] as T;
+      shuffled[i] = shuffled[j] as T;
+      shuffled[j] = tmp;
     }
     return shuffled;
   }

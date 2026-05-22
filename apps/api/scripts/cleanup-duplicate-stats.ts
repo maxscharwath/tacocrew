@@ -7,7 +7,7 @@
  */
 
 import { PrismaPg } from '@prisma/adapter-pg';
-import { PrismaClient } from '../src/generated/client';
+import { Prisma, PrismaClient } from '../src/generated/client';
 
 // Initialize Prisma with adapter (Prisma 7 requirement)
 const databaseUrl = process.env['DATABASE_URL'];
@@ -113,7 +113,7 @@ async function cleanupDuplicates() {
     if (needsUpdate) {
       await prisma.userStats.update({
         where: { id: stats.id },
-        data: updates,
+        data: updates as Prisma.UserStatsUpdateInput,
       });
       usersFixed++;
       totalFixed +=
