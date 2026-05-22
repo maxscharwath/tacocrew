@@ -6,17 +6,21 @@
 import type { Secret, SignOptions } from 'jsonwebtoken';
 import jwt from 'jsonwebtoken';
 import { injectable } from 'tsyringe';
-import type { UserId } from '@/schemas/user.schema';
+import { z } from 'zod';
+import { UserId } from '@/schemas/user.schema';
 import { config } from '@/shared/config/app.config';
 import { ValidationError } from '@/shared/utils/errors.utils';
 
 /**
- * JWT payload structure
+ * JWT payload schema — validated at verify-time so a forged or stale token
+ * with a wrong shape is rejected rather than silently cast through.
  */
-export interface JWTPayload {
-  userId: UserId;
-  username: string;
-}
+const jwtPayloadSchema = z.object({
+  userId: UserId,
+  username: z.string(),
+});
+
+export type JWTPayload = z.infer<typeof jwtPayloadSchema>;
 
 /**
  * Authentication service
@@ -53,7 +57,8 @@ export class AuthService {
    */
   verifyToken(token: string): JWTPayload {
     try {
-      return jwt.verify(token, this.jwtSecret) as JWTPayload;
+      const decoded = jwt.verify(token, this.jwtSecret);
+      return jwtPayloadSchema.parse(decoded);
     } catch (error) {
       // Access error classes from jwt default export for ESM compatibility
       if (error instanceof jwt.JsonWebTokenError) {
@@ -61,6 +66,9 @@ export class AuthService {
       }
       if (error instanceof jwt.TokenExpiredError) {
         throw new ValidationError({ message: 'Token expired' });
+      }
+      if (error instanceof z.ZodError) {
+        throw new ValidationError({ message: 'Token payload malformed' });
       }
       throw new ValidationError({ message: 'Token verification failed' });
     }

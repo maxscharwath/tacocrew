@@ -12,11 +12,12 @@ import { UserDeliveryProfileRepository } from '@/infrastructure/repositories/use
 import {
   canAcceptOrders,
   createGroupOrderFromDb,
-  type GroupOrderId,
+  GroupOrderId,
   getEffectiveStatus,
 } from '@/schemas/group-order.schema';
 import type { OrderId } from '@/schemas/order.schema';
-import type { User, UserId } from '@/schemas/user.schema';
+import type { User } from '@/schemas/user.schema';
+import { UserId } from '@/schemas/user.schema';
 import {
   type UserDeliveryProfile,
   type UserDeliveryProfileId,
@@ -252,7 +253,7 @@ export class UserService {
     for (const { groupOrderId, userId, user } of participantsData) {
       const existing = participantsByGroupOrder.get(groupOrderId) ?? [];
       existing.push({
-        id: userId as UserId,
+        id: UserId.parse(userId),
         name: user?.name ?? null,
       });
       participantsByGroupOrder.set(groupOrderId, existing);
@@ -263,8 +264,9 @@ export class UserService {
       const leader =
         go.leader ??
         ({ id: go.leaderId, name: null, phone: null, image: null, updatedAt: null } as const);
+      const leaderId = UserId.parse(leader.id);
       const leaderForUrl = {
-        id: leader.id as UserId,
+        id: leaderId,
         hasImage: Boolean(leader.image),
         updatedAt: leader.updatedAt ?? null,
       };
@@ -282,7 +284,7 @@ export class UserService {
         : null;
 
       return {
-        id: go.id as GroupOrderId,
+        id: GroupOrderId.parse(go.id),
         name: go.name,
         status: getEffectiveStatus(groupOrder),
         canAcceptOrders: canAcceptOrders(groupOrder),
@@ -291,7 +293,7 @@ export class UserService {
         createdAt: go.createdAt,
         organization,
         leader: {
-          id: leader.id as UserId,
+          id: leaderId,
           name: leader.name,
           phone: leader.phone ?? null,
           image: buildAvatarUrl(leaderForUrl),
