@@ -1,10 +1,14 @@
 /**
- * Professional order form hook
- * Manages form state with clean API and helper functions
- * Uses TanStack Query for async data, simple useState for form inputs
+ * Order form state hook.
+ *
+ * The whole form lives in a single `useState` so the resync-from-server case
+ * is one assignment, not nine. That removes a class of bugs where a focus
+ * refetch would partially re-sync state and wipe in-progress edits.
+ *
+ * External API stays flat (`size`, `meats`, `setSauces`, …) for the consumers.
  */
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { StockResponse } from '@/lib/api';
 import type { UserOrderDetail } from '@/lib/api/orders';
 import { TacoKind } from '@/lib/api/types';
@@ -14,7 +18,7 @@ import {
   findApplicablePromos,
   sumPromoSavings,
 } from '@/lib/promos';
-import type { MeatSelection, OrderFormData, TacoSelection } from '@/types/form-data';
+import type { MeatSelection, TacoSelection } from '@/types/form-data';
 import type { TacoSizeItem } from '@/types/orders';
 import { calculateOrderTotalPrice, generatePriceBreakdown } from '@/utils/priceCalculations';
 
@@ -23,60 +27,58 @@ interface UseOrderFormProps {
   myOrder?: UserOrderDetail;
 }
 
-/**
- * Helper: Initialize form data from existing order
- */
-function initializeFormData(myOrder?: UserOrderDetail): OrderFormData {
-  if (!myOrder) {
-    return {
-      taco: null,
-      extras: [],
-      drinks: [],
-      desserts: [],
-    };
-  }
+interface FormState {
+  size: string;
+  meats: MeatSelection[];
+  sauces: string[];
+  garnitures: string[];
+  extras: string[];
+  drinks: string[];
+  desserts: string[];
+  note: string;
+  kind: TacoKind;
+}
 
+const EMPTY_FORM: FormState = {
+  size: '',
+  meats: [],
+  sauces: [],
+  garnitures: [],
+  extras: [],
+  drinks: [],
+  desserts: [],
+  note: '',
+  kind: TacoKind.REGULAR,
+};
+
+function buildFormState(myOrder?: UserOrderDetail): FormState {
+  if (!myOrder) return EMPTY_FORM;
   const taco = myOrder.items.tacos[0];
   const isMystery = taco?.kind === TacoKind.MYSTERY;
 
   return {
-    taco: taco
-      ? {
-          size: taco.size as TacoSelection['size'],
-          meats:
-            taco && !isMystery && taco.meats
-              ? taco.meats.map((item) => ({
-                  id: item.id,
-                  quantity: item.quantity ?? 1,
-                }))
-              : [],
-          sauces: taco && !isMystery && taco.sauces ? taco.sauces.map((item) => item.id) : [],
-          garnitures:
-            taco && !isMystery && taco.garnitures ? taco.garnitures.map((item) => item.id) : [],
-          kind: taco.kind,
-          note: taco.note ?? '',
-        }
-      : null,
+    size: taco?.size ?? '',
+    meats:
+      taco && !isMystery && taco.meats
+        ? taco.meats.map((item) => ({ id: item.id, quantity: item.quantity ?? 1 }))
+        : [],
+    sauces: taco && !isMystery && taco.sauces ? taco.sauces.map((item) => item.id) : [],
+    garnitures: taco && !isMystery && taco.garnitures ? taco.garnitures.map((item) => item.id) : [],
     extras: myOrder.items.extras.map((extra) => extra.id),
     drinks: myOrder.items.drinks.map((drink) => drink.id),
     desserts: myOrder.items.desserts.map((dessert) => dessert.id),
+    note: taco?.note ?? '',
+    kind: taco?.kind ?? TacoKind.REGULAR,
   };
 }
 
-/**
- * Helper: Find taco size from stock
- */
 function findTacoSize(stock: StockResponse | undefined, size: string): TacoSizeItem | null {
   if (!stock || !size) return null;
   return stock.tacos.find((t) => t.code === size) ?? null;
 }
 
-/**
- * Helper: Check if item is in stock
- */
 function isItemInStock(stock: StockResponse | undefined, id: string): boolean {
-  if (!stock) return true; // Assume in stock if no stock data
-
+  if (!stock) return true;
   const allItems = [
     ...stock.sauces,
     ...stock.garnishes,
@@ -88,49 +90,21 @@ function isItemInStock(stock: StockResponse | undefined, id: string): boolean {
   return !item || item.in_stock;
 }
 
-/**
- * Professional hook for order form management
- * Clean API, simple state, easy to test
- */
 export function useOrderForm({ stock, myOrder }: UseOrderFormProps) {
-  // Initialize form data
-  const initialData = initializeFormData(myOrder);
+  const [form, setForm] = useState<FormState>(() => buildFormState(myOrder));
 
-  // Form state
-  const [size, setSize] = useState(initialData.taco?.size ?? '');
-  const [meats, setMeats] = useState<MeatSelection[]>(initialData.taco?.meats ?? []);
-  const [sauces, setSauces] = useState<string[]>(initialData.taco?.sauces ?? []);
-  const [garnitures, setGarnitures] = useState<string[]>(initialData.taco?.garnitures ?? []);
-  const [extras, setExtras] = useState<string[]>(initialData.extras);
-  const [drinks, setDrinks] = useState<string[]>(initialData.drinks);
-  const [desserts, setDesserts] = useState<string[]>(initialData.desserts);
-  const [note, setNote] = useState(initialData.taco?.note ?? '');
-  const [kind, setKind] = useState<TacoKind>(initialData.taco?.kind ?? TacoKind.REGULAR);
-
-  // Refill the form when the *identity* of the order being edited changes —
-  // e.g. async fetch resolves the initial load, or the user navigates to a
-  // different order. We deliberately skip refetches of the same order: a
-  // window-focus refetch would otherwise produce a new `myOrder` reference
-  // and silently wipe the user's in-progress edits.
-  const lastSyncedOrderIdRef = useRef<string | null>(null);
+  // Re-sync only when the *identity* of the edited order changes (initial
+  // fetch completing or navigating to a different order). Window-focus
+  // refetches return the same id, so we skip them and keep the user's edits.
+  const editedId = myOrder?.id ?? null;
   useEffect(() => {
-    const orderId = myOrder?.id ?? null;
-    if (lastSyncedOrderIdRef.current === orderId) return;
-    lastSyncedOrderIdRef.current = orderId;
-    const data = initializeFormData(myOrder);
-    setSize(data.taco?.size ?? '');
-    setMeats(data.taco?.meats ?? []);
-    setSauces(data.taco?.sauces ?? []);
-    setGarnitures(data.taco?.garnitures ?? []);
-    setExtras(data.extras);
-    setDrinks(data.drinks);
-    setDesserts(data.desserts);
-    setNote(data.taco?.note ?? '');
-    setKind(data.taco?.kind ?? TacoKind.REGULAR);
-  }, [myOrder]);
+    setForm(buildFormState(myOrder));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editedId]);
 
-  // Computed values
-  const selectedTacoSize: TacoSizeItem | null = findTacoSize(stock, size);
+  const patch = (next: Partial<FormState>) => setForm((prev) => ({ ...prev, ...next }));
+
+  const selectedTacoSize = findTacoSize(stock, form.size);
 
   const fallbackStock: StockResponse = {
     tacos: [],
@@ -143,41 +117,35 @@ export function useOrderForm({ stock, myOrder }: UseOrderFormProps) {
     promos: [],
   };
 
+  const effectiveStock = stock ?? fallbackStock;
   const totalPrice = calculateOrderTotalPrice(
     selectedTacoSize,
-    meats,
-    extras,
-    drinks,
-    desserts,
-    stock || fallbackStock
+    form.meats,
+    form.extras,
+    form.drinks,
+    form.desserts,
+    effectiveStock
   );
-
   const priceBreakdown = generatePriceBreakdown(
     selectedTacoSize,
-    extras,
-    drinks,
-    desserts,
-    stock || fallbackStock
+    form.extras,
+    form.drinks,
+    form.desserts,
+    effectiveStock
   );
-
-  const cartLines = buildCartLines(drinks, desserts, extras, stock || fallbackStock);
-  const appliedPromos = findApplicablePromos(size, cartLines, (stock || fallbackStock).promos);
+  const cartLines = buildCartLines(form.drinks, form.desserts, form.extras, effectiveStock);
+  const appliedPromos = findApplicablePromos(form.size, cartLines, effectiveStock.promos);
   const freeLineIds = collectFreeLineIds(appliedPromos);
   const promoSavings = sumPromoSavings(appliedPromos);
   const totalPriceAfterPromos = Math.max(totalPrice - promoSavings, 0);
 
-  // Toggle selection helper - handles multiple selection types
   const toggleSelection = (
     id: string,
     current: string[],
     setter: (value: string[]) => void,
     max?: number
   ) => {
-    // Check stock
-    if (!isItemInStock(stock, id)) {
-      return;
-    }
-
+    if (!isItemInStock(stock, id)) return;
     if (current.includes(id)) {
       setter(current.filter((item) => item !== id));
     } else if (max === undefined || current.length < max) {
@@ -185,138 +153,121 @@ export function useOrderForm({ stock, myOrder }: UseOrderFormProps) {
     }
   };
 
-  // Update meat quantity
   const updateMeatQuantity = (id: string, delta: number) => {
-    if (!size || !selectedTacoSize || !stock) {
-      return;
-    }
+    if (!form.size || !selectedTacoSize || !stock) return;
 
     const meatItem = stock.meats.find((m) => m.id === id);
-    if (meatItem && !meatItem.in_stock) {
-      return;
-    }
+    if (meatItem && !meatItem.in_stock) return;
 
-    const existing = meats.find((m) => m.id === id);
-    const currentQuantity = existing?.quantity ?? 0;
-    const newQuantity = Math.max(0, currentQuantity + delta);
+    setForm((prev) => {
+      const existing = prev.meats.find((m) => m.id === id);
+      const currentQuantity = existing?.quantity ?? 0;
+      const newQuantity = Math.max(0, currentQuantity + delta);
+      const newTotal =
+        prev.meats.reduce((sum, m) => sum + m.quantity, 0) + (newQuantity - currentQuantity);
+      if (newTotal > selectedTacoSize.maxMeats) return prev;
 
-    const currentTotal = meats.reduce((sum, m) => sum + m.quantity, 0);
-    const quantityChange = newQuantity - currentQuantity;
-    const newTotal = currentTotal + quantityChange;
-
-    if (newTotal > selectedTacoSize.maxMeats) {
-      return;
-    }
-
-    if (newQuantity === 0) {
-      setMeats(meats.filter((m) => m.id !== id));
-    } else {
-      if (existing) {
-        setMeats(meats.map((m) => (m.id === id ? { ...m, quantity: newQuantity } : m)));
-      } else {
-        if (newTotal <= selectedTacoSize.maxMeats) {
-          setMeats([...meats, { id, quantity: newQuantity }]);
-        }
+      if (newQuantity === 0) {
+        return { ...prev, meats: prev.meats.filter((m) => m.id !== id) };
       }
-    }
+      if (existing) {
+        return {
+          ...prev,
+          meats: prev.meats.map((m) => (m.id === id ? { ...m, quantity: newQuantity } : m)),
+        };
+      }
+      return { ...prev, meats: [...prev.meats, { id, quantity: newQuantity }] };
+    });
   };
 
-  // Reset selections when size changes
+  // Clamp selections to the new size's limits when the user changes size.
   useEffect(() => {
     if (!selectedTacoSize) {
-      if (!size) {
-        setMeats([]);
-        setSauces([]);
-        setGarnitures([]);
-      }
+      if (!form.size) patch({ meats: [], sauces: [], garnitures: [] });
       return;
     }
-
-    // Check total quantity limit
-    const currentTotal = meats.reduce((sum, m) => sum + m.quantity, 0);
-    if (currentTotal > selectedTacoSize.maxMeats) {
-      let remaining = selectedTacoSize.maxMeats;
-      setMeats(
-        meats
+    setForm((prev) => {
+      const next = { ...prev };
+      const totalMeats = prev.meats.reduce((sum, m) => sum + m.quantity, 0);
+      if (totalMeats > selectedTacoSize.maxMeats) {
+        let remaining = selectedTacoSize.maxMeats;
+        next.meats = prev.meats
           .map((m) => {
             const take = Math.min(m.quantity, remaining);
             remaining -= take;
             return { ...m, quantity: take };
           })
-          .filter((m) => m.quantity > 0)
-      );
-    }
-    if (sauces.length > selectedTacoSize.maxSauces) {
-      setSauces(sauces.slice(0, selectedTacoSize.maxSauces));
-    }
-    if (!selectedTacoSize.allowGarnitures && garnitures.length > 0) {
-      setGarnitures([]);
-    }
+          .filter((m) => m.quantity > 0);
+      }
+      if (prev.sauces.length > selectedTacoSize.maxSauces) {
+        next.sauces = prev.sauces.slice(0, selectedTacoSize.maxSauces);
+      }
+      if (!selectedTacoSize.allowGarnitures && prev.garnitures.length > 0) {
+        next.garnitures = [];
+      }
+      return next;
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [size]);
+  }, [form.size]);
 
-  // Prefill taco from previous order
   const prefillTaco = (taco: Partial<TacoSelection>) => {
-    if (taco.size) setSize(taco.size);
-    if (taco.meats) setMeats(taco.meats.map((m) => ({ id: m.id, quantity: m.quantity ?? 1 })));
-    if (taco.sauces) setSauces(taco.sauces);
-    if (taco.garnitures) setGarnitures(taco.garnitures);
-    if (taco.note !== undefined) setNote(taco.note);
-    if (taco.kind) setKind(taco.kind);
+    patch({
+      ...(taco.size !== undefined && { size: taco.size }),
+      ...(taco.meats !== undefined && {
+        meats: taco.meats.map((m) => ({ id: m.id, quantity: m.quantity ?? 1 })),
+      }),
+      ...(taco.sauces !== undefined && { sauces: taco.sauces }),
+      ...(taco.garnitures !== undefined && { garnitures: taco.garnitures }),
+      ...(taco.note !== undefined && { note: taco.note }),
+      ...(taco.kind !== undefined && { kind: taco.kind }),
+    });
   };
 
-  // Add mystery taco (chef decides everything)
   const addMysteryTaco = (tacoSize: string) => {
-    setSize(tacoSize);
-    setMeats([]);
-    setSauces([]);
-    setGarnitures([]);
-    setNote('');
-    setKind(TacoKind.MYSTERY);
+    patch({
+      size: tacoSize,
+      meats: [],
+      sauces: [],
+      garnitures: [],
+      note: '',
+      kind: TacoKind.MYSTERY,
+    });
   };
 
-  // Handle size change (clear mystery flag)
-  const handleSetSize = (newSize: string) => {
-    setSize(newSize);
-    if (kind === TacoKind.MYSTERY) {
-      setKind(TacoKind.REGULAR);
-    }
+  const setSize = (newSize: string) => {
+    patch({
+      size: newSize,
+      ...(form.kind === TacoKind.MYSTERY && { kind: TacoKind.REGULAR }),
+    });
   };
 
-  // Toggle mystery mode
   const toggleMystery = () => {
-    if (kind === TacoKind.MYSTERY) {
-      setKind(TacoKind.REGULAR);
+    if (form.kind === TacoKind.MYSTERY) {
+      patch({ kind: TacoKind.REGULAR });
     } else {
-      setMeats([]);
-      setSauces([]);
-      setGarnitures([]);
-      setKind(TacoKind.MYSTERY);
+      patch({ meats: [], sauces: [], garnitures: [], kind: TacoKind.MYSTERY });
     }
   };
 
   return {
-    // State accessors
-    size,
-    meats,
-    sauces,
-    garnitures,
-    extras,
-    drinks,
-    desserts,
-    note,
-    kind,
+    size: form.size,
+    meats: form.meats,
+    sauces: form.sauces,
+    garnitures: form.garnitures,
+    extras: form.extras,
+    drinks: form.drinks,
+    desserts: form.desserts,
+    note: form.note,
+    kind: form.kind,
 
-    // State setters
-    setSize: handleSetSize,
-    setSauces,
-    setGarnitures,
-    setExtras,
-    setDrinks,
-    setDesserts,
-    setNote,
+    setSize,
+    setSauces: (sauces: string[]) => patch({ sauces }),
+    setGarnitures: (garnitures: string[]) => patch({ garnitures }),
+    setExtras: (extras: string[]) => patch({ extras }),
+    setDrinks: (drinks: string[]) => patch({ drinks }),
+    setDesserts: (desserts: string[]) => patch({ desserts }),
+    setNote: (note: string) => patch({ note }),
 
-    // Computed
     selectedTacoSize,
     totalPrice,
     priceBreakdown,
@@ -325,7 +276,6 @@ export function useOrderForm({ stock, myOrder }: UseOrderFormProps) {
     promoSavings,
     totalPriceAfterPromos,
 
-    // Actions
     toggleSelection,
     updateMeatQuantity,
     prefillTaco,
