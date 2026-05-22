@@ -33,6 +33,26 @@ import { logger } from '@/shared/utils/logger.utils';
 import { calculateTotalPriceFromUserOrders } from '@/shared/utils/order-price.utils';
 import { validateItemAvailability } from '@/shared/utils/order-validation.utils';
 
+/**
+ * Build the `pickupTime` ISO string that commande.app requires when
+ * `isPreorder: true`. Combines the group order's `endDate` (calendar day, in
+ * server-local Europe/Zurich) with the leader's requested HH:MM slot. Falls
+ * back to `endDate` as-is when no slot is provided.
+ *
+ * Server timezone is forced to Europe/Zurich at boot ([apps/api/src/index.ts]),
+ * so `setHours` here operates in local time and `toISOString()` outputs the
+ * matching UTC instant.
+ */
+function resolvePickupTime(endDate: Date, requestedFor: string | undefined): string {
+  if (!requestedFor || !/^\d{2}:\d{2}$/.test(requestedFor)) {
+    return endDate.toISOString();
+  }
+  const [hh, mm] = requestedFor.split(':').map(Number) as [number, number];
+  const pickup = new Date(endDate);
+  pickup.setHours(hh, mm, 0, 0);
+  return pickup.toISOString();
+}
+
 type ExecuteResult = {
   groupOrderId: GroupOrderId;
   submittedCount: number;
@@ -66,13 +86,16 @@ export class SubmitGroupOrderUseCase {
 
     this.validateUserOrders(userOrders, stock);
 
+    const pickupTime = resolvePickupTime(groupOrder.endDate, delivery.requestedFor);
+
     const result = await this.submitToBackend(
       userOrders,
       customer,
       delivery,
       groupOrderId,
       paymentMethod,
-      dryRun
+      dryRun,
+      pickupTime
     );
 
     const computedPrice = calculateTotalPriceFromUserOrders(userOrders);
@@ -214,8 +237,9 @@ export class SubmitGroupOrderUseCase {
     customer: Customer,
     delivery: DeliveryInfo,
     groupOrderId: GroupOrderId,
-    paymentMethod?: LegacyPaymentMethod,
-    dryRun = false
+    paymentMethod: LegacyPaymentMethod | undefined,
+    dryRun: boolean,
+    pickupTime: string | undefined
   ): Promise<SubmitGroupOrderResult> {
     try {
       return await this.backendOrderSubmissionService.submitGroupOrder({
@@ -225,6 +249,7 @@ export class SubmitGroupOrderUseCase {
         groupOrderId,
         paymentMethod,
         dryRun,
+        ...(pickupTime !== undefined && { pickupTime }),
       });
     } catch (error) {
       if (error instanceof ClientRestaurantClosedError || error instanceof StoreClosedError) {

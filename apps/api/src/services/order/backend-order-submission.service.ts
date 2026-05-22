@@ -23,10 +23,7 @@ import {
 } from '@/infrastructure/api/commande-integration.client';
 import { TacoKind } from '@/schemas/taco.schema';
 import type { UserOrder } from '@/schemas/user-order.schema';
-import {
-  type AppliedCombo,
-  applyCombinations,
-} from '@/services/order/combinations';
+import { type AppliedCombo, applyCombinations } from '@/services/order/combinations';
 import { MenuResolver } from '@/services/order/menu-resolver';
 import { ResourceService } from '@/services/resource/resource.service';
 import { SessionService } from '@/services/session/session.service';
@@ -49,6 +46,8 @@ export type SubmitGroupOrderInput = {
   readonly groupOrderId?: string;
   readonly paymentMethod?: LegacyPaymentMethod;
   readonly dryRun?: boolean;
+  /** ISO timestamp for the announced pickup/delivery time. Required by commande.app when isPreorder is true. */
+  readonly pickupTime?: string;
 };
 
 export type SubmitGroupOrderResult = {
@@ -121,7 +120,8 @@ export class BackendOrderSubmissionService {
         input.customer,
         input.delivery,
         input.paymentMethod,
-        resolver
+        resolver,
+        input.pickupTime
       );
 
       logger.debug('order.submit.payload_built', {
@@ -262,7 +262,8 @@ export class BackendOrderSubmissionService {
     customer: Customer,
     delivery: DeliveryInfo,
     paymentMethod: LegacyPaymentMethod | undefined,
-    resolver: MenuResolver
+    resolver: MenuResolver,
+    pickupTime: string | undefined
   ): CreateOrderInput {
     const orderItems: OrderItem[] = [
       ...items.tacos.map((taco) => this.tacoToOrderItem(taco, resolver)),
@@ -280,6 +281,7 @@ export class BackendOrderSubmissionService {
       items: orderItems,
       total: computedTotal,
       isPreorder: true,
+      ...(pickupTime !== undefined && { pickupTime }),
       dineIn: false,
       isOnSite: false,
       deliveryFee: 0,
