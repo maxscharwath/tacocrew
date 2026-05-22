@@ -132,15 +132,8 @@ export function OrderCreateRoute() {
   const editOrderId = isDuplicating ? null : searchParams.get('orderId');
   const prefillOrderId = searchParams.get('orderId') ?? searchParams.get('duplicate') ?? undefined;
 
-  // Data loading with Result pattern
-  const { result, isLoading } = useOrderCreationData(groupOrderId, prefillOrderId);
-
-  // Extract data from result (may be undefined during loading/error)
-  const data = result.ok ? result.value : undefined;
-  const group = data?.group;
-  const stock = data?.stock;
-  const previousOrders = data?.previousOrders;
-  const editingOrder = data?.editingOrder;
+  const { group, stock, previousOrders, editingOrder, isLoading, error, editingOrderMissing } =
+    useOrderCreationData(groupOrderId, prefillOrderId);
 
   // Form state - MUST be called unconditionally before any early returns
   const orderForm = useOrderForm({ stock, myOrder: editingOrder ?? undefined });
@@ -189,27 +182,16 @@ export function OrderCreateRoute() {
     kind: orderForm.kind,
   });
 
-  // Handle loading state - AFTER all hooks are called
   if (isLoading) {
     return <div>Loading...</div>;
   }
 
-  // Handle error state with Result pattern - AFTER all hooks are called
-  if (!result.ok) {
-    const error = result.error;
-    // Log error for monitoring
-    if (error.originalError) {
-      console.error(`[${error.code}] ${error.message}`, error.context, error.originalError);
-    } else {
-      console.error(`[${error.code}] ${error.message}`, error.context);
-    }
+  if (editingOrderMissing) {
+    throw new Response('User order not found', { status: 404 });
+  }
 
-    // Redirect on not found errors
-    if (error.code === 'USER_ORDER_NOT_FOUND' || error.code === 'GROUP_ORDER_NOT_FOUND') {
-      throw new Response(error.message, { status: 404 });
-    }
-
-    // Show generic error for other cases
+  if (error) {
+    console.error('Failed to load order creation data', error);
     throw new Response('Failed to load order data', { status: 500 });
   }
 
