@@ -2,7 +2,8 @@ import { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { OrganizationDetails } from '@/components/profile/OrganizationDetails';
 import { OrganizationDetailsSkeleton } from '@/components/profile/OrganizationDetailsSkeleton';
-import { useOrganizationDetailData } from '@/hooks/useOrganizationDetailData';
+import { useMyOrganizations, useOrganization } from '@/lib/api/organization';
+import { useProfile } from '@/lib/api/user';
 import { routes } from '@/lib/routes';
 import { calculateUserOrgStatus } from '@/lib/utils/organization-utils';
 
@@ -19,8 +20,9 @@ export function ProfileOrganizationsDetailRoute() {
     throw new Response('Organization ID is required', { status: 404 });
   }
 
-  const { organizationQuery, myOrganizationsQuery, profileQuery } =
-    useOrganizationDetailData(organizationId);
+  const organizationQuery = useOrganization(organizationId);
+  const myOrganizationsQuery = useMyOrganizations();
+  const profileQuery = useProfile();
 
   // Handle errors
   useEffect(() => {

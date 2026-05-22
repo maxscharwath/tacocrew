@@ -8,14 +8,14 @@ import {
   StatusBadge,
 } from '@tacocrew/ui-kit';
 import { Activity, ArrowUpRight, TrendingUp, Users } from 'lucide-react';
+import { useMemo } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
 import { OrderListItem, StatBubble } from '@/components/orders';
-import { useDashboardData } from '@/hooks/useDashboardData';
-import { useDashboardMetrics } from '@/hooks/useDashboardMetrics';
 import { useDateFormat } from '@/hooks/useDateFormat';
+import { useGroupOrders, useOrderHistory } from '@/lib/api/user';
 import { routes } from '@/lib/routes';
-import { getRecentGroupOrders } from '@/lib/utils/dashboard-metrics';
+import { calculateDashboardMetrics, getRecentGroupOrders } from '@/lib/utils/dashboard-metrics';
 
 export function dashboardLoader() {
   return Response.json({});
@@ -25,11 +25,13 @@ function DashboardContent() {
   const { t } = useTranslation();
   const { formatDateTime, formatDateTimeRange, formatDayName } = useDateFormat();
 
-  // Load data
-  const { groupOrders, orderHistory } = useDashboardData();
+  const groupOrders = useGroupOrders().data ?? [];
+  const orderHistory = useOrderHistory().data ?? [];
 
-  // Calculate metrics
-  const metrics = useDashboardMetrics(groupOrders, orderHistory.length);
+  const metrics = useMemo(
+    () => calculateDashboardMetrics(groupOrders, orderHistory.length),
+    [groupOrders, orderHistory.length]
+  );
   const currentDay = formatDayName();
 
   // Get recent orders for display

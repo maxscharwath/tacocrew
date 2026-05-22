@@ -15,8 +15,8 @@ import { TacoCard } from '@/components/orders/TacoCard';
 import { PreviousOrdersSkeleton } from '@/components/profile/PreviousOrdersSkeleton';
 import { ProfileHeroSkeleton } from '@/components/profile/ProfileHeroSkeleton';
 import { SectionWrapper } from '@/components/sections';
-import { useProfileData } from '@/hooks/useProfileData';
 import { resolveImageUrl } from '@/lib/api/image-utils';
+import { usePreviousOrders, useProfile } from '@/lib/api/user';
 import { routes } from '@/lib/routes';
 import { calculateTotalOrderCount } from '@/lib/utils/profile-utils';
 import { formatUsername, getDisplayName, getUserInitials } from '@/lib/utils/user-display';
@@ -28,7 +28,8 @@ export function profileLoader() {
 function ProfileContent() {
   const { t } = useTranslation();
 
-  const { profileQuery, previousOrdersQuery } = useProfileData();
+  const profileQuery = useProfile();
+  const previousOrdersQuery = usePreviousOrders();
 
   return (
     <div className="space-y-10">

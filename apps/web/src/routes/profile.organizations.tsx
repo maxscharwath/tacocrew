@@ -3,7 +3,7 @@ import { Building2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Outlet, useLocation, useNavigate } from 'react-router';
 import { OrganizationsList } from '@/components/profile/OrganizationsList';
-import { useOrganizationsListData } from '@/hooks/useOrganizationsListData';
+import { useMyOrganizations } from '@/lib/api/organization';
 import { routes } from '@/lib/routes';
 import { extractSelectedOrgIdFromPath, isOrgCreationRoute } from '@/lib/utils/organization-utils';
 
@@ -15,7 +15,7 @@ export function ProfileOrganizationsRoute() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
-  const { organizationsQuery } = useOrganizationsListData();
+  const organizationsQuery = useMyOrganizations();
   const organizations = organizationsQuery.data || [];
 
   const handleSelect = (orgId: string) => {
