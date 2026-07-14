@@ -34,6 +34,7 @@ export class OrderPriceCalculator {
     const extraTotal = items.extras.reduce((sum, e) => sum + e.price * e.quantity, 0);
     const drinkTotal = items.drinks.reduce((sum, d) => sum + d.price * d.quantity, 0);
     const dessertTotal = items.desserts.reduce((sum, d) => sum + d.price * d.quantity, 0);
-    return tacoTotal + extraTotal + drinkTotal + dessertTotal;
+    const croustyTotal = (items.crousties ?? []).reduce((sum, c) => sum + c.price * c.quantity, 0);
+    return tacoTotal + extraTotal + drinkTotal + dessertTotal + croustyTotal;
   }
 }

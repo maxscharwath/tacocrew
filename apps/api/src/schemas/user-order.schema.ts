@@ -176,7 +176,8 @@ export function isUserOrderEmpty(order: UserOrder): boolean {
     order.items.tacos.length === 0 &&
     order.items.extras.length === 0 &&
     order.items.drinks.length === 0 &&
-    order.items.desserts.length === 0
+    order.items.desserts.length === 0 &&
+    (order.items.crousties?.length ?? 0) === 0
   );
 }
 
