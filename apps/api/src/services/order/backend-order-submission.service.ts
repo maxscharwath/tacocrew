@@ -219,6 +219,7 @@ export class BackendOrderSubmissionService {
     const combined = this.combineUserOrderItems(input.userOrders, stock);
     const rawItems: OrderItem[] = [
       ...combined.tacos.map((taco) => this.tacoToOrderItem(taco, resolver)),
+      ...(combined.crousties ?? []).map((crousty) => this.croustyToOrderItem(crousty, resolver)),
       ...combined.extras.map((extra) => this.extraToOrderItem(extra, resolver)),
       ...combined.drinks.map((drink) => this.simpleToOrderItem(drink, 'drink', resolver)),
       ...combined.desserts.map((dessert) => this.simpleToOrderItem(dessert, 'dessert', resolver)),

@@ -56,7 +56,10 @@ export class ItemProcessor {
       throw new ValidationError({ message: `Crousty not found: ${simpleCrousty.code}` });
     }
     // Validate every selected option exists on the product; keep the option's
-    // exact catalogue name so submission can re-resolve it to an itemId.
+    // exact catalogue name so submission can re-resolve it to an itemId. The
+    // unit price is the base plus every selected option's extra price (e.g.
+    // "Taille XL (850 ml) +4.00"), matching what the builder shows.
+    let unitPrice = product.price.value;
     const options = simpleCrousty.options.map((selection) => {
       const group = product.optionGroups.find((g) => g.name === selection.groupName);
       const option = group?.options.find((o) => o.name === selection.optionName);
@@ -65,6 +68,7 @@ export class ItemProcessor {
           message: `Crousty option not found: ${selection.groupName} / ${selection.optionName}`,
         });
       }
+      if (option.price) unitPrice += option.price.value;
       return { groupName: group.name, optionName: option.name };
     });
     const variant = product.variant === 'other' ? 'custom' : product.variant;
@@ -75,7 +79,7 @@ export class ItemProcessor {
       code: product.code,
       name: product.name,
       variant,
-      price: product.price.value,
+      price: unitPrice,
       quantity: simpleCrousty.quantity ?? 1,
       options,
     };

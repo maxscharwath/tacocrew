@@ -34,6 +34,11 @@ export function calculateUserOrderPrice(items: UserOrderItems): number {
     total += (dessert.price ?? 0) * (dessert.quantity ?? 1);
   }
 
+  // Sum Tasty Crousty prices (price already includes selected option extras)
+  for (const crousty of items.crousties ?? []) {
+    total += (crousty.price ?? 0) * (crousty.quantity ?? 1);
+  }
+
   return total;
 }
 
