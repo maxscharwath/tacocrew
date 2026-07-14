@@ -4,6 +4,7 @@
  */
 
 import { z } from 'zod';
+import { CroustySchema } from '@/schemas/crousty.schema';
 import { DessertSchema } from '@/schemas/dessert.schema';
 import { DrinkSchema } from '@/schemas/drink.schema';
 import { ExtraSchema } from '@/schemas/extra.schema';
@@ -24,6 +25,8 @@ export const UserOrderItemsSchema = z.object({
   extras: z.array(ExtraSchema),
   drinks: z.array(DrinkSchema),
   desserts: z.array(DessertSchema),
+  // Optional + defaulted: rows persisted before Crousty support have no `crousties` key.
+  crousties: z.array(CroustySchema).default([]),
 });
 
 /**

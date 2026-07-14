@@ -29,6 +29,12 @@ import {
 } from '@tacocrew/commande-client';
 import { injectable } from 'tsyringe';
 import {
+  type CroustyProduct,
+  isCroustyProduct,
+  mapProductToCrousty,
+} from '@/domain/crousty-config';
+import type { Promo } from '@/domain/promos';
+import {
   classifyOptionGroup,
   classifyProductCategory,
   classifyTacoSize,
@@ -38,7 +44,6 @@ import {
   type Taco,
   type TacoSize,
 } from '@/domain/taco-config';
-import type { Promo } from '@/domain/promos';
 import { config } from '@/shared/config/app.config';
 import { logger } from '@/shared/utils/logger.utils';
 
@@ -175,7 +180,11 @@ export class CommandeIntegrationClient {
   async getMenuSnapshot(
     restaurantId: string,
     signal?: AbortSignal
-  ): Promise<{ stock: StockAvailability; tacoImages: Readonly<Record<string, string | null>> }> {
+  ): Promise<{
+    stock: StockAvailability;
+    tacoImages: Readonly<Record<string, string | null>>;
+    croustyProducts: readonly CroustyProduct[];
+  }> {
     const { products } = await this.client.menu.getMenuItems({ restaurantId }, { signal });
 
     const buckets: StockBuckets = {
@@ -187,12 +196,15 @@ export class CommandeIntegrationClient {
       extras: {},
     };
     const tacoImages: Record<string, string | null> = {};
+    const croustyProducts: CroustyProduct[] = [];
 
     for (const product of products) {
       const size = classifyTacoSize(product.name);
       if (size !== undefined) {
-        collectTacoPartsFromProduct(product, buckets);
+        collectTacoPartsFromProduct(product, buckets, size);
         if (!(size in tacoImages) && product.imageUrl) tacoImages[size] = product.imageUrl;
+      } else if (isCroustyProduct(product)) {
+        croustyProducts.push(mapProductToCrousty(product));
       } else {
         collectCategorizedProduct(product, buckets);
       }
@@ -208,7 +220,17 @@ export class CommandeIntegrationClient {
         extras: buckets.extras,
       },
       tacoImages,
+      croustyProducts,
     };
+  }
+
+  /** Fetch just the Tasty Crousty products (with their full option groups). */
+  async getCroustyProducts(
+    restaurantId: string,
+    signal?: AbortSignal
+  ): Promise<readonly CroustyProduct[]> {
+    const snapshot = await this.getMenuSnapshot(restaurantId, signal);
+    return snapshot.croustyProducts;
   }
 
   async getStockForProcessing(
@@ -298,10 +320,7 @@ export class CommandeIntegrationClient {
         : Promise.resolve(undefined);
     const potentialP =
       sessionId !== undefined && postalCode !== undefined
-        ? this.client.order.potentialCreate(
-            { restaurantId, serviceType, sessionId, postalCode },
-            { signal }
-          )
+        ? this.client.order.potentialCreate({ restaurantId, sessionId, postalCode }, { signal })
         : Promise.resolve(undefined);
 
     const [restaurantStatus, deliveryZone, potentialOrderAck] = await Promise.all([
@@ -409,7 +428,11 @@ function slugifyOptionName(name: string): string {
     .replace(/^_+|_+$/g, '');
 }
 
-function collectTacoPartsFromProduct(product: Product, buckets: StockBuckets): void {
+function collectTacoPartsFromProduct(
+  product: Product,
+  buckets: StockBuckets,
+  size: TacoSize
+): void {
   const productAvailable = product.available !== false;
   for (const group of product.optionGroups) {
     const kind = classifyOptionGroup(group);
@@ -421,8 +444,11 @@ function collectTacoPartsFromProduct(product: Product, buckets: StockBuckets): v
       const code = slugifyOptionName(option.name);
       if (code === '') continue;
       const existing = bucket[code];
+      // Accumulate the set of sizes that offer this option — sets differ per
+      // size (e.g. the Bowl offers 4 meats, other sizes 10).
+      const sizes = addSize(existing?.availableSizes, size);
       bucket[code] = existing
-        ? { ...existing, in_stock: existing.in_stock || available }
+        ? { ...existing, in_stock: existing.in_stock || available, availableSizes: sizes }
         : {
             name: option.name,
             in_stock: available,
@@ -432,14 +458,23 @@ function collectTacoPartsFromProduct(product: Product, buckets: StockBuckets): v
             // image as a fallback was visually misleading — leave null so
             // the FE skips the avatar.
             imageUrl: null,
+            availableSizes: sizes,
           };
     }
   }
 }
 
+/** Append `size` to an availability list, de-duplicated and order-stable. */
+function addSize(existing: readonly TacoSize[] | undefined, size: TacoSize): readonly TacoSize[] {
+  if (existing === undefined) return [size];
+  if (existing.includes(size)) return existing;
+  return [...existing, size];
+}
+
 function collectCategorizedProduct(product: Product, buckets: StockBuckets): void {
-  const category = classifyProductCategory(product.name);
-  if (category === 'other') return;
+  const category = classifyProductCategory(product);
+  // Crousty products are handled separately (getMenuSnapshot); `other` is noise.
+  if (category === 'other' || category === 'crousty') return;
   const bucket = pickCategoryBucket(category, buckets);
   const code = slugifyOptionName(product.name);
   if (code === '') return;
@@ -473,7 +508,7 @@ function inferRewardCategory(
   for (const slot of sideSlots) {
     const sample = pickSlotSampleProduct(slot, products, productCategoryById);
     if (!sample) continue;
-    const cat = classifyProductCategory(sample.name);
+    const cat = classifyProductCategory(sample);
     if (cat === 'drink') tally.set('drinks', (tally.get('drinks') ?? 0) + 1);
     else if (cat === 'dessert') tally.set('desserts', (tally.get('desserts') ?? 0) + 1);
     else if (cat === 'extra') tally.set('extras', (tally.get('extras') ?? 0) + 1);

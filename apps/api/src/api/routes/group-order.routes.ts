@@ -10,6 +10,7 @@ import { authSecurity, createAuthenticatedRouteApp } from '@/api/utils/route.uti
 import { CommandeIntegrationClient } from '@/infrastructure/api/commande-integration.client';
 import { GroupOrderRepository } from '@/infrastructure/repositories/group-order.repository';
 import { UserOrderRepository } from '@/infrastructure/repositories/user-order.repository';
+import { toCommandeOrderStatus } from '@/schemas/commande-order-event.schema';
 import {
   canAcceptOrders,
   canSubmitGroupOrder,
@@ -125,6 +126,10 @@ function sanitizeGroupUserOrderItems(items: UserOrder['items']) {
     desserts: items.desserts.map((dessert) => ({
       ...dessert,
       price: toAmount(dessert.price ?? 0),
+    })),
+    crousties: (items.crousties ?? []).map((crousty) => ({
+      ...crousty,
+      price: toAmount(crousty.price ?? 0),
     })),
   };
 }
@@ -628,15 +633,19 @@ app.openapi(
         source: 'activePreorders',
       });
       // Recording must never break the read path — observability failures
-      // are logged inside the service and swallowed here.
+      // are logged inside the service and swallowed here. Unknown statuses
+      // (commande.app adds them without notice) are surfaced but not recorded.
+      const knownStatus = toCommandeOrderStatus(match.status);
       try {
-        await eventService.recordIfChanged({
-          commandeOrderId,
-          groupOrderId,
-          status: match.status,
-          source: 'activePreorders',
-          payload: match,
-        });
+        if (knownStatus !== null) {
+          await eventService.recordIfChanged({
+            commandeOrderId,
+            groupOrderId,
+            status: knownStatus,
+            source: 'activePreorders',
+            payload: match,
+          });
+        }
       } catch (error) {
         logger.warn('order.status.record_failed', {
           commandeOrderId,
@@ -663,12 +672,13 @@ app.openapi(
       status: confirmation.status ?? null,
       source: 'confirmation',
     });
-    if (confirmation.status) {
+    const knownConfirmationStatus = toCommandeOrderStatus(confirmation.status);
+    if (knownConfirmationStatus !== null) {
       try {
         await eventService.recordIfChanged({
           commandeOrderId,
           groupOrderId,
-          status: confirmation.status,
+          status: knownConfirmationStatus,
           source: 'confirmation',
           payload: confirmation,
         });

@@ -753,6 +753,11 @@
       "unnamedDrop": "Commande sans titre"
     },
     "create": {
+      "crousty": {
+        "title": "Tasty Crousty",
+        "add": "Ajouter au panier",
+        "remove": "Retirer"
+      },
       "actions": {
         "save": "Enregistrer ma commande",
         "update": "Mettre à jour"
@@ -1294,6 +1299,7 @@
       "status": {
         "pending": "En attente",
         "confirmed": "Confirmée",
+        "printed": "Imprimée",
         "preparing": "En préparation",
         "ready": "Prête",
         "out_for_delivery": "En livraison",

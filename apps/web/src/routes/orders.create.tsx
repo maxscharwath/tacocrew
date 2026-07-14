@@ -19,6 +19,7 @@ import {
   useSearchParams,
 } from 'react-router';
 import {
+  CroustyBuilder,
   ExtrasSection,
   OrderCreateHero,
   OrderSummary,
@@ -328,6 +329,19 @@ export function OrderCreateRoute() {
               onToggleDessert={(id) =>
                 orderForm.toggleSelection(id, orderForm.desserts, orderForm.setDesserts)
               }
+            />
+          )}
+
+          {/* Tasty Crousty Builder */}
+          {stock && stock.crousties.length > 0 && (
+            <CroustyBuilder
+              products={stock.crousties}
+              isSubmitting={isSubmitting}
+              initialLines={(editingOrder?.items.crousties ?? []).map((c) => ({
+                code: c.code,
+                options: c.options,
+                quantity: c.quantity,
+              }))}
             />
           )}
 

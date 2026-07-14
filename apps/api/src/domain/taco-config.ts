@@ -20,8 +20,15 @@ export interface StockInfo {
   readonly in_stock: boolean;
   readonly price?: number;
   readonly imageUrl?: string | null;
+  /**
+   * For taco option parts (meats / sauces / garnitures): the taco sizes whose
+   * product actually offers this option. `undefined` means "no size
+   * restriction known" — consumers must treat that as available everywhere.
+   * Populated because option sets differ per size (e.g. the Bowl offers only
+   * 4 meats vs 10 for other sizes).
+   */
+  readonly availableSizes?: readonly TacoSize[];
 }
-
 
 /**
  * Stock availability for all product categories (raw/backend format).
@@ -47,16 +54,46 @@ export interface StockAvailability {
  * the product's display name. Tacos are handled separately via
  * `classifyTacoSize`.
  */
-export type ProductCategoryKind = 'drink' | 'dessert' | 'extra' | 'other';
+export type ProductCategoryKind = 'drink' | 'dessert' | 'extra' | 'crousty' | 'other';
 
 const DRINK_NAME_PATTERN = /boisson|drink|soda|eau|bi[eè]re|coca|fanta|sprite|ice tea|thé/i;
 const DESSERT_NAME_PATTERN = /dessert|gâteau|gateau|brownie|tiramisu|glace|cookie|muffin|pancake/i;
 const EXTRA_NAME_PATTERN = /extra|supp|side|frite|fries|nugget|wings|onion|potatoe/i;
 
 /**
- * Classify a product by its display name into a stock bucket.
+ * Map a commande.app category display name to a stock bucket.
+ *
+ * The category name is the authoritative signal — product names alone are
+ * unreliable (e.g. "Falafel", "Red Bull", "Cheesecake" match no keyword and
+ * were previously dropped). Returns `undefined` when the category name is
+ * unknown, so the caller can fall back to name-based heuristics.
  */
-export function classifyProductCategory(name: string): ProductCategoryKind {
+function classifyByCategoryName(categoryName: string): ProductCategoryKind | undefined {
+  const normalized = categoryName.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase().trim();
+  if (normalized === 'tacos') return 'other'; // handled via classifyTacoSize
+  if (/(boisson|drink|beverage)/.test(normalized)) return 'drink';
+  if (/(dessert|glace)/.test(normalized)) return 'dessert';
+  if (/(snack|extra|side|accompagnement)/.test(normalized)) return 'extra';
+  if (/(tasty\s*crousty|crousty|crousti)/.test(normalized)) return 'crousty';
+  return undefined;
+}
+
+/**
+ * Classify a product into a stock bucket, preferring its commande.app category
+ * name and falling back to display-name heuristics when the category is absent
+ * or unrecognized.
+ */
+export function classifyProductCategory(
+  product: string | { readonly name: string; readonly categoryName?: string | null }
+): ProductCategoryKind {
+  const name = typeof product === 'string' ? product : product.name;
+  const categoryName = typeof product === 'string' ? undefined : product.categoryName;
+
+  if (categoryName != null && categoryName.trim() !== '') {
+    const byCategory = classifyByCategoryName(categoryName);
+    if (byCategory !== undefined) return byCategory;
+  }
+
   if (DRINK_NAME_PATTERN.test(name)) return 'drink';
   if (DESSERT_NAME_PATTERN.test(name)) return 'dessert';
   if (EXTRA_NAME_PATTERN.test(name)) return 'extra';

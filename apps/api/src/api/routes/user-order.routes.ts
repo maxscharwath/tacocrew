@@ -124,6 +124,10 @@ function sanitizeUserOrderItems(items: UserOrder['items']) {
       ...dessert,
       price: toAmount(dessert.price ?? 0),
     })),
+    crousties: (items.crousties ?? []).map((crousty) => ({
+      ...crousty,
+      price: toAmount(crousty.price ?? 0),
+    })),
   };
 }
 

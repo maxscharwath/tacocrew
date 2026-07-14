@@ -18,6 +18,7 @@ import {
   findApplicablePromos,
   sumPromoSavings,
 } from '@/lib/promos';
+import { isOptionAvailableForSize } from '@/lib/taco-config';
 import type { MeatSelection, TacoSelection } from '@/types/form-data';
 import type { TacoSizeItem } from '@/types/orders';
 import { calculateOrderTotalPrice, generatePriceBreakdown } from '@/utils/priceCalculations';
@@ -114,6 +115,7 @@ export function useOrderForm({ stock, myOrder }: UseOrderFormProps) {
     extras: [],
     drinks: [],
     desserts: [],
+    crousties: [],
     promos: [],
   };
 
@@ -188,10 +190,32 @@ export function useOrderForm({ stock, myOrder }: UseOrderFormProps) {
     }
     setForm((prev) => {
       const next = { ...prev };
-      const totalMeats = prev.meats.reduce((sum, m) => sum + m.quantity, 0);
+
+      // Drop options the newly-selected size doesn't offer (option sets differ
+      // per size — e.g. the Bowl offers only 4 meats). Without this, a stale
+      // selection would submit an itemId the size rejects and fail the order.
+      if (stock) {
+        const meatById = new Map(stock.meats.map((m) => [m.id, m]));
+        const sauceById = new Map(stock.sauces.map((s) => [s.id, s]));
+        const garnishById = new Map(stock.garnishes.map((g) => [g.id, g]));
+        next.meats = prev.meats.filter((m) => {
+          const item = meatById.get(m.id);
+          return !item || isOptionAvailableForSize(item, form.size);
+        });
+        next.sauces = prev.sauces.filter((id) => {
+          const item = sauceById.get(id);
+          return !item || isOptionAvailableForSize(item, form.size);
+        });
+        next.garnitures = prev.garnitures.filter((id) => {
+          const item = garnishById.get(id);
+          return !item || isOptionAvailableForSize(item, form.size);
+        });
+      }
+
+      const totalMeats = next.meats.reduce((sum, m) => sum + m.quantity, 0);
       if (totalMeats > selectedTacoSize.maxMeats) {
         let remaining = selectedTacoSize.maxMeats;
-        next.meats = prev.meats
+        next.meats = next.meats
           .map((m) => {
             const take = Math.min(m.quantity, remaining);
             remaining -= take;
@@ -199,10 +223,10 @@ export function useOrderForm({ stock, myOrder }: UseOrderFormProps) {
           })
           .filter((m) => m.quantity > 0);
       }
-      if (prev.sauces.length > selectedTacoSize.maxSauces) {
-        next.sauces = prev.sauces.slice(0, selectedTacoSize.maxSauces);
+      if (next.sauces.length > selectedTacoSize.maxSauces) {
+        next.sauces = next.sauces.slice(0, selectedTacoSize.maxSauces);
       }
-      if (!selectedTacoSize.allowGarnitures && prev.garnitures.length > 0) {
+      if (!selectedTacoSize.allowGarnitures && next.garnitures.length > 0) {
         next.garnitures = [];
       }
       return next;

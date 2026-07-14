@@ -753,6 +753,11 @@
       "unnamedDrop": "Untitled order"
     },
     "create": {
+      "crousty": {
+        "title": "Tasty Crousty",
+        "add": "Add to order",
+        "remove": "Remove"
+      },
       "actions": {
         "save": "Save my order",
         "update": "Update order"
@@ -1294,6 +1299,7 @@
       "status": {
         "pending": "Pending",
         "confirmed": "Confirmed",
+        "printed": "Printed",
         "preparing": "Preparing",
         "ready": "Ready",
         "out_for_delivery": "Out for delivery",

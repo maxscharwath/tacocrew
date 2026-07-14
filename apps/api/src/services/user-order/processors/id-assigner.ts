@@ -46,6 +46,9 @@ export class IdAssigner {
         ...dessert,
         id: DessertId.parse(deterministicUUID(dessert.code, StockCategory.Desserts)),
       })),
+      // Crousty ids are assigned during enrichment (they depend on the chosen
+      // options, not just the code) — pass them through untouched.
+      ...(items.crousties !== undefined && { crousties: items.crousties }),
     };
   }
 }

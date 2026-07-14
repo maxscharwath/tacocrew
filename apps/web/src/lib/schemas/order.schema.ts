@@ -10,6 +10,23 @@ export const meatSelectionSchema = z.object({
 });
 
 /**
+ * Schema for a Tasty Crousty line submitted from the builder. Encoded as a
+ * single JSON hidden input on the create form and parsed with this schema.
+ */
+export const croustyOptionSelectionSchema = z.object({
+  groupName: z.string().min(1),
+  optionName: z.string().min(1),
+});
+
+export const croustyOrderInputSchema = z.object({
+  code: z.string().min(1),
+  options: z.array(croustyOptionSelectionSchema).default([]),
+  quantity: z.number().int().min(1).default(1),
+});
+
+export const croustyOrderInputListSchema = z.array(croustyOrderInputSchema);
+
+/**
  * Schema for creating a user order (taco + sides)
  */
 export const createUserOrderSchema = z

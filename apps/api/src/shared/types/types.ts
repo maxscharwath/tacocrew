@@ -5,6 +5,7 @@
 
 import { OrderType, TacoSize } from '@/domain/taco-config';
 import { CartId } from '@/schemas/cart.schema';
+import type { Crousty } from '@/schemas/crousty.schema';
 import { Dessert } from '@/schemas/dessert.schema';
 import { Drink } from '@/schemas/drink.schema';
 import { Extra } from '@/schemas/extra.schema';
@@ -133,6 +134,13 @@ export interface StockItem {
   in_stock: boolean;
   /** Optional image URL served by commande.app (/uploads/products/…). */
   imageUrl?: string | null;
+  /**
+   * For meats / sauces / garnishes: taco size codes that actually offer this
+   * option. Omitted for size-agnostic items (drinks, desserts, extras). When
+   * present, the UI must only offer this item for the listed sizes — option
+   * sets differ per size (e.g. the Bowl offers only 4 meats).
+   */
+  availableSizes?: TacoSize[];
 }
 
 /**
@@ -145,6 +153,35 @@ export enum StockCategory {
   Desserts = 'desserts',
   Drinks = 'drinks',
   Extras = 'extras',
+}
+
+/** A selectable option within a Tasty Crousty option group (API/wire format). */
+export interface CroustyOptionDto {
+  id: string;
+  name: string;
+  price?: Amount;
+  in_stock: boolean;
+}
+
+/** A Tasty Crousty option group (e.g. "Taille", "Viande") with its options. */
+export interface CroustyOptionGroupDto {
+  id: string;
+  name: string;
+  minSelection: number;
+  maxSelection: number;
+  options: CroustyOptionDto[];
+}
+
+/** A Tasty Crousty product with its full option structure (API/wire format). */
+export interface CroustyProductDto {
+  id: string;
+  code: string;
+  name: string;
+  price: Amount;
+  imageUrl?: string | null;
+  in_stock: boolean;
+  variant: 'sweet' | 'spicy' | 'custom' | 'other';
+  optionGroups: CroustyOptionGroupDto[];
 }
 
 /**
@@ -169,6 +206,7 @@ export type StockAvailability = {
   [K in StockCategory]: StockItem[];
 } & {
   tacos: TacoSizeItem[];
+  crousties: CroustyProductDto[];
   promos: PromoDto[];
 };
 
@@ -253,6 +291,8 @@ export interface UserOrderItems {
   extras: Extra[];
   drinks: Drink[];
   desserts: Dessert[];
+  /** Tasty Crousty lines. Optional for backward compatibility with rows persisted before Crousty support. */
+  crousties?: Crousty[];
 }
 
 /**

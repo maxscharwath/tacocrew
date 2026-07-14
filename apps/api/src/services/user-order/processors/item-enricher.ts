@@ -47,6 +47,9 @@ export class ItemEnricher {
       desserts: simpleItems.desserts.map((simpleDessert) =>
         ItemProcessor.processDessert(simpleDessert, stock)
       ),
+      crousties: (simpleItems.crousties ?? []).map((simpleCrousty) =>
+        ItemProcessor.processCrousty(simpleCrousty, stock)
+      ),
       originallyMysteryTacoIds,
     };
   }

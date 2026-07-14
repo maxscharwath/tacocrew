@@ -20,6 +20,33 @@ const StockItemSchema = z.object({
   price: AmountSchema.optional(),
   in_stock: z.boolean(),
   imageUrl: z.string().nullish(),
+  availableSizes: z.array(z.enum(TacoSize)).optional(),
+});
+
+const CroustyOptionSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  price: AmountSchema.optional(),
+  in_stock: z.boolean(),
+});
+
+const CroustyOptionGroupSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  minSelection: z.number().int().nonnegative(),
+  maxSelection: z.number().int().nonnegative(),
+  options: z.array(CroustyOptionSchema),
+});
+
+const CroustyProductSchema = z.object({
+  id: z.string(),
+  code: z.string(),
+  name: z.string(),
+  price: AmountSchema,
+  imageUrl: z.string().nullish(),
+  in_stock: z.boolean(),
+  variant: z.enum(['sweet', 'spicy', 'custom', 'other']),
+  optionGroups: z.array(CroustyOptionGroupSchema),
 });
 
 const TacoSizeItemSchema = z.object({
@@ -61,6 +88,7 @@ const StockAvailabilitySchema = z.object({
   drinks: z.array(StockItemSchema),
   desserts: z.array(StockItemSchema),
   tacos: z.array(TacoSizeItemSchema),
+  crousties: z.array(CroustyProductSchema),
   promos: z.array(PromoSchema),
 });
 

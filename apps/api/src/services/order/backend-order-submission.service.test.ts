@@ -8,17 +8,14 @@ import { beforeEach, describe, expect, test as it, mock } from 'bun:test';
 import { container } from 'tsyringe';
 import { OrderType, TacoSize } from '@/domain/taco-config';
 import { CommandeIntegrationClient } from '@/infrastructure/api/commande-integration.client';
+import { CroustyId } from '@/schemas/crousty.schema';
 import { GarnitureId, MeatId, SauceId, TacoId, TacoKind } from '@/schemas/taco.schema';
 import type { UserOrder } from '@/schemas/user-order.schema';
 import { UserOrderId } from '@/schemas/user-order.schema';
 import { BackendOrderSubmissionService } from '@/services/order/backend-order-submission.service';
 import { ResourceService } from '@/services/resource/resource.service';
 import { SessionService } from '@/services/session/session.service';
-import {
-  type StructuredAddress,
-  StockCategory,
-  UserOrderStatus,
-} from '@/shared/types/types';
+import { StockCategory, type StructuredAddress, UserOrderStatus } from '@/shared/types/types';
 import { formatAddressForBackend } from '@/shared/utils/address-formatter.utils';
 
 describe('formatAddressForBackend', () => {
@@ -144,7 +141,12 @@ describe('BackendOrderSubmissionService — dry-run end-to-end', () => {
             minSelection: 1,
             maxSelection: 1,
             options: [
-              { id: 'opt-viande-hachee', name: 'Viande hachée (boeuf)', extraPrice: 0, available: true },
+              {
+                id: 'opt-viande-hachee',
+                name: 'Viande hachée (boeuf)',
+                extraPrice: 0,
+                available: true,
+              },
             ],
           },
           {
@@ -200,6 +202,33 @@ describe('BackendOrderSubmissionService — dry-run end-to-end', () => {
         optionGroups: [],
         variants: [],
       },
+      {
+        id: 'prod-crousty-custom',
+        name: 'Tasty Crousty Custom',
+        description: null,
+        price: 14,
+        imageUrl: null,
+        available: true,
+        categoryId: 'cat-crousty',
+        categoryName: 'Tasty Crousty',
+        optionGroups: [
+          {
+            id: 'grp-taille',
+            name: 'Taille',
+            minSelection: 1,
+            maxSelection: 1,
+            options: [{ id: 'opt-taille-s', name: 'Taille S (500 ml)', extraPrice: 0 }],
+          },
+          {
+            id: 'grp-viande-crousty',
+            name: 'Viande',
+            minSelection: 1,
+            maxSelection: 1,
+            options: [{ id: 'opt-tenders-crousty', name: 'Tenders', extraPrice: 0 }],
+          },
+        ],
+        variants: [],
+      },
     ],
   };
 
@@ -208,6 +237,7 @@ describe('BackendOrderSubmissionService — dry-run end-to-end', () => {
     getOrderConfirmation: mock(async () => ({ orderId: 'n/a' })),
     getActivePreorders: mock(async () => []),
     getMenu: mock(async () => fakeMenu),
+    getDeliveryZone: mock(async () => ({ available: true, fee: 2, postalCode: '1000' })),
     preflightOrder: mock(async () => ({
       ok: true,
       restaurantStatus: { acceptingOrders: true },
@@ -337,6 +367,8 @@ describe('BackendOrderSubmissionService — dry-run end-to-end', () => {
     expect(preview.customerName).toBe('Alice Test');
     expect(preview.isPreorder).toBe(true);
     expect(preview.dineIn).toBe(false);
+    // Delivery order carries the real zone fee; total stays item-only (server adds fee).
+    expect(preview.deliveryFee).toBe(2);
 
     expect(preview.items).toHaveLength(4);
 
@@ -352,6 +384,8 @@ describe('BackendOrderSubmissionService — dry-run end-to-end', () => {
       itemName: 'Viande hachée (boeuf)',
       quantity: 1,
       extraPrice: 0,
+      groupOrder: 0,
+      itemOrder: 0,
     });
     expect(taco.options?.[1]?.groupId).toBe('grp-sauce');
     expect(taco.options?.[1]?.itemId).toBe('opt-harissa');
@@ -385,5 +419,61 @@ describe('BackendOrderSubmissionService — dry-run end-to-end', () => {
     expect(result.orderPreview?.serviceType).toBe('pickup');
     expect(result.orderPreview?.guestDeliveryAddress).toBeNull();
     expect(result.orderPreview?.paymentMethod).toBe('cash');
+  });
+
+  it('resolves a Tasty Crousty line into a commande.app order item with option itemIds', async () => {
+    const service = container.resolve(BackendOrderSubmissionService);
+
+    const croustyOrder = {
+      ...userOrder,
+      items: {
+        tacos: [],
+        extras: [],
+        drinks: [],
+        desserts: [],
+        crousties: [
+          {
+            id: CroustyId.parse('10000000-1000-4000-8000-100000005000'),
+            code: 'tasty_crousty_custom',
+            name: 'Tasty Crousty Custom',
+            variant: 'custom' as const,
+            price: 14,
+            quantity: 1,
+            options: [
+              { groupName: 'Taille', optionName: 'Taille S (500 ml)' },
+              { groupName: 'Viande', optionName: 'Tenders' },
+            ],
+          },
+        ],
+      },
+    } satisfies UserOrder;
+
+    const result = await service.submitGroupOrder({
+      userOrders: [croustyOrder],
+      customer,
+      delivery: {
+        type: OrderType.TAKEAWAY,
+        address: deliveryAddress,
+        requestedFor: { start: new Date(), end: new Date() },
+      },
+      paymentMethod: 'twint',
+      dryRun: true,
+    });
+
+    const item = result.orderPreview?.items[0];
+    if (!item) throw new Error('missing crousty order item');
+    expect(item.productId).toBe('prod-crousty-custom');
+    expect(item.quantity).toBe(1);
+    expect(item.options).toHaveLength(2);
+    expect(item.options[0]).toMatchObject({
+      groupId: 'grp-taille',
+      itemId: 'opt-taille-s',
+      itemName: 'Taille S (500 ml)',
+    });
+    expect(item.options[1]).toMatchObject({
+      groupId: 'grp-viande-crousty',
+      itemId: 'opt-tenders-crousty',
+      itemName: 'Tenders',
+    });
   });
 });

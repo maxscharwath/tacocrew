@@ -16,6 +16,7 @@ import { MeatSelector } from '@/components/orders/MeatSelector';
 import { SelectionGroup } from '@/components/orders/SelectionGroup';
 import type { StockResponse } from '@/lib/api/types';
 import { TacoKind } from '@/lib/api/types';
+import { isOptionAvailableForSize } from '@/lib/taco-config';
 import type { TacoCustomization } from '@/types/orders';
 
 type TacoBuilderProps = Readonly<{
@@ -165,7 +166,7 @@ export function TacoBuilder({
               </CardHeader>
               <CardContent>
                 <SelectionGroup
-                  items={stock.sauces}
+                  items={stock.sauces.filter((i) => isOptionAvailableForSize(i, taco.size))}
                   selected={taco.sauces}
                   onToggle={onToggleSauce}
                   maxSelections={taco.selectedTacoSize?.maxSauces}
@@ -189,7 +190,7 @@ export function TacoBuilder({
                 </CardHeader>
                 <CardContent>
                   <SelectionGroup
-                    items={stock.garnishes}
+                    items={stock.garnishes.filter((i) => isOptionAvailableForSize(i, taco.size))}
                     selected={taco.garnitures}
                     onToggle={onToggleGarniture}
                     disabled={!taco.size}

@@ -34,6 +34,7 @@ export function buildUpsertOrderRequest(data: ParsedOrderFormData): UpsertUserOr
       extras: data.extras,
       drinks: data.drinks,
       desserts: data.desserts,
+      crousties: data.crousties,
     },
   };
 }

@@ -317,19 +317,33 @@ describe('CommandeIntegrationClient', () => {
         in_stock: true,
         price: undefined,
         imageUrl: null,
+        availableSizes: ['tacos_L'],
       });
       expect(stock.viandes['steak']).toEqual({
         name: 'Steak',
         in_stock: false,
         price: undefined,
         imageUrl: null,
+        availableSizes: ['tacos_L'],
       });
 
       expect(stock.sauces).toEqual({
-        ketchup: { name: 'Ketchup', in_stock: true, price: undefined, imageUrl: null },
+        ketchup: {
+          name: 'Ketchup',
+          in_stock: true,
+          price: undefined,
+          imageUrl: null,
+          availableSizes: ['tacos_L'],
+        },
       });
       expect(stock.garnitures).toEqual({
-        cheddar: { name: 'Cheddar', in_stock: true, price: 0.5, imageUrl: null },
+        cheddar: {
+          name: 'Cheddar',
+          in_stock: true,
+          price: 0.5,
+          imageUrl: null,
+          availableSizes: ['tacos_L'],
+        },
       });
 
       expect(stock.boissons).toEqual({
@@ -341,6 +355,61 @@ describe('CommandeIntegrationClient', () => {
       expect(stock.extras).toEqual({
         frites: { name: 'Frites', in_stock: true, price: 4, imageUrl: null },
       });
+    });
+
+    it('records per-size availability so narrower sizes (Bowl) restrict their options', async () => {
+      const bowl = buildProduct({
+        id: 'prod-bowl',
+        name: 'Tacos Bowl',
+        price: 14,
+        optionGroups: [
+          buildGroup({
+            id: 'grp-viande-bowl',
+            name: 'Viande',
+            // Bowl offers only Poulet — not Steak.
+            options: [{ id: 'opt-poulet-bowl', name: 'Poulet', extraPrice: 0 }],
+          }),
+        ],
+      });
+      const { client } = makeClient({ products: [TACO_L_PRODUCT, bowl] });
+
+      const stock = await client.getStockForProcessing('r-1');
+
+      // Poulet is offered by both L and Bowl; Steak only by L.
+      expect(stock.viandes['poulet']?.availableSizes).toEqual(['tacos_L', 'tacos_BOWL']);
+      expect(stock.viandes['steak']?.availableSizes).toEqual(['tacos_L']);
+    });
+
+    it('surfaces Tasty Crousty products (with option groups) via category name', async () => {
+      const crousty = buildProduct({
+        id: 'prod-crousty',
+        name: 'Tasty Crousty Custom',
+        price: 14,
+        categoryName: 'Tasty Crousty',
+        optionGroups: [
+          buildGroup({
+            id: 'grp-taille',
+            name: 'Taille',
+            minSelection: 1,
+            maxSelection: 1,
+            options: [{ id: 'opt-s', name: 'Taille S (500 ml)', extraPrice: 0 }],
+          }),
+        ],
+      });
+      const { client } = makeClient({ products: [crousty] });
+
+      const products = await client.getCroustyProducts('r-1');
+
+      expect(products).toHaveLength(1);
+      const [product] = products;
+      if (!product) throw new Error('missing crousty product');
+      expect(product.code).toBe('tasty_crousty_custom');
+      expect(product.variant).toBe('custom');
+      expect(product.optionGroups[0]?.name).toBe('Taille');
+      expect(product.optionGroups[0]?.options[0]?.id).toBe('opt-s');
+      // Crousty products must NOT leak into the extras/other buckets.
+      const stock = await client.getStockForProcessing('r-1');
+      expect(stock.extras).toEqual({});
     });
   });
 

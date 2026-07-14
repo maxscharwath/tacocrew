@@ -280,7 +280,9 @@ export function OrderCard({
     desserts: dessertsList,
   } = extractOrderItems(displayOrder);
 
-  const itemCount = (taco ? 1 : 0) + extrasList.length + drinksList.length + dessertsList.length;
+  const croustiesCount = displayOrder.items.crousties?.length ?? 0;
+  const itemCount =
+    (taco ? 1 : 0) + extrasList.length + drinksList.length + dessertsList.length + croustiesCount;
   const tacoConfig = taco ? TACO_SIZE_CONFIG[taco.size] : undefined;
   const userName = order.name ?? t('orders.detail.list.unknownUser');
 

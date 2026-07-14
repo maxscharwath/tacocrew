@@ -105,3 +105,20 @@ export const TACO_SIZE_CONFIG: Record<TacoSize, TacoSizeConfig> = {
 export function formatTacoSizeName(size: string | TacoSize): string {
   return TACO_SIZE_CONFIG[size as TacoSize].name;
 }
+
+/**
+ * Whether a taco option (meat / sauce / garniture) is offered for a given size.
+ *
+ * commande.app option sets differ per size (e.g. the Bowl offers only 4 meats
+ * vs 10 for other sizes). An item without `availableSizes` carries no known
+ * restriction and is treated as available for every size. When no size is
+ * selected yet, all options are shown (they can't be added until a size is).
+ */
+export function isOptionAvailableForSize(
+  item: { readonly availableSizes?: readonly TacoSize[] | readonly string[] },
+  sizeCode: string | null
+): boolean {
+  if (!item.availableSizes || item.availableSizes.length === 0) return true;
+  if (sizeCode === null) return true;
+  return (item.availableSizes as readonly string[]).includes(sizeCode);
+}

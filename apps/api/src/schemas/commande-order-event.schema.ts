@@ -13,6 +13,7 @@ export const CommandeOrderEventId = zId<CommandeOrderEventId>();
 export const COMMANDE_ORDER_STATUSES = [
   'pending',
   'confirmed',
+  'printed',
   'preparing',
   'ready',
   'out_for_delivery',
@@ -21,6 +22,15 @@ export const COMMANDE_ORDER_STATUSES = [
 ] as const;
 
 export type CommandeOrderStatus = (typeof COMMANDE_ORDER_STATUSES)[number];
+
+/**
+ * Narrow a raw commande.app status string to a persistable event status.
+ * commande.app introduces statuses without notice — unknown values must not
+ * break the status read path, so callers skip recording when this is null.
+ */
+export function toCommandeOrderStatus(status: string): CommandeOrderStatus | null {
+  return COMMANDE_ORDER_STATUSES.find((known) => known === status) ?? null;
+}
 
 export const COMMANDE_ORDER_EVENT_SOURCES = ['activePreorders', 'confirmation'] as const;
 export type CommandeOrderEventSource = (typeof COMMANDE_ORDER_EVENT_SOURCES)[number];

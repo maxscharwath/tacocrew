@@ -6,6 +6,7 @@ import { describe, expect, test as it } from 'bun:test';
 import type { OptionGroup, Product } from '@tacocrew/commande-client';
 import {
   classifyOptionGroup,
+  classifyProductCategory,
   classifyTacoSize,
   mapOptionGroupToGarnitures,
   mapOptionGroupToMeats,
@@ -65,6 +66,33 @@ describe('taco-config: classifyTacoSize', () => {
   it('returns undefined for names that do not describe a taco size', () => {
     expect(classifyTacoSize('Fries')).toBeUndefined();
     expect(classifyTacoSize('Coca-Cola')).toBeUndefined();
+  });
+});
+
+describe('taco-config: classifyProductCategory', () => {
+  it('classifies by commande.app category name, recovering items the name regex missed', () => {
+    // These all failed the legacy name-pattern classifier and were dropped.
+    expect(classifyProductCategory({ name: 'Falafel', categoryName: 'Snacks' })).toBe('extra');
+    expect(classifyProductCategory({ name: 'Red Bull 25cl', categoryName: 'Boissons' })).toBe(
+      'drink'
+    );
+    expect(classifyProductCategory({ name: 'Cheesecake', categoryName: 'Desserts' })).toBe(
+      'dessert'
+    );
+    expect(
+      classifyProductCategory({ name: 'Tasty Crousty Custom', categoryName: 'Tasty Crousty' })
+    ).toBe('crousty');
+  });
+
+  it('treats the Tacos category as other (tacos are handled via classifyTacoSize)', () => {
+    expect(classifyProductCategory({ name: 'Tacos L', categoryName: 'Tacos' })).toBe('other');
+  });
+
+  it('falls back to name heuristics when the category name is absent', () => {
+    expect(classifyProductCategory('Coca-Cola 33cl')).toBe('drink');
+    expect(classifyProductCategory({ name: 'Brownie', categoryName: null })).toBe('dessert');
+    expect(classifyProductCategory('Portion de frites')).toBe('extra');
+    expect(classifyProductCategory('Some mystery item')).toBe('other');
   });
 });
 

@@ -13,14 +13,14 @@ import { Currency } from '@/shared/types/types';
 
 describe('ResourceService', () => {
   const mockCommandeClient = {
-    getMenuSnapshot: mock<
-      (
-        restaurantId: string
-      ) => Promise<{
-        stock: RawStockAvailability;
-        tacoImages: Readonly<Record<string, string | null>>;
-      }>
-    >(),
+    getMenuSnapshot:
+      mock<
+        (restaurantId: string) => Promise<{
+          stock: RawStockAvailability;
+          tacoImages: Readonly<Record<string, string | null>>;
+          croustyProducts: never[];
+        }>
+      >(),
     getPromos: mock<(restaurantId: string) => Promise<unknown[]>>(),
   };
 
@@ -54,7 +54,11 @@ describe('ResourceService', () => {
       desserts: {},
     };
 
-    mockCommandeClient.getMenuSnapshot.mockResolvedValue({ stock: mockStock, tacoImages: {} });
+    mockCommandeClient.getMenuSnapshot.mockResolvedValue({
+      stock: mockStock,
+      tacoImages: {},
+      croustyProducts: [],
+    });
 
     const service = container.resolve(ResourceService);
     const result = await service.getStock();
@@ -90,7 +94,11 @@ describe('ResourceService', () => {
       desserts: {},
     };
 
-    mockCommandeClient.getMenuSnapshot.mockResolvedValue({ stock: mockStock, tacoImages: {} });
+    mockCommandeClient.getMenuSnapshot.mockResolvedValue({
+      stock: mockStock,
+      tacoImages: {},
+      croustyProducts: [],
+    });
 
     const service = container.resolve(ResourceService);
     const result = await service.getStock();
@@ -116,7 +124,11 @@ describe('ResourceService', () => {
       desserts: {},
     };
 
-    mockCommandeClient.getMenuSnapshot.mockResolvedValue({ stock: mockStock, tacoImages: {} });
+    mockCommandeClient.getMenuSnapshot.mockResolvedValue({
+      stock: mockStock,
+      tacoImages: {},
+      croustyProducts: [],
+    });
 
     const service = container.resolve(ResourceService);
     const result = await service.getStock();

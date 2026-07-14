@@ -3,7 +3,9 @@
  * @module utils/order-form-parser
  */
 
+import type { CroustyOrderInput } from '@/lib/api/types';
 import { TacoKind } from '@/lib/api/types';
+import { croustyOrderInputListSchema } from '@/lib/schemas/order.schema';
 import { TacoSize } from '@/lib/taco-config';
 
 export type ParsedOrderFormData = {
@@ -16,6 +18,7 @@ export type ParsedOrderFormData = {
   extras: Array<{ id: string; quantity: number }>;
   drinks: Array<{ id: string; quantity: number }>;
   desserts: Array<{ id: string; quantity: number }>;
+  crousties: CroustyOrderInput[];
   note: string | undefined;
 };
 
@@ -41,6 +44,7 @@ export function parseOrderFormData(formData: FormData): ParsedOrderFormData {
   const extras = parseItems(formData, 'extras');
   const drinks = parseItems(formData, 'drinks');
   const desserts = parseItems(formData, 'desserts');
+  const crousties = parseCrousties(formData);
   const note = formData.get('note')?.toString().trim();
 
   return {
@@ -53,8 +57,25 @@ export function parseOrderFormData(formData: FormData): ParsedOrderFormData {
     extras,
     drinks,
     desserts,
+    crousties,
     note,
   };
+}
+
+/**
+ * Parse the Tasty Crousty lines from the single JSON `crousties` hidden input.
+ * Malformed / absent input yields an empty list rather than throwing — the
+ * builder is the source of truth and always writes valid JSON.
+ */
+function parseCrousties(formData: FormData): CroustyOrderInput[] {
+  const raw = formData.get('crousties')?.toString();
+  if (!raw) return [];
+  try {
+    const parsed = croustyOrderInputListSchema.safeParse(JSON.parse(raw));
+    return parsed.success ? parsed.data : [];
+  } catch {
+    return [];
+  }
 }
 
 function parseMeats(formData: FormData): Array<{ id: string; quantity: number }> {

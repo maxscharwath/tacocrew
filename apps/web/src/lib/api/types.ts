@@ -190,6 +190,10 @@ export interface StockItem {
   in_stock: boolean;
   // Absolute product image URL from commande.app (not present for taco sizes).
   imageUrl?: string | null;
+  // For meats/sauces/garnishes: the taco size codes that offer this option.
+  // Omitted for size-agnostic items. When present, only offer it for these
+  // sizes (option sets differ per size — e.g. the Bowl offers only 4 meats).
+  availableSizes?: TacoSize[];
 }
 
 export interface TacoSizeItem {
@@ -200,6 +204,59 @@ export interface TacoSizeItem {
   maxMeats: number;
   maxSauces: number;
   allowGarnitures: boolean;
+}
+
+export type CroustyVariant = 'sweet' | 'spicy' | 'custom' | 'other';
+
+export interface CroustyOption {
+  id: string;
+  name: string;
+  price?: Amount;
+  in_stock: boolean;
+}
+
+export interface CroustyOptionGroup {
+  id: string;
+  name: string;
+  minSelection: number;
+  maxSelection: number;
+  options: CroustyOption[];
+}
+
+/** A Tasty Crousty product with its full option structure (from GET /stock). */
+export interface CroustyProduct {
+  id: string;
+  code: string;
+  name: string;
+  price: Amount;
+  imageUrl?: string | null;
+  in_stock: boolean;
+  variant: CroustyVariant;
+  optionGroups: CroustyOptionGroup[];
+}
+
+/** A chosen option within a Crousty group, keyed by group + option name. */
+export interface CroustyOptionSelection {
+  groupName: string;
+  optionName: string;
+}
+
+/** Request shape for a Crousty line when creating/updating a user order. */
+export interface CroustyOrderInput {
+  code: string;
+  options: CroustyOptionSelection[];
+  quantity?: number;
+}
+
+/** Persisted Crousty line as returned by the API. */
+export interface CroustyOrder {
+  id: string;
+  code: string;
+  name: string;
+  variant: Exclude<CroustyVariant, 'other'>;
+  price: Amount;
+  quantity: number;
+  options: CroustyOptionSelection[];
 }
 
 export type PromoCategory = 'drinks' | 'desserts' | 'extras';
@@ -239,6 +296,7 @@ export interface StockResponse {
   drinks: StockItem[];
   desserts: StockItem[];
   tacos: TacoSizeItem[];
+  crousties: CroustyProduct[];
   promos: Promo[];
 }
 
@@ -294,6 +352,7 @@ export interface UpsertUserOrderBody {
     extras: QuantitySelection[];
     drinks: QuantitySelection[];
     desserts: QuantitySelection[];
+    crousties?: CroustyOrderInput[];
   };
 }
 
@@ -344,6 +403,7 @@ export interface UserOrderItems {
   extras: PricedSelection[];
   drinks: PricedSelection[];
   desserts: PricedSelection[];
+  crousties?: CroustyOrder[];
 }
 
 export interface PaymentMarker {

@@ -1,6 +1,7 @@
 export const ORDER_STATUSES = [
   'pending',
   'confirmed',
+  'printed',
   'preparing',
   'ready',
   'out_for_delivery',
@@ -22,9 +23,11 @@ export function isTerminalOrderStatus(status: OrderStatus | null | undefined): b
 }
 
 // Linear progression shown as stepper; `cancelled` is intentionally omitted.
+// `printed` (kitchen ticket printed) sits between confirmation and prep.
 export const ORDER_STATUS_FLOW: readonly OrderStatus[] = [
   'pending',
   'confirmed',
+  'printed',
   'preparing',
   'ready',
   'out_for_delivery',

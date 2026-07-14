@@ -10,7 +10,11 @@
  */
 
 import type { OptionGroup, Product } from '@tacocrew/commande-client';
-import { classifyOptionGroup, classifyProductCategory, classifyTacoSize } from '@/domain/taco-config';
+import {
+  classifyOptionGroup,
+  classifyProductCategory,
+  classifyTacoSize,
+} from '@/domain/taco-config';
 import { ValidationError } from '@/shared/utils/errors.utils';
 
 export type OptionKind = 'meat' | 'sauce' | 'garniture';
@@ -38,6 +42,8 @@ export class MenuResolver {
   private readonly tacoProductIdBySize: ReadonlyMap<string, string>;
   /** category → (slug → product id). */
   private readonly categoryBySlug: ReadonlyMap<ProductCategory, ReadonlyMap<string, string>>;
+  /** Crousty product slug → product id. */
+  private readonly croustyProductIdByCode: ReadonlyMap<string, string>;
 
   constructor(products: readonly Product[]) {
     const byId = new Map<string, Product>();
@@ -45,6 +51,7 @@ export class MenuResolver {
     const extras = new Map<string, string>();
     const drinks = new Map<string, string>();
     const desserts = new Map<string, string>();
+    const crousties = new Map<string, string>();
 
     for (const product of products) {
       byId.set(product.id, product);
@@ -59,14 +66,17 @@ export class MenuResolver {
 
       const slug = slugify(product.name);
       if (slug === '') continue;
-      const category = classifyProductCategory(product.name);
-      if (category === 'extra' && !extras.has(slug)) extras.set(slug, product.id);
+      const category = classifyProductCategory(product);
+      if (category === 'crousty') {
+        if (!crousties.has(slug)) crousties.set(slug, product.id);
+      } else if (category === 'extra' && !extras.has(slug)) extras.set(slug, product.id);
       else if (category === 'drink' && !drinks.has(slug)) drinks.set(slug, product.id);
       else if (category === 'dessert' && !desserts.has(slug)) desserts.set(slug, product.id);
     }
 
     this.productsById = byId;
     this.tacoProductIdBySize = tacoIdBySize;
+    this.croustyProductIdByCode = crousties;
     this.categoryBySlug = new Map<ProductCategory, ReadonlyMap<string, string>>([
       ['extra', extras],
       ['drink', drinks],
@@ -128,6 +138,57 @@ export class MenuResolver {
       kind,
       slug,
       productId: tacoProductId,
+    });
+  }
+
+  /** Look up a Tasty Crousty product CUID by its slug (e.g. `tasty_crousty_custom`). */
+  resolveCroustyProductId(code: string): string {
+    const id = this.croustyProductIdByCode.get(code);
+    if (id === undefined) {
+      throw new ValidationError({
+        reason: 'menu_missing_crousty_product',
+        code,
+        available: [...this.croustyProductIdByCode.keys()],
+      });
+    }
+    return id;
+  }
+
+  /**
+   * Resolve a Crousty option (group name + option name) into the commande.app
+   * group/item CUIDs. Crousty groups are free-form (Taille, Viande, toggles),
+   * so we match by display name within the product rather than by our taco
+   * vocabulary. Comparison is slug-based to tolerate casing/accent drift.
+   */
+  resolveCroustyOption(
+    croustyProductId: string,
+    groupName: string,
+    optionName: string
+  ): { groupId: string; groupName: string; itemId: string; itemName: string } {
+    const product = this.productsById.get(croustyProductId);
+    if (!product) {
+      throw new ValidationError({ reason: 'menu_missing_crousty_product', id: croustyProductId });
+    }
+    const groupSlug = slugify(groupName);
+    const optionSlug = slugify(optionName);
+    for (const group of product.optionGroups) {
+      if (slugify(group.name) !== groupSlug) continue;
+      for (const option of group.options) {
+        if (slugify(option.name) === optionSlug) {
+          return {
+            groupId: group.id,
+            groupName: group.name,
+            itemId: option.id,
+            itemName: option.name,
+          };
+        }
+      }
+    }
+    throw new ValidationError({
+      reason: 'menu_missing_crousty_option',
+      groupName,
+      optionName,
+      productId: croustyProductId,
     });
   }
 

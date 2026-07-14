@@ -30,6 +30,11 @@ export function convertOrderToUpsertBody(order: UserOrderSummary): UpsertUserOrd
         id: dessert.id,
         quantity: dessert.quantity,
       })),
+      crousties: (order.items.crousties ?? []).map((crousty) => ({
+        code: crousty.code,
+        options: crousty.options,
+        quantity: crousty.quantity,
+      })),
     },
   };
 }

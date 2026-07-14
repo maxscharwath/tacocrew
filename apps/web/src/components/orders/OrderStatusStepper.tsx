@@ -1,5 +1,14 @@
 import { Alert } from '@tacocrew/ui-kit';
-import { CheckCircle2, ChefHat, Clock, Package, ShoppingBag, Truck, XCircle } from 'lucide-react';
+import {
+  CheckCircle2,
+  ChefHat,
+  Clock,
+  Package,
+  Printer,
+  ShoppingBag,
+  Truck,
+  XCircle,
+} from 'lucide-react';
 import type { ComponentType } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ProgressStepper } from '@/components/orders/ProgressStepper';
@@ -11,6 +20,7 @@ type IconComponent = ComponentType<{ size?: number; className?: string }>;
 const STATUS_ICONS: Record<OrderStatus, IconComponent> = {
   pending: Clock,
   confirmed: CheckCircle2,
+  printed: Printer,
   preparing: ChefHat,
   ready: Package,
   out_for_delivery: Truck,

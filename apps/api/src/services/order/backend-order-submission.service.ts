@@ -114,6 +114,8 @@ export class BackendOrderSubmissionService {
 
       const transactionId = `${Date.now()}_${randomBytes(8).toString('hex')}`;
 
+      const deliveryFee = await this.resolveDeliveryFee(input.delivery);
+
       const createOrderInput = this.buildCreateOrderInput(
         combinedItems,
         computedTotal,
@@ -121,7 +123,8 @@ export class BackendOrderSubmissionService {
         input.delivery,
         input.paymentMethod,
         resolver,
-        input.pickupTime
+        input.pickupTime,
+        deliveryFee
       );
 
       logger.debug('order.submit.payload_built', {
@@ -243,6 +246,7 @@ export class BackendOrderSubmissionService {
       extras: [],
       drinks: [],
       desserts: [],
+      crousties: [],
     };
 
     for (const userOrder of userOrders) {
@@ -253,6 +257,7 @@ export class BackendOrderSubmissionService {
       combined.extras.push(...userOrder.items.extras);
       combined.drinks.push(...userOrder.items.drinks);
       combined.desserts.push(...userOrder.items.desserts);
+      if (userOrder.items.crousties) combined.crousties?.push(...userOrder.items.crousties);
     }
 
     return combined;
@@ -265,14 +270,22 @@ export class BackendOrderSubmissionService {
     delivery: DeliveryInfo,
     paymentMethod: LegacyPaymentMethod | undefined,
     resolver: MenuResolver,
-    pickupTime: Date | undefined
+    pickupTime: Date | undefined,
+    deliveryFee: number
   ): CreateOrderInput {
+    // The commande.app web client stamps groupOrder/itemOrder on every option
+    // (always 0) — mirror it so our payload matches the shape the server is
+    // known to accept.
     const orderItems: OrderItem[] = [
       ...items.tacos.map((taco) => this.tacoToOrderItem(taco, resolver)),
+      ...(items.crousties ?? []).map((crousty) => this.croustyToOrderItem(crousty, resolver)),
       ...items.extras.map((extra) => this.extraToOrderItem(extra, resolver)),
       ...items.drinks.map((drink) => this.simpleToOrderItem(drink, 'drink', resolver)),
       ...items.desserts.map((dessert) => this.simpleToOrderItem(dessert, 'dessert', resolver)),
-    ];
+    ].map((item) => ({
+      ...item,
+      options: item.options.map((option) => ({ groupOrder: 0, itemOrder: 0, ...option })),
+    }));
 
     const serviceType = this.toServiceType(delivery.type);
     const isDelivery = serviceType === 'delivery';
@@ -286,11 +299,16 @@ export class BackendOrderSubmissionService {
       ...(pickupTime !== undefined && { pickupTime }),
       dineIn: false,
       isOnSite: false,
-      deliveryFee: 0,
+      // commande.app's `total` excludes the delivery fee; the server adds it.
+      // We send the real zone fee for delivery orders (0 for pickup).
+      deliveryFee: isDelivery ? deliveryFee : 0,
       customerName: customer.name,
       customerPhone: customer.phone,
       guestDeliveryAddress: isDelivery ? formatAddressForBackend(delivery.address) : null,
       paymentMethod: this.toCommandePaymentMethod(paymentMethod),
+      deliveryNote: '',
+      deliveryNotes: '',
+      acceptedMinimum: false,
     };
   }
 
@@ -353,6 +371,35 @@ export class BackendOrderSubmissionService {
     };
   }
 
+  private croustyToOrderItem(
+    crousty: NonNullable<UserOrder['items']['crousties']>[number],
+    resolver: MenuResolver
+  ): OrderItem {
+    const productId = resolver.resolveCroustyProductId(crousty.code);
+    const options: OrderItemOption[] = crousty.options.map((selection) => {
+      const resolved = resolver.resolveCroustyOption(
+        productId,
+        selection.groupName,
+        selection.optionName
+      );
+      return {
+        groupId: resolved.groupId,
+        groupName: resolved.groupName,
+        itemId: resolved.itemId,
+        itemName: resolved.itemName,
+        quantity: 1,
+        extraPrice: 0,
+      };
+    });
+    return {
+      productId,
+      productName: crousty.name,
+      quantity: crousty.quantity,
+      price: crousty.price,
+      options,
+    };
+  }
+
   private extraToOrderItem(
     extra: UserOrder['items']['extras'][number],
     resolver: MenuResolver
@@ -390,6 +437,27 @@ export class BackendOrderSubmissionService {
       price: item.price,
       options: [],
     };
+  }
+
+  /**
+   * Resolve the delivery fee to send on `order.create`. Returns 0 for pickup
+   * orders or when the zone lookup fails (a fee lookup failure must not block
+   * submission — the server recomputes the fee authoritatively anyway).
+   */
+  private async resolveDeliveryFee(delivery: DeliveryInfo): Promise<number> {
+    if (this.toServiceType(delivery.type) !== 'delivery') return 0;
+    const postalCode = delivery.address.postcode;
+    if (postalCode === undefined || postalCode === '') return 0;
+    try {
+      const zone = await this.commande.getDeliveryZone(config.commande.restaurantId, postalCode);
+      return zone.available ? zone.fee : 0;
+    } catch (error) {
+      logger.warn('Delivery fee lookup failed; sending deliveryFee: 0', {
+        postalCode,
+        error: error instanceof Error ? error.message : String(error),
+      });
+      return 0;
+    }
   }
 
   private async runPreflight(

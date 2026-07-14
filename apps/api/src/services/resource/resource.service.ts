@@ -4,12 +4,14 @@
  */
 
 import { injectable } from 'tsyringe';
+import type { CroustyProduct } from '@/domain/crousty-config';
 import type { Promo } from '@/domain/promos';
 import type { StockAvailability as RawStockAvailability } from '@/domain/taco-config';
 import { TACO_SIZE_CONFIG, TacoSize } from '@/domain/taco-config';
 import { CommandeIntegrationClient } from '@/infrastructure/api/commande-integration.client';
 import { config } from '@/shared/config/app.config';
 import {
+  type CroustyProductDto,
   Currency,
   createAmount,
   type StockAvailability,
@@ -33,16 +35,17 @@ export class ResourceService {
   }
 
   async getStock(): Promise<StockAvailability> {
-    const [{ stock, tacoImages }, promos] = await Promise.all([
+    const [{ stock, tacoImages, croustyProducts }, promos] = await Promise.all([
       this.commande.getMenuSnapshot(config.commande.restaurantId),
       this.commande.getPromos(config.commande.restaurantId).catch(() => []),
     ]);
-    return this.transformStock(stock, tacoImages, promos);
+    return this.transformStock(stock, tacoImages, croustyProducts, promos);
   }
 
   private transformStock(
     raw: RawStockAvailability,
     tacoImages: Readonly<Record<string, string | null>>,
+    croustyProducts: ReadonlyArray<CroustyProduct>,
     promos: ReadonlyArray<Promo>
   ): StockAvailability {
     return {
@@ -53,6 +56,7 @@ export class ResourceService {
       [StockCategory.Drinks]: this.mapBucket(raw.boissons, StockCategory.Drinks),
       [StockCategory.Desserts]: this.mapBucket(raw.desserts, StockCategory.Desserts),
       tacos: this.buildTacoSizes(tacoImages),
+      crousties: croustyProducts.map((c) => this.mapCrousty(c)),
       promos: promos.map((p) => ({
         kind: p.kind,
         id: p.id,
@@ -72,17 +76,42 @@ export class ResourceService {
   }
 
   private mapBucket(
-    bucket: Record<string, RawStockAvailability['viandes'][string]>,
+    bucket: Record<string, RawStockAvailability['viandes'][string]> | undefined,
     category: StockCategory
   ): StockItem[] {
-    return Object.entries(bucket).map(([code, info]) => ({
+    return Object.entries(bucket ?? {}).map(([code, info]) => ({
       id: deterministicUUID(code, category),
       code,
       name: info.name,
       price: info.price === undefined ? undefined : createAmount(info.price, Currency.CHF),
       in_stock: info.in_stock,
       ...(info.imageUrl !== undefined && { imageUrl: info.imageUrl }),
+      ...(info.availableSizes !== undefined && { availableSizes: [...info.availableSizes] }),
     }));
+  }
+
+  private mapCrousty(product: CroustyProduct): CroustyProductDto {
+    return {
+      id: product.id,
+      code: product.code,
+      name: product.name,
+      price: createAmount(product.price, Currency.CHF),
+      in_stock: product.available,
+      variant: product.variant,
+      ...(product.imageUrl !== null && { imageUrl: product.imageUrl }),
+      optionGroups: product.optionGroups.map((group) => ({
+        id: group.id,
+        name: group.name,
+        minSelection: group.minSelection,
+        maxSelection: group.maxSelection,
+        options: group.options.map((option) => ({
+          id: option.id,
+          name: option.name,
+          in_stock: option.available,
+          ...(option.price > 0 && { price: createAmount(option.price, Currency.CHF) }),
+        })),
+      })),
+    };
   }
 
   private buildTacoSizes(tacoImages: Readonly<Record<string, string | null>>): TacoSizeItem[] {

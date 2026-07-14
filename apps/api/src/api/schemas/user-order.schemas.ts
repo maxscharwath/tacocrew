@@ -88,11 +88,27 @@ export const DessertSchema = z.object({
   quantity: z.number().int().min(1),
 });
 
+export const CroustyOptionSelectionSchema = z.object({
+  groupName: z.string(),
+  optionName: z.string(),
+});
+
+export const CroustySchema = z.object({
+  id: z.string(),
+  code: z.string(),
+  name: z.string(),
+  variant: z.enum(['sweet', 'spicy', 'custom']),
+  price: AmountSchema,
+  quantity: z.number().int().min(1),
+  options: z.array(CroustyOptionSelectionSchema),
+});
+
 export const UserOrderItemsSchema = z.object({
   tacos: z.array(TacoSchema),
   extras: z.array(ExtraSchema),
   drinks: z.array(DrinkSchema),
   desserts: z.array(DessertSchema),
+  crousties: z.array(CroustySchema).default([]),
 });
 
 // Request schemas (only id and quantity)
@@ -132,12 +148,26 @@ export const ExtraRequestSchema = ItemRequestSchema(ExtraId);
 export const DrinkRequestSchema = ItemRequestSchema(DrinkId);
 export const DessertRequestSchema = ItemRequestSchema(DessertId);
 
+// Crousty request: product code + chosen options (by group/option name) + quantity.
+// The server resolves name/price/variant from stock.crousties.
+export const CroustyOptionSelectionRequestSchema = z.object({
+  groupName: z.string().min(1),
+  optionName: z.string().min(1),
+});
+
+export const CroustyRequestSchema = z.object({
+  code: z.string().min(1),
+  options: z.array(CroustyOptionSelectionRequestSchema).default([]),
+  quantity: z.number().int().min(1).optional().default(1),
+});
+
 // User order items request schema
 export const UserOrderItemsRequestSchema = z.object({
   tacos: z.array(TacoRequestSchema),
   extras: z.array(ExtraRequestSchema),
   drinks: z.array(DrinkRequestSchema),
   desserts: z.array(DessertRequestSchema),
+  crousties: z.array(CroustyRequestSchema).default([]),
 });
 
 /**

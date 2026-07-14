@@ -4,11 +4,13 @@
  */
 
 import type { CreateUserOrderRequestDto } from '@/api/schemas/user-order.schemas';
+import { type Crousty, CroustyId } from '@/schemas/crousty.schema';
 import { DessertId } from '@/schemas/dessert.schema';
 import { DrinkId } from '@/schemas/drink.schema';
 import { ExtraId } from '@/schemas/extra.schema';
 import { type StockAvailability, StockCategory } from '@/shared/types/types';
 import { ValidationError } from '@/shared/utils/errors.utils';
+import { deterministicUUID } from '@/shared/utils/uuid.utils';
 
 export class ItemProcessor {
   static processExtra(
@@ -42,6 +44,40 @@ export class ItemProcessor {
       name: drink.name,
       price: drink.price?.value ?? 0,
       quantity: simpleDrink.quantity ?? 1,
+    };
+  }
+
+  static processCrousty(
+    simpleCrousty: CreateUserOrderRequestDto['items']['crousties'][number],
+    stock: StockAvailability
+  ): Crousty {
+    const product = stock.crousties.find((c) => c.code === simpleCrousty.code);
+    if (!product) {
+      throw new ValidationError({ message: `Crousty not found: ${simpleCrousty.code}` });
+    }
+    // Validate every selected option exists on the product; keep the option's
+    // exact catalogue name so submission can re-resolve it to an itemId.
+    const options = simpleCrousty.options.map((selection) => {
+      const group = product.optionGroups.find((g) => g.name === selection.groupName);
+      const option = group?.options.find((o) => o.name === selection.optionName);
+      if (!group || !option) {
+        throw new ValidationError({
+          message: `Crousty option not found: ${selection.groupName} / ${selection.optionName}`,
+        });
+      }
+      return { groupName: group.name, optionName: option.name };
+    });
+    const variant = product.variant === 'other' ? 'custom' : product.variant;
+    return {
+      id: CroustyId.parse(
+        deterministicUUID(`${product.code}:${JSON.stringify(options)}`, 'crousty')
+      ),
+      code: product.code,
+      name: product.name,
+      variant,
+      price: product.price.value,
+      quantity: simpleCrousty.quantity ?? 1,
+      options,
     };
   }
 
