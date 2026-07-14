@@ -1,4 +1,4 @@
 {
-  "required": false,
-  "newNumber": false
+  "restaurantRequiresSms": false,
+  "alreadyVerified": false
 }

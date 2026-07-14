@@ -15,7 +15,23 @@ describe('envelope', () => {
       expect(wrapped).toEqual({
         0: {
           json: { restaurantId: 'abc', pickupTime: '2026-04-24T09:50:00.000Z' },
-          meta: { values: { pickupTime: ['Date'] } },
+          meta: { values: { pickupTime: ['Date'] }, v: 1 },
+        },
+      });
+    });
+
+    it('encodes root-level undefined the way the commande.app web client does', () => {
+      expect(encodeInput(undefined)).toEqual({
+        0: { json: null, meta: { values: ['undefined'], v: 1 } },
+      });
+    });
+
+    it('records nested undefined fields in meta', () => {
+      const wrapped = encodeInput({ restaurantId: 'abc', phone: undefined });
+      expect(wrapped).toEqual({
+        0: {
+          json: { restaurantId: 'abc', phone: null },
+          meta: { values: { phone: ['undefined'] }, v: 1 },
         },
       });
     });
@@ -27,7 +43,7 @@ describe('envelope', () => {
       expect(wrapped).toEqual({
         0: {
           json: { items: [{ when: '2026-04-24T09:50:00.000Z' }] },
-          meta: { values: { 'items.0.when': ['Date'] } },
+          meta: { values: { 'items.0.when': ['Date'] }, v: 1 },
         },
       });
     });
@@ -87,6 +103,27 @@ describe('envelope', () => {
         message: 'Not found',
         code: 'NOT_FOUND',
         data: { code: 'NOT_FOUND', httpStatus: 404 },
+      });
+    });
+
+    it('unwraps the superjson envelope commande.app puts around errors', () => {
+      // Exact production shape (captured 2026-07 via HAR): fields live under
+      // `error.json` and the top-level `code` is the numeric JSON-RPC code.
+      const payload = [
+        {
+          error: {
+            json: {
+              message: 'Invalid uuid',
+              code: -32600,
+              data: { code: 'BAD_REQUEST', httpStatus: 400, path: 'potentialOrder.create' },
+            },
+          },
+        },
+      ];
+      expect(extractError(payload)).toEqual({
+        message: 'Invalid uuid',
+        code: -32600,
+        data: { code: 'BAD_REQUEST', httpStatus: 400, path: 'potentialOrder.create' },
       });
     });
   });

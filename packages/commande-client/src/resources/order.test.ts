@@ -69,20 +69,30 @@ describe('OrderResource', () => {
     await expect(resource.create(createRequest)).rejects.toThrow(RestaurantClosedError);
   });
 
-  it('getActivePreorders parses list', async () => {
-    const { resource } = makeResource([new Response(wrap(activePending), { status: 200 })]);
+  it('getActivePreorders parses list and sends no input on the wire', async () => {
+    const { resource, getCalls } = makeResource([
+      new Response(wrap(activePending), { status: 200 }),
+    ]);
     const list = await resource.getActivePreorders({ restaurantId: 'r1' });
     expect(list).toHaveLength(1);
     const first = list[0];
     if (!first) throw new Error('missing preorder');
     expect(first.status).toBe('pending');
+    const firstCall = getCalls()[0];
+    if (!firstCall) throw new Error('missing call');
+    // The commande.app web client always calls this procedure with undefined.
+    expect(decodeURIComponent(firstCall.url)).toContain(
+      '{"0":{"json":null,"meta":{"values":["undefined"],"v":1}}}'
+    );
   });
 
-  it('getOrderConfirmation parses confirmation', async () => {
+  it('getOrderConfirmation parses the real confirmation payload', async () => {
     const { resource } = makeResource([new Response(wrap(confirmation), { status: 200 })]);
-    const result = await resource.getOrderConfirmation({ orderId: 'cmoconp6801uucm6h16mbqwlh' });
-    expect(result.status).toBe('confirmed');
-    expect(result.items).toHaveLength(1);
+    const result = await resource.getOrderConfirmation({ orderId: 'cmrepdzqe05uydd6hocs6uc09' });
+    expect(result.orderId).toBe('cmrepdzqe05uydd6hocs6uc09');
+    expect(result.status).toBe('printed');
+    expect(result.totalAmount).toBe(61);
+    expect(result.items).toHaveLength(6);
   });
 
   it('getRestaurantStatus parses status', async () => {
@@ -96,15 +106,28 @@ describe('OrderResource', () => {
   });
 
   it('potentialCreate returns { success: true } (no item validation server-side)', async () => {
-    const { resource } = makeResource([new Response(wrap(potentialResult), { status: 200 })]);
+    const { resource, getCalls } = makeResource([
+      new Response(wrap(potentialResult), { status: 200 }),
+    ]);
     const result = await resource.potentialCreate({
       restaurantId: 'r1',
-      serviceType: 'delivery',
       sessionId: '10000000-1000-4000-8000-100000000001',
       postalCode: '1007',
-      items: createRequest.items,
+      address: 'Avenue de Rhodanie 40C',
+      cartItems: [{ name: 'Tacos L', qty: 1, price: 11 }],
     });
     expect(result.success).toBe(true);
+    const firstCall = getCalls()[0];
+    if (!firstCall) throw new Error('missing call');
+    const body = JSON.parse(String(firstCall.init.body));
+    // Wire shape must match the commande.app web client exactly.
+    expect(body[0].json).toEqual({
+      restaurantId: 'r1',
+      sessionId: '10000000-1000-4000-8000-100000000001',
+      postalCode: '1007',
+      address: 'Avenue de Rhodanie 40C',
+      cartItems: [{ name: 'Tacos L', qty: 1, price: 11 }],
+    });
   });
 
   it('throws ValidationError on malformed confirmation', async () => {

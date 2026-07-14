@@ -1,15 +1,26 @@
-export type OrderStatus =
+/**
+ * Statuses observed on the commande.app wire (`printed` = kitchen ticket
+ * printed, seen in production HAR captures). The `(string & {})` arm keeps the
+ * union open: commande.app can introduce new statuses at any time and parsing
+ * must not break — consumers should treat unknown values as "in progress".
+ */
+export type KnownOrderStatus =
   | 'pending'
   | 'confirmed'
+  | 'printed'
   | 'preparing'
   | 'ready'
   | 'out_for_delivery'
   | 'delivered'
   | 'cancelled';
 
-export type ServiceType = 'delivery' | 'pickup' | 'dineIn';
+export type OrderStatus = KnownOrderStatus | (string & {});
 
-export type PaymentMethod = 'twint' | 'stripe' | 'card' | 'cash';
+export type KnownServiceType = 'delivery' | 'pickup' | 'dineIn';
+export type ServiceType = KnownServiceType | (string & {});
+
+export type KnownPaymentMethod = 'twint' | 'stripe' | 'card' | 'cash';
+export type PaymentMethod = KnownPaymentMethod | (string & {});
 
 export type BusyLevel = 'low' | 'medium' | 'high';
 
@@ -43,6 +54,9 @@ export type Product = {
   readonly imageUrl?: string | null;
   readonly available: boolean;
   readonly categoryId?: string | null;
+  /** commande.app category display name (e.g. "Tacos", "Boissons"). The most
+   * reliable classification signal — product names alone are unreliable. */
+  readonly categoryName?: string | null;
   readonly optionGroups: readonly OptionGroup[];
   readonly variants: readonly Variant[];
 };
@@ -96,6 +110,10 @@ export type DeliveryZone = {
   readonly fee: number;
   readonly estimatedMinutes?: number | null;
   readonly postalCode: string;
+  readonly minOrderAmount?: number | null;
+  /** 'accept' lets the customer accept a below-minimum order; 'block' refuses it. */
+  readonly minOrderMode?: string | null;
+  readonly closureMessage?: string | null;
 };
 
 export type GeocodeResult = {
@@ -111,16 +129,21 @@ export type OrderItemOption = {
   readonly itemName: string;
   readonly quantity: number;
   readonly extraPrice: number;
+  /** Display ordering — the commande.app web client always sends 0. */
+  readonly groupOrder?: number;
+  readonly itemOrder?: number;
 };
 
 export type OrderItem = {
   readonly productId: string;
-  readonly productName?: string;
+  readonly productName?: string | null;
   readonly quantity: number;
   readonly price: number;
   readonly options: readonly OrderItemOption[];
   readonly variantId?: string | null;
   readonly note?: string | null;
+  readonly combinationId?: string | null;
+  readonly combinationInstanceId?: string | null;
 };
 
 export type CreateOrderInput = {
@@ -140,6 +163,13 @@ export type CreateOrderInput = {
   readonly guestDeliveryAddress?: string | null;
   readonly paymentMethod: PaymentMethod;
   readonly stripePaymentIntentId?: string | null;
+  // Fields the commande.app web client always includes — optional here so
+  // legacy callers keep compiling, but submission should send them.
+  readonly addressId?: string | null;
+  readonly deliveryNote?: string;
+  readonly deliveryNotes?: string;
+  /** Customer acknowledged being below the delivery minimum (minOrderMode 'accept'). */
+  readonly acceptedMinimum?: boolean;
 };
 
 export type CreateOrderResponse = {
@@ -166,6 +196,11 @@ export type Order = {
   readonly pickupTime?: string | null;
   readonly pickupEndTime?: string | null;
   readonly eta?: string | null;
+  readonly estimatedMinutes?: number | null;
+  readonly isPaid?: boolean;
+  readonly cancellationReason?: string | null;
+  /** Status → ISO timestamp of when the order entered that status. */
+  readonly statusTimestamps?: Readonly<Record<string, string>>;
 };
 
 export type ActivePreorder = Order;
@@ -178,11 +213,15 @@ export type PotentialOrderResult = {
 
 export type SmsRequirement = {
   readonly required: boolean;
-  readonly newNumber?: boolean;
+  readonly alreadyVerified?: boolean;
 };
 
 export type PaymentMethodsResponse = {
   readonly methods: readonly PaymentMethod[];
+  readonly stripeEnabled: boolean;
+  readonly twintOnlineEnabled: boolean;
+  readonly cashEnabled: boolean;
+  readonly posEnabled: boolean;
 };
 
 export type OrderStatusUpdate = {
@@ -201,9 +240,10 @@ export type Logger = {
   error(msg: string, meta?: LogMeta): void;
 };
 
-export const ORDER_STATUSES: readonly OrderStatus[] = [
+export const ORDER_STATUSES: readonly KnownOrderStatus[] = [
   'pending',
   'confirmed',
+  'printed',
   'preparing',
   'ready',
   'out_for_delivery',
@@ -211,8 +251,13 @@ export const ORDER_STATUSES: readonly OrderStatus[] = [
   'cancelled',
 ];
 
-export const SERVICE_TYPES: readonly ServiceType[] = ['delivery', 'pickup', 'dineIn'];
+export const SERVICE_TYPES: readonly KnownServiceType[] = ['delivery', 'pickup', 'dineIn'];
 
-export const PAYMENT_METHODS: readonly PaymentMethod[] = ['twint', 'stripe', 'card', 'cash'];
+export const PAYMENT_METHODS: readonly KnownPaymentMethod[] = [
+  'twint',
+  'stripe',
+  'card',
+  'cash',
+];
 
-export const TERMINAL_ORDER_STATUSES: readonly OrderStatus[] = ['delivered', 'cancelled'];
+export const TERMINAL_ORDER_STATUSES: readonly KnownOrderStatus[] = ['delivered', 'cancelled'];

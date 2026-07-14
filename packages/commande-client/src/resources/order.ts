@@ -48,14 +48,24 @@ function parseOrThrow<T>(
   return result.data;
 }
 
+/**
+ * Input for `potentialOrder.create`. Matches the payload the commande.app web
+ * client sends (captured 2026-07 via HAR): `{ restaurantId, sessionId,
+ * postalCode, address?, cartItems? }`. There is no `serviceType` on the wire.
+ */
+export type PotentialCartItem = {
+  readonly name: string;
+  readonly qty: number;
+  readonly price: number;
+};
+
 export type PotentialCreateInput = {
   readonly restaurantId: string;
-  readonly serviceType: ServiceType;
-  /** commande.app requires a v4 UUID. */
+  /** commande.app validates this with z.string().uuid() — must be a real UUID. */
   readonly sessionId: string;
   readonly postalCode: string;
-  readonly items?: CreateOrderInput['items'];
-  readonly total?: number;
+  readonly address?: string;
+  readonly cartItems?: readonly PotentialCartItem[];
 };
 
 export class OrderResource {
@@ -74,11 +84,17 @@ export class OrderResource {
     return parseOrThrow(orderSchema, raw, 'order.getOrderConfirmation');
   }
 
+  /**
+   * List the caller's active preorders. The commande.app web client calls this
+   * with NO input (superjson `undefined`) — the server scopes the result to
+   * the requesting session, not to a restaurant — so any input passed here is
+   * accepted for signature compatibility but never sent on the wire.
+   */
   async getActivePreorders(
-    input: { readonly restaurantId: string },
+    _input?: { readonly restaurantId?: string },
     opts: CallOpts = {}
   ): Promise<readonly ActivePreorder[]> {
-    const raw = await this.trpc.query('order.getActivePreorders', input, opts);
+    const raw = await this.trpc.query('order.getActivePreorders', undefined, opts);
     return parseOrThrow(activePreorderListSchema, raw, 'order.getActivePreorders');
   }
 

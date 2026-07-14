@@ -27,16 +27,17 @@ function makeResource(responses: readonly Response[]): PaymentResource {
 }
 
 describe('PaymentResource', () => {
-  it('getAvailableMethods returns parsed list', async () => {
+  it('getAvailableMethods normalizes the real flag payload into a list', async () => {
     const resource = makeResource([new Response(wrap(methodsFixture), { status: 200 })]);
     const result = await resource.getAvailableMethods({ restaurantId: 'r1' });
-    expect(result.methods).toContain('twint');
-    expect(result.methods).toContain('stripe');
+    expect(result.methods).toEqual(['card', 'cash']);
+    expect(result.posEnabled).toBe(true);
+    expect(result.twintOnlineEnabled).toBe(false);
   });
 
-  it('throws ValidationError on unknown method value', async () => {
+  it('throws ValidationError when the flag payload is missing', async () => {
     const resource = makeResource([
-      new Response(wrap({ methods: ['unknown'] }), { status: 200 }),
+      new Response(wrap({ methods: ['twint'] }), { status: 200 }),
     ]);
     await expect(resource.getAvailableMethods({ restaurantId: 'r1' })).rejects.toThrow(
       ValidationError

@@ -11,9 +11,21 @@ import {
 } from './order.schema';
 
 describe('order schemas', () => {
-  it('parses a getOrderConfirmation fixture', () => {
+  it('parses the real getOrderConfirmation payload (2026-07 HAR capture)', () => {
     const parsed = orderSchema.parse(confirmationFixture);
-    expect(parsed.status).toBe('confirmed');
+    expect(parsed.orderId).toBe('cmrepdzqe05uydd6hocs6uc09');
+    expect(parsed.status).toBe('printed');
+    expect(parsed.serviceType).toBe('delivery');
+    // Prisma Decimal strings must arrive as numbers.
+    expect(parsed.totalAmount).toBe(61);
+    expect(parsed.deliveryFee).toBe(2);
+    expect(parsed.items).toHaveLength(6);
+    const firstItem = parsed.items[0];
+    if (!firstItem) throw new Error('missing item');
+    expect(firstItem.price).toBe(4);
+    // `productName` is null on the row but present on the nested product.
+    expect(firstItem.productName).toBe('Portion de frites');
+    expect(parsed.statusTimestamps?.confirmed).toBe('2026-07-10T08:58:24.278Z');
   });
 
   it('parses an active preorders fixture', () => {
@@ -26,8 +38,8 @@ describe('order schemas', () => {
     expect(parsed.acceptingOrders).toBe(true);
   });
 
-  it('rejects an order missing orderId', () => {
-    const { orderId: _drop, ...rest } = confirmationFixture;
+  it('rejects an order missing both id and orderId', () => {
+    const { id: _drop, ...rest } = confirmationFixture;
     expect(() => orderSchema.parse(rest)).toThrow(z.ZodError);
   });
 });

@@ -15,7 +15,7 @@ export class MenuResource {
   constructor(private readonly trpc: TrpcFetcher) {}
 
   async getMenuItems(
-    input: { readonly restaurantId: string },
+    input: { readonly restaurantId: string; readonly serviceType?: string },
     opts: CallOpts = {}
   ): Promise<GetMenuItemsResult> {
     const raw = await this.trpc.query('menu.getMenuItems', input, opts);

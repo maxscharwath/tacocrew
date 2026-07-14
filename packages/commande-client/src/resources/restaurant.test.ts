@@ -36,7 +36,7 @@ describe('RestaurantResource', () => {
     const result = await resource.getBySlug({ slug: 'giga-tacos-pontaise-lausanne' });
     expect(result.id).toBe('cmmcc6j8a00056h175p38kx6l');
     expect(result.slug).toBe('giga-tacos-pontaise-lausanne');
-    expect(result.name).toBe('Giga Tacos Pontaise');
+    expect(result.name).toBe('Giga Tacos Pontaise (Lausanne)');
   });
 
   it('getAllPublic returns parsed list', async () => {

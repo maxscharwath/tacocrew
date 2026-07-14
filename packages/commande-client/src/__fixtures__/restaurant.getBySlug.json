@@ -1,10 +1,151 @@
 {
   "id": "cmmcc6j8a00056h175p38kx6l",
+  "name": "Giga Tacos Pontaise (Lausanne)",
   "slug": "giga-tacos-pontaise-lausanne",
-  "name": "Giga Tacos Pontaise",
-  "address": "Rue Test 1",
-  "phone": "+41 21 000 00 00",
-  "city": "Lausanne",
-  "postalCode": "1007",
-  "countryCode": "CH"
+  "logoUrl": "https://commande.app/uploads/restaurants/logo/1769545645-c324021cd96b4c21.jpg",
+  "photoUrl": "https://commande.app/uploads/restaurants/banner/1776778295197-4375b52e7a6682fe.jpg",
+  "mapImageUrl": null,
+  "address": "Rue de la Pontaise 42, 1018 Lausanne",
+  "postalCode": "1018",
+  "serviceType": "full",
+  "openingHours": {
+    "default": {
+      "friday": [
+        {
+          "to": "00:00",
+          "from": "11:00"
+        }
+      ],
+      "monday": [
+        {
+          "to": "22:00",
+          "from": "11:00"
+        }
+      ],
+      "sunday": [
+        {
+          "to": "22:00",
+          "from": "11:00"
+        }
+      ],
+      "tuesday": [
+        {
+          "to": "22:00",
+          "from": "11:00"
+        }
+      ],
+      "saturday": [
+        {
+          "to": "00:00",
+          "from": "11:00"
+        }
+      ],
+      "thursday": [
+        {
+          "to": "22:00",
+          "from": "11:00"
+        }
+      ],
+      "wednesday": [
+        {
+          "to": "22:00",
+          "from": "11:00"
+        }
+      ]
+    },
+    "delivery": {
+      "friday": [
+        {
+          "to": "23:55",
+          "from": "11:20"
+        }
+      ],
+      "monday": [
+        {
+          "to": "21:55",
+          "from": "11:30"
+        }
+      ],
+      "sunday": [
+        {
+          "to": "21:55",
+          "from": "11:30"
+        }
+      ],
+      "tuesday": [
+        {
+          "to": "21:55",
+          "from": "11:30"
+        }
+      ],
+      "saturday": [
+        {
+          "to": "23:55",
+          "from": "11:20"
+        }
+      ],
+      "thursday": [
+        {
+          "to": "21:55",
+          "from": "11:30"
+        }
+      ],
+      "wednesday": [
+        {
+          "to": "21:55",
+          "from": "11:30"
+        }
+      ]
+    },
+    "takeaway": {
+      "friday": [
+        {
+          "to": "23:59",
+          "from": "11:00"
+        }
+      ],
+      "monday": [
+        {
+          "to": "21:50",
+          "from": "11:05"
+        }
+      ],
+      "sunday": [
+        {
+          "to": "21:50",
+          "from": "11:00"
+        }
+      ],
+      "tuesday": [
+        {
+          "to": "21:50",
+          "from": "11:05"
+        }
+      ],
+      "saturday": [
+        {
+          "to": "23:59",
+          "from": "11:00"
+        }
+      ],
+      "thursday": [
+        {
+          "to": "21:50",
+          "from": "11:05"
+        }
+      ],
+      "wednesday": [
+        {
+          "to": "21:50",
+          "from": "11:05"
+        }
+      ]
+    }
+  },
+  "isActive": true,
+  "acceptingOrders": true,
+  "themeColor": "#ff0000",
+  "backgroundColor": "#ffffff",
+  "pwaIcon192Url": null,
+  "pwaIcon512Url": null
 }

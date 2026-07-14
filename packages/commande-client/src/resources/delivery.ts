@@ -46,7 +46,9 @@ export class DeliveryResource {
     opts: CallOpts = {}
   ): Promise<CityFromPostalCodeResult> {
     const raw = await this.trpc.query('order.getCityFromPostalCode', input, opts);
-    return parseOrThrow(cityFromPostalCodeSchema, raw, 'order.getCityFromPostalCode');
+    const parsed = parseOrThrow(cityFromPostalCodeSchema, raw, 'order.getCityFromPostalCode');
+    // The real payload is `{ city }` only — echo the postal code we asked about.
+    return { city: parsed.city, postalCode: parsed.postalCode ?? input.postalCode };
   }
 
   async geocodeAddress(

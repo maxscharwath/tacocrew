@@ -1,6 +1,17 @@
 import { z } from 'zod';
+import type { SmsRequirement } from '../types';
 
-export const smsRequirementSchema = z.object({
-  required: z.boolean(),
-  newNumber: z.boolean().optional(),
-});
+// Real `user.checkSmsRequirementPublic` payload (captured 2026-07 via HAR):
+// { restaurantRequiresSms, alreadyVerified }.
+export const smsRequirementSchema = z
+  .object({
+    restaurantRequiresSms: z.boolean(),
+    alreadyVerified: z.boolean().optional(),
+  })
+  .passthrough()
+  .transform(
+    (raw): SmsRequirement => ({
+      required: raw.restaurantRequiresSms,
+      ...(raw.alreadyVerified !== undefined && { alreadyVerified: raw.alreadyVerified }),
+    })
+  );

@@ -15,7 +15,11 @@ export function mapTrpcError(shape: TrpcErrorShape, bodyExcerpt?: string): Comma
   if (dataCode === RESTAURANT_CLOSED_MARKER) {
     return new RestaurantClosedError(shape.message, options);
   }
-  switch (shape.code) {
+  // The tRPC string code ("NOT_FOUND", "BAD_REQUEST", …) lives in `data.code`;
+  // the top-level `code` is the numeric JSON-RPC code (e.g. -32600). Prefer
+  // the string one, falling back to a top-level string code for older shapes.
+  const code = dataCode ?? (typeof shape.code === 'string' ? shape.code : undefined);
+  switch (code) {
     case 'NOT_FOUND':
       return new NotFoundError(shape.message, options);
     case 'TOO_MANY_REQUESTS':

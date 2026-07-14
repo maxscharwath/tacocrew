@@ -1,7 +1,8 @@
 import { ValidationError } from '../errors';
 
 type SuperJsonMeta = {
-  readonly values: Readonly<Record<string, readonly [string]>>;
+  readonly values: Readonly<Record<string, readonly [string]>> | readonly [string];
+  readonly v?: number;
 };
 
 type SuperJsonEnvelope<T> = {
@@ -14,16 +15,28 @@ export type TrpcRequestBody<T> = Readonly<Record<'0', SuperJsonEnvelope<T>>>;
 // commande.app's tRPC server is configured with the superjson transformer, so
 // non-JSON-native values (Date, undefined, …) must travel as plain JSON in
 // `json` paired with a `meta.values` map describing how to revive them. We
-// only implement the Date case — that's the only special type the request
-// surface uses today (pickupTime, pickupEndTime). Inputs without any special
-// values keep the legacy `{ json }` shape so unchanged calls stay byte-identical.
+// implement the two cases the request surface uses (observed in production
+// HAR captures): Date (pickupTime, pickupEndTime) and undefined (procedures
+// called with no input, optional fields sent explicitly). Inputs without any
+// special values keep the legacy `{ json }` shape so unchanged calls stay
+// byte-identical.
 function encodeSuperJson<T>(input: T): SuperJsonEnvelope<T> {
+  if (input === undefined) {
+    // Root-level undefined uses the array form of `values`, exactly as the
+    // commande.app web client sends it: {"json":null,"meta":{"values":["undefined"],"v":1}}
+    return { json: null as T, meta: { values: ['undefined'], v: 1 } };
+  }
+
   const values: Record<string, [string]> = {};
 
   function walk(value: unknown, path: string): unknown {
     if (value instanceof Date) {
       values[path] = ['Date'];
       return value.toISOString();
+    }
+    if (value === undefined && path !== '') {
+      values[path] = ['undefined'];
+      return null;
     }
     if (Array.isArray(value)) {
       return value.map((item, i) => walk(item, path === '' ? String(i) : `${path}.${i}`));
@@ -42,7 +55,7 @@ function encodeSuperJson<T>(input: T): SuperJsonEnvelope<T> {
   if (Object.keys(values).length === 0) {
     return { json };
   }
-  return { json, meta: { values } };
+  return { json, meta: { values, v: 1 } };
 }
 
 export function encodeInput<T>(input: T): TrpcRequestBody<T> {
@@ -84,7 +97,7 @@ export function unwrapResponse(payload: unknown): unknown {
 
 export type TrpcErrorShape = {
   readonly message: string;
-  readonly code?: string;
+  readonly code?: string | number;
   readonly data?: {
     readonly code?: string;
     readonly httpStatus?: number;
@@ -107,9 +120,13 @@ export function extractError(payload: unknown): TrpcErrorShape | null {
   const first = payload[0];
   if (!isRecord(first)) return null;
   if (!('error' in first)) return null;
-  const err = first.error;
-  if (!isRecord(err)) return null;
+  if (!isRecord(first.error)) return null;
+  // With the superjson transformer the error body is nested one level deeper:
+  // [{"error":{"json":{"message":…,"code":-32600,"data":{"code":"BAD_REQUEST",…}}}}]
+  // Older/plain envelopes put the fields directly on `error`; accept both.
+  const err = isRecord(first.error.json) ? first.error.json : first.error;
   const message = typeof err.message === 'string' ? err.message : 'Unknown tRPC error';
-  const code = typeof err.code === 'string' ? err.code : undefined;
+  const code =
+    typeof err.code === 'string' || typeof err.code === 'number' ? err.code : undefined;
   return { message, code, data: toTrpcErrorData(err.data) };
 }

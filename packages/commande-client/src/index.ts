@@ -13,7 +13,7 @@ export {
 export { type ResolveProductImageOptions, resolveProductImage } from './images/product-image';
 export type { CallOpts as DeliveryCallOpts } from './resources/delivery';
 export type { GetMenuItemsResult } from './resources/menu';
-export type { PotentialCreateInput } from './resources/order';
+export type { PotentialCartItem, PotentialCreateInput } from './resources/order';
 export type { PollOrderOptions } from './tracking/poll-order';
 export type {
   ActivePreorder,
@@ -24,6 +24,9 @@ export type {
   CreateOrderResponse,
   DeliveryZone,
   GeocodeResult,
+  KnownOrderStatus,
+  KnownPaymentMethod,
+  KnownServiceType,
   Logger,
   LogMeta,
   Option,
