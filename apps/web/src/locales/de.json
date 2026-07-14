@@ -754,6 +754,7 @@
     },
     "create": {
       "crousty": {
+        "subtitle": "Stell deinen Tasty Crousty zusammen",
         "title": "Tasty Crousty",
         "add": "Zum Warenkorb",
         "remove": "Entfernen"

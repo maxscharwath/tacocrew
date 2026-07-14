@@ -754,6 +754,7 @@
     },
     "create": {
       "crousty": {
+        "subtitle": "Compose ton Tasty Crousty",
         "title": "Tasty Crousty",
         "add": "Ajouter au panier",
         "remove": "Retirer"

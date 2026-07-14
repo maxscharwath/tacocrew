@@ -1,8 +1,18 @@
-import { Badge, Button, Card, CardContent, CardHeader, CardTitle } from '@tacocrew/ui-kit';
-import { Drumstick, Plus, Trash2 } from 'lucide-react';
+import {
+  Avatar,
+  AvatarFallback,
+  Badge,
+  Button,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@tacocrew/ui-kit';
+import { CheckCircle2, Drumstick, Plus, Trash2 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { CroustyOrderInput, CroustyProduct } from '@/lib/api/types';
+import type { CroustyOption, CroustyOrderInput, CroustyProduct } from '@/lib/api/types';
 import { cn } from '@/lib/utils';
 
 type CroustyBuilderProps = Readonly<{
@@ -17,9 +27,10 @@ type CroustyBuilderProps = Readonly<{
 /**
  * Builder for the Tasty Crousty product family. Each variant (Sweet / Spicy /
  * Custom) exposes single-select option groups (size, and for Custom: meat,
- * sauce, toggles). The configured line list is controlled by the order form so
- * the summary total, item count, and save-enable check all include Crousties;
- * only the in-progress selection is held locally.
+ * sauce, toggles). Visual language mirrors the taco builder (card selectors,
+ * gradient + check on selection). The configured line list is controlled by
+ * the order form so the summary total, item count, and save-enable check all
+ * include Crousties; only the in-progress selection is held locally.
  */
 export function CroustyBuilder({
   products,
@@ -64,91 +75,99 @@ export function CroustyBuilder({
     setSelections({});
   };
 
-  const removeLine = (index: number): void => {
-    onRemove(index);
-  };
-
   const productByCode = (code: string): CroustyProduct | undefined =>
     products.find((p) => p.code === code);
 
   return (
-    <Card className="border-white/10 bg-slate-800/30">
-      <CardHeader className="gap-2">
-        <div className="flex items-center gap-2">
-          <Drumstick size={18} className="text-brand-400" />
-          <CardTitle className="text-sm text-white normal-case tracking-normal">
-            {t('orders.create.crousty.title')}
-          </CardTitle>
+    <Card>
+      <CardHeader className="gap-2 sm:gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <Avatar color="amber" size="sm" className="sm:size-md">
+            <AvatarFallback>
+              <Drumstick />
+            </AvatarFallback>
+          </Avatar>
+          <div>
+            <CardTitle className="text-white">{t('orders.create.crousty.title')}</CardTitle>
+            <CardDescription className="mt-0.5">
+              {t('orders.create.crousty.subtitle')}
+            </CardDescription>
+          </div>
         </div>
       </CardHeader>
-      <CardContent className="space-y-4">
-        {/* Variant picker */}
-        <div className="flex flex-wrap gap-2">
-          {products.map((product) => (
-            <button
-              key={product.code}
-              type="button"
-              disabled={!product.in_stock || isSubmitting}
-              onClick={() => selectProduct(product.code)}
-              className={cn(
-                'flex items-center gap-2 rounded-xl border px-3 py-2 font-medium text-sm transition-all',
-                selectedCode === product.code
-                  ? 'border-brand-400/60 bg-brand-500/20 text-white'
-                  : 'border-white/10 bg-slate-900/50 text-slate-300 hover:border-brand-400/40',
-                !product.in_stock && 'cursor-not-allowed opacity-50'
-              )}
-            >
-              {product.imageUrl ? (
-                <img
-                  src={product.imageUrl}
-                  alt=""
-                  loading="lazy"
-                  className="h-8 w-8 shrink-0 rounded-lg border border-white/10 bg-slate-900/60 object-cover"
-                />
-              ) : null}
-              {product.name}
-            </button>
-          ))}
+      <CardContent className="space-y-5">
+        {/* Variant picker — card selectors like taco sizes */}
+        <div className="grid gap-2 sm:grid-cols-2 sm:gap-3 lg:grid-cols-3">
+          {products.map((product) => {
+            const isSelected = selectedCode === product.code;
+            return (
+              <button
+                key={product.code}
+                type="button"
+                disabled={!product.in_stock || isSubmitting}
+                onClick={() => selectProduct(product.code)}
+                className={cn(
+                  'group relative flex cursor-pointer flex-col items-center gap-2 rounded-xl border p-3 text-center transition-all duration-200 sm:gap-3 sm:rounded-2xl sm:p-4',
+                  isSelected
+                    ? 'scale-[1.02] border-brand-400/60 bg-linear-to-br from-brand-500/25 via-brand-500/15 to-sky-500/10 shadow-[0_8px_24px_rgba(99,102,241,0.35)]'
+                    : 'border-white/10 bg-slate-800/50 hover:border-brand-400/40 hover:bg-slate-800/70 hover:shadow-[0_4px_12px_rgba(99,102,241,0.15)]',
+                  !product.in_stock && 'cursor-not-allowed opacity-50'
+                )}
+              >
+                <div className="relative">
+                  {product.imageUrl ? (
+                    <img
+                      src={product.imageUrl}
+                      alt=""
+                      loading="lazy"
+                      className="h-14 w-14 rounded-xl border border-white/10 bg-slate-900/60 object-cover transition-transform duration-200 group-hover:scale-105"
+                    />
+                  ) : (
+                    <div className="grid h-14 w-14 place-items-center rounded-xl border border-white/10 bg-slate-900/60">
+                      <Drumstick className="text-brand-300" size={22} />
+                    </div>
+                  )}
+                  {isSelected && (
+                    <div className="absolute -top-1 -right-1 grid h-5 w-5 place-items-center rounded-full border-2 border-slate-900 bg-brand-500">
+                      <CheckCircle2 size={14} className="text-white" />
+                    </div>
+                  )}
+                </div>
+                <div className="space-y-0.5">
+                  <span className="block font-semibold text-sm text-white">{product.name}</span>
+                  <span className="block font-medium text-brand-200 text-xs">
+                    {product.price.value.toFixed(2)} {product.price.currency}
+                  </span>
+                </div>
+              </button>
+            );
+          })}
         </div>
 
         {/* Option groups for the selected variant */}
         {selectedProduct?.optionGroups.map((group) => (
           <div key={group.id} className="space-y-2">
-            <div className="flex items-center gap-2">
-              <span className="font-medium text-slate-300 text-xs">{group.name}</span>
-              {group.minSelection >= 1 && <span className="text-rose-400 text-xs">*</span>}
+            <div className="flex items-center gap-1.5">
+              <span className="font-semibold text-slate-200 text-sm">{group.name}</span>
+              {group.minSelection >= 1 && <span className="text-rose-400 text-sm">*</span>}
             </div>
-            <div className="flex flex-wrap gap-2">
-              {group.options.map((option) => {
-                const selected = selections[group.name] === option.name;
-                return (
-                  <button
-                    key={option.id}
-                    type="button"
-                    disabled={!option.in_stock || isSubmitting}
-                    onClick={() => chooseOption(group.name, option.name)}
-                    className={cn(
-                      'rounded-lg border px-2.5 py-1.5 text-xs transition-all',
-                      selected
-                        ? 'border-brand-400/60 bg-brand-500/20 text-white'
-                        : 'border-white/10 bg-slate-900/50 text-slate-300 hover:border-brand-400/40',
-                      !option.in_stock && 'cursor-not-allowed line-through opacity-50'
-                    )}
-                  >
-                    {option.name}
-                    {option.price && option.price.value > 0 ? (
-                      <span className="ml-1 text-slate-400">+{option.price.value.toFixed(2)}</span>
-                    ) : null}
-                  </button>
-                );
-              })}
+            <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+              {group.options.map((option) => (
+                <CroustyOptionChip
+                  key={option.id}
+                  option={option}
+                  selected={selections[group.name] === option.name}
+                  disabled={!option.in_stock || Boolean(isSubmitting)}
+                  onSelect={() => chooseOption(group.name, option.name)}
+                />
+              ))}
             </div>
           </div>
         ))}
 
         <Button
           type="button"
-          variant="secondary"
+          variant="default"
           onClick={addLine}
           disabled={!canAdd}
           className="w-full"
@@ -159,13 +178,13 @@ export function CroustyBuilder({
 
         {/* Configured lines */}
         {lines.length > 0 && (
-          <div className="space-y-2 border-white/10 border-t pt-3">
+          <div className="space-y-2 border-white/10 border-t pt-4">
             {lines.map((line, index) => {
               const product = productByCode(line.code);
               return (
                 <div
                   key={`${line.code}-${index}`}
-                  className="flex items-start justify-between gap-3 rounded-xl border border-white/10 bg-slate-900/50 p-3"
+                  className="flex items-start justify-between gap-3 rounded-xl border border-brand-400/30 bg-brand-500/10 p-3"
                 >
                   <div className="flex min-w-0 items-start gap-3">
                     {product?.imageUrl ? (
@@ -173,11 +192,11 @@ export function CroustyBuilder({
                         src={product.imageUrl}
                         alt=""
                         loading="lazy"
-                        className="h-10 w-10 shrink-0 rounded-lg border border-white/10 bg-slate-900/60 object-cover"
+                        className="h-11 w-11 shrink-0 rounded-lg border border-white/10 bg-slate-900/60 object-cover"
                       />
                     ) : null}
                     <div className="min-w-0">
-                      <div className="flex items-center gap-2">
+                      <div className="flex flex-wrap items-center gap-2">
                         <span className="font-semibold text-sm text-white">
                           {product?.name ?? line.code}
                         </span>
@@ -188,7 +207,7 @@ export function CroustyBuilder({
                         )}
                       </div>
                       {line.options.length > 0 && (
-                        <p className="mt-0.5 truncate text-slate-400 text-xs">
+                        <p className="mt-1 text-slate-300 text-xs">
                           {line.options.map((o) => o.optionName).join(' · ')}
                         </p>
                       )}
@@ -196,7 +215,7 @@ export function CroustyBuilder({
                   </div>
                   <button
                     type="button"
-                    onClick={() => removeLine(index)}
+                    onClick={() => onRemove(index)}
                     disabled={isSubmitting}
                     aria-label={t('orders.create.crousty.remove')}
                     className="shrink-0 rounded-lg border border-white/10 bg-slate-900/60 p-1.5 text-slate-300 transition-all hover:border-rose-400/50 hover:text-rose-300"
@@ -210,5 +229,47 @@ export function CroustyBuilder({
         )}
       </CardContent>
     </Card>
+  );
+}
+
+type CroustyOptionChipProps = Readonly<{
+  option: CroustyOption;
+  selected: boolean;
+  disabled: boolean;
+  onSelect: () => void;
+}>;
+
+function CroustyOptionChip({ option, selected, disabled, onSelect }: CroustyOptionChipProps) {
+  const extra = option.price && option.price.value > 0 ? option.price : null;
+  return (
+    <button
+      type="button"
+      disabled={disabled}
+      onClick={onSelect}
+      className={cn(
+        'group relative flex items-center justify-between gap-2 rounded-xl border p-3 text-left transition',
+        selected
+          ? 'border-brand-400/50 bg-brand-500/20 shadow-[0_4px_12px_rgba(99,102,241,0.25)]'
+          : 'border-white/10 bg-slate-800/50 hover:border-brand-400/30 hover:bg-slate-800/70',
+        disabled && 'cursor-not-allowed opacity-50'
+      )}
+    >
+      <span
+        className={cn(
+          'min-w-0 truncate font-medium text-sm',
+          option.in_stock ? 'text-white' : 'text-slate-500 line-through'
+        )}
+      >
+        {option.name}
+      </span>
+      <span className="flex shrink-0 items-center gap-2">
+        {extra && (
+          <span className="text-slate-400 text-xs">
+            +{extra.value.toFixed(2)} {extra.currency}
+          </span>
+        )}
+        {selected && <CheckCircle2 size={16} className="text-brand-300" />}
+      </span>
+    </button>
   );
 }

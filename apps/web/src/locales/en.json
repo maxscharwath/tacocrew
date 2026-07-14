@@ -754,6 +754,7 @@
     },
     "create": {
       "crousty": {
+        "subtitle": "Build your Tasty Crousty",
         "title": "Tasty Crousty",
         "add": "Add to order",
         "remove": "Remove"
