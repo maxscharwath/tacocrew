@@ -11,7 +11,7 @@ type OrderTagsProps = {
   readonly extras: string[];
   readonly drinks: string[];
   readonly desserts: string[];
-  readonly crousties?: string[];
+  readonly crousties?: ReadonlyArray<{ readonly name: string; readonly options: string[] }>;
   readonly kind?: TacoKind;
 };
 
@@ -93,12 +93,22 @@ export function OrderTags({
           {t('orders.detail.list.tagCounts.desserts', { count: desserts.length })}
         </span>
       )}
-      {crousties.map((name, idx) => (
+      {crousties.map((crousty, idx) => (
         <span
-          key={`crousty-${name}-${idx}`}
-          className="inline-flex items-center rounded-lg border border-brand-400/25 bg-brand-500/12 px-2.5 py-1 font-medium text-[11px] text-brand-100"
+          key={`crousty-${crousty.name}-${idx}`}
+          className="inline-flex flex-wrap items-center gap-1.5"
         >
-          {name}
+          <span className="inline-flex items-center rounded-lg border border-amber-400/35 bg-amber-500/20 px-2.5 py-1 font-semibold text-[11px] text-amber-100 shadow-sm">
+            {crousty.name}
+          </span>
+          {crousty.options.map((option, optIdx) => (
+            <span
+              key={`crousty-${idx}-opt-${option}-${optIdx}`}
+              className="inline-flex items-center rounded-lg border border-brand-400/25 bg-brand-500/12 px-2.5 py-1 font-medium text-[11px] text-brand-100"
+            >
+              {option}
+            </span>
+          ))}
         </span>
       ))}
     </div>
