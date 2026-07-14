@@ -129,6 +129,15 @@ function buildReceiptItems(
   addCollection(order.items.drinks);
   addCollection(order.items.desserts);
 
+  for (const crousty of order.items.crousties ?? []) {
+    const qty = crousty.quantity ?? 1;
+    items.push({
+      name: `${crousty.name}${qty > 1 ? ` x${qty}` : ''}`,
+      details: crousty.options.map((o) => o.optionName).join(', '),
+      price: crousty.price.value * qty,
+    });
+  }
+
   return items;
 }
 

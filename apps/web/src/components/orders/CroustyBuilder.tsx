@@ -7,19 +7,28 @@ import { cn } from '@/lib/utils';
 
 type CroustyBuilderProps = Readonly<{
   products: CroustyProduct[];
-  initialLines?: CroustyOrderInput[];
+  /** Configured lines, owned by the order form so they flow into the summary. */
+  lines: CroustyOrderInput[];
+  onAdd: (line: CroustyOrderInput) => void;
+  onRemove: (index: number) => void;
   isSubmitting?: boolean;
 }>;
 
 /**
  * Builder for the Tasty Crousty product family. Each variant (Sweet / Spicy /
  * Custom) exposes single-select option groups (size, and for Custom: meat,
- * sauce, toggles). Configured lines are held in local state and serialized into
- * a single `crousties` hidden input consumed by the order-form parser.
+ * sauce, toggles). The configured line list is controlled by the order form so
+ * the summary total, item count, and save-enable check all include Crousties;
+ * only the in-progress selection is held locally.
  */
-export function CroustyBuilder({ products, initialLines, isSubmitting }: CroustyBuilderProps) {
+export function CroustyBuilder({
+  products,
+  lines,
+  onAdd,
+  onRemove,
+  isSubmitting,
+}: CroustyBuilderProps) {
   const { t } = useTranslation();
-  const [lines, setLines] = useState<CroustyOrderInput[]>(initialLines ?? []);
   const [selectedCode, setSelectedCode] = useState<string | null>(products[0]?.code ?? null);
   const [selections, setSelections] = useState<Record<string, string>>({});
 
@@ -51,12 +60,12 @@ export function CroustyBuilder({ products, initialLines, isSubmitting }: Crousty
       const optionName = selections[g.name];
       return optionName ? [{ groupName: g.name, optionName }] : [];
     });
-    setLines((prev) => [...prev, { code: selectedProduct.code, options, quantity: 1 }]);
+    onAdd({ code: selectedProduct.code, options, quantity: 1 });
     setSelections({});
   };
 
   const removeLine = (index: number): void => {
-    setLines((prev) => prev.filter((_, i) => i !== index));
+    onRemove(index);
   };
 
   const productByCode = (code: string): CroustyProduct | undefined =>
@@ -73,8 +82,6 @@ export function CroustyBuilder({ products, initialLines, isSubmitting }: Crousty
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
-        <input type="hidden" name="crousties" value={JSON.stringify(lines)} />
-
         {/* Variant picker */}
         <div className="flex flex-wrap gap-2">
           {products.map((product) => (

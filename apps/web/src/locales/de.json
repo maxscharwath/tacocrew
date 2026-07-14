@@ -857,6 +857,8 @@
       },
       "summary": {
         "breakdown": {
+          "crousties_one": "{{count}} Crousty",
+          "crousties_other": "{{count}} Crousties",
           "desserts_one": "{{count}} Dessert",
           "desserts_other": "{{count}} Desserts",
           "drinks_one": "{{count}} Getränk",

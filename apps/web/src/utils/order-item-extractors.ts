@@ -27,5 +27,6 @@ export function extractOrderItems(order: UserOrderSummary) {
     extras: order.items.extras.map((extra: { name: string }) => extra.name),
     drinks: order.items.drinks.map((drink: { name: string }) => drink.name),
     desserts: order.items.desserts.map((dessert: { name: string }) => dessert.name),
+    crousties: (order.items.crousties ?? []).map((crousty) => crousty.name),
   };
 }

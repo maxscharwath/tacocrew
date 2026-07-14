@@ -63,14 +63,19 @@ export function getSummaryBreakdown(
   extras: string[],
   drinks: string[],
   desserts: string[],
-  t: (key: string, options?: Record<string, unknown>) => string
+  t: (key: string, options?: Record<string, unknown>) => string,
+  croustiesCount = 0
 ): string {
-  return [
+  const parts = [
     size
       ? t('orders.create.summary.breakdown.tacos', { count: 1 })
       : t('orders.create.summary.breakdown.noTaco'),
     t('orders.create.summary.breakdown.extras', { count: extras.length }),
     t('orders.create.summary.breakdown.drinks', { count: drinks.length }),
     t('orders.create.summary.breakdown.desserts', { count: desserts.length }),
-  ].join(' · ');
+  ];
+  if (croustiesCount > 0) {
+    parts.push(t('orders.create.summary.breakdown.crousties', { count: croustiesCount }));
+  }
+  return parts.join(' · ');
 }

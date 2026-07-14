@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import type { CroustyOrderInput } from '@/lib/api/types';
 import { TacoKind } from '@/lib/api/types';
 import type { MeatSelection, TacoSizeItem } from '@/types/orders';
 
@@ -13,6 +14,7 @@ type UseOrderValidationProps = {
   extras: string[];
   drinks: string[];
   desserts: string[];
+  crousties?: CroustyOrderInput[];
   selectedTacoSize: TacoSizeItem | null;
   kind?: TacoKind;
 };
@@ -25,6 +27,7 @@ export function useOrderValidation({
   extras,
   drinks,
   desserts,
+  crousties = [],
   selectedTacoSize,
   kind = TacoKind.REGULAR,
 }: UseOrderValidationProps) {
@@ -36,7 +39,8 @@ export function useOrderValidation({
   // Regular tacos: meats and sauces will be added automatically if not selected (handled on submit)
   const hasTaco = size && (isMystery || true); // Size selection is enough, meats/sauces added automatically
 
-  const hasOtherItems = extras.length > 0 || drinks.length > 0 || desserts.length > 0;
+  const hasOtherItems =
+    extras.length > 0 || drinks.length > 0 || desserts.length > 0 || crousties.length > 0;
 
   const validationMessages = (() => {
     const messages: string[] = [];

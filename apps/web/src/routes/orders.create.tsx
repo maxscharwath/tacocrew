@@ -62,7 +62,10 @@ function validateOrderForm(
 ): void {
   const hasTaco = data.size !== undefined;
   const hasOtherItems =
-    data.extras.length > 0 || data.drinks.length > 0 || data.desserts.length > 0;
+    data.extras.length > 0 ||
+    data.drinks.length > 0 ||
+    data.desserts.length > 0 ||
+    data.crousties.length > 0;
 
   if (!hasTaco && !hasOtherItems) {
     throw new Response('Missing selection', { status: 400 });
@@ -169,6 +172,7 @@ export function OrderCreateRoute() {
     extras: orderForm.extras,
     drinks: orderForm.drinks,
     desserts: orderForm.desserts,
+    crousties: orderForm.crousties,
     selectedTacoSize: orderForm.selectedTacoSize,
     kind: orderForm.kind,
   });
@@ -208,7 +212,8 @@ export function OrderCreateRoute() {
     orderForm.extras,
     orderForm.drinks,
     orderForm.desserts,
-    t
+    t,
+    orderForm.crousties.length
   );
 
   return (
@@ -334,15 +339,16 @@ export function OrderCreateRoute() {
 
           {/* Tasty Crousty Builder */}
           {stock && stock.crousties.length > 0 && (
-            <CroustyBuilder
-              products={stock.crousties}
-              isSubmitting={isSubmitting}
-              initialLines={(editingOrder?.items.crousties ?? []).map((c) => ({
-                code: c.code,
-                options: c.options,
-                quantity: c.quantity,
-              }))}
-            />
+            <>
+              <input type="hidden" name="crousties" value={JSON.stringify(orderForm.crousties)} />
+              <CroustyBuilder
+                products={stock.crousties}
+                lines={orderForm.crousties}
+                onAdd={orderForm.addCrousty}
+                onRemove={orderForm.removeCrousty}
+                isSubmitting={isSubmitting}
+              />
+            </>
           )}
 
           {/* Error Alert */}
@@ -377,8 +383,10 @@ export function OrderCreateRoute() {
             hasOtherItems={
               orderForm.extras.length > 0 ||
               orderForm.drinks.length > 0 ||
-              orderForm.desserts.length > 0
+              orderForm.desserts.length > 0 ||
+              orderForm.crousties.length > 0
             }
+            croustyLines={orderForm.croustyLines}
             canSubmit={orderValidation.canSubmit}
             validationMessages={orderValidation.validationMessages}
             stock={stock ?? null}

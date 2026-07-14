@@ -278,9 +278,10 @@ export function OrderCard({
     extras: extrasList,
     drinks: drinksList,
     desserts: dessertsList,
+    crousties: croustiesList,
   } = extractOrderItems(displayOrder);
 
-  const croustiesCount = displayOrder.items.crousties?.length ?? 0;
+  const croustiesCount = croustiesList.length;
   const itemCount =
     (taco ? 1 : 0) + extrasList.length + drinksList.length + dessertsList.length + croustiesCount;
   const tacoConfig = taco ? TACO_SIZE_CONFIG[taco.size] : undefined;
@@ -370,6 +371,7 @@ export function OrderCard({
                 extras={extrasList}
                 drinks={drinksList}
                 desserts={dessertsList}
+                crousties={croustiesList}
                 kind={hasRevealedItems ? TacoKind.REGULAR : taco?.kind}
               />
             </div>

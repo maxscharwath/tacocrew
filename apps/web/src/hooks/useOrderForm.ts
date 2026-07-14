@@ -11,6 +11,7 @@
 import { useEffect, useState } from 'react';
 import type { StockResponse } from '@/lib/api';
 import type { UserOrderDetail } from '@/lib/api/orders';
+import type { CroustyOrderInput } from '@/lib/api/types';
 import { TacoKind } from '@/lib/api/types';
 import {
   buildCartLines,
@@ -36,6 +37,7 @@ interface FormState {
   extras: string[];
   drinks: string[];
   desserts: string[];
+  crousties: CroustyOrderInput[];
   note: string;
   kind: TacoKind;
 }
@@ -48,6 +50,7 @@ const EMPTY_FORM: FormState = {
   extras: [],
   drinks: [],
   desserts: [],
+  crousties: [],
   note: '',
   kind: TacoKind.REGULAR,
 };
@@ -68,8 +71,40 @@ function buildFormState(myOrder?: UserOrderDetail): FormState {
     extras: myOrder.items.extras.map((extra) => extra.id),
     drinks: myOrder.items.drinks.map((drink) => drink.id),
     desserts: myOrder.items.desserts.map((dessert) => dessert.id),
+    crousties: (myOrder.items.crousties ?? []).map((crousty) => ({
+      code: crousty.code,
+      options: crousty.options,
+      quantity: crousty.quantity,
+    })),
     note: taco?.note ?? '',
     kind: taco?.kind ?? TacoKind.REGULAR,
+  };
+}
+
+/** A Crousty line resolved against stock for display + pricing in the summary. */
+export interface CroustyLineView {
+  code: string;
+  name: string;
+  unitPrice: number;
+  quantity: number;
+  optionsLabel: string;
+}
+
+/** Resolve a Crousty line to its display name, unit price, and option summary. */
+function resolveCroustyLine(line: CroustyOrderInput, stock: StockResponse): CroustyLineView {
+  const product = stock.crousties.find((p) => p.code === line.code);
+  let unitPrice = product?.price.value ?? 0;
+  for (const selection of line.options) {
+    const group = product?.optionGroups.find((g) => g.name === selection.groupName);
+    const option = group?.options.find((o) => o.name === selection.optionName);
+    if (option?.price) unitPrice += option.price.value;
+  }
+  return {
+    code: line.code,
+    name: product?.name ?? line.code,
+    unitPrice,
+    quantity: line.quantity ?? 1,
+    optionsLabel: line.options.map((o) => o.optionName).join(' · '),
   };
 }
 
@@ -135,11 +170,25 @@ export function useOrderForm({ stock, myOrder }: UseOrderFormProps) {
     form.desserts,
     effectiveStock
   );
+  const croustyLines = form.crousties.map((line) => resolveCroustyLine(line, effectiveStock));
+  const croustiesTotal = croustyLines.reduce(
+    (sum, line) => sum + line.unitPrice * line.quantity,
+    0
+  );
+  const totalWithCrousties = totalPrice + croustiesTotal;
+
   const cartLines = buildCartLines(form.drinks, form.desserts, form.extras, effectiveStock);
   const appliedPromos = findApplicablePromos(form.size, cartLines, effectiveStock.promos);
   const freeLineIds = collectFreeLineIds(appliedPromos);
   const promoSavings = sumPromoSavings(appliedPromos);
-  const totalPriceAfterPromos = Math.max(totalPrice - promoSavings, 0);
+  const totalPriceAfterPromos = Math.max(totalWithCrousties - promoSavings, 0);
+
+  const addCrousty = (line: CroustyOrderInput): void => {
+    setForm((prev) => ({ ...prev, crousties: [...prev.crousties, line] }));
+  };
+  const removeCrousty = (index: number): void => {
+    setForm((prev) => ({ ...prev, crousties: prev.crousties.filter((_, i) => i !== index) }));
+  };
 
   const toggleSelection = (
     id: string,
@@ -281,9 +330,14 @@ export function useOrderForm({ stock, myOrder }: UseOrderFormProps) {
     extras: form.extras,
     drinks: form.drinks,
     desserts: form.desserts,
+    crousties: form.crousties,
+    croustyLines,
+    croustiesTotal,
     note: form.note,
     kind: form.kind,
 
+    addCrousty,
+    removeCrousty,
     setSize,
     setSauces: (sauces: string[]) => patch({ sauces }),
     setGarnitures: (garnitures: string[]) => patch({ garnitures }),
@@ -293,7 +347,7 @@ export function useOrderForm({ stock, myOrder }: UseOrderFormProps) {
     setNote: (note: string) => patch({ note }),
 
     selectedTacoSize,
-    totalPrice,
+    totalPrice: totalWithCrousties,
     priceBreakdown,
     appliedPromos,
     freeLineIds,

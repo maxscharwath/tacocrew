@@ -11,6 +11,7 @@ type OrderTagsProps = {
   readonly extras: string[];
   readonly drinks: string[];
   readonly desserts: string[];
+  readonly crousties?: string[];
   readonly kind?: TacoKind;
 };
 
@@ -22,6 +23,7 @@ export function OrderTags({
   extras,
   drinks,
   desserts,
+  crousties = [],
   kind,
 }: OrderTagsProps) {
   const { t } = useTranslation();
@@ -91,6 +93,14 @@ export function OrderTags({
           {t('orders.detail.list.tagCounts.desserts', { count: desserts.length })}
         </span>
       )}
+      {crousties.map((name, idx) => (
+        <span
+          key={`crousty-${name}-${idx}`}
+          className="inline-flex items-center rounded-lg border border-brand-400/25 bg-brand-500/12 px-2.5 py-1 font-medium text-[11px] text-brand-100"
+        >
+          {name}
+        </span>
+      ))}
     </div>
   );
 }

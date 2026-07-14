@@ -10,6 +10,7 @@ import {
 } from '@tacocrew/ui-kit';
 import { Dices, ShoppingBag } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import type { CroustyLineView } from '@/hooks/useOrderForm';
 import type { StockResponse } from '@/lib/api';
 import { TacoKind } from '@/lib/api/types';
 import { cn } from '@/lib/utils';
@@ -31,6 +32,8 @@ type OrderSummaryProps = Readonly<{
   desserts: string[];
   note: string;
   priceBreakdown: PriceBreakdownItem[];
+  /** Resolved Tasty Crousty lines for display (already included in totalPrice). */
+  croustyLines?: CroustyLineView[];
   totalPrice: number;
   /** Stock-item ids that are currently free under an applied promo. */
   freeLineIds?: ReadonlySet<string>;
@@ -61,6 +64,7 @@ export function OrderSummary({
   desserts: _desserts, // Used for hasOtherItems calculation in parent
   note,
   priceBreakdown,
+  croustyLines = [],
   totalPrice,
   freeLineIds,
   promoSavings = 0,
@@ -193,7 +197,10 @@ export function OrderSummary({
                   className={cn('space-y-2', selectedTacoSize && 'border-white/10 border-t pt-2')}
                 >
                   {priceBreakdown.slice(selectedTacoSize ? 1 : 0).map((item, idx) => {
-                    const isFree = item.lineId !== null && item.lineId !== undefined && freeLineIds?.has(item.lineId);
+                    const isFree =
+                      item.lineId !== null &&
+                      item.lineId !== undefined &&
+                      freeLineIds?.has(item.lineId);
                     return (
                       <div
                         key={`price-item-${item.label}-${idx}`}
@@ -217,6 +224,30 @@ export function OrderSummary({
                       </div>
                     );
                   })}
+                </div>
+              )}
+
+              {croustyLines.length > 0 && (
+                <div className="space-y-2 border-white/10 border-t pt-2">
+                  {croustyLines.map((line, idx) => (
+                    <div
+                      key={`crousty-${line.code}-${idx}`}
+                      className="flex items-start justify-between gap-3 text-xs"
+                    >
+                      <div className="min-w-0">
+                        <span className="font-medium text-slate-200">
+                          {line.quantity > 1 ? `${line.quantity}× ` : ''}
+                          {line.name}
+                        </span>
+                        {line.optionsLabel && (
+                          <span className="block truncate text-slate-500">{line.optionsLabel}</span>
+                        )}
+                      </div>
+                      <span className="shrink-0 font-medium text-slate-300">
+                        {(line.unitPrice * line.quantity).toFixed(2)} {currency}
+                      </span>
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
