@@ -20,6 +20,7 @@ import {
   type TacoSizeItem,
 } from '@/shared/types/types';
 import { inject } from '@/shared/utils/inject.utils';
+import { logger } from '@/shared/utils/logger.utils';
 import { deterministicUUID } from '@/shared/utils/uuid.utils';
 
 /**
@@ -37,7 +38,12 @@ export class ResourceService {
   async getStock(): Promise<StockAvailability> {
     const [{ stock, tacoImages, croustyProducts }, promos] = await Promise.all([
       this.commande.getMenuSnapshot(config.commande.restaurantId),
-      this.commande.getPromos(config.commande.restaurantId).catch(() => []),
+      this.commande.getPromos(config.commande.restaurantId).catch((error) => {
+        logger.warn('stock.promos_fetch_failed; continuing without promos', {
+          error: error instanceof Error ? error.message : String(error),
+        });
+        return [];
+      }),
     ]);
     return this.transformStock(stock, tacoImages, croustyProducts, promos);
   }

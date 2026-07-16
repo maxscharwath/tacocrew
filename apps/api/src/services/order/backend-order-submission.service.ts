@@ -207,7 +207,12 @@ export class BackendOrderSubmissionService {
     const [stock, menu, combinations] = await Promise.all([
       this.resourceService.getStockForProcessing(),
       this.commande.getMenu(config.commande.restaurantId),
-      this.commande.getCombinations(config.commande.restaurantId).catch(() => []),
+      this.commande.getCombinations(config.commande.restaurantId).catch((error) => {
+        logger.warn('injection.combinations_fetch_failed; continuing without combos', {
+          error: error instanceof Error ? error.message : String(error),
+        });
+        return [];
+      }),
     ]);
     const resolver = new MenuResolver(menu.products);
     const imagesByProductId = new Map<string, string | null>();
