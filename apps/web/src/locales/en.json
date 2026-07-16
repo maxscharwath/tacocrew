@@ -1282,6 +1282,7 @@
       "title": "Order tracking",
       "subtitle": "Follow your order status in real time.",
       "lastUpdated": "Last updated {{relative}}",
+      "eta": "ETA ~{{minutes}} min",
       "lastUpdatedNever": "Waiting for an update",
       "notSubmitted": {
         "title": "Not submitted yet",

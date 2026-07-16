@@ -16,7 +16,7 @@ const META: CommandeRestaurantMeta = {
 function previewWithTaco(): OrderPreview {
   return {
     restaurantId: META.restaurantId,
-    serviceType: 'pickup',
+    serviceType: 'takeaway',
     items: [
       {
         productId: 'product-cuid',
@@ -118,7 +118,7 @@ describe('buildCommandeCartPayload', () => {
     );
     expect(delivery.state.items[0]?.serviceType).toBe('delivery');
 
-    const dineIn = buildCommandeCartPayload({ ...previewWithTaco(), serviceType: 'dineIn' }, META);
+    const dineIn = buildCommandeCartPayload({ ...previewWithTaco(), serviceType: 'dine_in' }, META);
     expect(dineIn.state.items[0]?.serviceType).toBe('dine_in');
   });
 

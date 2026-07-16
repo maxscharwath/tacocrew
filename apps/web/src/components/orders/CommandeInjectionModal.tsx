@@ -34,7 +34,7 @@ export function CommandeInjectionModal({
     }));
     return {
       restaurantId: data.restaurantId,
-      serviceType: 'pickup',
+      serviceType: 'takeaway',
       items,
       total: 0,
       customerName: '',
@@ -55,9 +55,7 @@ export function CommandeInjectionModal({
       title={t('orders.injection.modal.title')}
       description={t('orders.injection.modal.description')}
     >
-      {isLoading && (
-        <p className="text-slate-400 text-sm">{t('orders.injection.modal.loading')}</p>
-      )}
+      {isLoading && <p className="text-slate-400 text-sm">{t('orders.injection.modal.loading')}</p>}
       {error && (
         <p className="text-red-400 text-sm">
           {error instanceof Error ? error.message : t('orders.injection.modal.error')}

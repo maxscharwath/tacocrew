@@ -45,6 +45,7 @@ function OrderProgressionContent({ groupOrderId, initialData }: OrderProgression
   const statusQuery = useOrderStatus(groupOrderId);
   const status = statusQuery.data?.status ?? null;
   const updatedAt = statusQuery.data?.updatedAt ?? null;
+  const estimatedMinutes = statusQuery.data?.estimatedMinutes ?? null;
 
   const lastUpdatedText = updatedAt
     ? t('orders.progression.lastUpdated', { relative: formatRelativeTime(updatedAt) })
@@ -69,7 +70,14 @@ function OrderProgressionContent({ groupOrderId, initialData }: OrderProgression
                 {groupOrder.name ?? t('orders.progression.title')}
               </h1>
               <p className="text-slate-300 text-sm">{t('orders.progression.subtitle')}</p>
-              <p className="mt-1 text-slate-400 text-xs">{lastUpdatedText}</p>
+              <p className="mt-1 text-slate-400 text-xs">
+                {lastUpdatedText}
+                {estimatedMinutes !== null && (
+                  <span className="ml-2 font-semibold text-emerald-300">
+                    {t('orders.progression.eta', { minutes: estimatedMinutes })}
+                  </span>
+                )}
+              </p>
             </div>
           </div>
         </div>

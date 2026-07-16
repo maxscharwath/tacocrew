@@ -1282,6 +1282,7 @@
       "title": "Bestellverfolgung",
       "subtitle": "Verfolgen Sie den Status Ihrer Bestellung in Echtzeit.",
       "lastUpdated": "Zuletzt aktualisiert {{relative}}",
+      "eta": "ETA ~{{minutes}} Min.",
       "lastUpdatedNever": "Warten auf Aktualisierung",
       "notSubmitted": {
         "title": "Noch nicht gesendet",

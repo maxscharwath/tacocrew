@@ -10,7 +10,10 @@ import { authSecurity, createAuthenticatedRouteApp } from '@/api/utils/route.uti
 import { CommandeIntegrationClient } from '@/infrastructure/api/commande-integration.client';
 import { GroupOrderRepository } from '@/infrastructure/repositories/group-order.repository';
 import { UserOrderRepository } from '@/infrastructure/repositories/user-order.repository';
-import { toCommandeOrderStatus } from '@/schemas/commande-order-event.schema';
+import {
+  type CommandeOrderStatus,
+  toCommandeOrderStatus,
+} from '@/schemas/commande-order-event.schema';
 import {
   canAcceptOrders,
   canSubmitGroupOrder,
@@ -30,6 +33,7 @@ import { UpdateGroupOrderUseCase } from '@/services/group-order/update-group-ord
 import { UpdateGroupOrderStatusUseCase } from '@/services/group-order/update-group-order-status.service';
 import { BackendOrderSubmissionService } from '@/services/order/backend-order-submission.service';
 import { CommandeOrderEventService } from '@/services/order/commande-order-event.service';
+import { OrderStatusNotificationService } from '@/services/order/order-status-notification.service';
 import { OrganizationService } from '@/services/organization/organization.service';
 import { UserService } from '@/services/user/user.service';
 import { RevealMysteryTacosService } from '@/services/user-order/reveal-mystery-tacos.service';
@@ -557,19 +561,14 @@ app.openapi(
 const OrderStatusResponseSchema = z.object({
   groupOrderId: z.string(),
   commandeOrderId: z.string().nullable(),
-  status: z
-    .enum([
-      'pending',
-      'confirmed',
-      'preparing',
-      'ready',
-      'out_for_delivery',
-      'delivered',
-      'cancelled',
-    ])
-    .nullable(),
+  // Raw commande.app status — includes `printed` and any future value they add.
+  status: z.string().nullable(),
   source: z.enum(['activePreorders', 'confirmation', 'none']),
   updatedAt: z.string().nullable(),
+  /** Restaurant's live ETA in minutes, when commande.app provides one. */
+  estimatedMinutes: z.number().nullable(),
+  /** Announced pickup/delivery slot start (ISO), when known. */
+  pickupTime: z.string().nullable(),
 });
 
 app.openapi(
@@ -616,6 +615,8 @@ app.openapi(
           status: null,
           source: 'none' as const,
           updatedAt: null,
+          estimatedMinutes: null,
+          pickupTime: null,
         },
         200
       );
@@ -638,13 +639,16 @@ app.openapi(
       const knownStatus = toCommandeOrderStatus(match.status);
       try {
         if (knownStatus !== null) {
-          await eventService.recordIfChanged({
+          const outcome = await eventService.recordIfChanged({
             commandeOrderId,
             groupOrderId,
             status: knownStatus,
             source: 'activePreorders',
             payload: match,
           });
+          if (outcome === 'created') {
+            notifyStatusChange(groupOrderId, commandeOrderId, knownStatus);
+          }
         }
       } catch (error) {
         logger.warn('order.status.record_failed', {
@@ -660,6 +664,8 @@ app.openapi(
           status: match.status,
           source: 'activePreorders' as const,
           updatedAt: match.updatedAt ?? null,
+          estimatedMinutes: match.estimatedMinutes ?? null,
+          pickupTime: match.pickupTime ?? null,
         },
         200
       );
@@ -675,13 +681,16 @@ app.openapi(
     const knownConfirmationStatus = toCommandeOrderStatus(confirmation.status);
     if (knownConfirmationStatus !== null) {
       try {
-        await eventService.recordIfChanged({
+        const outcome = await eventService.recordIfChanged({
           commandeOrderId,
           groupOrderId,
           status: knownConfirmationStatus,
           source: 'confirmation',
           payload: confirmation,
         });
+        if (outcome === 'created') {
+          notifyStatusChange(groupOrderId, commandeOrderId, knownConfirmationStatus);
+        }
       } catch (error) {
         logger.warn('order.status.record_failed', {
           commandeOrderId,
@@ -697,11 +706,34 @@ app.openapi(
         status: confirmation.status ?? null,
         source: 'confirmation' as const,
         updatedAt: confirmation.updatedAt ?? null,
+        estimatedMinutes: confirmation.estimatedMinutes ?? null,
+        pickupTime: confirmation.pickupTime ?? null,
       },
       200
     );
   }
 );
+
+/**
+ * Fire-and-forget push notification on a freshly recorded status transition.
+ * The status read path must never fail or slow down because of notifications.
+ */
+function notifyStatusChange(
+  groupOrderId: GroupOrderId,
+  commandeOrderId: string,
+  status: CommandeOrderStatus
+): void {
+  inject(OrderStatusNotificationService)
+    .notifyStatusChange({ groupOrderId, commandeOrderId, status })
+    .catch((error) => {
+      logger.warn('order.status.notify_failed', {
+        groupOrderId,
+        commandeOrderId,
+        status,
+        error: error instanceof Error ? error.message : String(error),
+      });
+    });
+}
 
 const InjectionOptionSchema = z.object({
   groupId: z.string(),

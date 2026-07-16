@@ -16,7 +16,12 @@ export type KnownOrderStatus =
 
 export type OrderStatus = KnownOrderStatus | (string & {});
 
-export type KnownServiceType = 'delivery' | 'pickup' | 'dineIn';
+/**
+ * Values proven from the commande.app frontend bundle (2026-07 HAR):
+ * `"takeaway"===t?"takeaway":"delivery"===t?"delivery":"dine_in"`.
+ * There is no "pickup" — takeaway orders must be sent as `takeaway`.
+ */
+export type KnownServiceType = 'delivery' | 'takeaway' | 'dine_in';
 export type ServiceType = KnownServiceType | (string & {});
 
 export type KnownPaymentMethod = 'twint' | 'stripe' | 'card' | 'cash';
@@ -251,7 +256,7 @@ export const ORDER_STATUSES: readonly KnownOrderStatus[] = [
   'cancelled',
 ];
 
-export const SERVICE_TYPES: readonly KnownServiceType[] = ['delivery', 'pickup', 'dineIn'];
+export const SERVICE_TYPES: readonly KnownServiceType[] = ['delivery', 'takeaway', 'dine_in'];
 
 export const PAYMENT_METHODS: readonly KnownPaymentMethod[] = [
   'twint',

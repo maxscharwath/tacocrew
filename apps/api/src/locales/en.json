@@ -44,6 +44,20 @@
           "title": "Removed from Organization",
           "body": "You have been removed from {{organizationName}}"
         }
+      },
+      "orderStatusUpdate": {
+        "title": "Order tracking",
+        "status": {
+          "pending": "Order received by the restaurant",
+          "confirmed": "Order confirmed by the restaurant 🎉",
+          "printed": "Order sent to the kitchen 🖨️",
+          "preparing": "Your order is being prepared 👨‍🍳",
+          "ready": "Your order is ready! 🥡",
+          "out_for_delivery": "Your order is on its way 🛵",
+          "delivered": "Order delivered. Enjoy! 🌮",
+          "cancelled": "Your order was cancelled ❌",
+          "generic": "Order status: {{status}}"
+        }
       }
     },
     "slack": {

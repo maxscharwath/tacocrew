@@ -44,6 +44,20 @@
           "title": "Retiré de l'organisation",
           "body": "Vous avez été retiré(e) de {{organizationName}}"
         }
+      },
+      "orderStatusUpdate": {
+        "title": "Suivi de commande",
+        "status": {
+          "pending": "Commande reçue par le restaurant",
+          "confirmed": "Commande confirmée par le restaurant 🎉",
+          "printed": "Commande transmise en cuisine 🖨️",
+          "preparing": "Ta commande est en préparation 👨‍🍳",
+          "ready": "Ta commande est prête ! 🥡",
+          "out_for_delivery": "Ta commande est en route 🛵",
+          "delivered": "Commande livrée. Bon appétit ! 🌮",
+          "cancelled": "Ta commande a été annulée ❌",
+          "generic": "Statut de la commande : {{status}}"
+        }
       }
     },
     "slack": {

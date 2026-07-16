@@ -340,6 +340,7 @@ describe('BackendOrderSubmissionService — dry-run end-to-end', () => {
   it('returns a dry-run result with orderPreview and never calls commande.submitOrder', async () => {
     const service = container.resolve(BackendOrderSubmissionService);
 
+    const pickupTime = new Date('2026-07-16T11:50:00.000Z');
     const result = await service.submitGroupOrder({
       userOrders: [userOrder],
       customer,
@@ -350,6 +351,7 @@ describe('BackendOrderSubmissionService — dry-run end-to-end', () => {
       },
       paymentMethod: 'twint',
       dryRun: true,
+      pickupTime,
     });
 
     expect(commandeMock.submitOrder).not.toHaveBeenCalled();
@@ -369,6 +371,9 @@ describe('BackendOrderSubmissionService — dry-run end-to-end', () => {
     expect(preview.dineIn).toBe(false);
     // Delivery order carries the real zone fee; total stays item-only (server adds fee).
     expect(preview.deliveryFee).toBe(2);
+    // Real commande.app slots are 10-minute windows — both bounds must be sent.
+    expect(preview.pickupTime?.toISOString()).toBe('2026-07-16T11:50:00.000Z');
+    expect(preview.pickupEndTime?.toISOString()).toBe('2026-07-16T12:00:00.000Z');
 
     expect(preview.items).toHaveLength(4);
 
@@ -416,7 +421,7 @@ describe('BackendOrderSubmissionService — dry-run end-to-end', () => {
       dryRun: true,
     });
 
-    expect(result.orderPreview?.serviceType).toBe('pickup');
+    expect(result.orderPreview?.serviceType).toBe('takeaway');
     expect(result.orderPreview?.guestDeliveryAddress).toBeNull();
     expect(result.orderPreview?.paymentMethod).toBe('cash');
   });

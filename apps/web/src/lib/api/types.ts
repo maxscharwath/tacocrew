@@ -541,7 +541,7 @@ export interface OrderPreviewItem {
 
 export interface OrderPreview {
   readonly restaurantId: string;
-  readonly serviceType: 'delivery' | 'pickup' | 'dineIn';
+  readonly serviceType: 'delivery' | 'takeaway' | 'dine_in';
   readonly items: ReadonlyArray<OrderPreviewItem>;
   readonly total: number;
   readonly customerName: string;

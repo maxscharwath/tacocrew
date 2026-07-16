@@ -8,6 +8,10 @@ export interface OrderStatusResponse {
   status: OrderStatus | null;
   source: 'activePreorders' | 'confirmation' | 'none';
   updatedAt: string | null;
+  /** Restaurant's live ETA in minutes, when commande.app provides one. */
+  estimatedMinutes: number | null;
+  /** Announced pickup/delivery slot start (ISO), when known. */
+  pickupTime: string | null;
 }
 
 const orderStatusKeys = {

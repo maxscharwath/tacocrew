@@ -44,6 +44,20 @@
           "title": "Aus Organisation entfernt",
           "body": "Sie wurden aus {{organizationName}} entfernt"
         }
+      },
+      "orderStatusUpdate": {
+        "title": "Bestellverfolgung",
+        "status": {
+          "pending": "Bestellung beim Restaurant eingegangen",
+          "confirmed": "Bestellung vom Restaurant bestätigt 🎉",
+          "printed": "Bestellung an die Küche übermittelt 🖨️",
+          "preparing": "Deine Bestellung wird zubereitet 👨‍🍳",
+          "ready": "Deine Bestellung ist bereit! 🥡",
+          "out_for_delivery": "Deine Bestellung ist unterwegs 🛵",
+          "delivered": "Bestellung geliefert. Guten Appetit! 🌮",
+          "cancelled": "Deine Bestellung wurde storniert ❌",
+          "generic": "Bestellstatus: {{status}}"
+        }
       }
     },
     "slack": {

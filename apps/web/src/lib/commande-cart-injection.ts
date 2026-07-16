@@ -75,7 +75,7 @@ function randomCartItemId(): string {
 
 function toCartServiceType(value: OrderPreview['serviceType']): CommandeCartServiceType {
   if (value === 'delivery') return 'delivery';
-  if (value === 'dineIn') return 'dine_in';
+  if (value === 'dine_in') return 'dine_in';
   return 'takeaway';
 }
 

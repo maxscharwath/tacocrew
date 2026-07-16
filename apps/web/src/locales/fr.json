@@ -1282,6 +1282,7 @@
       "title": "Suivi de la commande",
       "subtitle": "Suivez l'état de votre commande en temps réel.",
       "lastUpdated": "Dernière mise à jour {{relative}}",
+      "eta": "ETA ~{{minutes}} min",
       "lastUpdatedNever": "En attente d'une mise à jour",
       "notSubmitted": {
         "title": "Pas encore soumis",

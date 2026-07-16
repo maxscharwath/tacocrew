@@ -297,7 +297,12 @@ export class BackendOrderSubmissionService {
       items: orderItems,
       total: computedTotal,
       isPreorder: true,
-      ...(pickupTime !== undefined && { pickupTime }),
+      // commande.app slots are 10-minute windows; the real web client always
+      // sends both bounds (e.g. 09:50 → 10:00).
+      ...(pickupTime !== undefined && {
+        pickupTime,
+        pickupEndTime: new Date(pickupTime.getTime() + 10 * 60 * 1000),
+      }),
       dineIn: false,
       isOnSite: false,
       // commande.app's `total` excludes the delivery fee; the server adds it.
@@ -483,10 +488,12 @@ export class BackendOrderSubmissionService {
     }
   }
 
-  // OrderType.TAKEAWAY is named "emporter" on our side; commande.app calls it "pickup".
+  // OrderType.TAKEAWAY is named "emporter" on our side; commande.app calls it
+  // "takeaway" (their accepted values are delivery | takeaway | dine_in —
+  // there is no "pickup", which their zod input would reject).
   private toServiceType(orderType: OrderType): ServiceType {
     if (orderType === OrderType.DELIVERY) return 'delivery';
-    return 'pickup';
+    return 'takeaway';
   }
 
   private toCommandePaymentMethod(legacy?: LegacyPaymentMethod): PaymentMethod {
