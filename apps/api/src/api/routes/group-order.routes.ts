@@ -569,6 +569,8 @@ const OrderStatusResponseSchema = z.object({
   estimatedMinutes: z.number().nullable(),
   /** Announced pickup/delivery slot start (ISO), when known. */
   pickupTime: z.string().nullable(),
+  /** Status → ISO timestamp of when the order entered that status. */
+  statusTimestamps: z.record(z.string(), z.string()).nullable(),
 });
 
 app.openapi(
@@ -617,6 +619,7 @@ app.openapi(
           updatedAt: null,
           estimatedMinutes: null,
           pickupTime: null,
+          statusTimestamps: null,
         },
         200
       );
@@ -666,6 +669,7 @@ app.openapi(
           updatedAt: match.updatedAt ?? null,
           estimatedMinutes: match.estimatedMinutes ?? null,
           pickupTime: match.pickupTime ?? null,
+          statusTimestamps: match.statusTimestamps ?? null,
         },
         200
       );
@@ -708,6 +712,7 @@ app.openapi(
         updatedAt: confirmation.updatedAt ?? null,
         estimatedMinutes: confirmation.estimatedMinutes ?? null,
         pickupTime: confirmation.pickupTime ?? null,
+        statusTimestamps: confirmation.statusTimestamps ?? null,
       },
       200
     );

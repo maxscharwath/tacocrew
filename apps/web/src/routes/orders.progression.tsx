@@ -83,7 +83,10 @@ function OrderProgressionContent({ groupOrderId, initialData }: OrderProgression
         </div>
       </div>
 
-      <OrderStatusStepper status={status} />
+      <OrderStatusStepper
+        status={status}
+        statusTimestamps={statusQuery.data?.statusTimestamps ?? null}
+      />
 
       <OrderItemsSummary userOrders={userOrders} />
 

@@ -12,6 +12,8 @@ export interface OrderStatusResponse {
   estimatedMinutes: number | null;
   /** Announced pickup/delivery slot start (ISO), when known. */
   pickupTime: string | null;
+  /** Status → ISO timestamp of when the order entered that status. */
+  statusTimestamps: Record<string, string> | null;
 }
 
 const orderStatusKeys = {

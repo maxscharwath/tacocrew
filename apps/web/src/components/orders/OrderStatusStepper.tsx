@@ -30,9 +30,18 @@ const STATUS_ICONS: Record<OrderStatus, IconComponent> = {
 
 type OrderStatusStepperProps = Readonly<{
   status: OrderStatus | null;
+  /** commande.app status → ISO timestamp; shown as HH:MM under reached steps. */
+  statusTimestamps?: Record<string, string> | null;
 }>;
 
-export function OrderStatusStepper({ status }: OrderStatusStepperProps) {
+/** Format an ISO timestamp as a local wall-clock time (e.g. "08:58"). */
+function formatStepTime(iso: string): string {
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return '';
+  return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
+
+export function OrderStatusStepper({ status, statusTimestamps }: OrderStatusStepperProps) {
   const { t } = useTranslation();
 
   if (status === null) {
@@ -62,15 +71,19 @@ export function OrderStatusStepper({ status }: OrderStatusStepperProps) {
   }
 
   const flowIndex = ORDER_STATUS_FLOW.indexOf(status);
-  const steps: ProgressStep[] = ORDER_STATUS_FLOW.map((stage, index) => ({
-    key: stage,
-    // `delivered` is only marked completed once reached; earlier stages fill as the
-    // order progresses.
-    completed: index <= flowIndex,
-    label: t(orderStatusLabelKey(stage)),
-    icon: STATUS_ICONS[stage],
-    description: t(orderStatusLabelKey(stage)),
-  }));
+  const steps: ProgressStep[] = ORDER_STATUS_FLOW.map((stage, index) => {
+    const reachedAt = statusTimestamps?.[stage];
+    return {
+      key: stage,
+      // `delivered` is only marked completed once reached; earlier stages fill as the
+      // order progresses.
+      completed: index <= flowIndex,
+      label: t(orderStatusLabelKey(stage)),
+      icon: STATUS_ICONS[stage],
+      description: t(orderStatusLabelKey(stage)),
+      ...(reachedAt !== undefined && { time: formatStepTime(reachedAt) }),
+    };
+  });
 
   return <ProgressStepper steps={steps} />;
 }

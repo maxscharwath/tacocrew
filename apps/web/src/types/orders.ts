@@ -24,6 +24,8 @@ export type ProgressStep = {
   label: string;
   icon: ComponentType<{ size?: number; className?: string }>;
   description: string;
+  /** Wall-clock time (e.g. "08:58") when the step was reached, if known. */
+  time?: string;
 };
 
 export type OrderFormState = {

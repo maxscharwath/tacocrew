@@ -96,6 +96,9 @@ export function ProgressStepper({ steps }: ProgressStepperProps) {
                 >
                   {step.label}
                 </p>
+                {step.time && (
+                  <p className="font-medium text-[10px] text-slate-400 tabular-nums">{step.time}</p>
+                )}
               </div>
             );
           })}
