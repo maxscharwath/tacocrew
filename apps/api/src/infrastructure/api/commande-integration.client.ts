@@ -33,7 +33,6 @@ import {
   isCroustyProduct,
   mapProductToCrousty,
 } from '@/domain/crousty-config';
-import type { Promo } from '@/domain/promos';
 import {
   classifyOptionGroup,
   classifyProductCategory,
@@ -100,70 +99,6 @@ export class CommandeIntegrationClient {
   ): Promise<readonly Combination[]> {
     const list = await this.client.menu.getCombinations({ restaurantId }, { signal });
     return list;
-  }
-
-  /**
-   * Project commande.app combinations into our generic `Promo` model. Each
-   * combo whose main product classifies as a TacoSize and whose side slot is
-   * a drinks-category becomes a `free-item` promo. Combos that don't match
-   * (no taco main, no recognised side category, etc.) are dropped silently.
-   */
-  async getPromos(restaurantId: string, signal?: AbortSignal): Promise<readonly Promo[]> {
-    const [{ products }, combinations] = await Promise.all([
-      this.client.menu.getMenuItems({ restaurantId }, { signal }),
-      this.getCombinations(restaurantId, signal),
-    ]);
-
-    const tacoSizeByProductId = new Map<string, TacoSize>();
-    const slugByProductId = new Map<string, string>();
-    const productCategoryById = new Map<string, string | null>();
-    for (const product of products) {
-      const size = classifyTacoSize(product.name);
-      if (size !== undefined) tacoSizeByProductId.set(product.id, size);
-      slugByProductId.set(product.id, slugifyOptionName(product.name));
-      productCategoryById.set(product.id, product.categoryId ?? null);
-    }
-
-    const promos: Promo[] = [];
-    for (const combo of combinations) {
-      if (!combo.isActive) continue;
-      const mainSlot = combo.items.find((i) => i.isMainProduct);
-      if (!mainSlot?.productId) continue;
-      const tacoSize = tacoSizeByProductId.get(mainSlot.productId);
-      if (tacoSize === undefined) continue;
-
-      const sideSlots = combo.items.filter((i) => !i.isMainProduct);
-      const totalRewardQty = sideSlots.reduce((s, slot) => s + slot.quantity, 0);
-      if (totalRewardQty === 0) continue;
-
-      // Resolve which app-domain category the side slots target by looking up
-      // any product in the slot's commande.app categoryId and classifying it.
-      const rewardCategory = inferRewardCategory(sideSlots, products, productCategoryById);
-      if (rewardCategory === null) continue;
-
-      const excluded = new Set<string>();
-      for (const side of sideSlots) {
-        for (const excludedId of side.excludedProductIds) {
-          const slug = slugByProductId.get(excludedId);
-          if (slug) excluded.add(slug);
-        }
-      }
-
-      promos.push({
-        kind: 'free-item',
-        id: combo.id,
-        name: combo.name,
-        serviceTypes: combo.serviceTypes,
-        trigger: { tacoSizes: [tacoSize], quantity: mainSlot.quantity },
-        reward: {
-          quantity: totalRewardQty,
-          category: rewardCategory,
-          excludedCodes: [...excluded],
-        },
-      });
-    }
-
-    return promos;
   }
 
   /**
@@ -488,50 +423,4 @@ function collectCategorizedProduct(product: Product, buckets: StockBuckets): voi
         price: product.price,
         imageUrl: product.imageUrl ?? null,
       };
-}
-
-/**
- * Resolve the app-domain reward category ('drinks' | 'desserts' | 'extras')
- * for combo side slots. We pick a product from each slot's commande.app
- * categoryId and run `classifyProductCategory` on its name. Returns the
- * majority vote, or `null` if no slot resolves to a known category.
- */
-function inferRewardCategory(
-  sideSlots: ReadonlyArray<{
-    readonly productId: string | null;
-    readonly categoryId: string | null;
-  }>,
-  products: ReadonlyArray<Product>,
-  productCategoryById: ReadonlyMap<string, string | null>
-): 'drinks' | 'desserts' | 'extras' | null {
-  const tally = new Map<'drinks' | 'desserts' | 'extras', number>();
-  for (const slot of sideSlots) {
-    const sample = pickSlotSampleProduct(slot, products, productCategoryById);
-    if (!sample) continue;
-    const cat = classifyProductCategory(sample);
-    if (cat === 'drink') tally.set('drinks', (tally.get('drinks') ?? 0) + 1);
-    else if (cat === 'dessert') tally.set('desserts', (tally.get('desserts') ?? 0) + 1);
-    else if (cat === 'extra') tally.set('extras', (tally.get('extras') ?? 0) + 1);
-  }
-  let best: 'drinks' | 'desserts' | 'extras' | null = null;
-  let bestCount = 0;
-  for (const [cat, count] of tally) {
-    if (count > bestCount) {
-      best = cat;
-      bestCount = count;
-    }
-  }
-  return best;
-}
-
-function pickSlotSampleProduct(
-  slot: { readonly productId: string | null; readonly categoryId: string | null },
-  products: ReadonlyArray<Product>,
-  productCategoryById: ReadonlyMap<string, string | null>
-): Product | undefined {
-  if (slot.productId) return products.find((p) => p.id === slot.productId);
-  if (slot.categoryId) {
-    return products.find((p) => productCategoryById.get(p.id) === slot.categoryId);
-  }
-  return undefined;
 }

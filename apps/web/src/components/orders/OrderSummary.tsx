@@ -35,10 +35,6 @@ type OrderSummaryProps = Readonly<{
   /** Resolved Tasty Crousty lines for display (already included in totalPrice). */
   croustyLines?: CroustyLineView[];
   totalPrice: number;
-  /** Stock-item ids that are currently free under an applied promo. */
-  freeLineIds?: ReadonlySet<string>;
-  /** Total CHF saved by applied promos (>= 0). */
-  promoSavings?: number;
   currency: string;
   summaryBreakdown: string;
   hasTaco: boolean;
@@ -66,8 +62,6 @@ export function OrderSummary({
   priceBreakdown,
   croustyLines = [],
   totalPrice,
-  freeLineIds,
-  promoSavings = 0,
   currency,
   summaryBreakdown,
   hasTaco,
@@ -196,34 +190,17 @@ export function OrderSummary({
                 <div
                   className={cn('space-y-2', selectedTacoSize && 'border-white/10 border-t pt-2')}
                 >
-                  {priceBreakdown.slice(selectedTacoSize ? 1 : 0).map((item, idx) => {
-                    const isFree =
-                      item.lineId !== null &&
-                      item.lineId !== undefined &&
-                      freeLineIds?.has(item.lineId);
-                    return (
-                      <div
-                        key={`price-item-${item.label}-${idx}`}
-                        className="flex items-center justify-between text-xs"
-                      >
-                        <span className="text-slate-400">{item.label}</span>
-                        {isFree ? (
-                          <span className="flex items-center gap-2">
-                            <span className="text-slate-500 line-through">
-                              {item.price.toFixed(2)} {currency}
-                            </span>
-                            <span className="font-semibold text-amber-300 uppercase tracking-wide">
-                              {t('orders.create.promo.freeLabel')}
-                            </span>
-                          </span>
-                        ) : (
-                          <span className="font-medium text-slate-300">
-                            {item.price.toFixed(2)} {currency}
-                          </span>
-                        )}
-                      </div>
-                    );
-                  })}
+                  {priceBreakdown.slice(selectedTacoSize ? 1 : 0).map((item, idx) => (
+                    <div
+                      key={`price-item-${item.label}-${idx}`}
+                      className="flex items-center justify-between text-xs"
+                    >
+                      <span className="text-slate-400">{item.label}</span>
+                      <span className="font-medium text-slate-300">
+                        {item.price.toFixed(2)} {currency}
+                      </span>
+                    </div>
+                  ))}
                 </div>
               )}
 
@@ -264,26 +241,10 @@ export function OrderSummary({
             <span className="font-semibold text-sm text-white">
               {t('orders.create.summary.totalLabel')}
             </span>
-            {promoSavings > 0 ? (
-              <div className="flex items-baseline gap-2">
-                <span className="text-slate-500 text-sm line-through">
-                  {totalPrice.toFixed(2)} {currency}
-                </span>
-                <span className="font-bold text-2xl text-amber-200">
-                  {Math.max(totalPrice - promoSavings, 0).toFixed(2)} {currency}
-                </span>
-              </div>
-            ) : (
-              <span className="font-bold text-2xl text-brand-100">
-                {totalPrice.toFixed(2)} {currency}
-              </span>
-            )}
+            <span className="font-bold text-2xl text-brand-100">
+              {totalPrice.toFixed(2)} {currency}
+            </span>
           </div>
-          {promoSavings > 0 && (
-            <p className="mt-1 text-amber-300 text-xs">
-              {t('orders.create.promo.savingsTotal', { amount: promoSavings.toFixed(2), currency })}
-            </p>
-          )}
           <p className="mt-2 text-slate-400 text-xs">{summaryBreakdown}</p>
         </div>
 

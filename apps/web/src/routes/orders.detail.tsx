@@ -19,14 +19,8 @@ import {
 } from '@/components/orders';
 import { useDeveloperMode } from '@/hooks/useDeveloperMode';
 import { getGroupOrderWithOrders, useGroupOrderWithOrders } from '@/lib/api';
-import { useStock } from '@/lib/api/stock';
 import { type Amount, Currency, type GroupOrderWithUserOrders } from '@/lib/api/types';
 import { useSession } from '@/lib/auth-client';
-import {
-  buildCartLinesFromUserOrder,
-  findApplicablePromosForCart,
-  sumPromoSavings,
-} from '@/lib/promos';
 import {
   getFormHandlerName,
   handleDeleteUserOrder,
@@ -124,30 +118,13 @@ function OrderDetailContent({ groupOrderId, initialData }: OrderDetailContentPro
     { value: 0, currency: Currency.CHF }
   );
 
-  const { data: stock } = useStock();
-  const promos = stock?.promos ?? [];
-  const totalPromoSavings = userOrders.reduce((sum, order) => {
-    const tacoSizes = order.items.tacos.flatMap((t) =>
-      Array<string>(t.quantity ?? 1).fill(t.size)
-    );
-    const cartLines = buildCartLinesFromUserOrder(order);
-    const applied = findApplicablePromosForCart(tacoSizes, cartLines, promos);
-    return sum + sumPromoSavings(applied);
-  }, 0);
-  const totalPriceAfterPromos: Amount = {
-    value: Math.max(totalPrice.value - totalPromoSavings, 0),
-    currency: totalPrice.currency,
-  };
-
   return (
     <div className="space-y-8">
       {/* Hero section */}
       <OrderHero
         groupOrder={groupOrder}
         userOrders={userOrders}
-        totalPrice={totalPriceAfterPromos}
-        originalTotalPrice={totalPromoSavings > 0 ? totalPrice : undefined}
-        promoSavings={totalPromoSavings}
+        totalPrice={totalPrice}
         canAddOrders={groupOrder.canAcceptOrders}
         canSubmit={canSubmit}
         orderId={groupOrderId}

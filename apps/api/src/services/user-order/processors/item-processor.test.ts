@@ -11,7 +11,6 @@ function stockWithCrousty(): StockAvailability {
     [StockCategory.Drinks]: [],
     [StockCategory.Extras]: [],
     tacos: [],
-    promos: [],
     crousties: [
       {
         id: 'prod-crousty-sweet',

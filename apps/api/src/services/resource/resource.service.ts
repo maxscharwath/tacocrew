@@ -5,7 +5,6 @@
 
 import { injectable } from 'tsyringe';
 import type { CroustyProduct } from '@/domain/crousty-config';
-import type { Promo } from '@/domain/promos';
 import type { StockAvailability as RawStockAvailability } from '@/domain/taco-config';
 import { TACO_SIZE_CONFIG, TacoSize } from '@/domain/taco-config';
 import { CommandeIntegrationClient } from '@/infrastructure/api/commande-integration.client';
@@ -20,7 +19,6 @@ import {
   type TacoSizeItem,
 } from '@/shared/types/types';
 import { inject } from '@/shared/utils/inject.utils';
-import { logger } from '@/shared/utils/logger.utils';
 import { deterministicUUID } from '@/shared/utils/uuid.utils';
 
 /**
@@ -36,23 +34,16 @@ export class ResourceService {
   }
 
   async getStock(): Promise<StockAvailability> {
-    const [{ stock, tacoImages, croustyProducts }, promos] = await Promise.all([
-      this.commande.getMenuSnapshot(config.commande.restaurantId),
-      this.commande.getPromos(config.commande.restaurantId).catch((error) => {
-        logger.warn('stock.promos_fetch_failed; continuing without promos', {
-          error: error instanceof Error ? error.message : String(error),
-        });
-        return [];
-      }),
-    ]);
-    return this.transformStock(stock, tacoImages, croustyProducts, promos);
+    const { stock, tacoImages, croustyProducts } = await this.commande.getMenuSnapshot(
+      config.commande.restaurantId
+    );
+    return this.transformStock(stock, tacoImages, croustyProducts);
   }
 
   private transformStock(
     raw: RawStockAvailability,
     tacoImages: Readonly<Record<string, string | null>>,
-    croustyProducts: ReadonlyArray<CroustyProduct>,
-    promos: ReadonlyArray<Promo>
+    croustyProducts: ReadonlyArray<CroustyProduct>
   ): StockAvailability {
     return {
       [StockCategory.Meats]: this.mapBucket(raw.viandes, StockCategory.Meats),
@@ -63,21 +54,6 @@ export class ResourceService {
       [StockCategory.Desserts]: this.mapBucket(raw.desserts, StockCategory.Desserts),
       tacos: this.buildTacoSizes(tacoImages),
       crousties: croustyProducts.map((c) => this.mapCrousty(c)),
-      promos: promos.map((p) => ({
-        kind: p.kind,
-        id: p.id,
-        name: p.name,
-        serviceTypes: [...p.serviceTypes],
-        trigger: {
-          quantity: p.trigger.quantity,
-          ...(p.trigger.tacoSizes !== undefined && { tacoSizes: [...p.trigger.tacoSizes] }),
-        },
-        reward: {
-          quantity: p.reward.quantity,
-          category: p.reward.category,
-          excludedCodes: [...p.reward.excludedCodes],
-        },
-      })),
     };
   }
 

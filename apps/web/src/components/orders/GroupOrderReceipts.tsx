@@ -25,15 +25,8 @@ import {
   useUpdateUserOrderParticipantPayment,
   useUpdateUserOrderReimbursementStatus,
 } from '@/lib/api/orders';
-import { useStock } from '@/lib/api/stock';
 import type { GroupOrder, UserOrderSummary } from '@/lib/api/types';
 import { Currency } from '@/lib/api/types';
-import {
-  buildCartLinesFromUserOrder,
-  collectFreeUnitsByLineId,
-  findApplicablePromosForCart,
-  sumPromoSavings,
-} from '@/lib/promos';
 import { formatPhoneNumber } from '@/utils/phone-formatter';
 
 type GroupedOrders = {
@@ -45,7 +38,6 @@ type GroupedOrders = {
 type ReceiptViewModel = {
   group: GroupedOrders;
   subtotal: number;
-  promoSavings: number;
   items: ReceiptItem[];
   reimbursementComplete: boolean;
   participantPaid: boolean;
@@ -74,11 +66,7 @@ function formatTacoDetails(order: UserOrderSummary['items']['tacos'][number]) {
   return details.join(' • ');
 }
 
-function buildReceiptItems(
-  order: UserOrderSummary,
-  keyPrefix: string,
-  freeUnitsByLineId: ReadonlyMap<string, number>
-): ReceiptItem[] {
+function buildReceiptItems(order: UserOrderSummary): ReceiptItem[] {
   const items: ReceiptItem[] = [];
 
   for (const taco of order.items.tacos) {
@@ -100,28 +88,11 @@ function buildReceiptItems(
   ) => {
     for (const item of collection) {
       const qty = item.quantity ?? 1;
-      const unitPrice = item.price.value;
-      const lineKey = `${keyPrefix}:${item.id}`;
-      const freeOnThisLine = Math.min(freeUnitsByLineId.get(lineKey) ?? 0, qty);
-      const paidOnThisLine = qty - freeOnThisLine;
-
-      // Split the line into a paid portion and a free portion when applicable
-      // — clean rendering on the receipt rather than partial-strike-through.
-      if (paidOnThisLine > 0) {
-        items.push({
-          name: `${item.name}${paidOnThisLine > 1 ? ` x${paidOnThisLine}` : ''}`,
-          details: '',
-          price: unitPrice * paidOnThisLine,
-        });
-      }
-      if (freeOnThisLine > 0) {
-        items.push({
-          name: `${item.name}${freeOnThisLine > 1 ? ` x${freeOnThisLine}` : ''}`,
-          details: '',
-          price: unitPrice * freeOnThisLine,
-          isFree: true,
-        });
-      }
+      items.push({
+        name: `${item.name}${qty > 1 ? ` x${qty}` : ''}`,
+        details: '',
+        price: item.price.value * qty,
+      });
     }
   };
 
@@ -224,33 +195,11 @@ export function GroupOrderReceipts({
   // Build receipt view models (React Compiler will memoize automatically)
   // Use receiptOrders from /receipts endpoint (has revealed mystery tacos and payment status)
   // Show receipts even while loading if we have previous data
-  const { data: stockForPromos } = useStock();
-  const promos = stockForPromos?.promos ?? [];
-
   const receipts: ReceiptViewModel[] =
     canRender && groupedOrders.length > 0
       ? groupedOrders.map((group) => {
           const subtotal = group.orders.reduce((sum, order) => sum + order.totalPrice.value, 0);
-          // Match **per user-order** — a combo only consumes drinks from the
-          // same user-order it was triggered by, so e.g. a participant with
-          // two user-orders never has both bonuses pulled from the first
-          // order's drinks.
-          let promoSavings = 0;
-          const freeUnitsByLineId = new Map<string, number>();
-          group.orders.forEach((order, idx) => {
-            const tacoSizes = order.items.tacos.flatMap((t) =>
-              Array<string>(t.quantity ?? 1).fill(t.size)
-            );
-            const cartLines = buildCartLinesFromUserOrder(order, `o${idx}`);
-            const applied = findApplicablePromosForCart(tacoSizes, cartLines, promos);
-            promoSavings += sumPromoSavings(applied);
-            for (const [k, v] of collectFreeUnitsByLineId(applied)) {
-              freeUnitsByLineId.set(k, (freeUnitsByLineId.get(k) ?? 0) + v);
-            }
-          });
-          const items = group.orders.flatMap((order, idx) =>
-            buildReceiptItems(order, `o${idx}`, freeUnitsByLineId)
-          );
+          const items = group.orders.flatMap((order) => buildReceiptItems(order));
           const reimbursementComplete = group.orders.every(
             (order) => order.reimbursement?.settled ?? false
           );
@@ -291,7 +240,6 @@ export function GroupOrderReceipts({
             group,
             items,
             subtotal,
-            promoSavings,
             reimbursementComplete,
             participantPaid,
             paidBy,
@@ -403,7 +351,6 @@ export function GroupOrderReceipts({
           statusVariant: resolveReceiptStatusVariant(receipt),
           items: receipt.items,
           subtotal: receipt.subtotal,
-          promoSavings: receipt.promoSavings,
           participantPaid: receipt.participantPaid,
           paidBy: receipt.paidBy,
           reimbursementComplete: receipt.reimbursementComplete,

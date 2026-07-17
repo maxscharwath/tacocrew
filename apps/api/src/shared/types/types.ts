@@ -207,31 +207,7 @@ export type StockAvailability = {
 } & {
   tacos: TacoSizeItem[];
   crousties: CroustyProductDto[];
-  promos: PromoDto[];
 };
-
-/**
- * Wire shape for a promotion. Today only `kind: 'free-item'` exists; the
- * shape is a discriminated union on `kind` so future kinds (percent or fixed
- * discounts) can be added without breaking consumers.
- */
-export type PromoDto = FreeItemPromoDto;
-
-export interface FreeItemPromoDto {
-  kind: 'free-item';
-  id: string;
-  name: string;
-  serviceTypes: string[];
-  trigger: {
-    quantity: number;
-    tacoSizes?: TacoSize[];
-  };
-  reward: {
-    quantity: number;
-    category: 'drinks' | 'desserts' | 'extras';
-    excludedCodes: string[];
-  };
-}
 
 // Resource types moved to api.ts (backend API types)
 

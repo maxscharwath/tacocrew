@@ -259,35 +259,6 @@ export interface CroustyOrder {
   options: CroustyOptionSelection[];
 }
 
-export type PromoCategory = 'drinks' | 'desserts' | 'extras';
-
-export interface PromoTrigger {
-  readonly quantity: number;
-  readonly tacoSizes?: ReadonlyArray<TacoSize>;
-}
-
-export interface PromoReward {
-  readonly quantity: number;
-  readonly category: PromoCategory;
-  readonly excludedCodes: ReadonlyArray<string>;
-}
-
-/**
- * Generic promotion descriptor. Today only `kind: 'free-item'` exists. Future
- * variants (percent / fixed-amount discount) extend the union by adding more
- * `kind` literals.
- */
-export interface FreeItemPromo {
-  readonly kind: 'free-item';
-  readonly id: string;
-  readonly name: string;
-  readonly serviceTypes: ReadonlyArray<string>;
-  readonly trigger: PromoTrigger;
-  readonly reward: PromoReward;
-}
-
-export type Promo = FreeItemPromo;
-
 export interface StockResponse {
   meats: StockItem[];
   sauces: StockItem[];
@@ -297,7 +268,6 @@ export interface StockResponse {
   desserts: StockItem[];
   tacos: TacoSizeItem[];
   crousties: CroustyProduct[];
-  promos: Promo[];
 }
 
 export interface GroupLeader {

@@ -203,8 +203,6 @@ type OrderCardProps = Readonly<{
   isSubmitting: boolean;
   isLeader?: boolean;
   isSubmitted?: boolean;
-  /** Total CHF saved by applied promos on this order (>= 0). */
-  promoSavings?: number;
   onDuplicate?: () => void;
   onOrderChange?: () => void;
 }>;
@@ -221,7 +219,6 @@ export function OrderCard({
   isSubmitting,
   isLeader = false,
   isSubmitted = false,
-  promoSavings = 0,
   onDuplicate,
   onOrderChange,
 }: OrderCardProps) {
@@ -396,30 +393,11 @@ export function OrderCard({
         >
           <div className={cn('font-semibold text-xs uppercase tracking-wide', footerTextColor)}>
             {t('orders.detail.list.itemCount', { count: itemCount })}
-            {promoSavings > 0 && (
-              <span className="ml-2 rounded-full bg-amber-500/20 px-2 py-0.5 font-semibold text-[10px] text-amber-200">
-                {t('orders.detail.list.promoBadge', {
-                  amount: promoSavings.toFixed(2),
-                  currency: order.totalPrice.currency,
-                })}
-              </span>
-            )}
           </div>
           <div className="text-right">
-            {promoSavings > 0 ? (
-              <div className="flex items-baseline justify-end gap-2">
-                <p className="text-slate-500 text-sm line-through">
-                  {order.totalPrice.value.toFixed(2)}
-                </p>
-                <p className={cn('font-bold text-amber-200 text-xl leading-none')}>
-                  {Math.max(order.totalPrice.value - promoSavings, 0).toFixed(2)}
-                </p>
-              </div>
-            ) : (
-              <p className={cn('font-bold text-xl leading-none', priceColor)}>
-                {order.totalPrice.value.toFixed(2)}
-              </p>
-            )}
+            <p className={cn('font-bold text-xl leading-none', priceColor)}>
+              {order.totalPrice.value.toFixed(2)}
+            </p>
             <p className="mt-0.5 font-semibold text-[10px] text-slate-400 uppercase tracking-wide">
               {order.totalPrice.currency}
             </p>

@@ -42,8 +42,6 @@ export type ReceiptItem = {
   name: string;
   details: string;
   price: number;
-  /** When set, render the price struck-through with a free badge instead. */
-  isFree?: boolean;
 };
 
 export type ReceiptTicketModel = {
@@ -52,8 +50,6 @@ export type ReceiptTicketModel = {
   statusVariant: ReceiptStatusVariant;
   items: ReceiptItem[];
   subtotal: number;
-  /** Sum of promo discounts applied to this receipt's items (>= 0). */
-  promoSavings: number;
   participantPaid: boolean;
   paidBy: { id: string; name: string | null } | null;
   reimbursementComplete: boolean;
@@ -102,7 +98,7 @@ export function ReceiptTicket({
     ticket.participantName ?? t('orders.detail.receipts.unknownGuest').toUpperCase();
   const userInitials = getUserInitials(participantName);
   const avatarUrl = getAvatarUrl(userId, { size: 48 });
-  const total = Math.max(ticket.subtotal + feePerPerson - ticket.promoSavings, 0);
+  const total = ticket.subtotal + feePerPerson;
   const feeExplanation = t('orders.detail.receipts.feeExplanation', {
     total: formatCurrency(feeInfo.total),
     share: formatCurrency(feePerPerson),
@@ -157,13 +153,11 @@ export function ReceiptTicket({
           subtotal={ticket.subtotal}
           total={total}
           feePerPerson={feePerPerson}
-          promoSavings={ticket.promoSavings}
           currency={currency}
           paidBy={ticket.paidBy}
           labels={{
             subtotal: t('orders.detail.receipts.subtotal'),
             feeShare: t('orders.detail.receipts.deliveryFeeShare'),
-            promo: t('orders.detail.receipts.promo'),
             total: t('orders.detail.receipts.total'),
             explanation: feeExplanation,
           }}
@@ -205,7 +199,6 @@ type ReceiptItemsListProps = Readonly<{
 
 function ReceiptItemsList({ items, itemsLabel, currency }: ReceiptItemsListProps) {
   const { formatCurrency } = useLocaleFormatter(currency);
-  const { t } = useTranslation();
   return (
     <div className="my-3 flex-1 space-y-2 border-gray-800 border-t border-dashed pt-3">
       <p className="font-bold text-[10px] text-gray-500 tracking-[0.3em]">{itemsLabel}</p>
@@ -223,16 +216,7 @@ function ReceiptItemsList({ items, itemsLabel, currency }: ReceiptItemsListProps
               >
                 {'·'.repeat(50)}
               </span>
-              {item.isFree ? (
-                <span className="flex flex-shrink-0 items-center gap-1.5">
-                  <span className="text-gray-400 line-through">{formatCurrency(item.price)}</span>
-                  <span className="rounded-sm bg-amber-200/70 px-1.5 py-0.5 font-bold text-[9px] text-amber-900 uppercase tracking-wider">
-                    {t('orders.detail.receipts.freeLabel')}
-                  </span>
-                </span>
-              ) : (
-                <span className="flex-shrink-0 text-gray-900">{formatCurrency(item.price)}</span>
-              )}
+              <span className="flex-shrink-0 text-gray-900">{formatCurrency(item.price)}</span>
             </div>
             {item.details ? <p className="text-[10px] text-gray-600">{item.details}</p> : null}
           </div>
@@ -246,13 +230,11 @@ type ReceiptTotalsProps = Readonly<{
   subtotal: number;
   total: number;
   feePerPerson: number;
-  promoSavings: number;
   currency: string;
   paidBy: { id: string; name: string | null } | null;
   labels: Readonly<{
     subtotal: string;
     feeShare: string;
-    promo: string;
     total: string;
     explanation: string;
   }>;
@@ -262,7 +244,6 @@ function ReceiptTotals({
   subtotal,
   total,
   feePerPerson,
-  promoSavings,
   currency,
   paidBy,
   labels,
@@ -301,18 +282,6 @@ function ReceiptTotals({
         </span>
         <span className="flex-shrink-0">{formatCurrency(feePerPerson)}</span>
       </div>
-      {promoSavings > 0 && (
-        <div className="flex items-center justify-between gap-2 font-semibold text-amber-700">
-          <span>{labels.promo}</span>
-          <span
-            className="flex-1 overflow-hidden text-center text-[10px] text-slate-400"
-            style={{ letterSpacing: '2px' }}
-          >
-            {'·'.repeat(50)}
-          </span>
-          <span className="flex-shrink-0">-{formatCurrency(promoSavings)}</span>
-        </div>
-      )}
       <p className="text-[10px] text-slate-600">{labels.explanation}</p>
       <div className="flex items-center justify-between gap-2 border-slate-300 border-t pt-2 font-black text-base">
         <span>{labels.total}</span>

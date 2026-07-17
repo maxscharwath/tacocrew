@@ -51,10 +51,6 @@ type OrderHeroProps = Readonly<{
   groupOrder: GroupOrder;
   userOrders: UserOrderSummary[];
   totalPrice: Amount;
-  /** Pre-promo total — when set, rendered struck-through next to `totalPrice`. */
-  originalTotalPrice?: Amount;
-  /** Sum of savings across all user orders (>= 0). */
-  promoSavings?: number;
   canAddOrders: boolean;
   canSubmit: boolean;
   orderId: string;
@@ -69,8 +65,6 @@ export function OrderHero({
   groupOrder,
   userOrders,
   totalPrice,
-  originalTotalPrice,
-  promoSavings = 0,
   canAddOrders,
   canSubmit,
   orderId,
@@ -197,28 +191,9 @@ export function OrderHero({
                   <p className="font-semibold text-slate-300 text-xs uppercase tracking-wider">
                     {t('orders.detail.hero.total.label')}
                   </p>
-                  {originalTotalPrice && promoSavings > 0 ? (
-                    <div className="mt-1 flex items-baseline justify-end gap-2">
-                      <span className="text-slate-500 text-sm line-through">
-                        {originalTotalPrice.value.toFixed(2)} {originalTotalPrice.currency}
-                      </span>
-                      <span className="font-bold text-2xl text-amber-200">
-                        {totalPrice.value.toFixed(2)} {totalPrice.currency}
-                      </span>
-                    </div>
-                  ) : (
-                    <p className="mt-1 font-bold text-2xl text-brand-100">
-                      {totalPrice.value.toFixed(2)} {totalPrice.currency}
-                    </p>
-                  )}
-                  {promoSavings > 0 && (
-                    <p className="mt-1 font-semibold text-amber-300 text-xs">
-                      {t('orders.detail.hero.total.savings', {
-                        amount: promoSavings.toFixed(2),
-                        currency: totalPrice.currency,
-                      })}
-                    </p>
-                  )}
+                  <p className="mt-1 font-bold text-2xl text-brand-100">
+                    {totalPrice.value.toFixed(2)} {totalPrice.currency}
+                  </p>
                   <p className="mt-0.5 text-slate-400 text-xs">
                     {t('orders.detail.hero.total.caption')}
                   </p>

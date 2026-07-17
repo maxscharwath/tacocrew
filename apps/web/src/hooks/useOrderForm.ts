@@ -13,12 +13,6 @@ import type { StockResponse } from '@/lib/api';
 import type { UserOrderDetail } from '@/lib/api/orders';
 import type { CroustyOrderInput } from '@/lib/api/types';
 import { TacoKind } from '@/lib/api/types';
-import {
-  buildCartLines,
-  collectFreeLineIds,
-  findApplicablePromos,
-  sumPromoSavings,
-} from '@/lib/promos';
 import { isOptionAvailableForSize } from '@/lib/taco-config';
 import type { MeatSelection, TacoSelection } from '@/types/form-data';
 import type { TacoSizeItem } from '@/types/orders';
@@ -151,7 +145,6 @@ export function useOrderForm({ stock, myOrder }: UseOrderFormProps) {
     drinks: [],
     desserts: [],
     crousties: [],
-    promos: [],
   };
 
   const effectiveStock = stock ?? fallbackStock;
@@ -176,12 +169,6 @@ export function useOrderForm({ stock, myOrder }: UseOrderFormProps) {
     0
   );
   const totalWithCrousties = totalPrice + croustiesTotal;
-
-  const cartLines = buildCartLines(form.drinks, form.desserts, form.extras, effectiveStock);
-  const appliedPromos = findApplicablePromos(form.size, cartLines, effectiveStock.promos);
-  const freeLineIds = collectFreeLineIds(appliedPromos);
-  const promoSavings = sumPromoSavings(appliedPromos);
-  const totalPriceAfterPromos = Math.max(totalWithCrousties - promoSavings, 0);
 
   const addCrousty = (line: CroustyOrderInput): void => {
     setForm((prev) => ({ ...prev, crousties: [...prev.crousties, line] }));
@@ -349,10 +336,6 @@ export function useOrderForm({ stock, myOrder }: UseOrderFormProps) {
     selectedTacoSize,
     totalPrice: totalWithCrousties,
     priceBreakdown,
-    appliedPromos,
-    freeLineIds,
-    promoSavings,
-    totalPriceAfterPromos,
 
     toggleSelection,
     updateMeatQuantity,

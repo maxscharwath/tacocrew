@@ -21,7 +21,6 @@ export { PreviousTacoCard } from './PreviousTacoCard';
 export { PreviousTacos } from './PreviousTacos';
 export { PreviousTacosModal } from './PreviousTacosModal';
 export { ProgressStepper } from './ProgressStepper';
-export { PromoBanner } from './PromoBanner';
 export { SelectionGroup } from './SelectionGroup';
 export { ShareButton } from './ShareButton';
 export { StackedAvatars } from './StackedAvatars';

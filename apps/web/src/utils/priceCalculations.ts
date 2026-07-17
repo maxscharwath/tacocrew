@@ -70,28 +70,27 @@ export function generatePriceBreakdown(
     breakdown.push({
       label: tacoSize.name,
       price: tacoSize.price.value,
-      lineId: null,
     });
   }
 
   for (const extraId of extras) {
     const extra = stock.extras.find((e) => e.id === extraId);
     if (extra?.price) {
-      breakdown.push({ label: extra.name, price: extra.price.value, lineId: extra.id });
+      breakdown.push({ label: extra.name, price: extra.price.value });
     }
   }
 
   for (const drinkId of drinks) {
     const drink = stock.drinks.find((d) => d.id === drinkId);
     if (drink?.price) {
-      breakdown.push({ label: drink.name, price: drink.price.value, lineId: drink.id });
+      breakdown.push({ label: drink.name, price: drink.price.value });
     }
   }
 
   for (const dessertId of desserts) {
     const dessert = stock.desserts.find((d) => d.id === dessertId);
     if (dessert?.price) {
-      breakdown.push({ label: dessert.name, price: dessert.price.value, lineId: dessert.id });
+      breakdown.push({ label: dessert.name, price: dessert.price.value });
     }
   }
 

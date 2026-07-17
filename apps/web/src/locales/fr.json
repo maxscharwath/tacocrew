@@ -763,17 +763,6 @@
         "save": "Enregistrer ma commande",
         "update": "Mettre à jour"
       },
-      "promo": {
-        "title_one": "🎁 1 article offert : {{name}}",
-        "title_other": "🎁 {{count}} articles offerts : {{name}}",
-        "cta": "Ajoute un article éligible ci-dessous pour profiter du bonus.",
-        "bundled": "Offert(s) : {{names}}",
-        "pickMore_one": "Encore 1 à choisir.",
-        "pickMore_other": "Encore {{count}} à choisir.",
-        "freeLabel": "Offert",
-        "savings": "Économies sur ce bonus : {{amount}} CHF.",
-        "savingsTotal": "Tu économises {{amount}} {{currency}} grâce aux promos."
-      },
       "customizeSection": {
         "meatTypesSelected_one": "{{count}} choix",
         "meatTypesSelected_other": "{{count}} choix",
@@ -994,8 +983,7 @@
         },
         "total": {
           "caption": "Toutes les commandes",
-          "label": "Montant total",
-          "savings": "Tu économises {{amount}} {{currency}} grâce aux promos"
+          "label": "Montant total"
         }
       },
       "list": {
@@ -1022,7 +1010,6 @@
         },
         "itemCount_one": "{{count}} élément",
         "itemCount_other": "{{count}} éléments",
-        "promoBadge": "-{{amount}} {{currency}}",
         "myOrderBadge": "MA COMMANDE",
         "reimbursement": {
           "error": "Impossible de mettre à jour le remboursement. Réessaie.",
@@ -1077,8 +1064,6 @@
         },
         "subtitle": "Suivez paiements et remboursements ici.",
         "subtotal": "Sous-total",
-        "promo": "Promos",
-        "freeLabel": "Offert",
         "summaryBadge": "Récapitulatif",
         "summaryFee": "Frais de livraison",
         "summaryFood": "Total des tacos",
