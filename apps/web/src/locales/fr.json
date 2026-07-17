@@ -1306,8 +1306,8 @@
         "printed": "Imprimée",
         "preparing": "En préparation",
         "ready": "Prête",
-        "out_for_delivery": "En livraison",
-        "delivered": "Livrée",
+        "delivering": "En livraison",
+        "completed": "Terminée",
         "cancelled": "Annulée"
       },
       "back": "Retour aux détails"

@@ -1,14 +1,5 @@
 import { Alert } from '@tacocrew/ui-kit';
-import {
-  CheckCircle2,
-  ChefHat,
-  Clock,
-  Package,
-  Printer,
-  ShoppingBag,
-  Truck,
-  XCircle,
-} from 'lucide-react';
+import { CheckCircle2, Clock, Printer, ShoppingBag, Truck, XCircle } from 'lucide-react';
 import type { ComponentType } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ProgressStepper } from '@/components/orders/ProgressStepper';
@@ -21,10 +12,8 @@ const STATUS_ICONS: Record<OrderStatus, IconComponent> = {
   pending: Clock,
   confirmed: CheckCircle2,
   printed: Printer,
-  preparing: ChefHat,
-  ready: Package,
-  out_for_delivery: Truck,
-  delivered: ShoppingBag,
+  delivering: Truck,
+  completed: ShoppingBag,
   cancelled: XCircle,
 };
 
@@ -70,7 +59,16 @@ export function OrderStatusStepper({ status, statusTimestamps }: OrderStatusStep
     );
   }
 
-  const flowIndex = ORDER_STATUS_FLOW.indexOf(status);
+  // Unknown/off-flow statuses (commande.app adds them without notice) must not
+  // reset the stepper: fall back to the furthest flow step present in the
+  // status timestamps.
+  let flowIndex = ORDER_STATUS_FLOW.indexOf(status);
+  if (flowIndex === -1 && statusTimestamps) {
+    flowIndex = ORDER_STATUS_FLOW.reduce(
+      (max, stage, index) => (statusTimestamps[stage] !== undefined ? index : max),
+      -1
+    );
+  }
   const steps: ProgressStep[] = ORDER_STATUS_FLOW.map((stage, index) => {
     const reachedAt = statusTimestamps?.[stage];
     return {

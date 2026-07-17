@@ -10,14 +10,19 @@ import { zId } from '@/shared/utils/branded-ids.utils';
 export type CommandeOrderEventId = Id<'CommandeOrderEvent'>;
 export const CommandeOrderEventId = zId<CommandeOrderEventId>();
 
+// Observed on real commande.app orders: pending, confirmed, printed,
+// delivering, completed (terminal), cancelled. `preparing`/`ready`/`delivered`
+// have never been observed — kept only as tolerated values so an unexpected
+// status would still be recorded and notified instead of silently dropped.
 export const COMMANDE_ORDER_STATUSES = [
   'pending',
   'confirmed',
   'printed',
   'preparing',
   'ready',
-  'out_for_delivery',
+  'delivering',
   'delivered',
+  'completed',
   'cancelled',
 ] as const;
 

@@ -53,8 +53,9 @@
           "printed": "Order sent to the kitchen 🖨️",
           "preparing": "Your order is being prepared 👨‍🍳",
           "ready": "Your order is ready! 🥡",
-          "out_for_delivery": "Your order is on its way 🛵",
+          "delivering": "Your order is on its way 🛵",
           "delivered": "Order delivered. Enjoy! 🌮",
+          "completed": "Order completed. Enjoy! 🌮",
           "cancelled": "Your order was cancelled ❌",
           "generic": "Order status: {{status}}"
         }

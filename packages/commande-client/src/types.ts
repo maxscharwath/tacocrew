@@ -1,8 +1,10 @@
 /**
- * Statuses observed on the commande.app wire (`printed` = kitchen ticket
- * printed, seen in production HAR captures). The `(string & {})` arm keeps the
- * union open: commande.app can introduce new statuses at any time and parsing
- * must not break — consumers should treat unknown values as "in progress".
+ * Statuses observed on the commande.app wire: pending, confirmed, printed
+ * (kitchen ticket), delivering, delivered, cancelled — all seen in production
+ * captures. `preparing`/`ready` have never been observed and are kept only as
+ * tolerated values. The `(string & {})` arm keeps the union open: commande.app
+ * can introduce new statuses at any time and parsing must not break —
+ * consumers should treat unknown values as "in progress".
  */
 export type KnownOrderStatus =
   | 'pending'
@@ -10,8 +12,9 @@ export type KnownOrderStatus =
   | 'printed'
   | 'preparing'
   | 'ready'
-  | 'out_for_delivery'
+  | 'delivering'
   | 'delivered'
+  | 'completed'
   | 'cancelled';
 
 export type OrderStatus = KnownOrderStatus | (string & {});
@@ -251,8 +254,9 @@ export const ORDER_STATUSES: readonly KnownOrderStatus[] = [
   'printed',
   'preparing',
   'ready',
-  'out_for_delivery',
+  'delivering',
   'delivered',
+  'completed',
   'cancelled',
 ];
 
@@ -265,4 +269,9 @@ export const PAYMENT_METHODS: readonly KnownPaymentMethod[] = [
   'cash',
 ];
 
-export const TERMINAL_ORDER_STATUSES: readonly KnownOrderStatus[] = ['delivered', 'cancelled'];
+// `completed` is the observed terminal status; `delivered` kept as tolerated.
+export const TERMINAL_ORDER_STATUSES: readonly KnownOrderStatus[] = [
+  'completed',
+  'delivered',
+  'cancelled',
+];

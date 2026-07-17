@@ -1306,8 +1306,8 @@
         "printed": "Gedruckt",
         "preparing": "In Vorbereitung",
         "ready": "Bereit",
-        "out_for_delivery": "In Zustellung",
-        "delivered": "Geliefert",
+        "delivering": "In Zustellung",
+        "completed": "Abgeschlossen",
         "cancelled": "Storniert"
       },
       "back": "Zurück zu den Details"

@@ -53,8 +53,9 @@
           "printed": "Commande transmise en cuisine 🖨️",
           "preparing": "Ta commande est en préparation 👨‍🍳",
           "ready": "Ta commande est prête ! 🥡",
-          "out_for_delivery": "Ta commande est en route 🛵",
+          "delivering": "Ta commande est en route 🛵",
           "delivered": "Commande livrée. Bon appétit ! 🌮",
+          "completed": "Commande terminée. Bon appétit ! 🌮",
           "cancelled": "Ta commande a été annulée ❌",
           "generic": "Statut de la commande : {{status}}"
         }

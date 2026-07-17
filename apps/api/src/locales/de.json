@@ -53,8 +53,9 @@
           "printed": "Bestellung an die Küche übermittelt 🖨️",
           "preparing": "Deine Bestellung wird zubereitet 👨‍🍳",
           "ready": "Deine Bestellung ist bereit! 🥡",
-          "out_for_delivery": "Deine Bestellung ist unterwegs 🛵",
+          "delivering": "Deine Bestellung ist unterwegs 🛵",
           "delivered": "Bestellung geliefert. Guten Appetit! 🌮",
+          "completed": "Bestellung abgeschlossen. Guten Appetit! 🌮",
           "cancelled": "Deine Bestellung wurde storniert ❌",
           "generic": "Bestellstatus: {{status}}"
         }
